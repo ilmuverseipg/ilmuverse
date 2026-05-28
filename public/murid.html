@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ILMUVERSE — Murid & Ibu Bapa</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#040d1a;--bg2:#071428;--panel:#0a1d35;--panel2:#0d2545;--accent:#00d4ff;--accent2:#0077ff;--gold:#ffd700;--green:#00ff88;--red:#ff3355;--text:#e8f4ff;--text2:#7bb8d4;--border:rgba(0,212,255,0.2)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif}
+
+.topbar{height:60px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:16px;position:sticky;top:0;z-index:100}
+.logo{font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:900;color:var(--accent);text-shadow:0 0 10px var(--accent)}
+.logo-sub{font-size:0.7rem;color:var(--text2);letter-spacing:2px}
+.topbar-nav{display:flex;gap:4px;margin-left:auto}
+.nav-btn{padding:8px 16px;background:transparent;border:1px solid transparent;border-radius:4px;color:var(--text2);font-family:'Exo 2',sans-serif;font-size:0.85rem;cursor:pointer;transition:.2s}
+.nav-btn.aktif,.nav-btn:hover{background:rgba(0,212,255,.1);border-color:var(--border);color:var(--accent)}
+
+.halaman{display:none;padding:24px;max-width:900px;margin:0 auto;animation:fadeIn .3s ease}
+.halaman.aktif{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.sek-tajuk{font-family:'Orbitron',monospace;font-size:1rem;color:var(--accent);letter-spacing:2px;margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+
+/* DASHBOARD */
+.filter-bar{display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap}
+.tarikh-input{padding:8px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:0.85rem;outline:none}
+.tarikh-input:focus{border-color:var(--accent)}
+
+.sesi-kad{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;cursor:pointer;transition:.3s}
+.sesi-kad:hover{border-color:var(--accent);box-shadow:0 0 20px rgba(0,212,255,.1)}
+.sesi-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.sesi-tajuk-teks{font-size:1rem;font-weight:700}
+.sesi-tarikh-teks{font-size:0.75rem;color:var(--text2);margin-top:4px}
+.sesi-mod-badge{padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:600;background:rgba(0,212,255,.1);border:1px solid var(--border);color:var(--accent)}
+
+.murid-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.murid-chip{background:var(--bg2);border-radius:20px;padding:6px 14px;display:flex;align-items:center;gap:8px;font-size:0.85rem}
+.markah-badge{font-family:'Orbitron',monospace;color:var(--accent);font-weight:700}
+
+.ulasan-box{background:var(--bg2);border-left:3px solid var(--accent);padding:12px 16px;border-radius:0 8px 8px 0;margin-top:12px}
+.ulasan-label{font-size:0.75rem;color:var(--text2);margin-bottom:4px}
+.ulasan-teks{font-size:0.9rem;line-height:1.5}
+
+/* DETAIL MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:500;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;backdrop-filter:blur(4px)}
+.overlay.buka{display:flex;animation:fadeIn .2s}
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:540px;position:relative;margin:auto}
+.modal-tutup{position:absolute;top:14px;right:14px;background:none;border:1px solid var(--border);color:var(--text2);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:0.9rem}
+.modal-tutup:hover{background:var(--red);border-color:var(--red);color:white}
+
+/* RANKING */
+.ranking-item{display:flex;align-items:center;gap:14px;background:var(--bg2);border-radius:10px;padding:12px 16px;margin-bottom:10px;border:1px solid transparent}
+.r1-item{border-color:var(--gold)}
+.r2-item{border-color:#c0c0c0}
+.r3-item{border-color:#cd7f32}
+.rank-no{font-family:'Orbitron',monospace;font-size:1.4rem;font-weight:900;min-width:30px}
+.rank-nama{flex:1;font-weight:600}
+.rank-markah{font-family:'Orbitron',monospace;color:var(--accent);font-size:1.1rem}
+
+/* SIARAN */
+.siaran-kad{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;transition:.3s}
+.siaran-kad:hover{border-color:var(--accent)}
+.siaran-header{padding:16px 20px}
+.siaran-tajuk{font-size:1rem;font-weight:700;margin-bottom:4px}
+.siaran-tarikh{font-size:0.75rem;color:var(--text2)}
+.siaran-embed{width:100%;height:280px;border:none;background:var(--bg2)}
+.siaran-link{display:block;padding:10px 20px;background:rgba(0,212,255,.05);color:var(--accent);text-decoration:none;font-size:0.85rem;border-top:1px solid var(--border)}
+.siaran-link:hover{background:rgba(0,212,255,.1)}
+.siaran-komen{padding:12px 20px;color:var(--text2);font-size:0.85rem;border-top:1px solid var(--border);line-height:1.6}
+
+/* KOSONG STATE */
+.kosong{text-align:center;padding:60px 20px;color:var(--text2)}
+.kosong-ikon{font-size:3rem;margin-bottom:12px}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* REAL-TIME BADGE */
+.live-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.3);border-radius:20px;padding:4px 12px;font-size:0.75rem;color:var(--green)}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:livePulse 1s infinite}
+@keyframes livePulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* NOTIF */
+.notif-bar{position:fixed;bottom:20px;right:20px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 20px;font-size:0.85rem;z-index:9999;display:none;animation:slideIn .3s;max-width:300px}
+@keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="logo">ILMUVERSE</div>
+    <div class="logo-sub">PORTAL MURID & IBU BAPA</div>
+  </div>
+  <div class="topbar-nav">
+    <button class="nav-btn aktif" onclick="tukarHalaman('dashboard',this)">Pencapaian</button>
+    <button class="nav-btn" onclick="tukarHalaman('siaran',this)">Siaran Guru</button>
+  </div>
+</div>
+
+<!-- PENCAPAIAN -->
+<div class="halaman aktif" id="halDashboard">
+  <div class="filter-bar">
+    <div class="sek-tajuk" style="margin-bottom:0;border:none;padding:0">REKOD PENCAPAIAN</div>
+    <span class="live-badge"><span class="live-dot"></span>Kemas kini langsung</span>
+    <input type="date" class="tarikh-input" id="tarikhFilter" onchange="tapisData()">
+  </div>
+  <div id="sesiGrid"><div class="kosong"><div class="kosong-ikon">📋</div>Tiada rekod lagi</div></div>
+</div>
+
+<!-- SIARAN -->
+<div class="halaman" id="halSiaran">
+  <div class="sek-tajuk">SIARAN & NOTA DARIPADA GURU</div>
+  <div id="siaranGrid"><div class="kosong"><div class="kosong-ikon">📢</div>Tiada siaran lagi</div></div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="overlay" id="overlayDetail">
+  <div class="modal">
+    <button class="modal-tutup" onclick="document.getElementById('overlayDetail').classList.remove('buka')">✕</button>
+    <div id="detailBadan"></div>
+  </div>
+</div>
+
+<div class="notif-bar" id="notifBar"></div>
+
+<script>
+const API = window.location.origin;
+const WS_URL = window.location.hostname === 'localhost'
+  ? 'ws://localhost:3000' : `wss://${window.location.hostname}`;
+
+let ws;
+let semuaSesi = [];
+let semuaSiaran = [];
+
+function sambungWS() {
+  ws = new WebSocket(`${WS_URL}/murid`);
+  ws.onmessage = (e) => {
+    let d; try { d = JSON.parse(e.data); } catch { return; }
+    if (d.jenis === 'siaran_baharu') muatSiaran();
+    if (d.jenis === 'ulasan_baharu') {
+      muatDashboard();
+      tunjukNotif('💬 Ulasan baharu daripada guru!');
+    }
+  };
+  ws.onclose = () => setTimeout(sambungWS, 4000);
+}
+
+function tukarHalaman(id, btn) {
+  document.querySelectorAll('.halaman').forEach(h => h.classList.remove('aktif'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('aktif'));
+  document.getElementById('hal' + id.charAt(0).toUpperCase() + id.slice(1)).classList.add('aktif');
+  if (btn) btn.classList.add('aktif');
+  if (id === 'siaran') muatSiaran();
+}
+
+function tapisData() { renderDashboard(); }
+
+async function muatDashboard() {
+  const res = await fetch(`${API}/api/sesi`);
+  semuaSesi = await res.json();
+  renderDashboard();
+}
+
+function renderDashboard() {
+  const tarikh = document.getElementById('tarikhFilter').value;
+  const data = tarikh ? semuaSesi.filter(s => new Date(s.tarikh).toLocaleDateString('fr-CA') === tarikh) : semuaSesi;
+  const el = document.getElementById('sesiGrid');
+  const modNama = ['','Kuiz Ramai-ramai','Dwi-Padu','Susunan Hafalan','Imbas AI'];
+
+  el.innerHTML = data.length ? data.map(s => `
+    <div class="sesi-kad" onclick="bukaDetail('${s._id}')">
+      <div class="sesi-header">
+        <div>
+          <div class="sesi-tajuk-teks">${s.tajuk}</div>
+          <div class="sesi-tarikh-teks">📅 ${new Date(s.tarikh).toLocaleDateString('ms-MY',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>
+        </div>
+        <span class="sesi-mod-badge">Mod ${s.mod} — ${modNama[s.mod]||''}</span>
+      </div>
+      <div class="murid-row">
+        ${(s.keputusan||[]).sort((a,b)=>b.markah-a.markah).map((k,i)=>`
+          <div class="murid-chip">
+            <span>${['🥇','🥈','🥉',''][i]||''}</span>
+            <span>${k.avatar||'👤'}</span>
+            <span>${k.nama}</span>
+            <span class="markah-badge">${k.markah}★</span>
+          </div>`).join('')}
+      </div>
+      ${(s.ulasan||[]).length ? `<div class="ulasan-box"><div class="ulasan-label">💬 Ulasan Guru</div><div class="ulasan-teks">${s.ulasan.map(u=>`<strong>${u.nama}:</strong> ${u.komen}`).join(' | ')}</div></div>` : ''}
+    </div>`).join('') : '<div class="kosong"><div class="kosong-ikon">📋</div>Tiada rekod untuk tarikh ini</div>';
+}
+
+async function bukaDetail(id) {
+  const res = await fetch(`${API}/api/sesi/${id}`);
+  const s = await res.json();
+  const modNama = ['','Kuiz Ramai-ramai','Dwi-Padu','Susunan Hafalan','Imbas AI'];
+  const ranking = (s.keputusan||[]).sort((a,b)=>b.markah-a.markah);
+
+  document.getElementById('detailBadan').innerHTML = `
+    <h2 style="font-family:'Orbitron',monospace;color:var(--accent);font-size:1.1rem;margin-bottom:6px">${s.tajuk}</h2>
+    <div style="font-size:0.8rem;color:var(--text2);margin-bottom:20px">
+      📅 ${new Date(s.tarikh).toLocaleDateString('ms-MY',{weekday:'long',year:'numeric',month:'long',day:'numeric'})} &nbsp;|&nbsp;
+      Mod ${s.mod} — ${modNama[s.mod]||''}
+    </div>
+    <div style="font-size:0.8rem;color:var(--text2);margin-bottom:10px;font-family:'Orbitron',monospace">RANKING</div>
+    ${ranking.map((k,i)=>`
+      <div class="ranking-item ${['r1-item','r2-item','r3-item',''][i]||''}">
+        <div class="rank-no" style="color:${['var(--gold)','#c0c0c0','#cd7f32','var(--text2)'][i]||'var(--text2)'}">${['🥇','🥈','🥉',''][i]||i+1}</div>
+        <div style="font-size:1.5rem">${k.avatar||'👤'}</div>
+        <div class="rank-nama">${k.nama}</div>
+        <div class="rank-markah">${k.markah} ⭐</div>
+      </div>`).join('')}
+    ${s.ulasan?.length ? `
+      <div style="margin-top:16px">
+        <div style="font-size:0.8rem;color:var(--text2);font-family:'Orbitron',monospace;margin-bottom:10px">ULASAN GURU</div>
+        ${s.ulasan.map(u=>`
+          <div class="ulasan-box" style="margin-bottom:8px">
+            <div class="ulasan-label">${u.nama} — ${new Date(u.tarikhKomen).toLocaleDateString('ms-MY')}</div>
+            <div class="ulasan-teks">${u.komen}</div>
+          </div>`).join('')}
+      </div>` : ''}`;
+
+  document.getElementById('overlayDetail').classList.add('buka');
+}
+
+async function muatSiaran() {
+  const res = await fetch(`${API}/api/siaran`);
+  semuaSiaran = await res.json();
+  const el = document.getElementById('siaranGrid');
+  el.innerHTML = semuaSiaran.length ? semuaSiaran.map(s=>`
+    <div class="siaran-kad">
+      <div class="siaran-header">
+        <div class="siaran-tajuk">${s.tajuk}</div>
+        <div class="siaran-tarikh">📅 ${new Date(s.tarikhDihantar).toLocaleDateString('ms-MY')}</div>
+      </div>
+      ${s.embedLink ? `<iframe class="siaran-embed" src="${s.embedLink}" allowfullscreen loading="lazy"></iframe>
+        <a class="siaran-link" href="${s.embedLink}" target="_blank">🔗 Buka Pautan Penuh</a>` : ''}
+      ${s.komen ? `<div class="siaran-komen">📝 ${s.komen}</div>` : ''}
+    </div>`).join('') : '<div class="kosong"><div class="kosong-ikon">📢</div>Tiada siaran lagi</div>';
+}
+
+function tunjukNotif(msg) {
+  const el = document.getElementById('notifBar');
+  el.textContent = msg; el.style.display = 'block';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.style.display = 'none', 4000);
+}
+
+window.addEventListener('load', () => {
+  document.getElementById('tarikhFilter').value = new Date().toLocaleDateString('fr-CA');
+  sambungWS();
+  muatDashboard();
+  muatSiaran();
+});
+</script>
+</body>
+</html>

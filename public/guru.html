@@ -1,0 +1,1747 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ILMUVERSE — Guru</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #040d1a;
+  --bg2: #071428;
+  --panel: #0a1d35;
+  --panel2: #0d2545;
+  --accent: #00d4ff;
+  --accent2: #0077ff;
+  --gold: #ffd700;
+  --green: #00ff88;
+  --red: #ff3355;
+  --yellow: #ffcc00;
+  --text: #e8f4ff;
+  --text2: #7bb8d4;
+  --border: rgba(0,212,255,0.2);
+  --glow: 0 0 20px rgba(0,212,255,0.3);
+  --glow2: 0 0 40px rgba(0,212,255,0.15);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;overflow-x:hidden}
+
+/* ---- SPLASH SCREEN ---- */
+#splash{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px}
+.splash-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,212,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.03) 1px,transparent 1px);background-size:40px 40px;animation:gridMove 20s linear infinite}
+@keyframes gridMove{0%{transform:translateY(0)}100%{transform:translateY(40px)}}
+.splash-logo{font-family:'Orbitron',monospace;font-size:3.5rem;font-weight:900;letter-spacing:8px;color:var(--accent);text-shadow:0 0 40px var(--accent),0 0 80px rgba(0,212,255,0.3);animation:pulseLogo 2s ease-in-out infinite;position:relative;z-index:1}
+.splash-sub{font-family:'Orbitron',monospace;font-size:1rem;color:var(--text2);letter-spacing:4px;position:relative;z-index:1}
+.splash-by{font-size:0.75rem;color:rgba(0,212,255,0.5);letter-spacing:3px;position:relative;z-index:1}
+.splash-status{font-size:0.9rem;color:var(--accent);letter-spacing:2px;margin-top:20px;position:relative;z-index:1;min-height:24px}
+.splash-dots{display:inline-block;animation:dots 1.4s infinite}
+@keyframes dots{0%{content:''}33%{content:'.'}66%{content:'..'}100%{content:'...'}}
+@keyframes pulseLogo{0%,100%{text-shadow:0 0 40px var(--accent),0 0 80px rgba(0,212,255,0.3)}50%{text-shadow:0 0 60px var(--accent),0 0 120px rgba(0,212,255,0.5),0 0 200px rgba(0,212,255,0.2)}}
+.conn-bar{display:flex;gap:30px;margin-top:10px;position:relative;z-index:1}
+.conn-item{display:flex;align-items:center;gap:8px;font-size:0.8rem;color:var(--text2)}
+.conn-dot{width:10px;height:10px;border-radius:50%;background:#333;transition:.3s}
+.conn-dot.hidup{background:var(--green);box-shadow:0 0 10px var(--green);animation:blink 0.5s 3}
+.conn-dot.mati{background:var(--red);box-shadow:0 0 10px var(--red)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.splash-btn{display:none;margin-top:20px;padding:14px 48px;background:linear-gradient(135deg,var(--accent2),var(--accent));border:none;border-radius:4px;color:white;font-family:'Orbitron',monospace;font-size:1rem;letter-spacing:3px;cursor:pointer;box-shadow:var(--glow);transition:.2s;position:relative;z-index:1}
+.splash-btn:hover{transform:scale(1.05);box-shadow:0 0 40px rgba(0,212,255,0.6)}
+
+/* ---- LAYOUT UTAMA ---- */
+#app{display:none;min-height:100vh;flex-direction:column}
+.topbar{height:60px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:20px;position:sticky;top:0;z-index:100;backdrop-filter:blur(10px)}
+.logo-kecil{font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:900;color:var(--accent);text-shadow:0 0 10px var(--accent)}
+.topbar-nav{display:flex;gap:4px;margin-left:auto}
+.nav-btn{padding:8px 16px;background:transparent;border:1px solid transparent;border-radius:4px;color:var(--text2);font-family:'Exo 2',sans-serif;font-size:0.85rem;cursor:pointer;transition:.2s;letter-spacing:1px}
+.nav-btn.aktif,.nav-btn:hover{background:rgba(0,212,255,0.1);border-color:var(--border);color:var(--accent)}
+.status-bar{display:flex;gap:12px;margin-left:10px}
+.status-chip{display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--panel2);border-radius:20px;font-size:0.75rem;border:1px solid var(--border)}
+.s-dot{width:8px;height:8px;border-radius:50%;background:#333}
+.s-dot.on{background:var(--green);box-shadow:0 0 8px var(--green)}
+.s-dot.off{background:var(--red)}
+
+/* ---- HALAMAN ---- */
+.halaman{display:none;flex:1;padding:24px;animation:fadeIn .3s ease}
+.halaman.aktif{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ---- HOME ---- */
+.home-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;max-width:900px;margin:0 auto}
+.mod-kad{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:28px;cursor:pointer;transition:.3s;position:relative;overflow:hidden}
+.mod-kad::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--accent2),var(--accent));opacity:0;transition:.3s}
+.mod-kad:hover{transform:translateY(-4px);box-shadow:var(--glow2);border-color:var(--accent)}
+.mod-kad:hover::before{opacity:0.05}
+.mod-num{font-family:'Orbitron',monospace;font-size:2.5rem;font-weight:900;color:var(--accent);line-height:1}
+.mod-tajuk{font-size:1.1rem;font-weight:700;margin:8px 0 4px;color:var(--text)}
+.mod-desc{font-size:0.8rem;color:var(--text2);line-height:1.5}
+.mod-ikon{position:absolute;right:20px;top:20px;font-size:2.5rem;opacity:.15}
+
+/* ---- SECTION TITLE ---- */
+.sek-tajuk{font-family:'Orbitron',monospace;font-size:1.1rem;color:var(--accent);letter-spacing:2px;margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+
+/* ---- MODAL SETUP MOD ---- */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.overlay.buka{display:flex;animation:fadeIn .2s}
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:32px;width:90%;max-width:600px;max-height:85vh;overflow-y:auto;position:relative}
+.modal h2{font-family:'Orbitron',monospace;color:var(--accent);margin-bottom:24px;font-size:1.2rem}
+.modal-tutup{position:absolute;top:16px;right:16px;background:none;border:1px solid var(--border);color:var(--text2);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;transition:.2s}
+.modal-tutup:hover{background:var(--red);border-color:var(--red);color:white}
+
+/* ---- FORM ---- */
+.form-row{display:flex;gap:12px;margin-bottom:16px;align-items:flex-end}
+.form-kump{flex:1}
+label{display:block;font-size:0.8rem;color:var(--text2);margin-bottom:6px;letter-spacing:1px}
+input,select,textarea{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px 14px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:0.9rem;outline:none;transition:.2s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,212,255,.1)}
+textarea{resize:vertical;min-height:80px}
+select option{background:var(--bg2)}
+
+/* ---- BUTANG ---- */
+.btn{padding:10px 24px;border-radius:6px;border:none;font-family:'Exo 2',sans-serif;font-size:0.9rem;font-weight:600;cursor:pointer;transition:.2s;letter-spacing:1px}
+.btn-utama{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;box-shadow:0 0 20px rgba(0,212,255,.2)}
+.btn-utama:hover{box-shadow:0 0 30px rgba(0,212,255,.4);transform:translateY(-1px)}
+.btn-merah{background:linear-gradient(135deg,#c0003a,var(--red));color:white}
+.btn-hijau{background:linear-gradient(135deg,#007a40,var(--green));color:#000;font-weight:700}
+.btn-kuning{background:linear-gradient(135deg,#b8900a,var(--yellow));color:#000;font-weight:700}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text2)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-kecil{padding:6px 14px;font-size:0.8rem}
+.btn-besar{padding:16px 48px;font-size:1.1rem;letter-spacing:2px}
+
+/* ---- SENARAI MURID DALAM SETUP ---- */
+.murid-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:12px 0}
+.murid-item{background:var(--bg2);border:2px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center;cursor:pointer;transition:.2s;position:relative}
+.murid-item.dipilih{border-color:var(--accent);background:rgba(0,212,255,.1);box-shadow:0 0 15px rgba(0,212,255,.2)}
+.murid-item .avatar-img{width:48px;height:48px;border-radius:50%;margin:0 auto 6px;display:block;background:var(--panel2);overflow:hidden}
+.murid-item .nama{font-size:0.75rem;color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tick{position:absolute;top:4px;right:4px;width:18px;height:18px;background:var(--accent);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:0.7rem}
+.murid-item.dipilih .tick{display:flex}
+
+/* ---- SOALAN BUILDER ---- */
+.soalan-item{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:12px;position:relative}
+.soalan-item .soalan-num{font-family:'Orbitron',monospace;font-size:0.8rem;color:var(--accent);margin-bottom:10px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.jawapan-row{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;margin-bottom:8px}
+.jawapan-label{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;flex-shrink:0}
+.lbl-a{background:#1a4a8a;color:#60a0ff}
+.lbl-b{background:#1a4a2a;color:#60ff80}
+.lbl-c{background:#4a2a1a;color:#ffa060}
+.betul-radio{display:none}
+.betul-radio+label{width:28px;height:28px;border-radius:50%;background:var(--panel);border:2px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+.betul-radio:checked+label{background:var(--green);border-color:var(--green);box-shadow:0 0 10px var(--green)}
+
+/* ---- PAPAN PERMAINAN ---- */
+#papanPermainan{display:none;position:fixed;inset:0;background:var(--bg);z-index:800;flex-direction:column}
+#papanPermainan.buka{display:flex}
+.papan-header{height:70px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:20px}
+.papan-tajuk{font-family:'Orbitron',monospace;font-size:1.3rem;color:var(--accent)}
+.timer-box{margin-left:auto;display:flex;align-items:center;gap:10px}
+.timer-num{font-family:'Orbitron',monospace;font-size:2rem;font-weight:900;min-width:80px;text-align:center}
+.timer-num.merah{color:var(--red);animation:timerPulse .5s infinite}
+@keyframes timerPulse{0%,100%{opacity:1}50%{opacity:.4}}
+.timer-num.kuning{color:var(--yellow)}
+.timer-num.hijau{color:var(--green)}
+
+.papan-badan{flex:1;display:grid;grid-template-columns:1fr 340px;overflow:hidden}
+.soalan-display{padding:30px;display:flex;flex-direction:column;gap:20px;overflow-y:auto}
+.soalan-box{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:28px;flex:1}
+.soalan-teks{font-size:1.4rem;font-weight:600;line-height:1.6;margin-bottom:24px}
+.pilihan-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pilihan-item{background:var(--bg2);border:2px solid var(--border);border-radius:8px;padding:16px;font-size:1rem;display:flex;align-items:center;gap:12px;transition:.3s}
+.pilihan-item.betul-highlight{border-color:var(--green);background:rgba(0,255,136,.1);box-shadow:0 0 15px rgba(0,255,136,.2)}
+.pilihan-item.salah-highlight{border-color:var(--red);background:rgba(255,51,85,.1)}
+.pilihan-badge{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
+.badge-a{background:#1a4a8a}
+.badge-b{background:#1a4a2a}
+.badge-c{background:#4a2a1a}
+
+/* ---- SKORING PANEL ---- */
+.skor-panel{background:var(--panel);border-left:1px solid var(--border);padding:20px;display:flex;flex-direction:column;gap:12px;overflow-y:auto}
+.skor-tajuk{font-family:'Orbitron',monospace;font-size:0.9rem;color:var(--accent);margin-bottom:4px}
+.skor-murid{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;align-items:center;gap:12px;transition:.3s;position:relative;overflow:hidden}
+.skor-murid.aktif-jawab{border-color:var(--accent);box-shadow:0 0 20px rgba(0,212,255,.3)}
+.skor-murid.betul-flash{animation:betulFlash .5s ease}
+@keyframes betulFlash{0%,100%{background:var(--bg2)}50%{background:rgba(0,255,136,.15)}}
+.skor-avatar{width:42px;height:42px;border-radius:50%;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.skor-info{flex:1}
+.skor-nama{font-weight:600;font-size:0.9rem}
+.skor-markah{font-family:'Orbitron',monospace;font-size:1.3rem;font-weight:900;color:var(--accent)}
+.skor-bar-wrap{height:4px;background:var(--panel2);border-radius:2px;margin-top:4px}
+.skor-bar{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:2px;transition:.5s}
+.murid-semasa-tag{position:absolute;right:8px;top:8px;background:var(--accent);color:#000;font-size:0.65rem;font-weight:700;padding:2px 6px;border-radius:10px;letter-spacing:1px}
+
+/* ---- POPUP JAWAPAN ---- */
+.jawapan-popup{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:900;pointer-events:none}
+.jawapan-popup.tunjuk{display:flex}
+.jawapan-kad{padding:40px 80px;border-radius:20px;text-align:center;animation:popIn .3s cubic-bezier(.175,.885,.32,1.275)}
+@keyframes popIn{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+.jawapan-kad.betul{background:linear-gradient(135deg,#004d24,#00ff88);border:3px solid var(--green);box-shadow:0 0 60px rgba(0,255,136,.5)}
+.jawapan-kad.salah{background:linear-gradient(135deg,#4d0015,#ff3355);border:3px solid var(--red);box-shadow:0 0 60px rgba(255,51,85,.5)}
+.jawapan-ikon{font-size:4rem;margin-bottom:10px}
+.jawapan-teks{font-family:'Orbitron',monospace;font-size:1.8rem;font-weight:900;color:white}
+.jawapan-sub{font-size:1rem;color:rgba(255,255,255,.8);margin-top:8px}
+
+/* ---- GANJARAN POPUP ---- */
+.ganjaran-overlay{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:1000;display:none;align-items:center;justify-content:center;flex-direction:column;gap:30px}
+.ganjaran-overlay.buka{display:flex;animation:fadeIn .3s}
+.ganjaran-ikon{font-size:5rem;animation:spinTrophy 2s linear infinite}
+@keyframes spinTrophy{0%,100%{transform:rotate(-10deg) scale(1)}50%{transform:rotate(10deg) scale(1.1)}}
+.ganjaran-teks{font-family:'Orbitron',monospace;font-size:2rem;color:var(--gold);text-align:center;text-shadow:0 0 30px var(--gold)}
+.ganjaran-countdown{font-family:'Orbitron',monospace;font-size:4rem;font-weight:900;color:var(--accent)}
+.ranking-list{display:flex;flex-direction:column;gap:12px;width:320px}
+.ranking-item{display:flex;align-items:center;gap:16px;background:rgba(255,255,255,.05);border-radius:10px;padding:12px 16px;border:1px solid rgba(255,215,0,.2)}
+.ranking-no{font-family:'Orbitron',monospace;font-size:1.5rem;font-weight:900}
+.r1{color:var(--gold)}
+.r2{color:#c0c0c0}
+.r3{color:#cd7f32}
+.ranking-nama{flex:1;font-weight:600}
+.ranking-markah{font-family:'Orbitron',monospace;color:var(--accent)}
+
+/* ---- MOD 2 BUZZER PANEL ---- */
+.buzzer-panel{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:16px}
+.buzzer-title{font-family:'Orbitron',monospace;font-size:0.85rem;color:var(--accent);margin-bottom:14px}
+.buzzer-murid-row{display:flex;gap:12px}
+.buzzer-murid-btn{flex:1;padding:20px;background:var(--bg2);border:2px solid var(--border);border-radius:10px;cursor:pointer;transition:.3s;text-align:center;font-size:0.9rem;font-weight:600;color:var(--text)}
+.buzzer-murid-btn:hover{border-color:var(--accent);background:rgba(0,212,255,.1)}
+.buzzer-murid-btn.dipilih2{border-color:var(--accent);background:rgba(0,212,255,.15);box-shadow:0 0 20px rgba(0,212,255,.3)}
+.sedia-panel{background:linear-gradient(135deg,var(--panel),var(--panel2));border:1px solid var(--border);border-radius:12px;padding:24px;text-align:center}
+.sedia-hitungan{font-family:'Orbitron',monospace;font-size:5rem;font-weight:900;color:var(--accent);animation:countPulse .5s ease;min-height:80px;display:flex;align-items:center;justify-content:center}
+@keyframes countPulse{from{transform:scale(1.5);opacity:.3}to{transform:scale(1);opacity:1}}
+
+/* ---- MOD 3 ---- */
+.susunan-track{display:flex;gap:8px;flex-wrap:wrap;padding:20px;background:var(--panel2);border-radius:12px;min-height:80px;border:1px solid var(--border)}
+.susun-kad{width:60px;height:80px;background:var(--bg2);border:2px solid var(--border);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:.3s;font-size:0.75rem;text-align:center}
+.susun-kad.betul{border-color:var(--green);background:rgba(0,255,136,.1);box-shadow:0 0 12px rgba(0,255,136,.3)}
+.susun-kad.semasa{border-color:var(--accent);animation:kadPulse 1s infinite}
+@keyframes kadPulse{0%,100%{box-shadow:0 0 10px rgba(0,212,255,.3)}50%{box-shadow:0 0 25px rgba(0,212,255,.7)}}
+.susun-num{font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:900;color:var(--accent)}
+
+/* ---- MOD 4 KAMERA ---- */
+.kamera-wrap{position:relative;background:#000;border-radius:12px;overflow:hidden;aspect-ratio:4/3;border:2px solid var(--border)}
+.kamera-feed{width:100%;height:100%;object-fit:cover}
+.kamera-overlay{position:absolute;inset:0;pointer-events:none}
+.scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);animation:scanMove 2s linear infinite;box-shadow:0 0 10px var(--accent)}
+@keyframes scanMove{0%{top:0}100%{top:100%}}
+.kamera-label{position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,.8);padding:4px 12px;border-radius:20px;font-size:0.8rem;color:var(--accent);border:1px solid var(--border)}
+.cam-controls{display:flex;gap:10px;margin-top:10px}
+.makanan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}
+.makanan-item{background:var(--bg2);border:2px solid var(--border);border-radius:10px;padding:16px;text-align:center;transition:.3s}
+.makanan-item.dikesan{border-color:var(--green);background:rgba(0,255,136,.1);box-shadow:0 0 15px rgba(0,255,136,.2)}
+.makanan-item .ikon{font-size:2rem;margin-bottom:6px}
+.makanan-item .nama{font-size:0.8rem;color:var(--text2)}
+
+/* ---- DASHBOARD ---- */
+.dashboard-header{display:flex;gap:16px;align-items:center;margin-bottom:24px;flex-wrap:wrap}
+.tarikh-filter{padding:8px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Exo 2',sans-serif}
+.sesi-grid{display:grid;gap:16px}
+.sesi-kad{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;cursor:pointer;transition:.3s}
+.sesi-kad:hover{border-color:var(--accent);box-shadow:var(--glow2)}
+.sesi-kad-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.sesi-tajuk{font-size:1rem;font-weight:700}
+.sesi-tarikh{font-size:0.75rem;color:var(--text2)}
+.sesi-mod-badge{padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:600;background:rgba(0,212,255,.1);border:1px solid var(--border);color:var(--accent)}
+.sesi-murid-row{display:flex;gap:8px;flex-wrap:wrap}
+.sesi-murid-chip{display:flex;align-items:center;gap:6px;background:var(--bg2);border-radius:20px;padding:4px 10px;font-size:0.8rem}
+.chip-markah{font-family:'Orbitron',monospace;color:var(--accent);font-size:0.85rem;font-weight:700}
+
+/* ---- ULASAN MODAL ---- */
+.ulasan-list{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;max-height:200px;overflow-y:auto}
+.ulasan-item{background:var(--bg2);border-radius:8px;padding:10px 14px;font-size:0.85rem}
+.ulasan-nama{font-weight:700;color:var(--accent);margin-bottom:2px;font-size:0.8rem}
+
+/* ---- SIARAN ---- */
+.siaran-grid{display:grid;gap:16px}
+.siaran-kad{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:.3s}
+.siaran-kad:hover{border-color:var(--accent)}
+.siaran-header{padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
+.siaran-tajuk{font-size:1rem;font-weight:700}
+.siaran-embed{width:100%;height:300px;border:none;background:var(--bg2)}
+.siaran-komen{padding:14px 20px;font-size:0.85rem;color:var(--text2);border-top:1px solid var(--border)}
+.siaran-aksi{padding:12px 20px;display:flex;gap:8px;border-top:1px solid var(--border)}
+
+/* ---- PENGURUSAN ---- */
+.tab-group{display:flex;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:20px;width:fit-content}
+.tab-item{padding:8px 20px;background:transparent;border:none;color:var(--text2);cursor:pointer;font-family:'Exo 2',sans-serif;font-size:0.85rem;transition:.2s;border-right:1px solid var(--border)}
+.tab-item:last-child{border-right:none}
+.tab-item.aktif{background:rgba(0,212,255,.1);color:var(--accent)}
+.sub-halaman{display:none}
+.sub-halaman.aktif{display:block}
+.jadual{width:100%;border-collapse:collapse}
+.jadual th{background:var(--panel2);padding:10px 14px;text-align:left;font-size:0.8rem;color:var(--text2);letter-spacing:1px;border-bottom:1px solid var(--border)}
+.jadual td{padding:12px 14px;border-bottom:1px solid rgba(0,212,255,.05);font-size:0.85rem}
+.jadual tr:hover td{background:rgba(0,212,255,.03)}
+.avatar-pilih{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.av-opt{width:52px;height:52px;border-radius:50%;border:2px solid var(--border);cursor:pointer;overflow:hidden;transition:.2s;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:1.5rem}
+.av-opt.dipilih{border-color:var(--accent);box-shadow:0 0 12px rgba(0,212,255,.4)}
+
+/* ---- ANIMASI PERALIHAN ---- */
+.slide-up{animation:slideUp .4s cubic-bezier(.25,.46,.45,.94)}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+.scale-in{animation:scaleIn .3s cubic-bezier(.175,.885,.32,1.275)}
+@keyframes scaleIn{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* ---- NFC SCAN INDICATOR ---- */
+.nfc-ping{position:fixed;bottom:24px;right:24px;background:var(--panel);border:1px solid var(--accent);border-radius:12px;padding:14px 20px;display:none;align-items:center;gap:10px;z-index:700;animation:slideIn .3s ease}
+.nfc-ping.tunjuk{display:flex}
+@keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}
+.nfc-ring{width:20px;height:20px;border-radius:50%;border:3px solid var(--accent);animation:nfcRing .8s ease-out infinite}
+@keyframes nfcRing{0%{transform:scale(.5);opacity:1}100%{transform:scale(1.5);opacity:0}}
+
+/* ---- SCROLLBAR ---- */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+
+/* ---- UTIL ---- */
+.flex{display:flex}.gap8{gap:8px}.gap12{gap:12px}.gap16{gap:16px}.mb8{margin-bottom:8px}.mb16{margin-bottom:16px}.mb24{margin-bottom:24px}
+.teks-kanan{text-align:right}.teks-tengah{text-align:center}
+.penuh{width:100%}.separuh{width:50%}
+.tag-hijau{background:rgba(0,255,136,.1);color:var(--green);border:1px solid rgba(0,255,136,.3);padding:3px 10px;border-radius:20px;font-size:0.75rem}
+.tag-merah{background:rgba(255,51,85,.1);color:var(--red);border:1px solid rgba(255,51,85,.3);padding:3px 10px;border-radius:20px;font-size:0.75rem}
+.tag-biru{background:rgba(0,212,255,.1);color:var(--accent);border:1px solid var(--border);padding:3px 10px;border-radius:20px;font-size:0.75rem}
+.divider{height:1px;background:var(--border);margin:16px 0}
+</style>
+</head>
+<body>
+
+<!-- SPLASH SCREEN -->
+<div id="splash">
+  <div class="splash-grid"></div>
+  <div class="splash-logo" id="splashLogo">ILMUVERSE</div>
+  <div class="splash-sub">SISTEM PEMBELAJARAN INTERAKTIF</div>
+  <div class="splash-by">by FUTURE MINDS</div>
+  <div class="conn-bar" id="connBar">
+    <div class="conn-item"><div class="conn-dot mati" id="dotESP"></div><span>NEXUS-UTAMA</span></div>
+    <div class="conn-item"><div class="conn-dot mati" id="dotCAM"></div><span>NEXUS-CAM</span></div>
+  </div>
+  <div class="splash-status" id="splashStatus">Menunggu Sambungan<span class="splash-dots" id="splashDots">...</span></div>
+  <button class="splash-btn" id="splashMula" onclick="masukApp()">MASUK SISTEM ›</button>
+</div>
+
+<!-- APP UTAMA -->
+<div id="app" style="display:none;flex-direction:column">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="logo-kecil">✦ ILMUVERSE</div>
+    <div class="topbar-nav">
+      <button class="nav-btn aktif" onclick="tukarHalaman('home',this)">Utama</button>
+      <button class="nav-btn" onclick="tukarHalaman('dashboard',this)">Dashboard</button>
+      <button class="nav-btn" onclick="tukarHalaman('siaran',this)">Siaran</button>
+      <button class="nav-btn" onclick="tukarHalaman('pengurusan',this)">Pengurusan</button>
+    </div>
+    <div class="status-bar">
+      <div class="status-chip"><div class="s-dot off" id="statusESP"></div><span id="labelESP">NEXUS-UTAMA</span></div>
+      <div class="status-chip"><div class="s-dot off" id="statusCAM"></div><span id="labelCAM">NEXUS-CAM</span></div>
+    </div>
+  </div>
+
+  <!-- HALAMAN HOME -->
+  <div class="halaman aktif" id="halHome" style="display:block">
+    <div class="sek-tajuk">PILIH MOD PEMBELAJARAN</div>
+    <div class="home-grid">
+      <div class="mod-kad" onclick="bukaMod(1)">
+        <div class="mod-ikon">👥</div>
+        <div class="mod-num">01</div>
+        <div class="mod-tajuk">Kuiz Ramai-ramai</div>
+        <div class="mod-desc">Sehingga 10 murid menjawab secara bergilir. Pemenang teratas menerima ganjaran.</div>
+      </div>
+      <div class="mod-kad" onclick="bukaMod(2)">
+        <div class="mod-ikon">⚡</div>
+        <div class="mod-num">02</div>
+        <div class="mod-tajuk">Dwi-Padu (2 Orang)</div>
+        <div class="mod-desc">Pertandingan 1 lawan 1. Guru pilih murid untuk jawab. Ada peluang kedua.</div>
+      </div>
+      <div class="mod-kad" onclick="bukaMod(3)">
+        <div class="mod-ikon">📖</div>
+        <div class="mod-num">03</div>
+        <div class="mod-tajuk">Susunan Hafalan</div>
+        <div class="mod-desc">Murid susun kad NFC mengikut urutan betul — pantun, doa, atau ayat.</div>
+      </div>
+      <div class="mod-kad" onclick="bukaMod(4)">
+        <div class="mod-ikon">🤖</div>
+        <div class="mod-num">04</div>
+        <div class="mod-tajuk">Imbas AI Kesihatan</div>
+        <div class="mod-desc">Kamera AI kenal pasti makanan sihat dan tidak sihat secara langsung.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HALAMAN DASHBOARD -->
+  <div class="halaman" id="halDashboard">
+    <div class="dashboard-header">
+      <div class="sek-tajuk" style="margin-bottom:0">PAPAN PENCAPAIAN</div>
+      <input type="date" class="tarikh-filter" id="tarikhFilter" onchange="tapisSejakTarikh()">
+      <button class="btn btn-kecil btn-outline" onclick="muatDashboard()">🔄 Muat Semula</button>
+    </div>
+    <div class="sesi-grid" id="sesiGrid"><div style="color:var(--text2);padding:40px;text-align:center">Tiada rekod. Jalankan sesi dahulu.</div></div>
+  </div>
+
+  <!-- HALAMAN SIARAN -->
+  <div class="halaman" id="halSiaran">
+    <div class="flex gap12 mb24" style="align-items:center">
+      <div class="sek-tajuk" style="margin-bottom:0">SIARAN & NOTA KEPADA MURID</div>
+      <button class="btn btn-kecil btn-utama" onclick="bukaModalSiaran()" style="margin-left:auto">+ Tambah Siaran</button>
+    </div>
+    <div class="siaran-grid" id="siaranGrid"><div style="color:var(--text2);padding:40px;text-align:center">Tiada siaran. Tambah siaran baharu.</div></div>
+  </div>
+
+  <!-- HALAMAN PENGURUSAN -->
+  <div class="halaman" id="halPengurusan">
+    <div class="sek-tajuk">PENGURUSAN DATA</div>
+    <div class="tab-group">
+      <button class="tab-item aktif" onclick="tukarTab('murid',this)">Murid</button>
+      <button class="tab-item" onclick="tukarTab('soalan',this)">Soalan & Jawapan</button>
+    </div>
+
+    <!-- TAB MURID -->
+    <div class="sub-halaman aktif" id="tabMurid">
+      <button class="btn btn-kecil btn-utama mb16" onclick="bukaModalMurid()">+ Tambah Murid</button>
+      <table class="jadual" id="jadualMurid">
+        <thead><tr><th>Avatar</th><th>Nama</th><th>Aksi</th></tr></thead>
+        <tbody id="bodyMurid"></tbody>
+      </table>
+    </div>
+
+    <!-- TAB SOALAN -->
+    <div class="sub-halaman" id="tabSoalan">
+      <button class="btn btn-kecil btn-utama mb16" onclick="bukaModalSoalan()">+ Tambah Set Soalan</button>
+      <table class="jadual" id="jadualSoalan">
+        <thead><tr><th>Tajuk</th><th>Mod</th><th>Bil. Soalan</th><th>Aksi</th></tr></thead>
+        <tbody id="bodySoalan"></tbody>
+      </table>
+    </div>
+  </div>
+</div><!-- end app -->
+
+<!-- NFC SCAN INDICATOR -->
+<div class="nfc-ping" id="nfcPing">
+  <div class="nfc-ring"></div>
+  <span id="nfcMsg">Kad diimbas</span>
+</div>
+
+<!-- ===== PAPAN PERMAINAN (FULLSCREEN) ===== -->
+<div id="papanPermainan">
+  <div class="papan-header">
+    <div class="papan-tajuk" id="papanTajuk">MOD 1 — KUIZ RAMAI-RAMAI</div>
+    <div style="flex:1"></div>
+    <div style="font-size:0.8rem;color:var(--text2)">Soalan <span id="soalanIdx">1</span>/<span id="soalanJumlah">—</span></div>
+    <div class="timer-box">
+      <span style="font-size:0.75rem;color:var(--text2)">MASA</span>
+      <div class="timer-num hijau" id="timerDisplay">02:00</div>
+    </div>
+    <button class="btn btn-kecil btn-merah" style="margin-left:16px" onclick="sahkanTamat()">TAMAT</button>
+  </div>
+
+  <div class="papan-badan">
+    <!-- SOALAN DISPLAY -->
+    <div class="soalan-display">
+      <!-- MOD 1 & 2: soalan teks -->
+      <div id="papanMod12">
+        <div class="soalan-box">
+          <div class="soalan-teks" id="soalanTeks">—</div>
+          <div class="pilihan-grid" id="pilihanGrid"></div>
+        </div>
+        <!-- MOD 1: info giliran -->
+        <div id="mod1Info" style="background:var(--panel);border-radius:10px;padding:16px;display:flex;align-items:center;gap:16px">
+          <span style="color:var(--text2);font-size:0.85rem">Giliran:</span>
+          <span id="muridGiliranTeks" style="font-size:1.1rem;font-weight:700;color:var(--accent)">—</span>
+          <button class="btn btn-kecil btn-outline" style="margin-left:auto" onclick="soalanSeterusnya()">Soalan Seterusnya ›</button>
+        </div>
+        <!-- MOD 2: buzzer -->
+        <div id="mod2Info" style="display:none">
+          <div class="sedia-panel mb16">
+            <div style="font-size:0.9rem;color:var(--text2);margin-bottom:8px">STATUS</div>
+            <div id="mod2Status" style="font-family:'Orbitron',monospace;font-size:1.2rem;color:var(--accent)">Tekan SEDIA untuk mula</div>
+          </div>
+          <div class="buzzer-panel">
+            <div class="buzzer-title">PILIH MURID YANG MENJAWAB</div>
+            <div class="buzzer-murid-row" id="buzzerMuridRow"></div>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:10px">
+            <button class="btn btn-kuning" onclick="mulaSedia()" id="btnSedia">⚡ SEDIA!</button>
+            <button class="btn btn-outline" onclick="soalanSeterusnya()">Soalan Seterusnya ›</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MOD 3: susunan -->
+      <div id="papanMod3" style="display:none">
+        <div class="soalan-box">
+          <div style="font-size:1rem;color:var(--text2);margin-bottom:16px">Imbas kad NFC mengikut susunan yang betul:</div>
+          <div class="susunan-track" id="susunanTrack"></div>
+        </div>
+      </div>
+
+      <!-- MOD 4: kamera -->
+      <div id="papanMod4" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+          <div>
+            <div style="font-size:0.85rem;color:var(--text2);margin-bottom:10px">PAPARAN KAMERA LANGSUNG</div>
+            <div class="kamera-wrap">
+              <img id="camFeed" class="kamera-feed" src="" alt="Tiada paparan kamera">
+              <div class="kamera-overlay">
+                <div class="scan-line"></div>
+                <div class="kamera-label" id="camLabel">Menunggu...</div>
+              </div>
+            </div>
+            <div class="cam-controls">
+              <button class="btn btn-kecil btn-outline" id="btnFlash" onclick="togolFlash()">🔦 Flash: OFF</button>
+              <button class="btn btn-kecil btn-utama" id="btnScanKam" onclick="mulaScanKamera()">📸 Imbas Sekarang</button>
+            </div>
+          </div>
+          <div>
+            <div id="mod4Fasa1" style="display:block">
+              <div style="font-size:0.9rem;font-weight:600;margin-bottom:12px;color:var(--green)">FASA 1: MAKANAN SIHAT</div>
+              <div class="makanan-grid" id="gridMakananSihat"></div>
+            </div>
+            <div id="mod4Fasa2" style="display:none">
+              <div style="font-size:0.9rem;font-weight:600;margin-bottom:12px;color:var(--red)">FASA 2: MAKANAN TIDAK SIHAT</div>
+              <div class="makanan-grid" id="gridMakananTakSihat"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SKOR PANEL -->
+    <div class="skor-panel">
+      <div class="skor-tajuk">📊 PAPAN MARKAH</div>
+      <div id="skorList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- POPUP JAWAPAN -->
+<div class="jawapan-popup" id="jawapanPopup">
+  <div class="jawapan-kad" id="jawapanKad">
+    <div class="jawapan-ikon" id="jawapanIkon">✓</div>
+    <div class="jawapan-teks" id="jawapanTeks">BETUL!</div>
+    <div class="jawapan-sub" id="jawapanSub"></div>
+  </div>
+</div>
+
+<!-- GANJARAN OVERLAY -->
+<div class="ganjaran-overlay" id="ganjaranOverlay">
+  <div class="ganjaran-ikon">🏆</div>
+  <div class="ganjaran-teks" id="ganjaranTeks">TAHNIAH! AMBIL GANJARAN ANDA!</div>
+  <div class="ganjaran-countdown" id="ganjaranCount">6</div>
+  <div class="ranking-list" id="rankingList"></div>
+</div>
+
+<!-- ===== MODAL-MODAL ===== -->
+
+<!-- Modal Setup Mod -->
+<div class="overlay" id="overlayMod">
+  <div class="modal" id="modalMod">
+    <button class="modal-tutup" onclick="tutupModal('overlayMod')">✕</button>
+    <h2 id="modalModTajuk">PERSEDIAAN MOD</h2>
+    <div id="modalModBadan"></div>
+  </div>
+</div>
+
+<!-- Modal Tambah Murid -->
+<div class="overlay" id="overlayMurid">
+  <div class="modal" style="max-width:400px">
+    <button class="modal-tutup" onclick="tutupModal('overlayMurid')">✕</button>
+    <h2>TAMBAH MURID</h2>
+    <div class="form-kump mb16">
+      <label>NAMA MURID</label>
+      <input id="inputNamaMurid" placeholder="Masukkan nama murid" maxlength="30">
+    </div>
+    <div class="form-kump mb16">
+      <label>PILIH AVATAR</label>
+      <div style="font-size:0.75rem;color:var(--text2);margin-bottom:8px">Lelaki</div>
+      <div class="avatar-pilih" id="avLelaki"></div>
+      <div style="font-size:0.75rem;color:var(--text2);margin:8px 0">Perempuan</div>
+      <div class="avatar-pilih" id="avPerempuan"></div>
+    </div>
+    <button class="btn btn-utama penuh" onclick="simpanMurid()">SIMPAN MURID</button>
+  </div>
+</div>
+
+<!-- Modal Tambah Soalan -->
+<div class="overlay" id="overlaySoalan">
+  <div class="modal" style="max-width:700px">
+    <button class="modal-tutup" onclick="tutupModal('overlaySoalan')">✕</button>
+    <h2 id="modalSoalanTajuk">TAMBAH SET SOALAN</h2>
+    <div class="form-row mb16">
+      <div class="form-kump">
+        <label>TAJUK SET SOALAN</label>
+        <input id="inputTajukSoalan" placeholder="Contoh: Pantun Melayu">
+      </div>
+      <div class="form-kump" style="max-width:160px">
+        <label>MOD</label>
+        <select id="inputModSoalan" onchange="renderSoalanBuilder()">
+          <option value="1">Mod 1 — Ramai-ramai</option>
+          <option value="2">Mod 2 — Dua Orang</option>
+          <option value="3">Mod 3 — Susunan</option>
+        </select>
+      </div>
+    </div>
+    <div id="soalanBuilder"></div>
+    <div class="flex gap8 mb16">
+      <button class="btn btn-kecil btn-outline" onclick="tambahSoalan()">+ Tambah Soalan</button>
+      <span style="font-size:0.75rem;color:var(--text2);align-self:center">Imbas kad NFC pada medan UID untuk daftar automatik</span>
+    </div>
+    <div class="flex gap8">
+      <button class="btn btn-utama" onclick="simpanSoalan()">SIMPAN SET SOALAN</button>
+      <button class="btn btn-outline" onclick="tutupModal('overlaySoalan')">Batal</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tambah Siaran -->
+<div class="overlay" id="overlaySiaran">
+  <div class="modal" style="max-width:480px">
+    <button class="modal-tutup" onclick="tutupModal('overlaySiaran')">✕</button>
+    <h2 id="modalSiaranTajuk">TAMBAH SIARAN</h2>
+    <div class="form-kump mb16">
+      <label>TAJUK SIARAN</label>
+      <input id="inputTajukSiaran" placeholder="Contoh: Video Pantun Melayu">
+    </div>
+    <div class="form-kump mb16">
+      <label>EMBED LINK / URL</label>
+      <input id="inputEmbedLink" placeholder="https://...">
+    </div>
+    <div class="form-kump mb16">
+      <label>NOTA / KOMEN (pilihan)</label>
+      <textarea id="inputKomenSiaran" rows="3" placeholder="Nota untuk murid..."></textarea>
+    </div>
+    <div class="flex gap8">
+      <button class="btn btn-utama" onclick="simpanSiaran()">HANTAR SIARAN</button>
+      <button class="btn btn-outline" onclick="tutupModal('overlaySiaran')">Batal</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Detail Sesi -->
+<div class="overlay" id="overlaySesi">
+  <div class="modal" style="max-width:580px">
+    <button class="modal-tutup" onclick="tutupModal('overlaySesi')">✕</button>
+    <h2 id="sesiDetailTajuk">DETAIL SESI</h2>
+    <div id="sesiDetailBadan"></div>
+    <div class="divider"></div>
+    <div style="font-family:'Orbitron',monospace;font-size:0.8rem;color:var(--text2);margin-bottom:10px">ULASAN GURU</div>
+    <div class="ulasan-list" id="ulasanList"></div>
+    <div id="ulasanForm">
+      <div class="form-row" style="margin-bottom:10px">
+        <div class="form-kump">
+          <label>MURID</label>
+          <select id="selectUlasanMurid"></select>
+        </div>
+      </div>
+      <div class="form-kump mb16">
+        <label>ULASAN</label>
+        <textarea id="inputUlasan" rows="2" placeholder="Taip ulasan..."></textarea>
+      </div>
+      <div class="flex gap8">
+        <button class="btn btn-utama btn-kecil" onclick="hantarUlasan()">Hantar Ulasan</button>
+        <button class="btn btn-outline btn-kecil" onclick="bukaTelegram()">📨 Hantar ke Telegram</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Telegram -->
+<div class="overlay" id="overlayTele">
+  <div class="modal" style="max-width:400px">
+    <button class="modal-tutup" onclick="tutupModal('overlayTele')">✕</button>
+    <h2>HANTAR KE TELEGRAM</h2>
+    <div class="form-kump mb16">
+      <label>TOKEN BOT TELEGRAM</label>
+      <input id="inputTeleToken" placeholder="123456789:ABCdef...">
+    </div>
+    <div class="form-kump mb16">
+      <label>CHAT ID</label>
+      <input id="inputTeleChatId" placeholder="-100...">
+    </div>
+    <div style="font-size:0.75rem;color:var(--text2);margin-bottom:16px">Token & Chat ID disimpan dalam penyemak imbas anda.</div>
+    <button class="btn btn-utama penuh" onclick="sahkanTelegram()">HANTAR SEKARANG</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// PEMBOLEHUBAH GLOBAL
+// ============================================================
+const SERVER_URL = window.location.hostname === 'localhost'
+  ? 'ws://localhost:3000'
+  : `wss://${window.location.hostname}`;
+const API = window.location.origin;
+
+let ws;
+let statusESP = false, statusCAM = false;
+let sesiSemasa = null;
+let soalanBina = []; // untuk builder
+let editSoalanId = null;
+let editSiaranId = null;
+let sesiDetailSemasa = null;
+let flashNyala = false;
+let mod4Fasa = 1; // 1=sihat, 2=tidak sihat
+let makananSihatDikesan = [];
+let makananTakSihatDikesan = [];
+let sediaHitung = null;
+let mod4Tajuk = '';
+
+const AVATAR_LELAKI = ['👦','🧑','👱','🧔','👨'];
+const AVATAR_PEREMPUAN = ['👧','👩','👱‍♀️','🧕','👩‍🦱'];
+const MAKANAN_SIHAT = [{nama:'Pisang',ikon:'🍌',key:'pisang'},{nama:'Tembikai',ikon:'🍉',key:'tembikai'},{nama:'Epal',ikon:'🍎',key:'epal'}];
+const MAKANAN_TAK_SIHAT = [{nama:'Air Manis',ikon:'🥤',key:'air manis'},{nama:'Sosej',ikon:'🌭',key:'sosej'}];
+
+// ============================================================
+// WEBSOCKET
+// ============================================================
+function sambungWS() {
+  ws = new WebSocket(`${SERVER_URL}/guru`);
+
+  ws.onopen = () => {
+    console.log('[WS] Disambung ke server');
+    updateSplash('Server Bersambung!', true);
+  };
+
+  ws.onmessage = (e) => {
+    let d;
+    try { d = JSON.parse(e.data); } catch { return; }
+    prosesMsg(d);
+  };
+
+  ws.onclose = () => {
+    console.log('[WS] Putus, cuba semula...');
+    document.getElementById('statusESP').className = 's-dot off';
+    document.getElementById('statusCAM').className = 's-dot off';
+    setTimeout(sambungWS, 3000);
+  };
+
+  ws.onerror = () => ws.close();
+}
+
+function hantarWS(data) {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify(data));
+  }
+}
+
+function prosesMsg(d) {
+  switch(d.jenis) {
+    case 'status_peranti':
+      statusESP = d.esp32;
+      statusCAM = d.cam;
+      kemaskiniStatusUI();
+      kemaskiniSplashConn(d.esp32, d.cam);
+      break;
+    case 'mod_bermula':
+      papanPermainanMula(d.gameState);
+      break;
+    case 'timer_update':
+      kemaskiniTimer(d.sisa);
+      break;
+    case 'jawapan':
+      paparJawapan(d.betul, d.murid, d.markah);
+      kemaskiniSkorPanel(d);
+      break;
+    case 'mod1_tamat':
+    case 'mod2_tamat':
+      paparGanjaran(d.ranking);
+      break;
+    case 'mod3_tamat':
+      paparGanjaranMod3();
+      break;
+    case 'mod3_betul':
+      kemaskiniSusunan(d.susunan - 1, true);
+      break;
+    case 'mod3_salah':
+      tunjukJawapanPopup(false, null, 'Cuba lagi!');
+      break;
+    case 'mod2_giliran':
+      kemaskiniMod2Status(`✦ ${d.murid} menjawab...`);
+      highlightBuzzer(d.murid);
+      break;
+    case 'mod2_peluang_kedua':
+      kemaskiniMod2Status(`⚡ Peluang kedua — ${d.murid}!`);
+      tunjukJawapanPopup(false, null, `Peluang kepada ${d.murid}!`);
+      break;
+    case 'mod2_kedua_salah':
+      kemaskiniMod2Status('Kedua-dua salah. Soalan seterusnya...');
+      tunjukJawapanPopup(false, null, 'Kedua-dua salah!');
+      break;
+    case 'mod2_betul':
+      paparJawapan(true, d.murid, d.markah);
+      break;
+    case 'cam_frame':
+      if (d.data) document.getElementById('camFeed').src = 'data:image/jpeg;base64,' + d.data;
+      break;
+    case 'cam_keputusan':
+      prosesCAMKeputusan(d);
+      break;
+    case 'nfc_scan':
+      tunjukNFCPing(d.uid);
+      break;
+    case 'ulasan_baharu':
+      if (sesiDetailSemasa && sesiDetailSemasa._id === d.sesiId) {
+        tambahUlasanUI(d);
+      }
+      break;
+    case 'siaran_baharu':
+      muatSiaran();
+      break;
+    case 'telegram_status':
+      tunjukNotif(d.berjaya ? '✅ Berjaya dihantar ke Telegram!' : '❌ Gagal hantar Telegram');
+      break;
+    case 'state_update':
+      kemaskiniStatePermainan(d.gameState);
+      break;
+    case 'game_state':
+      if (d.data && d.data.aktif) papanPermainanMula(d.data);
+      break;
+  }
+}
+
+// ============================================================
+// SPLASH & STATUS
+// ============================================================
+let splashEsp = false, splashCam = false, splashConn = false;
+
+function updateSplash(msg, ok) {
+  if (!ok) return;
+  splashConn = true;
+  const el = document.getElementById('splashStatus');
+  el.innerHTML = `<span style="color:var(--green)">${msg}</span>`;
+  setTimeout(()=>{
+    el.textContent = 'Menunggu Sambungan Peranti...';
+    // Boleh masuk walaupun peranti belum connect
+    document.getElementById('splashMula').style.display = 'block';
+    document.getElementById('splashDots').style.display = 'none';
+  }, 1200);
+}
+
+function kemaskiniSplashConn(esp, cam) {
+  const dotE = document.getElementById('dotESP');
+  const dotC = document.getElementById('dotCAM');
+  dotE.className = 'conn-dot ' + (esp ? 'hidup' : 'mati');
+  dotC.className = 'conn-dot ' + (cam ? 'hidup' : 'mati');
+}
+
+function kemaskiniStatusUI() {
+  document.getElementById('statusESP').className = 's-dot ' + (statusESP ? 'on' : 'off');
+  document.getElementById('statusCAM').className = 's-dot ' + (statusCAM ? 'on' : 'off');
+}
+
+function masukApp() {
+  document.getElementById('splash').style.animation = 'fadeOut .5s forwards';
+  setTimeout(() => {
+    document.getElementById('splash').style.display = 'none';
+    const app = document.getElementById('app');
+    app.style.display = 'flex';
+    muatSemua();
+  }, 500);
+}
+
+// ============================================================
+// NAVIGASI
+// ============================================================
+function tukarHalaman(id, btn) {
+  document.querySelectorAll('.halaman').forEach(h => h.classList.remove('aktif'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('aktif'));
+  document.getElementById('hal' + id.charAt(0).toUpperCase() + id.slice(1)).classList.add('aktif');
+  if (btn) btn.classList.add('aktif');
+  if (id === 'dashboard') muatDashboard();
+  if (id === 'siaran') muatSiaran();
+  if (id === 'pengurusan') muatSemuaData();
+}
+
+function tukarTab(id, btn) {
+  document.querySelectorAll('.sub-halaman').forEach(h => h.classList.remove('aktif'));
+  document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('aktif'));
+  document.getElementById('tab' + id.charAt(0).toUpperCase() + id.slice(1)).classList.add('aktif');
+  if (btn) btn.classList.add('aktif');
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function bukaModal(id) { document.getElementById(id).classList.add('buka'); }
+function tutupModal(id) { document.getElementById(id).classList.remove('buka'); }
+
+// ============================================================
+// MUAT DATA
+// ============================================================
+async function muatSemua() {
+  await muatMurid();
+  await muatSoalan();
+  await muatDashboard();
+  await muatSiaran();
+}
+async function muatSemuaData() {
+  await muatMurid();
+  await muatSoalan();
+}
+
+let senaraIMurid = [];
+let senaraiSoalan = [];
+
+async function muatMurid() {
+  const res = await fetch(`${API}/api/murid`);
+  senaraIMurid = await res.json();
+  renderJadualMurid();
+}
+
+async function muatSoalan() {
+  const res = await fetch(`${API}/api/soalan`);
+  senaraiSoalan = await res.json();
+  renderJadualSoalan();
+}
+
+// ============================================================
+// MURID UI
+// ============================================================
+function renderJadualMurid() {
+  const tbody = document.getElementById('bodyMurid');
+  tbody.innerHTML = senaraIMurid.map(m => `
+    <tr>
+      <td><div style="font-size:1.8rem;text-align:center">${m.avatar}</div></td>
+      <td><strong>${m.nama}</strong></td>
+      <td><button class="btn btn-kecil btn-merah" onclick="padamMurid('${m._id}')">Padam</button></td>
+    </tr>
+  `).join('') || '<tr><td colspan="3" style="color:var(--text2);text-align:center;padding:20px">Tiada murid</td></tr>';
+}
+
+function bukaModalMurid() {
+  document.getElementById('inputNamaMurid').value = '';
+  renderAvatarPilih();
+  bukaModal('overlayMurid');
+}
+
+function renderAvatarPilih() {
+  const el = id => document.getElementById(id);
+  el('avLelaki').innerHTML = AVATAR_LELAKI.map((a,i) => `<div class="av-opt" data-av="${a}" onclick="pilihAvatar(this,'${a}')">${a}</div>`).join('');
+  el('avPerempuan').innerHTML = AVATAR_PEREMPUAN.map((a,i) => `<div class="av-opt" data-av="${a}" onclick="pilihAvatar(this,'${a}')">${a}</div>`).join('');
+}
+
+let avatarDipilih = '';
+function pilihAvatar(el, av) {
+  document.querySelectorAll('.av-opt').forEach(e => e.classList.remove('dipilih'));
+  el.classList.add('dipilih');
+  avatarDipilih = av;
+}
+
+async function simpanMurid() {
+  const nama = document.getElementById('inputNamaMurid').value.trim();
+  if (!nama) return tunjukNotif('Sila masukkan nama murid');
+  if (!avatarDipilih) return tunjukNotif('Sila pilih avatar');
+  if (senaraIMurid.length >= 10) return tunjukNotif('Maksimum 10 murid sahaja');
+  await fetch(`${API}/api/murid`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({nama, avatar:avatarDipilih}) });
+  tutupModal('overlayMurid');
+  await muatMurid();
+  tunjukNotif('✅ Murid ditambah!');
+}
+
+async function padamMurid(id) {
+  if (!confirm('Padam murid ini?')) return;
+  await fetch(`${API}/api/murid/${id}`, {method:'DELETE'});
+  await muatMurid();
+}
+
+// ============================================================
+// SOALAN BUILDER
+// ============================================================
+function bukaModalSoalan(soalan=null) {
+  editSoalanId = soalan ? soalan._id : null;
+  document.getElementById('modalSoalanTajuk').textContent = soalan ? 'EDIT SOALAN' : 'TAMBAH SET SOALAN';
+  document.getElementById('inputTajukSoalan').value = soalan ? soalan.tajuk : '';
+  document.getElementById('inputModSoalan').value = soalan ? soalan.mod : '1';
+  soalanBina = soalan ? JSON.parse(JSON.stringify(soalan.soalan)) : [];
+  if (!soalanBina.length) soalanBina.push(soalanKosong());
+  renderSoalanBuilder();
+  bukaModal('overlaySoalan');
+}
+
+function soalanKosong() { return {teks:'', jawapanA:'', jawapanB:'', jawapanC:'', betul:'A', uidA:'', uidB:'', uidC:'', uidBetul:''}; }
+
+function renderSoalanBuilder() {
+  const mod = parseInt(document.getElementById('inputModSoalan').value);
+  const el = document.getElementById('soalanBuilder');
+  if (mod === 3) {
+    el.innerHTML = soalanBina.map((s,i) => `
+      <div class="soalan-item">
+        <div class="soalan-num">SUSUNAN ${i+1}</div>
+        <div class="form-row">
+          <div class="form-kump"><label>TEKS/LABEL</label><input value="${s.teks||''}" oninput="soalanBina[${i}].teks=this.value" placeholder="Contoh: Baris 1 pantun"></div>
+          <div class="form-kump"><label>UID KAD NFC<button class="btn btn-kecil btn-outline" style="margin-left:6px;padding:3px 8px" onclick="imbasNFC(${i},'uidBetul')">📡 Imbas</button></label><input value="${s.uidBetul||''}" oninput="soalanBina[${i}].uidBetul=this.value" placeholder="XX XX XX XX" id="uid_mod3_${i}"></div>
+        </div>
+        <button class="btn btn-kecil btn-merah" onclick="padamSoalan(${i})" style="margin-top:6px">Padam</button>
+      </div>`).join('');
+  } else {
+    el.innerHTML = soalanBina.map((s,i) => `
+      <div class="soalan-item">
+        <div class="soalan-num">SOALAN ${i+1}</div>
+        <div class="form-kump mb8"><label>TEKS SOALAN</label><input value="${s.teks||''}" oninput="soalanBina[${i}].teks=this.value" placeholder="Masukkan soalan..."></div>
+        ${['A','B','C'].map(x => `
+        <div class="jawapan-row">
+          <div class="jawapan-label lbl-${x.toLowerCase()}">${x}</div>
+          <input value="${s['jawapan'+x]||''}" oninput="soalanBina[${i}]['jawapan${x}']=this.value" placeholder="Jawapan ${x}">
+          <div>
+            <input type="radio" name="betul_${i}" id="b${i}${x}" class="betul-radio" value="${x}" ${s.betul===x?'checked':''} onchange="soalanBina[${i}].betul=this.value">
+            <label for="b${i}${x}" title="Jawapan betul">✓</label>
+          </div>
+        </div>
+        <div class="jawapan-row" style="margin-bottom:12px">
+          <div style="width:28px;font-size:0.65rem;color:var(--text2)">UID</div>
+          <input value="${s['uid'+x]||''}" oninput="soalanBina[${i}]['uid${x}']=this.value" placeholder="UID kad NFC" id="uid_${i}_${x}">
+          <button class="btn btn-kecil btn-outline" style="padding:4px 8px;white-space:nowrap" onclick="imbasNFC(${i},'uid${x}')">📡</button>
+        </div>`).join('')}
+        <button class="btn btn-kecil btn-merah" onclick="padamSoalan(${i})">Padam</button>
+      </div>`).join('');
+  }
+}
+
+function tambahSoalan() {
+  soalanBina.push(soalanKosong());
+  renderSoalanBuilder();
+}
+
+function padamSoalan(i) {
+  soalanBina.splice(i, 1);
+  if (!soalanBina.length) soalanBina.push(soalanKosong());
+  renderSoalanBuilder();
+}
+
+// Fungsi imbas NFC untuk daftar UID secara automatik
+let nfcImbasCallback = null;
+function imbasNFC(soalanIdx, field) {
+  tunjukNotif('📡 Sila imbas kad NFC...');
+  nfcImbasCallback = (uid) => {
+    soalanBina[soalanIdx][field] = uid;
+    const elId = field === 'uidBetul' ? `uid_mod3_${soalanIdx}` : `uid_${soalanIdx}_${field.slice(-1)}`;
+    const el = document.getElementById(elId);
+    if (el) el.value = uid;
+    nfcImbasCallback = null;
+    tunjukNotif(`✅ UID berdaftar: ${uid}`);
+  };
+  // Tunggu scan dari server
+  const check = setInterval(() => {
+    if (!nfcImbasCallback) clearInterval(check);
+  }, 100);
+  setTimeout(() => { nfcImbasCallback = null; }, 15000);
+}
+
+async function simpanSoalan() {
+  const tajuk = document.getElementById('inputTajukSoalan').value.trim();
+  const mod = parseInt(document.getElementById('inputModSoalan').value);
+  if (!tajuk) return tunjukNotif('Sila masukkan tajuk');
+  const data = { tajuk, mod, soalan: soalanBina };
+  if (editSoalanId) {
+    await fetch(`${API}/api/soalan/${editSoalanId}`, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  } else {
+    await fetch(`${API}/api/soalan`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  }
+  tutupModal('overlaySoalan');
+  await muatSoalan();
+  tunjukNotif('✅ Soalan disimpan!');
+}
+
+function renderJadualSoalan() {
+  const tbody = document.getElementById('bodySoalan');
+  const modNama = ['','Ramai-ramai','Dua Orang','Susunan'];
+  tbody.innerHTML = senaraiSoalan.map(s => `
+    <tr>
+      <td>${s.tajuk}</td>
+      <td><span class="tag-biru">Mod ${s.mod} — ${modNama[s.mod]}</span></td>
+      <td>${s.soalan.length}</td>
+      <td class="flex gap8">
+        <button class="btn btn-kecil btn-outline" onclick='bukaModalSoalan(${JSON.stringify(s).replace(/'/g,"&#39;")})'>Edit</button>
+        <button class="btn btn-kecil btn-merah" onclick="padamSet('${s._id}')">Padam</button>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="4" style="color:var(--text2);text-align:center;padding:20px">Tiada soalan</td></tr>';
+}
+
+async function padamSet(id) {
+  if (!confirm('Padam set soalan ini?')) return;
+  await fetch(`${API}/api/soalan/${id}`, {method:'DELETE'});
+  await muatSoalan();
+}
+
+// ============================================================
+// MOD SETUP MODAL
+// ============================================================
+function bukaMod(mod) {
+  const tajukMod = ['','KUIZ RAMAI-RAMAI','DWI-PADU (2 ORANG)','SUSUNAN HAFALAN','IMBAS AI KESIHATAN'];
+  document.getElementById('modalModTajuk').textContent = `PERSEDIAAN MOD ${mod} — ${tajukMod[mod]}`;
+  const soalanMod = senaraiSoalan.filter(s => s.mod === mod || (mod === 4 && s.mod === 4));
+  let html = '';
+
+  if (mod === 1) {
+    html = `
+      <div class="form-kump mb16">
+        <label>PILIH SET SOALAN</label>
+        <select id="setMod1">${soalanMod.map(s=>`<option value="${s._id}">${s.tajuk}</option>`).join('')}</select>
+      </div>
+      <div class="form-kump mb16">
+        <label>MASA (saat)</label>
+        <input type="number" id="masaMod1" value="120" min="30" max="600">
+      </div>
+      <div class="form-kump mb16">
+        <label>PILIH MURID (sehingga 10)</label>
+        <div class="murid-grid" id="pilihMuridMod1">${renderMuridPilih()}</div>
+      </div>
+      <button class="btn btn-utama btn-besar penuh" onclick="mulaPermainan(1)">▶ MULA MOD 1</button>`;
+  } else if (mod === 2) {
+    const murid2 = senaraIMurid.slice(0,2);
+    html = `
+      <div class="form-kump mb16">
+        <label>PILIH SET SOALAN</label>
+        <select id="setMod2">${soalanMod.map(s=>`<option value="${s._id}">${s.tajuk}</option>`).join('')}</select>
+      </div>
+      <div class="form-kump mb16">
+        <label>PILIH 2 MURID</label>
+        <div class="murid-grid" id="pilihMuridMod2">${renderMuridPilih(2)}</div>
+      </div>
+      <button class="btn btn-utama btn-besar penuh" onclick="mulaPermainan(2)">▶ MULA MOD 2</button>`;
+  } else if (mod === 3) {
+    html = `
+      <div class="form-kump mb16">
+        <label>PILIH SET SUSUNAN</label>
+        <select id="setMod3">${soalanMod.map(s=>`<option value="${s._id}">${s.tajuk}</option>`).join('')}</select>
+      </div>
+      <div class="form-kump mb16">
+        <label>PILIH MURID</label>
+        <div class="murid-grid" id="pilihMuridMod3">${renderMuridPilih(1)}</div>
+      </div>
+      <button class="btn btn-utama btn-besar penuh" onclick="mulaPermainan(3)">▶ MULA MOD 3</button>`;
+  } else if (mod === 4) {
+    html = `
+      <div style="background:var(--panel2);border-radius:10px;padding:20px;margin-bottom:20px">
+        <div style="font-size:1rem;color:var(--text2);line-height:1.8">
+          🌟 <strong style="color:var(--text)">Arahan Rangsangan:</strong><br>
+          "Makanan yang ada di sekeliling kita sangat pelbagai. Ada yang sihat dan ada yang tidak sihat.
+          Murid tahu tak apa makanan yang boleh menjaga kesihatan kita? Jom kita belajar kelaskan
+          makanan menggunakan teknologi kecerdasan buatan!"
+        </div>
+      </div>
+      <div class="form-kump mb16">
+        <label>TAJUK SESI</label>
+        <input id="tajukMod4" value="Makanan Sihat dan Tidak Sihat" placeholder="Tajuk sesi hari ini">
+      </div>
+      <div class="form-kump mb16">
+        <label>PILIH MURID</label>
+        <div class="murid-grid" id="pilihMuridMod4">${renderMuridPilih(1)}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+        <div style="background:rgba(0,255,136,.05);border:1px solid rgba(0,255,136,.2);border-radius:8px;padding:14px">
+          <div style="font-size:0.8rem;color:var(--green);margin-bottom:8px;font-weight:700">MAKANAN SIHAT ✓</div>
+          <div style="display:flex;gap:6px">🍌 🍉 🍎</div>
+          <div style="font-size:0.75rem;color:var(--text2);margin-top:6px">Pisang, Tembikai, Epal</div>
+        </div>
+        <div style="background:rgba(255,51,85,.05);border:1px solid rgba(255,51,85,.2);border-radius:8px;padding:14px">
+          <div style="font-size:0.8rem;color:var(--red);margin-bottom:8px;font-weight:700">TIDAK SIHAT ✗</div>
+          <div style="display:flex;gap:6px">🥤 🌭</div>
+          <div style="font-size:0.75rem;color:var(--text2);margin-top:6px">Air Manis, Sosej</div>
+        </div>
+      </div>
+      <button class="btn btn-utama btn-besar penuh" onclick="mulaPermainan(4)">▶ MULA MOD 4</button>`;
+  }
+
+  document.getElementById('modalModBadan').innerHTML = html;
+  bukaModal('overlayMod');
+}
+
+function renderMuridPilih(max=10) {
+  return senaraIMurid.map(m => `
+    <div class="murid-item" data-id="${m._id}" data-nama="${m.nama}" data-av="${m.avatar}" onclick="togolMurid(this,${max})">
+      <div class="tick">✓</div>
+      <div style="font-size:2rem;text-align:center;margin-bottom:4px">${m.avatar}</div>
+      <div class="nama">${m.nama}</div>
+    </div>`).join('') || '<div style="color:var(--text2);font-size:0.8rem">Tiada murid. Tambah murid dahulu.</div>';
+}
+
+function togolMurid(el, max) {
+  const dipilih = el.parentElement.querySelectorAll('.dipilih').length;
+  if (el.classList.contains('dipilih')) {
+    el.classList.remove('dipilih');
+  } else {
+    if (dipilih >= max) {
+      // Nyahpilih yang lain jika max=1 atau 2
+      if (max <= 2) el.parentElement.querySelectorAll('.dipilih').forEach(e => e.classList.remove('dipilih'));
+      else { tunjukNotif(`Maksimum ${max} murid`); return; }
+    }
+    el.classList.add('dipilih');
+  }
+}
+
+function getMuridDipilih(containerId) {
+  return [...document.querySelectorAll(`#${containerId} .murid-item.dipilih`)].map(el => ({
+    _id: el.dataset.id, nama: el.dataset.nama, avatar: el.dataset.av
+  }));
+}
+
+// ============================================================
+// MULA PERMAINAN
+// ============================================================
+async function mulaPermainan(mod) {
+  let soalanId = null, murid = [], masa = 120;
+
+  if (mod === 1) {
+    soalanId = document.getElementById('setMod1')?.value;
+    murid = getMuridDipilih('pilihMuridMod1');
+    masa = parseInt(document.getElementById('masaMod1')?.value) || 120;
+    if (!murid.length) return tunjukNotif('Pilih sekurang-kurangnya 1 murid');
+  } else if (mod === 2) {
+    soalanId = document.getElementById('setMod2')?.value;
+    murid = getMuridDipilih('pilihMuridMod2');
+    if (murid.length !== 2) return tunjukNotif('Pilih tepat 2 murid');
+  } else if (mod === 3) {
+    soalanId = document.getElementById('setMod3')?.value;
+    murid = getMuridDipilih('pilihMuridMod3');
+    if (!murid.length) return tunjukNotif('Pilih 1 murid');
+  } else if (mod === 4) {
+    mod4Tajuk = document.getElementById('tajukMod4')?.value || 'Makanan Sihat dan Tidak Sihat';
+    murid = getMuridDipilih('pilihMuridMod4');
+  }
+
+  if (!soalanId && mod !== 4) return tunjukNotif('Pilih set soalan dahulu');
+
+  tutupModal('overlayMod');
+  hantarWS({ jenis:'mula_mod', mod, murid, soalanId, masa, tajuk:mod4Tajuk });
+}
+
+// ============================================================
+// PAPAN PERMAINAN
+// ============================================================
+function papanPermainanMula(state) {
+  sesiSemasa = state;
+  const papan = document.getElementById('papanPermainan');
+  papan.classList.add('buka');
+
+  const tajukMod = ['','KUIZ RAMAI-RAMAI','DWI-PADU','SUSUNAN HAFALAN','IMBAS AI KESIHATAN'];
+  document.getElementById('papanTajuk').textContent = `MOD ${state.mod} — ${tajukMod[state.mod]}`;
+  document.getElementById('soalanJumlah').textContent = state.jumlahSoalan || '—';
+
+  // Tunjuk panel berdasarkan mod
+  document.getElementById('papanMod12').style.display = (state.mod <= 2) ? 'flex' : 'none';
+  document.getElementById('papanMod12').style.flexDirection = 'column';
+  document.getElementById('papanMod3').style.display = state.mod === 3 ? 'block' : 'none';
+  document.getElementById('papanMod4').style.display = state.mod === 4 ? 'block' : 'none';
+  document.getElementById('mod1Info').style.display = state.mod === 1 ? 'flex' : 'none';
+  document.getElementById('mod2Info').style.display = state.mod === 2 ? 'block' : 'none';
+
+  // Setup skor panel
+  renderSkorPanel(state.muridSenarai);
+
+  if (state.mod === 3) renderSusunanTrack(state.jumlahSoalan);
+  if (state.mod === 4) renderMod4UI();
+  if (state.mod === 2) renderBuzzerPanel(state.muridSenarai);
+  if (state.mod === 1) kemaskiniMuridGiliran(state);
+}
+
+function renderSkorPanel(murid) {
+  const el = document.getElementById('skorList');
+  if (!murid || !murid.length) { el.innerHTML = '<div style="color:var(--text2);font-size:0.8rem">Tiada murid</div>'; return; }
+  el.innerHTML = murid.map((m,i) => `
+    <div class="skor-murid" id="skor_${m._id || m.nama}">
+      <div class="skor-avatar">${m.avatar}</div>
+      <div class="skor-info">
+        <div class="skor-nama">${m.nama}</div>
+        <div class="skor-markah" id="markah_${m._id || m.nama}">0</div>
+        <div class="skor-bar-wrap"><div class="skor-bar" id="bar_${m._id || m.nama}" style="width:0%"></div></div>
+      </div>
+    </div>`).join('');
+}
+
+function kemaskiniSkorPanel(d) {
+  if (!d.murid) return;
+  const key = sesiSemasa?.muridSenarai?.find(m=>m.nama===d.murid)?._id || d.murid;
+  const markahEl = document.getElementById('markah_' + key);
+  const barEl = document.getElementById('bar_' + key);
+  const kadEl = document.getElementById('skor_' + key);
+  if (markahEl) markahEl.textContent = d.markah || 0;
+  const maxMarkah = sesiSemasa?.jumlahSoalan || 1;
+  if (barEl) barEl.style.width = Math.min(100, ((d.markah||0)/maxMarkah)*100) + '%';
+  if (kadEl && d.betul) kadEl.classList.add('betul-flash');
+  setTimeout(() => kadEl?.classList.remove('betul-flash'), 600);
+}
+
+function kemaskiniStatePermainan(state) {
+  sesiSemasa = state;
+  document.getElementById('soalanIdx').textContent = (state.soalanSemasa||0) + 1;
+  if (state.mod === 1) kemaskiniMuridGiliran(state);
+  // Update semua skor
+  if (state.muridSenarai && state.skor) {
+    state.muridSenarai.forEach(m => {
+      const key = m._id || m.nama;
+      const markah = state.skor[key] || 0;
+      const el = document.getElementById('markah_' + key);
+      if (el) el.textContent = markah;
+    });
+  }
+}
+
+function kemaskiniMuridGiliran(state) {
+  const murid = state.muridSenarai?.[state.muridSemasa];
+  if (murid) {
+    document.getElementById('muridGiliranTeks').textContent = `${murid.avatar} ${murid.nama}`;
+    // Highlight
+    document.querySelectorAll('.skor-murid').forEach(el => el.classList.remove('aktif-jawab'));
+    const key = murid._id || murid.nama;
+    document.getElementById('skor_' + key)?.classList.add('aktif-jawab');
+  }
+}
+
+function kemaskiniTimer(sisa) {
+  const el = document.getElementById('timerDisplay');
+  const min = Math.floor(sisa/60);
+  const sek = sisa % 60;
+  el.textContent = `${String(min).padStart(2,'0')}:${String(sek).padStart(2,'0')}`;
+  el.className = 'timer-num ' + (sisa<=10?'merah':sisa<=30?'kuning':'hijau');
+}
+
+function soalanSeterusnya() {
+  hantarWS({ jenis:'soalan_seterusnya' });
+}
+
+// ============================================================
+// POPUP JAWAPAN
+// ============================================================
+function tunjukJawapanPopup(betul, nama, sub) {
+  const popup = document.getElementById('jawapanPopup');
+  const kad = document.getElementById('jawapanKad');
+  document.getElementById('jawapanIkon').textContent = betul ? '✓' : '✗';
+  document.getElementById('jawapanTeks').textContent = betul ? 'BETUL!' : 'SALAH!';
+  document.getElementById('jawapanSub').textContent = sub || (nama ? `${nama}` : '');
+  kad.className = 'jawapan-kad ' + (betul ? 'betul' : 'salah');
+  popup.classList.add('tunjuk');
+  setTimeout(() => popup.classList.remove('tunjuk'), 2000);
+}
+
+function paparJawapan(betul, murid, markah) {
+  tunjukJawapanPopup(betul, murid, betul ? `+1 markah (jumlah: ${markah})` : 'Cuba lagi!');
+}
+
+// ============================================================
+// MOD 2
+// ============================================================
+function renderBuzzerPanel(murid) {
+  if (!murid || murid.length < 2) return;
+  document.getElementById('buzzerMuridRow').innerHTML = murid.slice(0,2).map(m => `
+    <div class="buzzer-murid-btn" id="buzz_${m._id||m.nama}" onclick="pilihMuridBuzzer('${m._id||m.nama}','${m.nama}')">
+      <div style="font-size:2rem;margin-bottom:8px">${m.avatar}</div>
+      <div>${m.nama}</div>
+    </div>`).join('');
+}
+
+function pilihMuridBuzzer(id, nama) {
+  document.querySelectorAll('.buzzer-murid-btn').forEach(b => b.classList.remove('dipilih2'));
+  document.getElementById('buzz_' + id)?.classList.add('dipilih2');
+  hantarWS({ jenis:'pilih_murid_mode2', muridId:id, muridNama:nama });
+}
+
+function kemaskiniMod2Status(teks) {
+  const el = document.getElementById('mod2Status');
+  if (el) { el.textContent = teks; el.style.animation='none'; void el.offsetWidth; el.style.animation=''; }
+}
+
+function highlightBuzzer(nama) {
+  document.querySelectorAll('.buzzer-murid-btn').forEach(b => {
+    b.classList.toggle('dipilih2', b.textContent.includes(nama));
+  });
+}
+
+let sediaBunyi = false;
+function mulaSedia() {
+  let count = 3;
+  const statusEl = document.getElementById('mod2Status');
+  if (!statusEl) return;
+  statusEl.style.fontSize = '3rem';
+  statusEl.style.color = 'var(--yellow)';
+  const interval = setInterval(() => {
+    if (count > 0) {
+      statusEl.textContent = count;
+      count--;
+    } else {
+      clearInterval(interval);
+      statusEl.textContent = '⚡ TEKAN!';
+      statusEl.style.color = 'var(--green)';
+      statusEl.style.fontSize = '2rem';
+    }
+  }, 800);
+}
+
+// ============================================================
+// MOD 3
+// ============================================================
+function renderSusunanTrack(jumlah) {
+  const el = document.getElementById('susunanTrack');
+  el.innerHTML = Array.from({length:jumlah||7}, (_,i) => `
+    <div class="susun-kad ${i===0?'semasa':''}" id="susun_${i}">
+      <div class="susun-num">${i+1}</div>
+      <div style="font-size:0.65rem;color:var(--text2)">—</div>
+    </div>`).join('');
+}
+
+function kemaskiniSusunan(idx, betul) {
+  const el = document.getElementById('susun_' + idx);
+  if (el) { el.classList.remove('semasa'); el.classList.add(betul?'betul':''); }
+  const next = document.getElementById('susun_' + (idx+1));
+  if (next) next.classList.add('semasa');
+  if (betul) tunjukJawapanPopup(true, null, `Susunan ${idx+1} betul!`);
+}
+
+// ============================================================
+// MOD 4
+// ============================================================
+function renderMod4UI() {
+  mod4Fasa = 1;
+  makananSihatDikesan = [];
+  makananTakSihatDikesan = [];
+  document.getElementById('mod4Fasa1').style.display = 'block';
+  document.getElementById('mod4Fasa2').style.display = 'none';
+  renderMakananGrid();
+}
+
+function renderMakananGrid() {
+  document.getElementById('gridMakananSihat').innerHTML = MAKANAN_SIHAT.map(m => `
+    <div class="makanan-item ${makananSihatDikesan.includes(m.key)?'dikesan':''}" id="mk_${m.key}">
+      <div class="ikon">${m.ikon}</div>
+      <div class="nama">${m.nama}</div>
+      ${makananSihatDikesan.includes(m.key)?'<div style="color:var(--green);font-size:0.75rem;margin-top:4px">✓ Dikesan</div>':''}
+    </div>`).join('');
+
+  document.getElementById('gridMakananTakSihat').innerHTML = MAKANAN_TAK_SIHAT.map(m => `
+    <div class="makanan-item ${makananTakSihatDikesan.includes(m.key)?'dikesan':''}" id="mk_${m.key}">
+      <div class="ikon">${m.ikon}</div>
+      <div class="nama">${m.nama}</div>
+      ${makananTakSihatDikesan.includes(m.key)?'<div style="color:var(--green);font-size:0.75rem;margin-top:4px">✓ Dikesan</div>':''}
+    </div>`).join('');
+}
+
+function prosesCAMKeputusan(d) {
+  document.getElementById('camLabel').textContent = `${d.label} (${Math.round((d.confidence||0)*100)}%)`;
+
+  if (d.betul) {
+    tunjukJawapanPopup(true, null, `${d.label} dikesan!`);
+    if (d.kategori === 'sihat') {
+      if (!makananSihatDikesan.includes(d.label.toLowerCase())) makananSihatDikesan.push(d.label.toLowerCase());
+      renderMakananGrid();
+      if (makananSihatDikesan.length >= MAKANAN_SIHAT.length) {
+        // Fasa 1 selesai
+        setTimeout(() => {
+          mod4Fasa = 2;
+          document.getElementById('mod4Fasa1').style.display = 'none';
+          document.getElementById('mod4Fasa2').style.display = 'block';
+          tunjukNotif('✅ Semua makanan sihat dikesan! Kini kelaskan makanan tidak sihat.');
+        }, 1500);
+      }
+    } else {
+      if (!makananTakSihatDikesan.includes(d.label.toLowerCase())) makananTakSihatDikesan.push(d.label.toLowerCase());
+      renderMakananGrid();
+      if (makananTakSihatDikesan.length >= MAKANAN_TAK_SIHAT.length) {
+        setTimeout(() => paparGanjaranMod4(), 1000);
+      }
+    }
+  } else {
+    tunjukJawapanPopup(false, null, `${d.label} bukan dalam senarai. Cuba lagi!`);
+  }
+}
+
+function mulaScanKamera() {
+  const kat = mod4Fasa === 1 ? 'sihat' : 'tidak_sihat';
+  hantarWS({ jenis:'mula_cam_scan', kategori:kat });
+  document.getElementById('camLabel').textContent = 'Mengimbas...';
+}
+
+let flashState = false;
+function togolFlash() {
+  flashState = !flashState;
+  hantarWS({ jenis:'flash_cam', nyala:flashState });
+  document.getElementById('btnFlash').textContent = `🔦 Flash: ${flashState?'ON':'OFF'}`;
+}
+
+function paparGanjaranMod4() {
+  const overlay = document.getElementById('ganjaranOverlay');
+  document.getElementById('ganjaranTeks').textContent = '🎉 HEBAT! SILA AMBIL GANJARAN ANDA!';
+  document.getElementById('rankingList').innerHTML = '';
+  overlay.classList.add('buka');
+  hantarWS({ jenis:'buka_ganjaran' });
+  let count = 6;
+  document.getElementById('ganjaranCount').textContent = count;
+  const t = setInterval(() => {
+    count--;
+    document.getElementById('ganjaranCount').textContent = count;
+    if (count <= 0) {
+      clearInterval(t);
+      overlay.classList.remove('buka');
+      tunjukSesiTamat();
+    }
+  }, 1000);
+}
+
+// ============================================================
+// GANJARAN & TAMAT
+// ============================================================
+function paparGanjaran(ranking) {
+  const overlay = document.getElementById('ganjaranOverlay');
+  document.getElementById('ganjaranTeks').textContent = '🏆 TAHNIAH! PEMENANG TERATAS AMBIL GANJARAN!';
+
+  const rankIkon = ['🥇','🥈','🥉'];
+  document.getElementById('rankingList').innerHTML = ranking.slice(0,3).map((r,i) => `
+    <div class="ranking-item scale-in" style="animation-delay:${i*0.15}s">
+      <div class="ranking-no ${['r1','r2','r3'][i]||''}">${rankIkon[i]||i+1}</div>
+      <div style="font-size:1.5rem">${r.avatar}</div>
+      <div class="ranking-nama">${r.nama}</div>
+      <div class="ranking-markah">${r.markah} ⭐</div>
+    </div>`).join('');
+
+  overlay.classList.add('buka');
+  hantarWS({ jenis:'buka_ganjaran' });
+
+  let count = 6;
+  document.getElementById('ganjaranCount').textContent = count;
+  const t = setInterval(() => {
+    count--;
+    document.getElementById('ganjaranCount').textContent = count;
+    if (count <= 0) {
+      clearInterval(t);
+      overlay.classList.remove('buka');
+      tunjukSesiTamat();
+    }
+  }, 1000);
+}
+
+function paparGanjaranMod3() {
+  paparGanjaranMod4();
+  document.getElementById('ganjaranTeks').textContent = '🎊 SUSUNAN LENGKAP! AMBIL GANJARAN!';
+}
+
+function tunjukSesiTamat() {
+  const pilihan = confirm('Sesi tamat! Tekan OK untuk ulangi, atau Batal untuk ke menu utama.');
+  if (pilihan) {
+    document.getElementById('papanPermainan').classList.remove('buka');
+    if (sesiSemasa) bukaMod(sesiSemasa.mod);
+  } else {
+    document.getElementById('papanPermainan').classList.remove('buka');
+    muatDashboard();
+    tukarHalaman('dashboard', document.querySelectorAll('.nav-btn')[1]);
+  }
+}
+
+function sahkanTamat() {
+  if (confirm('Tamatkan sesi ini?')) {
+    hantarWS({ jenis:'tamat_mod' });
+    document.getElementById('papanPermainan').classList.remove('buka');
+  }
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+async function muatDashboard() {
+  const res = await fetch(`${API}/api/sesi`);
+  const sesi = await res.json();
+  const tarikh = document.getElementById('tarikhFilter').value;
+  const filtered = tarikh ? sesi.filter(s => new Date(s.tarikh).toLocaleDateString('fr-CA') === tarikh) : sesi;
+  renderDashboard(filtered);
+}
+
+function tapisSejakTarikh() { muatDashboard(); }
+
+function renderDashboard(sesi) {
+  const el = document.getElementById('sesiGrid');
+  const modNama = ['','Kuiz Ramai-ramai','Dwi-Padu','Susunan Hafalan','Imbas AI'];
+  el.innerHTML = sesi.length ? sesi.map(s => `
+    <div class="sesi-kad" onclick="bukaSesiDetail('${s._id}')">
+      <div class="sesi-kad-header">
+        <div>
+          <div class="sesi-tajuk">${s.tajuk}</div>
+          <div class="sesi-tarikh">${new Date(s.tarikh).toLocaleDateString('ms-MY',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>
+        </div>
+        <span class="sesi-mod-badge">Mod ${s.mod} — ${modNama[s.mod]||''}</span>
+      </div>
+      <div class="sesi-murid-row">
+        ${(s.keputusan||[]).map(k => `
+          <div class="sesi-murid-chip">
+            <span>${k.avatar||'👤'}</span>
+            <span>${k.nama}</span>
+            <span class="chip-markah">${k.markah}★</span>
+          </div>`).join('')}
+      </div>
+      ${s.ulasan?.length?`<div style="margin-top:8px;font-size:0.75rem;color:var(--text2)">💬 ${s.ulasan.length} ulasan guru</div>`:''}
+    </div>`).join('') : '<div style="color:var(--text2);padding:40px;text-align:center">Tiada rekod untuk tarikh ini.</div>';
+}
+
+async function bukaSesiDetail(id) {
+  const res = await fetch(`${API}/api/sesi/${id}`);
+  sesiDetailSemasa = await res.json();
+  const s = sesiDetailSemasa;
+  const modNama = ['','Kuiz Ramai-ramai','Dwi-Padu','Susunan Hafalan','Imbas AI'];
+
+  document.getElementById('sesiDetailTajuk').textContent = s.tajuk;
+  document.getElementById('sesiDetailBadan').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div><div style="font-size:0.75rem;color:var(--text2)">TARIKH</div><div style="font-weight:600">${new Date(s.tarikh).toLocaleDateString('ms-MY')}</div></div>
+      <div><div style="font-size:0.75rem;color:var(--text2)">MOD</div><div><span class="tag-biru">Mod ${s.mod} — ${modNama[s.mod]}</span></div></div>
+    </div>
+    <div style="font-size:0.8rem;color:var(--text2);margin-bottom:10px">KEPUTUSAN</div>
+    ${(s.keputusan||[]).sort((a,b)=>b.markah-a.markah).map((k,i)=>`
+      <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--bg2);border-radius:8px;margin-bottom:8px">
+        <div style="font-family:'Orbitron',monospace;font-size:1.2rem;color:${['var(--gold)','#c0c0c0','#cd7f32','var(--text2)'][i]||'var(--text2)'}">
+          ${['🥇','🥈','🥉',''][i]||i+1}
+        </div>
+        <div style="font-size:1.5rem">${k.avatar||'👤'}</div>
+        <div style="flex:1"><div style="font-weight:600">${k.nama}</div></div>
+        <div style="font-family:'Orbitron',monospace;color:var(--accent)">${k.markah} ⭐</div>
+      </div>`).join('')}`;
+
+  // Setup ulasan
+  document.getElementById('ulasanList').innerHTML = (s.ulasan||[]).map(u => `
+    <div class="ulasan-item"><div class="ulasan-nama">${u.nama} — <span style="font-size:0.7rem;color:var(--text2)">${new Date(u.tarikhKomen).toLocaleString('ms-MY')}</span></div>${u.komen}</div>`).join('') || '<div style="color:var(--text2);font-size:0.8rem">Tiada ulasan lagi</div>';
+
+  document.getElementById('selectUlasanMurid').innerHTML = (s.keputusan||[]).map(k => `<option value="${k.muridId||k.nama}" data-nama="${k.nama}">${k.nama}</option>`).join('');
+
+  bukaModal('overlaySesi');
+}
+
+async function hantarUlasan() {
+  const sel = document.getElementById('selectUlasanMurid');
+  const komen = document.getElementById('inputUlasan').value.trim();
+  if (!komen) return tunjukNotif('Sila taip ulasan');
+  const muridId = sel.value;
+  const muridNama = sel.options[sel.selectedIndex].dataset.nama;
+  await fetch(`${API}/api/sesi/${sesiDetailSemasa._id}/ulasan`, {
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({muridId, muridNama, komen})
+  });
+  document.getElementById('inputUlasan').value = '';
+  await bukaSesiDetail(sesiDetailSemasa._id);
+  tunjukNotif('✅ Ulasan dihantar!');
+}
+
+function tambahUlasanUI(d) {
+  const el = document.getElementById('ulasanList');
+  const item = document.createElement('div');
+  item.className = 'ulasan-item slide-up';
+  item.innerHTML = `<div class="ulasan-nama">${d.muridNama}</div>${d.komen}`;
+  el.appendChild(item);
+}
+
+function bukaTelegram() {
+  // Isi token dari localStorage
+  document.getElementById('inputTeleToken').value = localStorage.getItem('teleToken') || '';
+  document.getElementById('inputTeleChatId').value = localStorage.getItem('teleChatId') || '';
+  bukaModal('overlayTele');
+}
+
+async function sahkanTelegram() {
+  const token = document.getElementById('inputTeleToken').value.trim();
+  const chatId = document.getElementById('inputTeleChatId').value.trim();
+  if (!token || !chatId) return tunjukNotif('Sila isi token dan chat ID');
+  localStorage.setItem('teleToken', token);
+  localStorage.setItem('teleChatId', chatId);
+  hantarWS({ jenis:'push_telegram', sesiId:sesiDetailSemasa._id, token, chatId });
+  tutupModal('overlayTele');
+  tunjukNotif('📨 Menghantar ke Telegram...');
+}
+
+// ============================================================
+// SIARAN
+// ============================================================
+async function muatSiaran() {
+  const res = await fetch(`${API}/api/siaran`);
+  const data = await res.json();
+  renderSiaran(data);
+}
+
+function renderSiaran(data) {
+  const el = document.getElementById('siaranGrid');
+  el.innerHTML = data.length ? data.map(s => `
+    <div class="siaran-kad">
+      <div class="siaran-header">
+        <div>
+          <div class="siaran-tajuk">${s.tajuk}</div>
+          <div style="font-size:0.75rem;color:var(--text2)">${new Date(s.tarikhDihantar).toLocaleDateString('ms-MY')}</div>
+        </div>
+      </div>
+      ${s.embedLink?`<iframe class="siaran-embed" src="${s.embedLink}" allowfullscreen></iframe>`:''}
+      ${s.komen?`<div class="siaran-komen">${s.komen}</div>`:''}
+      <div class="siaran-aksi">
+        <button class="btn btn-kecil btn-outline" onclick='bukaSiaranEdit(${JSON.stringify(s).replace(/'/g,"&#39;")})'>Edit</button>
+        <button class="btn btn-kecil btn-merah" onclick="padamSiaran('${s._id}')">Padam</button>
+      </div>
+    </div>`).join('') : '<div style="color:var(--text2);padding:40px;text-align:center">Tiada siaran</div>';
+}
+
+function bukaModalSiaran(s=null) {
+  editSiaranId = s ? s._id : null;
+  document.getElementById('modalSiaranTajuk').textContent = s ? 'EDIT SIARAN' : 'TAMBAH SIARAN';
+  document.getElementById('inputTajukSiaran').value = s?.tajuk || '';
+  document.getElementById('inputEmbedLink').value = s?.embedLink || '';
+  document.getElementById('inputKomenSiaran').value = s?.komen || '';
+  bukaModal('overlaySiaran');
+}
+
+function bukaSiaranEdit(s) { bukaModalSiaran(s); }
+
+async function simpanSiaran() {
+  const data = {
+    tajuk: document.getElementById('inputTajukSiaran').value.trim(),
+    embedLink: document.getElementById('inputEmbedLink').value.trim(),
+    komen: document.getElementById('inputKomenSiaran').value.trim()
+  };
+  if (!data.tajuk) return tunjukNotif('Sila masukkan tajuk');
+  if (editSiaranId) {
+    await fetch(`${API}/api/siaran/${editSiaranId}`, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  } else {
+    await fetch(`${API}/api/siaran`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  }
+  tutupModal('overlaySiaran');
+  await muatSiaran();
+  tunjukNotif('✅ Siaran disimpan!');
+}
+
+async function padamSiaran(id) {
+  if (!confirm('Padam siaran ini?')) return;
+  await fetch(`${API}/api/siaran/${id}`, {method:'DELETE'});
+  await muatSiaran();
+}
+
+// ============================================================
+// NOTIFIKASI
+// ============================================================
+function tunjukNotif(msg) {
+  let el = document.getElementById('notifBar');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'notifBar';
+    el.style.cssText = 'position:fixed;bottom:80px;right:24px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 20px;z-index:9999;font-size:0.85rem;max-width:300px;box-shadow:var(--glow);animation:slideIn .3s ease;color:var(--text)';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.display = 'block';
+  clearTimeout(el._timer);
+  el._timer = setTimeout(() => el.style.display = 'none', 3500);
+}
+
+function tunjukNFCPing(uid) {
+  if (nfcImbasCallback) { nfcImbasCallback(uid); return; }
+  const el = document.getElementById('nfcPing');
+  document.getElementById('nfcMsg').textContent = `Kad: ${uid}`;
+  el.classList.add('tunjuk');
+  setTimeout(() => el.classList.remove('tunjuk'), 2500);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('load', () => {
+  // Set tarikh hari ini
+  document.getElementById('tarikhFilter').value = new Date().toLocaleDateString('fr-CA');
+  sambungWS();
+  renderAvatarPilih();
+});
+
+// Style tambahan
+const style = document.createElement('style');
+style.textContent = `@keyframes fadeOut{to{opacity:0}}`;
+document.head.appendChild(style);
+</script>
+</body>
+</html>
