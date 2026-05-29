@@ -1,5 +1,5 @@
 // ============================================================
-// ILMUVERSE - SERVER UTAMA
+// ILMUVERSE - SERVER UTAMA v2.0
 // Node.js + Express + WebSocket + MongoDB
 // ============================================================
 require('dotenv').config();
@@ -15,8 +15,27 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, '../public')));
+
+// ============================================================
+// TETAPAN TETAP (JANGAN UBAH TANPA KEBENARAN)
+// ============================================================
+const TELEGRAM_BOT_TOKEN = '8849507122:AAECl_Ms6z6xYcAfO6kBFAyBfjYoIhL6KrI';
+const TELEGRAM_CHAT_ID = '707286960';
+
+// ID Kad NFC Tetap — Ganti dengan ID sebenar kad anda
+const NFC_KAD_A = ''; // << LETAK ID KAD A DI SINI (contoh: '04A32F11')
+const NFC_KAD_B = ''; // << LETAK ID KAD B DI SINI
+const NFC_KAD_C = ''; // << LETAK ID KAD C DI SINI
+
+function uidKeJawapan(uid) {
+  const u = uid.toUpperCase().trim();
+  if (NFC_KAD_A && u === NFC_KAD_A.toUpperCase()) return 'A';
+  if (NFC_KAD_B && u === NFC_KAD_B.toUpperCase()) return 'B';
+  if (NFC_KAD_C && u === NFC_KAD_C.toUpperCase()) return 'C';
+  return null;
+}
 
 // ============================================================
 // SAMBUNGAN MONGODB
@@ -30,19 +49,26 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/ilmuverse
 // ============================================================
 const MuridSchema = new mongoose.Schema({
   nama: String,
-  avatar: String, // 'lelaki-1' hingga 'lelaki-5', 'perempuan-1' hingga 'perempuan-5'
+  avatar: String, // base64 image atau emoji
   createdAt: { type: Date, default: Date.now }
 });
 
 const SoalanSchema = new mongoose.Schema({
-  mod: Number, // 1, 2, 3, 4
+  mod: Number,
   tajuk: String,
-  soalan: [{ teks: String, jawapanA: String, jawapanB: String, jawapanC: String, betul: String }]
+  kelas: String,
+  soalan: [{
+    teks: String,
+    jawapanA: String, jawapanB: String, jawapanC: String,
+    betul: String,
+    uidA: String, uidB: String, uidC: String, uidBetul: String
+  }]
 });
 
 const SesiSchema = new mongoose.Schema({
   tarikh: { type: Date, default: Date.now },
   tajuk: String,
+  kelas: String,
   mod: Number,
   keputusan: [{ muridId: String, nama: String, markah: Number, avatar: String }],
   ulasan: [{ muridId: String, nama: String, komen: String, tarikhKomen: Date }]
@@ -64,61 +90,50 @@ const Siaran = mongoose.model('Siaran', SiaranSchema);
 // PENGURUSAN WEBSOCKET
 // ============================================================
 let clients = {
-  esp32: null,     // ESP32 Utama
-  cam: null,       // ESP32-CAM
-  guru: [],        // App Guru
-  murid: []        // App Murid/Ibu Bapa
+  esp32: null,
+  cam: null,
+  guru: [],
+  murid: []
 };
 
 let gameState = {
-  mod: null,
-  aktif: false,
-  soalanSemasa: 0,
-  muridSemasa: 0,
-  muridSenarai: [],
-  skor: {},
-  masa: 0,
-  masaInterval: null,
-  timer: null,
-  sesiId: null
+  mod: null, aktif: false,
+  soalanSemasa: 0, muridSemasa: 0,
+  muridSenarai: [], skor: {},
+  masa: 0, masaAsal: 0,
+  timer: null, sesiId: null,
+  soalan: [], giliran: null,
+  peluangKedua: false,
+  mod3Seq: 0,
+  mod4: { fasa: 'sihat', sihatDikesan: [], takSihatDikesan: [], autoScanTimer: null }
 };
+
+const MAKANAN_SIHAT_LIST = ['pisang', 'tembikai', 'epal'];
+const MAKANAN_TAK_SIHAT_LIST = ['air manis', 'sosej'];
 
 function hantarKeGuru(data) {
   const msg = JSON.stringify(data);
-  clients.guru.forEach(ws => {
-    if (ws.readyState === WebSocket.OPEN) ws.send(msg);
-  });
+  clients.guru.forEach(ws => { if (ws.readyState === WebSocket.OPEN) ws.send(msg); });
 }
-
 function hantarKeMurid(data) {
   const msg = JSON.stringify(data);
-  clients.murid.forEach(ws => {
-    if (ws.readyState === WebSocket.OPEN) ws.send(msg);
-  });
+  clients.murid.forEach(ws => { if (ws.readyState === WebSocket.OPEN) ws.send(msg); });
 }
-
 function hantarKeESP32(data) {
-  if (clients.esp32 && clients.esp32.readyState === WebSocket.OPEN) {
+  if (clients.esp32 && clients.esp32.readyState === WebSocket.OPEN)
     clients.esp32.send(JSON.stringify(data));
-  }
 }
-
 function hantarKeCAM(data) {
-  if (clients.cam && clients.cam.readyState === WebSocket.OPEN) {
+  if (clients.cam && clients.cam.readyState === WebSocket.OPEN)
     clients.cam.send(JSON.stringify(data));
-  }
 }
-
-function semuaHantar(data) {
-  hantarKeGuru(data);
-  hantarKeMurid(data);
-}
+function semuaHantar(data) { hantarKeGuru(data); hantarKeMurid(data); }
 
 function updateStatusPeranti() {
   const status = {
     jenis: 'status_peranti',
-    esp32: clients.esp32 && clients.esp32.readyState === WebSocket.OPEN,
-    cam: clients.cam && clients.cam.readyState === WebSocket.OPEN
+    esp32: !!(clients.esp32 && clients.esp32.readyState === WebSocket.OPEN),
+    cam: !!(clients.cam && clients.cam.readyState === WebSocket.OPEN)
   };
   hantarKeGuru(status);
 }
@@ -130,7 +145,6 @@ wss.on('connection', (ws, req) => {
   const url = req.url;
   console.log(`[WS] Sambungan baru: ${url}`);
 
-  // Tentukan jenis klien
   if (url === '/esp32') {
     clients.esp32 = ws;
     console.log('[WS] ESP32 Utama disambung');
@@ -145,7 +159,6 @@ wss.on('connection', (ws, req) => {
     clients.guru.push(ws);
     console.log('[WS] Aplikasi Guru disambung');
     updateStatusPeranti();
-    // Hantar gameState semasa
     ws.send(JSON.stringify({ jenis: 'game_state', data: gameState }));
   } else if (url === '/murid') {
     clients.murid.push(ws);
@@ -156,55 +169,30 @@ wss.on('connection', (ws, req) => {
     let data;
     try { data = JSON.parse(raw); } catch { return; }
 
-    // ---- DARI ESP32 UTAMA ----
     if (url === '/esp32') {
-      if (data.jenis === 'nfc_scan') {
-        await prosesNFC(data.uid);
-      } else if (data.jenis === 'siap') {
-        hantarKeGuru({ jenis: 'esp32_siap' });
-      }
+      if (data.jenis === 'nfc_scan') await prosesNFC(data.uid);
+      else if (data.jenis === 'siap') hantarKeGuru({ jenis: 'esp32_siap' });
     }
 
-    // ---- DARI ESP32-CAM ----
     if (url === '/cam') {
       if (data.jenis === 'cam_frame') {
-        // Hantar frame ke guru terus
         hantarKeGuru({ jenis: 'cam_frame', data: data.data });
       } else if (data.jenis === 'cam_result') {
         await prosesCAMResult(data);
       }
     }
 
-    // ---- DARI APLIKASI GURU ----
     if (url === '/guru') {
       switch (data.jenis) {
-        case 'mula_mod':
-          await mulaMod(data);
-          break;
-        case 'pilih_murid_mode2':
-          prosesMode2PilihMurid(data);
-          break;
-        case 'soalan_seterusnya':
-          soalanSeterusnya();
-          break;
-        case 'tamat_mod':
-          tamatMod(data);
-          break;
-        case 'buka_ganjaran':
-          hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 });
-          break;
-        case 'flash_cam':
-          hantarKeCAM({ jenis: 'flash', nyala: data.nyala });
-          break;
-        case 'mula_cam_scan':
-          hantarKeCAM({ jenis: 'mula_scan', kategori: data.kategori });
-          break;
-        case 'tambah_ulasan':
-          await tambahUlasan(data);
-          break;
-        case 'push_telegram':
-          await hantarTelegram(data);
-          break;
+        case 'mula_mod': await mulaMod(data); break;
+        case 'pilih_murid_mode2': prosesMode2PilihMurid(data); break;
+        case 'soalan_seterusnya': soalanSeterusnya(); break;
+        case 'tamat_mod': tamatMod(data); break;
+        case 'buka_ganjaran': hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 }); break;
+        case 'flash_cam': hantarKeCAM({ jenis: 'flash', nyala: data.nyala }); break;
+        case 'tambah_ulasan': await tambahUlasan(data); break;
+        case 'push_telegram': await hantarTelegram(data); break;
+        // Auto-scan mod4 tidak perlu trigger manual lagi
       }
     }
   });
@@ -222,104 +210,98 @@ wss.on('connection', (ws, req) => {
 // LOGIK MOD
 // ============================================================
 async function mulaMod(data) {
-  const { mod, murid, soalanId, masa } = data;
+  const { mod, murid, soalanId, masa, tajuk: tajukSesi, kelas } = data;
 
-  // Buat sesi baharu
-  const soalan = await Soalan.findById(soalanId);
+  const soalan = soalanId ? await Soalan.findById(soalanId) : null;
   if (!soalan && mod !== 4) {
     hantarKeGuru({ jenis: 'ralat', mesej: 'Soalan tidak dijumpai' });
     return;
   }
 
+  const tajukFinal = tajukSesi || (soalan ? soalan.tajuk : 'Sesi Mod 4');
   const sesi = new Sesi({
-    tajuk: soalan ? soalan.tajuk : 'Mode 4 - Kesihatan',
+    tajuk: tajukFinal,
+    kelas: kelas || (soalan ? soalan.kelas : ''),
     mod,
     keputusan: murid ? murid.map(m => ({ muridId: m._id, nama: m.nama, markah: 0, avatar: m.avatar })) : []
   });
   await sesi.save();
 
+  // Clear mod4 auto-scan timer
+  if (gameState.mod4?.autoScanTimer) clearTimeout(gameState.mod4.autoScanTimer);
+
   gameState = {
-    mod,
-    aktif: true,
-    soalanSemasa: 0,
-    muridSemasa: 0,
+    mod, aktif: true,
+    soalanSemasa: 0, muridSemasa: 0,
     muridSenarai: murid || [],
-    skor: {},
-    masa: masa || 120,
-    masaAsal: masa || 120,
+    skor: {}, masa: masa || 120, masaAsal: masa || 120,
     soalan: soalan ? soalan.soalan : [],
     sesiId: sesi._id.toString(),
-    buzzerAktif: false,
-    giliran: null, // untuk mode 2
-    peluangKedua: false
+    buzzerAktif: false, giliran: null,
+    peluangKedua: false, mod3Seq: 0,
+    mod4: { fasa: 'sihat', sihatDikesan: [], takSihatDikesan: [], autoScanTimer: null }
   };
 
-  // Set skor awal
   if (murid) murid.forEach(m => { gameState.skor[m._id || m.nama] = 0; });
 
-  // Hantar ke ESP32 mod yang aktif
   hantarKeESP32({ jenis: 'set_mod', mod });
 
-  if (mod === 1) {
-    // Mula timer countup
-    mulaTimerMod1();
-  } else if (mod === 4) {
-    hantarKeCAM({ jenis: 'mula_mod4' });
+  if (mod === 1) mulaTimerMod1();
+  else if (mod === 4) {
+    // Auto-scan terus bermula
+    setTimeout(() => autoScanMod4(), 1500);
   }
 
   semuaHantar({ jenis: 'mod_bermula', gameState: sanitizeGameState() });
-  console.log(`[GAME] Mod ${mod} bermula`);
+  console.log(`[GAME] Mod ${mod} bermula — ${tajukFinal}`);
+}
+
+function autoScanMod4() {
+  if (!gameState.aktif || gameState.mod !== 4) return;
+  const fasa = gameState.mod4.fasa;
+  hantarKeCAM({ jenis: 'mula_scan', kategori: fasa === 'sihat' ? 'sihat' : 'tidak_sihat' });
 }
 
 function mulaTimerMod1() {
   let sisa = gameState.masa;
+  if (gameState.timer) clearInterval(gameState.timer);
   hantarKeGuru({ jenis: 'timer_update', sisa });
 
   gameState.timer = setInterval(() => {
+    if (!gameState.aktif) { clearInterval(gameState.timer); return; }
     sisa--;
     gameState.masa = sisa;
     hantarKeGuru({ jenis: 'timer_update', sisa });
-
-    if (sisa <= 0) {
-      clearInterval(gameState.timer);
-      tamatMod1();
-    }
+    if (sisa <= 0) { clearInterval(gameState.timer); tamatMod1(); }
   }, 1000);
 }
 
 async function tamatMod1() {
+  if (gameState.timer) clearInterval(gameState.timer);
   gameState.aktif = false;
 
-  // Susun ranking
   const ranking = gameState.muridSenarai.map(m => ({
-    nama: m.nama,
-    avatar: m.avatar,
+    nama: m.nama, avatar: m.avatar,
     markah: gameState.skor[m._id || m.nama] || 0
   })).sort((a, b) => b.markah - a.markah);
 
-  // Update DB
   await Sesi.findByIdAndUpdate(gameState.sesiId, {
-    keputusan: ranking.map((r, i) => ({
-      nama: r.nama, markah: r.markah, avatar: r.avatar, tempat: i + 1
-    }))
+    keputusan: ranking.map((r, i) => ({ nama: r.nama, markah: r.markah, avatar: r.avatar, tempat: i + 1 }))
   });
 
   hantarKeGuru({ jenis: 'mod1_tamat', ranking });
-
-  // Buka servo untuk tempat 1,2,3
-  if (ranking.length > 0) {
-    setTimeout(() => {
-      hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 });
-    }, 2000);
-  }
+  if (ranking.length > 0) setTimeout(() => hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 }), 2000);
 }
 
 async function prosesNFC(uid) {
-  if (!gameState.aktif) return;
-
+  if (!gameState.aktif) {
+    // Hantar ke guru untuk UI feedback walaupun tiada mod aktif
+    hantarKeGuru({ jenis: 'nfc_scan', uid });
+    return;
+  }
+  hantarKeGuru({ jenis: 'nfc_scan', uid });
   const mod = gameState.mod;
   uid = uid.toUpperCase().trim();
-
   if (mod === 1) prosesNFCMod1(uid);
   else if (mod === 2) prosesNFCMod2(uid);
   else if (mod === 3) prosesNFCMod3(uid);
@@ -333,29 +315,32 @@ function prosesNFCMod1(uid) {
   const murid = gameState.muridSenarai[gameState.muridSemasa];
   if (!murid) return;
 
-  // Semak jawapan
-  const jawapanUID = { A: soalan.uidA, B: soalan.uidB, C: soalan.uidC };
-  const jawapanDiberi = Object.keys(jawapanUID).find(k => jawapanUID[k] === uid);
+  // Guna kad NFC tetap A/B/C
+  const jawapanDiberi = uidKeJawapan(uid);
+  if (!jawapanDiberi) return;
 
   const betul = jawapanDiberi === soalan.betul;
+  const key = murid._id || murid.nama;
 
   if (betul) {
-    const key = murid._id || murid.nama;
     gameState.skor[key] = (gameState.skor[key] || 0) + 1;
     hantarKeESP32({ jenis: 'betul' });
-    hantarKeGuru({ jenis: 'jawapan', betul: true, murid: murid.nama, markah: gameState.skor[key] });
+    hantarKeGuru({ jenis: 'jawapan', betul: true, murid: murid.nama, jawapan: jawapanDiberi, markah: gameState.skor[key] });
   } else {
     hantarKeESP32({ jenis: 'salah' });
-    hantarKeGuru({ jenis: 'jawapan', betul: false, murid: murid.nama });
+    hantarKeGuru({ jenis: 'jawapan', betul: false, murid: murid.nama, jawapan: jawapanDiberi });
   }
 
-  // Gilir murid seterusnya
   gameState.muridSemasa++;
   if (gameState.muridSemasa >= gameState.muridSenarai.length) {
     gameState.muridSemasa = 0;
     gameState.soalanSemasa++;
+    if (gameState.soalanSemasa >= gameState.soalan.length) {
+      clearInterval(gameState.timer);
+      tamatMod1();
+      return;
+    }
   }
-
   hantarKeGuru({ jenis: 'state_update', gameState: sanitizeGameState() });
 }
 
@@ -366,8 +351,9 @@ function prosesNFCMod2(uid) {
   if (soalanIdx >= gameState.soalan.length) return;
 
   const soalan = gameState.soalan[soalanIdx];
-  const jawapanUID = { A: soalan.uidA, B: soalan.uidB, C: soalan.uidC };
-  const jawapanDiberi = Object.keys(jawapanUID).find(k => jawapanUID[k] === uid);
+  const jawapanDiberi = uidKeJawapan(uid);
+  if (!jawapanDiberi) return;
+
   const betul = jawapanDiberi === soalan.betul;
   const muridSemasa = gameState.giliran;
 
@@ -375,18 +361,14 @@ function prosesNFCMod2(uid) {
     gameState.skor[muridSemasa] = (gameState.skor[muridSemasa] || 0) + 1;
     hantarKeESP32({ jenis: 'betul' });
     hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 });
-    hantarKeGuru({ jenis: 'mod2_betul', murid: muridSemasa, markah: gameState.skor[muridSemasa] });
+    hantarKeGuru({ jenis: 'mod2_betul', murid: muridSemasa, jawapan: jawapanDiberi, markah: gameState.skor[muridSemasa] });
     gameState.giliran = null;
     gameState.peluangKedua = false;
     gameState.soalanSemasa++;
-
-    if (gameState.soalanSemasa >= gameState.soalan.length) {
-      tamatMod2();
-    }
+    if (gameState.soalanSemasa >= gameState.soalan.length) { tamatMod2(); return; }
   } else {
     hantarKeESP32({ jenis: 'salah' });
     if (!gameState.peluangKedua) {
-      // Beri peluang kepada murid lain
       const muridLain = gameState.muridSenarai.find(m => (m._id || m.nama) !== muridSemasa);
       if (muridLain) {
         gameState.giliran = muridLain._id || muridLain.nama;
@@ -394,18 +376,13 @@ function prosesNFCMod2(uid) {
         hantarKeGuru({ jenis: 'mod2_peluang_kedua', murid: muridLain.nama });
       }
     } else {
-      // Kedua-dua salah, teruskan soalan seterusnya
       gameState.giliran = null;
       gameState.peluangKedua = false;
       gameState.soalanSemasa++;
       hantarKeGuru({ jenis: 'mod2_kedua_salah' });
-
-      if (gameState.soalanSemasa >= gameState.soalan.length) {
-        tamatMod2();
-      }
+      if (gameState.soalanSemasa >= gameState.soalan.length) { tamatMod2(); return; }
     }
   }
-
   hantarKeGuru({ jenis: 'state_update', gameState: sanitizeGameState() });
 }
 
@@ -422,10 +399,8 @@ async function tamatMod2() {
     nama: m.nama, avatar: m.avatar,
     markah: gameState.skor[m._id || m.nama] || 0
   })).sort((a, b) => b.markah - a.markah);
-
   await Sesi.findByIdAndUpdate(gameState.sesiId, { keputusan: ranking });
   hantarKeGuru({ jenis: 'mod2_tamat', ranking });
-
   setTimeout(() => hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 }), 1500);
 }
 
@@ -435,12 +410,10 @@ function prosesNFCMod3(uid) {
   if (!soalan || idx >= soalan.length) return;
 
   const betul = soalan[idx].uidBetul === uid;
-
   if (betul) {
     gameState.mod3Seq = idx + 1;
     hantarKeESP32({ jenis: 'betul' });
     hantarKeGuru({ jenis: 'mod3_betul', susunan: idx + 1, jumlah: soalan.length });
-
     if (gameState.mod3Seq >= soalan.length) {
       hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 });
       hantarKeGuru({ jenis: 'mod3_tamat' });
@@ -453,25 +426,75 @@ function prosesNFCMod3(uid) {
 }
 
 async function prosesCAMResult(data) {
-  const { label, confidence, kategori } = data;
-  const makananSihat = ['pisang', 'tembikai', 'epal'];
-  const makananTakSihat = ['air manis', 'sosej'];
+  if (!gameState.aktif || gameState.mod !== 4) return;
+
+  const { label, confidence } = data;
+  const m4 = gameState.mod4;
+  const fasa = m4.fasa;
+  const labelLower = (label || '').toLowerCase();
 
   let betul = false;
-  if (kategori === 'sihat') betul = makananSihat.includes(label.toLowerCase());
-  else if (kategori === 'tidak_sihat') betul = makananTakSihat.includes(label.toLowerCase());
+  if (fasa === 'sihat') {
+    betul = MAKANAN_SIHAT_LIST.includes(labelLower) && !m4.sihatDikesan.includes(labelLower);
+  } else {
+    betul = MAKANAN_TAK_SIHAT_LIST.includes(labelLower) && !m4.takSihatDikesan.includes(labelLower);
+  }
 
-  hantarKeGuru({ jenis: 'cam_keputusan', label, confidence, betul, kategori });
+  hantarKeGuru({ jenis: 'cam_keputusan', label, confidence, betul, kategori: fasa });
 
   if (betul) {
     hantarKeESP32({ jenis: 'betul' });
+    if (fasa === 'sihat') {
+      m4.sihatDikesan.push(labelLower);
+      if (m4.sihatDikesan.length >= MAKANAN_SIHAT_LIST.length) {
+        // Tukar ke fasa tidak sihat
+        m4.fasa = 'tidak_sihat';
+        hantarKeGuru({ jenis: 'mod4_tukar_fasa', fasa: 'tidak_sihat' });
+        setTimeout(() => autoScanMod4(), 2000);
+        return;
+      }
+    } else {
+      m4.takSihatDikesan.push(labelLower);
+      if (m4.takSihatDikesan.length >= MAKANAN_TAK_SIHAT_LIST.length) {
+        // Mod4 selesai
+        await tamatMod4();
+        return;
+      }
+    }
   } else {
     hantarKeESP32({ jenis: 'salah' });
+  }
+
+  // Auto-scan semula selepas 2 saat
+  if (gameState.aktif && gameState.mod === 4) {
+    m4.autoScanTimer = setTimeout(() => autoScanMod4(), 2500);
+  }
+}
+
+async function tamatMod4() {
+  gameState.aktif = false;
+  const murid = gameState.muridSenarai[0];
+  const ranking = murid ? [{ nama: murid.nama, avatar: murid.avatar, markah: gameState.mod4.sihatDikesan.length + gameState.mod4.takSihatDikesan.length }] : [];
+  await Sesi.findByIdAndUpdate(gameState.sesiId, { keputusan: ranking });
+  hantarKeGuru({ jenis: 'mod4_tamat', ranking });
+  setTimeout(() => hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 }), 1000);
+}
+
+function soalanSeterusnya() {
+  if (!gameState.aktif) return;
+  gameState.soalanSemasa++;
+  gameState.muridSemasa = 0;
+  if (gameState.soalanSemasa >= gameState.soalan.length) {
+    if (gameState.mod === 1) tamatMod1();
+    else if (gameState.mod === 2) tamatMod2();
+  } else {
+    hantarKeGuru({ jenis: 'state_update', gameState: sanitizeGameState() });
   }
 }
 
 async function tamatMod(data) {
   if (gameState.timer) clearInterval(gameState.timer);
+  if (gameState.mod4?.autoScanTimer) clearTimeout(gameState.mod4.autoScanTimer);
   gameState.aktif = false;
   hantarKeGuru({ jenis: 'mod_tamat' });
 }
@@ -481,40 +504,37 @@ async function tambahUlasan(data) {
   await Sesi.findByIdAndUpdate(sesiId, {
     $push: { ulasan: { muridId, nama: muridNama, komen, tarikhKomen: new Date() } }
   });
-  semuaHantar({ jenis: 'ulasan_baharu', muridId, muridNama, komen });
+  semuaHantar({ jenis: 'ulasan_baharu', sesiId, muridId, muridNama, komen });
 }
 
+// Telegram — guna credentials tetap
 async function hantarTelegram(data) {
-  const { sesiId, token, chatId } = data;
+  const { sesiId } = data;
   const sesi = await Sesi.findById(sesiId);
   if (!sesi) return;
 
   const ranking = sesi.keputusan.sort((a, b) => b.markah - a.markah);
   let mesej = `🎓 *LAPORAN PENCAPAIAN ILMUVERSE*\n`;
   mesej += `📅 Tarikh: ${new Date(sesi.tarikh).toLocaleDateString('ms-MY')}\n`;
+  if (sesi.kelas) mesej += `🏫 Kelas: *${sesi.kelas}*\n`;
   mesej += `📖 Tajuk: *${sesi.tajuk}*\n`;
-  mesej += `🎯 Mod: ${['', 'Kuiz Ramai-ramai', 'Kuiz 2 Orang', 'Susunan/Hafalan', 'Kecam Gambar'][sesi.mod]}\n\n`;
+  mesej += `🎯 Mod: ${['', 'Kuiz Ramai-ramai', 'Dwi-Padu', 'Susunan Hafalan', 'Imbas AI'][sesi.mod]}\n\n`;
   mesej += `🏆 *KEPUTUSAN:*\n`;
-
   ranking.forEach((r, i) => {
     const emoji = ['🥇', '🥈', '🥉'][i] || '🎖️';
     mesej += `${emoji} ${r.nama}: *${r.markah} markah*\n`;
   });
-
-  if (sesi.ulasan && sesi.ulasan.length > 0) {
+  if (sesi.ulasan?.length) {
     mesej += `\n💬 *ULASAN GURU:*\n`;
-    sesi.ulasan.forEach(u => {
-      mesej += `• ${u.nama}: _${u.komen}_\n`;
-    });
+    sesi.ulasan.forEach(u => { mesej += `• ${u.nama}: _${u.komen}_\n`; });
   }
-
   mesej += `\n✨ _Dihantar oleh sistem ILMUVERSE_`;
 
   try {
-    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text: mesej, parse_mode: 'Markdown' })
+      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: mesej, parse_mode: 'Markdown' })
     });
     const hasil = await res.json();
     hantarKeGuru({ jenis: 'telegram_status', berjaya: hasil.ok });
@@ -534,7 +554,8 @@ function sanitizeGameState() {
     masa: gameState.masa,
     sesiId: gameState.sesiId,
     giliran: gameState.giliran,
-    jumlahSoalan: gameState.soalan ? gameState.soalan.length : 0
+    jumlahSoalan: gameState.soalan ? gameState.soalan.length : 0,
+    mod4Fasa: gameState.mod4?.fasa
   };
 }
 
@@ -543,47 +564,36 @@ function sanitizeGameState() {
 // ============================================================
 
 // --- MURID ---
-app.get('/api/murid', async (req, res) => {
-  const data = await Murid.find();
-  res.json(data);
-});
+app.get('/api/murid', async (req, res) => { res.json(await Murid.find()); });
 app.post('/api/murid', async (req, res) => {
   const murid = new Murid(req.body);
-  await murid.save();
-  res.json(murid);
+  await murid.save(); res.json(murid);
 });
 app.delete('/api/murid/:id', async (req, res) => {
-  await Murid.findByIdAndDelete(req.params.id);
-  res.json({ ok: true });
+  await Murid.findByIdAndDelete(req.params.id); res.json({ ok: true });
 });
 
 // --- SOALAN ---
-app.get('/api/soalan', async (req, res) => {
-  const data = await Soalan.find();
-  res.json(data);
-});
+app.get('/api/soalan', async (req, res) => { res.json(await Soalan.find()); });
 app.post('/api/soalan', async (req, res) => {
-  const s = new Soalan(req.body);
-  await s.save();
-  res.json(s);
+  const s = new Soalan(req.body); await s.save(); res.json(s);
 });
 app.put('/api/soalan/:id', async (req, res) => {
-  const s = await Soalan.findByIdAndUpdate(req.params.id, req.body, { new: true });
-  res.json(s);
+  const s = await Soalan.findByIdAndUpdate(req.params.id, req.body, { new: true }); res.json(s);
 });
 app.delete('/api/soalan/:id', async (req, res) => {
-  await Soalan.findByIdAndDelete(req.params.id);
-  res.json({ ok: true });
+  await Soalan.findByIdAndDelete(req.params.id); res.json({ ok: true });
 });
 
 // --- SESI & DASHBOARD ---
 app.get('/api/sesi', async (req, res) => {
-  const data = await Sesi.find().sort({ tarikh: -1 }).limit(50);
-  res.json(data);
+  res.json(await Sesi.find().sort({ tarikh: -1 }).limit(50));
 });
 app.get('/api/sesi/:id', async (req, res) => {
-  const data = await Sesi.findById(req.params.id);
-  res.json(data);
+  res.json(await Sesi.findById(req.params.id));
+});
+app.delete('/api/sesi/:id', async (req, res) => {
+  await Sesi.findByIdAndDelete(req.params.id); res.json({ ok: true });
 });
 app.put('/api/sesi/:id/ulasan', async (req, res) => {
   const { muridId, muridNama, komen } = req.body;
@@ -596,28 +606,22 @@ app.put('/api/sesi/:id/ulasan', async (req, res) => {
 
 // --- SIARAN ---
 app.get('/api/siaran', async (req, res) => {
-  const data = await Siaran.find().sort({ tarikhDihantar: -1 });
-  res.json(data);
+  res.json(await Siaran.find().sort({ tarikhDihantar: -1 }));
 });
 app.post('/api/siaran', async (req, res) => {
-  const s = new Siaran(req.body);
-  await s.save();
-  semuaHantar({ jenis: 'siaran_baharu', data: s });
-  res.json(s);
+  const s = new Siaran(req.body); await s.save();
+  semuaHantar({ jenis: 'siaran_baharu', data: s }); res.json(s);
 });
 app.put('/api/siaran/:id', async (req, res) => {
-  const s = await Siaran.findByIdAndUpdate(req.params.id, req.body, { new: true });
-  res.json(s);
+  const s = await Siaran.findByIdAndUpdate(req.params.id, req.body, { new: true }); res.json(s);
 });
 app.delete('/api/siaran/:id', async (req, res) => {
-  await Siaran.findByIdAndDelete(req.params.id);
-  res.json({ ok: true });
+  await Siaran.findByIdAndDelete(req.params.id); res.json({ ok: true });
 });
 
-// --- NFC SCAN (untuk ESP32 yang guna HTTP fallback) ---
+// --- NFC HTTP fallback ---
 app.post('/api/nfc', async (req, res) => {
-  await prosesNFC(req.body.uid);
-  res.json({ ok: true });
+  await prosesNFC(req.body.uid); res.json({ ok: true });
 });
 
 // ============================================================
@@ -625,6 +629,5 @@ app.post('/api/nfc', async (req, res) => {
 // ============================================================
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`[SERVER] ILMUVERSE berjalan pada port ${PORT}`);
-  console.log(`[SERVER] WebSocket aktif pada ws://localhost:${PORT}`);
+  console.log(`[SERVER] ILMUVERSE v2.0 berjalan pada port ${PORT}`);
 });
