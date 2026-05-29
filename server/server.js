@@ -50,7 +50,15 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/ilmuverse
 const MuridSchema = new mongoose.Schema({
   nama: String,
   avatar: String, // base64 image atau emoji
+  kelas: String,  // nama kelas murid
   createdAt: { type: Date, default: Date.now }
+});
+
+const KehadiranSchema = new mongoose.Schema({
+  kelas: String,
+  tarikh: { type: Date, default: Date.now },
+  senarai: [{ id: String, nama: String, hadir: Boolean }],
+  catatanAt: { type: Date, default: Date.now }
 });
 
 const SoalanSchema = new mongoose.Schema({
@@ -85,6 +93,7 @@ const Murid = mongoose.model('Murid', MuridSchema);
 const Soalan = mongoose.model('Soalan', SoalanSchema);
 const Sesi = mongoose.model('Sesi', SesiSchema);
 const Siaran = mongoose.model('Siaran', SiaranSchema);
+const Kehadiran = mongoose.model('Kehadiran', KehadiranSchema);
 
 // ============================================================
 // PENGURUSAN WEBSOCKET
@@ -569,6 +578,9 @@ app.post('/api/murid', async (req, res) => {
   const murid = new Murid(req.body);
   await murid.save(); res.json(murid);
 });
+app.put('/api/murid/:id', async (req, res) => {
+  const m = await Murid.findByIdAndUpdate(req.params.id, req.body, { new: true }); res.json(m);
+});
 app.delete('/api/murid/:id', async (req, res) => {
   await Murid.findByIdAndDelete(req.params.id); res.json({ ok: true });
 });
@@ -617,6 +629,51 @@ app.put('/api/siaran/:id', async (req, res) => {
 });
 app.delete('/api/siaran/:id', async (req, res) => {
   await Siaran.findByIdAndDelete(req.params.id); res.json({ ok: true });
+});
+
+// --- KEHADIRAN ---
+app.get('/api/kehadiran', async (req, res) => {
+  const query = {};
+  if (req.query.kelas) query.kelas = req.query.kelas;
+  if (req.query.tarikh) {
+    const t = new Date(req.query.tarikh);
+    const esok = new Date(t); esok.setDate(esok.getDate() + 1);
+    query.tarikh = { $gte: t, $lt: esok };
+  }
+  const data = await Kehadiran.find(query).sort({ tarikh: -1 });
+  res.json(data);
+});
+app.post('/api/kehadiran', async (req, res) => {
+  const { kelas, tarikh, senarai } = req.body;
+  // Upsert: kalau dah ada rekod untuk kelas+tarikh yang sama, kemaskini
+  const tarikhObj = new Date(tarikh);
+  const esok = new Date(tarikhObj); esok.setDate(esok.getDate() + 1);
+  const sedia = await Kehadiran.findOne({ kelas, tarikh: { $gte: tarikhObj, $lt: esok } });
+  let rekod;
+  if (sedia) {
+    rekod = await Kehadiran.findByIdAndUpdate(sedia._id, { senarai, catatanAt: new Date() }, { new: true });
+  } else {
+    rekod = new Kehadiran({ kelas, tarikh: tarikhObj, senarai });
+    await rekod.save();
+  }
+  res.json(rekod);
+});
+
+// --- TELEGRAM KEHADIRAN ---
+app.post('/api/telegram-kehadiran', async (req, res) => {
+  const { mesej } = req.body;
+  if (!mesej) return res.json({ ok: false, error: 'Tiada mesej' });
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: mesej, parse_mode: 'Markdown' })
+    });
+    const hasil = await r.json();
+    res.json({ ok: hasil.ok });
+  } catch(e) {
+    res.json({ ok: false, error: e.message });
+  }
 });
 
 // --- NFC HTTP fallback ---
