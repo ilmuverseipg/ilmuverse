@@ -6,87 +6,166 @@
 <title>ILMUVERSE — Murid & Ibu Bapa</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#040d1a;--bg2:#071428;--panel:#0a1d35;--panel2:#0d2545;--accent:#00d4ff;--accent2:#0077ff;--gold:#ffd700;--green:#00ff88;--red:#ff3355;--text:#e8f4ff;--text2:#7bb8d4;--border:rgba(0,212,255,0.2)}
+:root{
+  --bg:#f0f5ff;
+  --bg2:#e6eeff;
+  --panel:#ffffff;
+  --panel2:#f5f8ff;
+  --accent:#4f8ef7;
+  --purple:#a855f7;
+  --pink:#ec4899;
+  --gold:#f59e0b;
+  --green:#10b981;
+  --teal:#06b6d4;
+  --orange:#f97316;
+  --red:#ef4444;
+  --text:#1e2d5a;
+  --text2:#6b7db3;
+  --border:rgba(79,142,247,0.18);
+  --shadow:0 4px 20px rgba(79,142,247,0.1);
+  --shadow2:0 8px 36px rgba(79,142,247,0.16);
+}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif}
 
-.topbar{height:60px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:16px;position:sticky;top:0;z-index:100}
-.logo{font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:900;color:var(--accent);text-shadow:0 0 10px var(--accent)}
-.logo-sub{font-size:0.7rem;color:var(--text2);letter-spacing:2px}
+/* ── BACKGROUND DECO ── */
+body::before{content:'';position:fixed;inset:0;background:
+  radial-gradient(circle at 10% 20%, rgba(79,142,247,0.06) 0%, transparent 50%),
+  radial-gradient(circle at 90% 80%, rgba(168,85,247,0.06) 0%, transparent 50%),
+  radial-gradient(circle at 50% 50%, rgba(6,182,212,0.04) 0%, transparent 60%);
+pointer-events:none;z-index:0}
+body>*{position:relative;z-index:1}
+
+/* ── TOPBAR ── */
+.topbar{background:rgba(255,255,255,.96);border-bottom:2px solid rgba(79,142,247,0.12);height:64px;display:flex;align-items:center;padding:0 20px;gap:16px;position:sticky;top:0;z-index:100;backdrop-filter:blur(16px);box-shadow:0 2px 20px rgba(79,142,247,0.08)}
+.logo{font-family:'Orbitron',monospace;font-size:1.25rem;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo-sub{font-size:.62rem;color:var(--text2);letter-spacing:2px;text-transform:uppercase;font-weight:600}
 .topbar-nav{display:flex;gap:4px;margin-left:auto}
-.nav-btn{padding:8px 16px;background:transparent;border:1px solid transparent;border-radius:4px;color:var(--text2);font-family:'Exo 2',sans-serif;font-size:0.85rem;cursor:pointer;transition:.2s}
-.nav-btn.aktif,.nav-btn:hover{background:rgba(0,212,255,.1);border-color:var(--border);color:var(--accent)}
-
-.halaman{display:none;padding:24px;max-width:900px;margin:0 auto;animation:fadeIn .3s ease}
-.halaman.aktif{display:block}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-
-.sek-tajuk{font-family:'Orbitron',monospace;font-size:1rem;color:var(--accent);letter-spacing:2px;margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid var(--border)}
-
-/* DASHBOARD */
-.filter-bar{display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap}
-.tarikh-input{padding:8px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:0.85rem;outline:none}
-.tarikh-input:focus{border-color:var(--accent)}
-
-.sesi-kad{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;cursor:pointer;transition:.3s}
-.sesi-kad:hover{border-color:var(--accent);box-shadow:0 0 20px rgba(0,212,255,.1)}
-.sesi-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px}
-.sesi-tajuk-teks{font-size:1rem;font-weight:700}
-.sesi-tarikh-teks{font-size:0.75rem;color:var(--text2);margin-top:4px}
-.sesi-mod-badge{padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:600;background:rgba(0,212,255,.1);border:1px solid var(--border);color:var(--accent)}
-
-.murid-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.murid-chip{background:var(--bg2);border-radius:20px;padding:6px 14px;display:flex;align-items:center;gap:8px;font-size:0.85rem}
-.markah-badge{font-family:'Orbitron',monospace;color:var(--accent);font-weight:700}
-
-.ulasan-box{background:var(--bg2);border-left:3px solid var(--accent);padding:12px 16px;border-radius:0 8px 8px 0;margin-top:12px}
-.ulasan-label{font-size:0.75rem;color:var(--text2);margin-bottom:4px}
-.ulasan-teks{font-size:0.9rem;line-height:1.5}
-
-/* DETAIL MODAL */
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:500;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;backdrop-filter:blur(4px)}
-.overlay.buka{display:flex;animation:fadeIn .2s}
-.modal{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:540px;position:relative;margin:auto}
-.modal-tutup{position:absolute;top:14px;right:14px;background:none;border:1px solid var(--border);color:var(--text2);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:0.9rem}
-.modal-tutup:hover{background:var(--red);border-color:var(--red);color:white}
-
-/* RANKING */
-.ranking-item{display:flex;align-items:center;gap:14px;background:var(--bg2);border-radius:10px;padding:12px 16px;margin-bottom:10px;border:1px solid transparent}
-.r1-item{border-color:var(--gold)}
-.r2-item{border-color:#c0c0c0}
-.r3-item{border-color:#cd7f32}
-.rank-no{font-family:'Orbitron',monospace;font-size:1.4rem;font-weight:900;min-width:30px}
-.rank-nama{flex:1;font-weight:600}
-.rank-markah{font-family:'Orbitron',monospace;color:var(--accent);font-size:1.1rem}
-
-/* SIARAN */
-.siaran-kad{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;transition:.3s}
-.siaran-kad:hover{border-color:var(--accent)}
-.siaran-header{padding:16px 20px}
-.siaran-tajuk{font-size:1rem;font-weight:700;margin-bottom:4px}
-.siaran-tarikh{font-size:0.75rem;color:var(--text2)}
-.siaran-embed{width:100%;height:280px;border:none;background:var(--bg2)}
-.siaran-link{display:block;padding:10px 20px;background:rgba(0,212,255,.05);color:var(--accent);text-decoration:none;font-size:0.85rem;border-top:1px solid var(--border)}
-.siaran-link:hover{background:rgba(0,212,255,.1)}
-.siaran-komen{padding:12px 20px;color:var(--text2);font-size:0.85rem;border-top:1px solid var(--border);line-height:1.6}
-
-/* KOSONG STATE */
-.kosong{text-align:center;padding:60px 20px;color:var(--text2)}
-.kosong-ikon{font-size:3rem;margin-bottom:12px}
-
-/* SCROLLBAR */
-::-webkit-scrollbar{width:4px}
-::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-
-/* REAL-TIME BADGE */
-.live-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.3);border-radius:20px;padding:4px 12px;font-size:0.75rem;color:var(--green)}
+.nav-btn{padding:8px 16px;background:transparent;border:1px solid transparent;border-radius:8px;color:var(--text2);font-family:'Exo 2',sans-serif;font-size:.83rem;cursor:pointer;transition:.2s;font-weight:600}
+.nav-btn.aktif,.nav-btn:hover{background:linear-gradient(135deg,rgba(79,142,247,.1),rgba(168,85,247,.06));border-color:rgba(79,142,247,.25);color:var(--accent)}
+.live-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);border-radius:20px;padding:4px 12px;font-size:.72rem;color:var(--green);font-weight:700}
 .live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:livePulse 1s infinite}
 @keyframes livePulse{0%,100%{opacity:1}50%{opacity:.3}}
 
-/* NOTIF */
-.notif-bar{position:fixed;bottom:20px;right:20px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 20px;font-size:0.85rem;z-index:9999;display:none;animation:slideIn .3s;max-width:300px}
+/* ── HALAMAN ── */
+.halaman{display:none;padding:24px;max-width:960px;margin:0 auto;animation:fadeIn .3s ease}
+.halaman.aktif{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── SECTION HEADER ── */
+.sek-tajuk{font-family:'Orbitron',monospace;font-size:1rem;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px;margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid rgba(79,142,247,.12)}
+
+/* ── FILTER BAR ── */
+.filter-bar{display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap}
+.filter-input{padding:8px 14px;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.85rem;outline:none;box-shadow:var(--shadow)}
+.filter-input:focus{border-color:var(--accent)}
+
+/* ── SESI KAD ── */
+.sesi-kad{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px;cursor:pointer;transition:.3s;box-shadow:var(--shadow)}
+.sesi-kad:hover{border-color:rgba(79,142,247,.4);box-shadow:var(--shadow2);transform:translateY(-2px)}
+.sesi-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.sesi-tajuk-teks{font-size:1rem;font-weight:700;color:var(--text)}
+.sesi-tarikh-teks{font-size:.74rem;color:var(--text2);margin-top:4px}
+.sesi-mod-badge{padding:5px 14px;border-radius:20px;font-size:.74rem;font-weight:700}
+
+/* ── MURID CHIPS ── */
+.murid-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.murid-chip{background:var(--panel2);border-radius:20px;padding:6px 14px;display:flex;align-items:center;gap:8px;font-size:.85rem;border:1px solid var(--border);transition:.2s}
+.murid-chip:hover{border-color:rgba(79,142,247,.4)}
+.chip-avatar-img{width:26px;height:26px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(79,142,247,.12),rgba(168,85,247,.1));font-size:1rem;flex-shrink:0}
+.chip-avatar-img img{width:100%;height:100%;object-fit:cover}
+.markah-badge{font-family:'Orbitron',monospace;color:var(--accent);font-weight:700;font-size:.85rem}
+
+/* ── ULASAN BOX ── */
+.ulasan-box{background:linear-gradient(135deg,rgba(79,142,247,.04),rgba(168,85,247,.03));border-left:3px solid var(--accent);padding:12px 16px;border-radius:0 10px 10px 0;margin-top:12px}
+.ulasan-label{font-size:.72rem;color:var(--text2);margin-bottom:4px;font-weight:700}
+.ulasan-teks{font-size:.9rem;line-height:1.5;color:var(--text)}
+
+/* ── DETAIL MODAL ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(30,45,90,.4);z-index:500;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;backdrop-filter:blur(8px)}
+.overlay.buka{display:flex;animation:fadeIn .2s}
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:28px;width:100%;max-width:540px;position:relative;margin:auto;box-shadow:0 20px 60px rgba(30,45,90,.15)}
+.modal-tutup{position:absolute;top:14px;right:14px;background:var(--bg2);border:1px solid var(--border);color:var(--text2);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;transition:.2s}
+.modal-tutup:hover{background:var(--red);border-color:var(--red);color:#fff}
+
+/* ── RANKING ── */
+.ranking-item{display:flex;align-items:center;gap:14px;background:var(--panel2);border-radius:10px;padding:12px 16px;margin-bottom:10px;border:1px solid var(--border);transition:.2s}
+.ranking-item:hover{box-shadow:var(--shadow)}
+.r1-item{border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.04)}
+.r2-item{border-color:rgba(156,163,175,.4);background:rgba(156,163,175,.04)}
+.r3-item{border-color:rgba(180,83,9,.3);background:rgba(180,83,9,.03)}
+.rank-no{font-family:'Orbitron',monospace;font-size:1.4rem;font-weight:900;min-width:30px}
+.rank-avatar{width:40px;height:40px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;background:linear-gradient(135deg,rgba(79,142,247,.1),rgba(168,85,247,.1))}
+.rank-avatar img{width:100%;height:100%;object-fit:cover}
+.rank-nama{flex:1;font-weight:700}
+.rank-markah{font-family:'Orbitron',monospace;color:var(--accent);font-size:1.1rem;font-weight:700}
+
+/* ── SIARAN ── */
+.siaran-kad{background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:16px;transition:.3s;box-shadow:var(--shadow)}
+.siaran-kad:hover{box-shadow:var(--shadow2)}
+.siaran-header{padding:16px 20px;background:linear-gradient(135deg,rgba(79,142,247,.04),rgba(168,85,247,.03))}
+.siaran-tajuk{font-size:1rem;font-weight:700;margin-bottom:4px;color:var(--text)}
+.siaran-tarikh{font-size:.72rem;color:var(--text2)}
+.siaran-embed{width:100%;height:280px;border:none;background:var(--panel2)}
+.siaran-link{display:block;padding:10px 20px;background:rgba(79,142,247,.06);color:var(--accent);text-decoration:none;font-size:.84rem;border-top:1px solid var(--border);font-weight:600;transition:.2s}
+.siaran-link:hover{background:rgba(79,142,247,.12)}
+.siaran-komen{padding:12px 20px;color:var(--text2);font-size:.85rem;border-top:1px solid var(--border);line-height:1.6;background:var(--panel2)}
+
+/* ── KEHADIRAN ── */
+.kehadiran-filter{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:20px}
+.kehadiran-select-kelas{padding:10px 14px;background:var(--panel);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.9rem;outline:none;min-width:200px;box-shadow:var(--shadow)}
+.kehadiran-select-kelas:focus{border-color:var(--accent)}
+.kehadiran-tarikh{padding:10px 14px;background:var(--panel);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.9rem;outline:none;box-shadow:var(--shadow)}
+
+.kehadiran-rekod-list{display:grid;gap:14px}
+.kehadiran-rekod-kad{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:var(--shadow);transition:.3s}
+.kehadiran-rekod-kad:hover{box-shadow:var(--shadow2)}
+.kehadiran-rekod-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.kehadiran-rekod-tarikh{font-size:1rem;font-weight:700;color:var(--text)}
+.kehadiran-rekod-kelas{font-size:.74rem;color:var(--text2);margin-top:3px}
+.kehadiran-stat-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.kehadiran-stat-badge{padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:700}
+.kehadiran-murid-chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip-hadir{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.3);padding:4px 12px;border-radius:20px;font-size:.78rem;font-weight:700;display:flex;align-items:center;gap:6px}
+.chip-tidak-hadir{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.3);padding:4px 12px;border-radius:20px;font-size:.78rem;font-weight:700;display:flex;align-items:center;gap:6px}
+.chip-mini-avatar{width:20px;height:20px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0}
+.chip-mini-avatar img{width:100%;height:100%;object-fit:cover}
+
+/* ── KOSONG STATE ── */
+.kosong{text-align:center;padding:60px 20px;color:var(--text2)}
+.kosong-ikon{font-size:3rem;margin-bottom:12px}
+.kosong-teks{font-size:.9rem}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:rgba(79,142,247,.25);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+
+/* ── NOTIF ── */
+.notif-bar{position:fixed;bottom:20px;right:20px;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px 20px;font-size:.85rem;z-index:9999;display:none;animation:slideIn .3s;max-width:300px;box-shadow:var(--shadow2);color:var(--text)}
 @keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ── CARDS STATS (Dashboard Summary) ── */
+.stat-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
+.stat-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px;text-align:center;box-shadow:var(--shadow);transition:.2s}
+.stat-card:hover{box-shadow:var(--shadow2);transform:translateY(-2px)}
+.stat-card-num{font-family:'Orbitron',monospace;font-size:2rem;font-weight:900;line-height:1.1}
+.stat-card-label{font-size:.72rem;color:var(--text2);margin-top:4px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+
+/* ── MOD BADGES WARNA ── */
+.badge-mod1{background:rgba(79,142,247,.1);color:var(--accent);border:1px solid rgba(79,142,247,.3)}
+.badge-mod2{background:rgba(168,85,247,.1);color:var(--purple);border:1px solid rgba(168,85,247,.3)}
+.badge-mod3{background:rgba(245,158,11,.1);color:var(--gold);border:1px solid rgba(245,158,11,.3)}
+.badge-mod4{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:600px){
+  .topbar-nav{gap:2px}
+  .nav-btn{padding:6px 10px;font-size:.75rem}
+  .stat-cards{grid-template-columns:repeat(2,1fr)}
+  .halaman{padding:16px}
+}
 </style>
 </head>
 <body>
@@ -94,28 +173,73 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Ex
 <div class="topbar">
   <div>
     <div class="logo">ILMUVERSE</div>
-    <div class="logo-sub">PORTAL MURID & IBU BAPA</div>
+    <div class="logo-sub">Portal Murid &amp; Ibu Bapa</div>
   </div>
   <div class="topbar-nav">
-    <button class="nav-btn aktif" onclick="tukarHalaman('dashboard',this)">Pencapaian</button>
-    <button class="nav-btn" onclick="tukarHalaman('siaran',this)">Siaran Guru</button>
+    <button class="nav-btn aktif" onclick="tukarHalaman('dashboard',this)">🏆 Pencapaian</button>
+    <button class="nav-btn" onclick="tukarHalaman('kehadiran',this)">✅ Kehadiran</button>
+    <button class="nav-btn" onclick="tukarHalaman('siaran',this)">📢 Siaran Guru</button>
   </div>
+  <span class="live-badge" style="margin-left:8px"><span class="live-dot"></span>Live</span>
 </div>
 
-<!-- PENCAPAIAN -->
+<!-- ======================== PENCAPAIAN ======================== -->
 <div class="halaman aktif" id="halDashboard">
   <div class="filter-bar">
-    <div class="sek-tajuk" style="margin-bottom:0;border:none;padding:0">REKOD PENCAPAIAN</div>
-    <span class="live-badge"><span class="live-dot"></span>Kemas kini langsung</span>
-    <input type="date" class="tarikh-input" id="tarikhFilter" onchange="tapisData()">
+    <div class="sek-tajuk" style="margin-bottom:0;border:none;padding:0">🏆 REKOD PENCAPAIAN</div>
+    <input type="date" class="filter-input" id="tarikhFilter" onchange="tapisData()">
+    <button onclick="tapisData()" style="padding:8px 14px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:600;font-size:.83rem">🔄 Tapis</button>
   </div>
-  <div id="sesiGrid"><div class="kosong"><div class="kosong-ikon">📋</div>Tiada rekod lagi</div></div>
+
+  <!-- Stat summary -->
+  <div class="stat-cards" id="statCards" style="display:none">
+    <div class="stat-card">
+      <div class="stat-card-num" style="color:var(--accent)" id="statJumlahSesi">0</div>
+      <div class="stat-card-label">📚 Sesi</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-num" style="color:var(--gold)" id="statJumlahMurid">0</div>
+      <div class="stat-card-label">👥 Murid Aktif</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-num" style="color:var(--green)" id="statMarkahTertinggi">0</div>
+      <div class="stat-card-label">⭐ Markah Tertinggi</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-num" style="color:var(--purple)" id="statPemenang">—</div>
+      <div class="stat-card-label">🥇 Juara Terkini</div>
+    </div>
+  </div>
+
+  <div id="sesiGrid"><div class="kosong"><div class="kosong-ikon">📋</div><div class="kosong-teks">Tiada rekod lagi</div></div></div>
 </div>
 
-<!-- SIARAN -->
+<!-- ======================== KEHADIRAN ======================== -->
+<div class="halaman" id="halKehadiran">
+  <div class="sek-tajuk">✅ REKOD KEHADIRAN</div>
+
+  <div class="kehadiran-filter">
+    <div>
+      <label style="font-size:.72rem;color:var(--text2);display:block;margin-bottom:5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px">KELAS</label>
+      <select class="kehadiran-select-kelas" id="filterKehadiranKelas" onchange="muatKehadiran()">
+        <option value="">Semua Kelas</option>
+      </select>
+    </div>
+    <div>
+      <label style="font-size:.72rem;color:var(--text2);display:block;margin-bottom:5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px">TARIKH</label>
+      <input type="date" class="kehadiran-tarikh" id="filterKehadiranTarikh" onchange="muatKehadiran()">
+    </div>
+  </div>
+
+  <div class="kehadiran-rekod-list" id="kehadiranRekodList">
+    <div class="kosong"><div class="kosong-ikon">📋</div><div class="kosong-teks">Tiada rekod kehadiran lagi</div></div>
+  </div>
+</div>
+
+<!-- ======================== SIARAN ======================== -->
 <div class="halaman" id="halSiaran">
-  <div class="sek-tajuk">SIARAN & NOTA DARIPADA GURU</div>
-  <div id="siaranGrid"><div class="kosong"><div class="kosong-ikon">📢</div>Tiada siaran lagi</div></div>
+  <div class="sek-tajuk">📢 SIARAN & NOTA DARIPADA GURU</div>
+  <div id="siaranGrid"><div class="kosong"><div class="kosong-ikon">📢</div><div class="kosong-teks">Tiada siaran lagi</div></div></div>
 </div>
 
 <!-- DETAIL MODAL -->
@@ -136,90 +260,160 @@ const WS_URL = window.location.hostname === 'localhost'
 let ws;
 let semuaSesi = [];
 let semuaSiaran = [];
+let semuaKehadiran = [];
+let semuaMurid = [];
 
+const MOD_NAMA = ['','Kuiz Ramai-ramai','Dwi-Padu','Susunan Hafalan','Imbas AI'];
+const MOD_BADGE = ['','badge-mod1','badge-mod2','badge-mod3','badge-mod4'];
+const MOD_IKON  = ['','👥','⚡','📖','🤖'];
+
+// ============================================================
+// WEBSOCKET
+// ============================================================
 function sambungWS() {
   ws = new WebSocket(`${WS_URL}/murid`);
   ws.onmessage = (e) => {
     let d; try { d = JSON.parse(e.data); } catch { return; }
-    if (d.jenis === 'siaran_baharu') muatSiaran();
-    if (d.jenis === 'ulasan_baharu') {
-      muatDashboard();
-      tunjukNotif('💬 Ulasan baharu daripada guru!');
-    }
+    if (d.jenis === 'siaran_baharu') { muatSiaran(); tunjukNotif('📢 Siaran baharu daripada guru!'); }
+    if (d.jenis === 'ulasan_baharu') { muatDashboard(); tunjukNotif('💬 Ulasan baharu daripada guru!'); }
   };
   ws.onclose = () => setTimeout(sambungWS, 4000);
 }
 
+// ============================================================
+// NAVIGASI
+// ============================================================
 function tukarHalaman(id, btn) {
   document.querySelectorAll('.halaman').forEach(h => h.classList.remove('aktif'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('aktif'));
   document.getElementById('hal' + id.charAt(0).toUpperCase() + id.slice(1)).classList.add('aktif');
   if (btn) btn.classList.add('aktif');
   if (id === 'siaran') muatSiaran();
+  if (id === 'kehadiran') muatKehadiran();
 }
 
+// ============================================================
+// MURID
+// ============================================================
+async function muatMurid() {
+  try {
+    const res = await fetch(`${API}/api/murid`);
+    semuaMurid = await res.json();
+    kemaskiniKelasList();
+  } catch(e) { semuaMurid = []; }
+}
+
+function cariMurid(id) {
+  return semuaMurid.find(m => m._id === id || m.nama === id);
+}
+
+function renderAvatarChip(av, saiz=26) {
+  if (av && av.startsWith('data:')) return `<img src="${av}" style="width:${saiz}px;height:${saiz}px;border-radius:50%;object-fit:cover;display:block">`;
+  return `<span style="font-size:${saiz*0.6}px">${av||'👤'}</span>`;
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
 function tapisData() { renderDashboard(); }
 
 async function muatDashboard() {
-  const res = await fetch(`${API}/api/sesi`);
-  semuaSesi = await res.json();
-  renderDashboard();
+  try {
+    const res = await fetch(`${API}/api/sesi`);
+    semuaSesi = await res.json();
+    renderDashboard();
+    renderStatCards();
+  } catch(e) {}
+}
+
+function renderStatCards() {
+  if (!semuaSesi.length) { document.getElementById('statCards').style.display='none'; return; }
+  document.getElementById('statCards').style.display='grid';
+  document.getElementById('statJumlahSesi').textContent = semuaSesi.length;
+
+  const muridSet = new Set();
+  let maxMarkah = 0, juara = '—';
+  semuaSesi.forEach(s => {
+    (s.keputusan||[]).forEach(k => { muridSet.add(k.nama); if(k.markah > maxMarkah){ maxMarkah=k.markah; juara=k.nama; }});
+  });
+  document.getElementById('statJumlahMurid').textContent = muridSet.size;
+  document.getElementById('statMarkahTertinggi').textContent = maxMarkah;
+  document.getElementById('statPemenang').textContent = juara.length>8?juara.substring(0,7)+'..':juara;
 }
 
 function renderDashboard() {
   const tarikh = document.getElementById('tarikhFilter').value;
   const data = tarikh ? semuaSesi.filter(s => new Date(s.tarikh).toLocaleDateString('fr-CA') === tarikh) : semuaSesi;
   const el = document.getElementById('sesiGrid');
-  const modNama = ['','Kuiz Ramai-ramai','Dwi-Padu','Susunan Hafalan','Imbas AI'];
 
-  el.innerHTML = data.length ? data.map(s => `
-    <div class="sesi-kad" onclick="bukaDetail('${s._id}')">
+  if (!data.length) { el.innerHTML='<div class="kosong"><div class="kosong-ikon">📋</div><div class="kosong-teks">Tiada rekod untuk tarikh ini</div></div>'; return; }
+
+  el.innerHTML = data.map(s => {
+    const keputusan = (s.keputusan||[]).sort((a,b) => b.markah-a.markah);
+    const ulasan = s.ulasan||[];
+    return `<div class="sesi-kad" onclick="bukaDetail('${s._id}')">
       <div class="sesi-header">
         <div>
-          <div class="sesi-tajuk-teks">${s.tajuk}</div>
+          <div class="sesi-tajuk-teks">${s.tajuk}${s.kelas?` <span style="background:rgba(168,85,247,.1);color:var(--purple);border:1px solid rgba(168,85,247,.3);padding:2px 8px;border-radius:10px;font-size:.7rem;font-weight:700;margin-left:6px">${s.kelas}</span>`:''}</div>
           <div class="sesi-tarikh-teks">📅 ${new Date(s.tarikh).toLocaleDateString('ms-MY',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>
         </div>
-        <span class="sesi-mod-badge">Mod ${s.mod} — ${modNama[s.mod]||''}</span>
+        <span class="sesi-mod-badge ${MOD_BADGE[s.mod]||'badge-mod1'}">${MOD_IKON[s.mod]||''} Mod ${s.mod} — ${MOD_NAMA[s.mod]||''}</span>
       </div>
+
       <div class="murid-row">
-        ${(s.keputusan||[]).sort((a,b)=>b.markah-a.markah).map((k,i)=>`
-          <div class="murid-chip">
-            <span>${['🥇','🥈','🥉',''][i]||''}</span>
-            <span>${k.avatar||'👤'}</span>
-            <span>${k.nama}</span>
+        ${keputusan.slice(0,5).map((k,i) => {
+          const murid = cariMurid(k.muridId||k.nama);
+          const av = murid?.avatar || k.avatar || '👤';
+          return `<div class="murid-chip">
+            <span>${['🥇','🥈','🥉','',''][i]||''}</span>
+            <div class="chip-avatar-img">${renderAvatarChip(av)}</div>
+            <span style="font-weight:600">${k.nama}</span>
             <span class="markah-badge">${k.markah}★</span>
-          </div>`).join('')}
+          </div>`;
+        }).join('')}
+        ${keputusan.length>5?`<div style="font-size:.75rem;color:var(--text2);align-self:center">+${keputusan.length-5} lagi</div>`:''}
       </div>
-      ${(s.ulasan||[]).length ? `<div class="ulasan-box"><div class="ulasan-label">💬 Ulasan Guru</div><div class="ulasan-teks">${s.ulasan.map(u=>`<strong>${u.nama}:</strong> ${u.komen}`).join(' | ')}</div></div>` : ''}
-    </div>`).join('') : '<div class="kosong"><div class="kosong-ikon">📋</div>Tiada rekod untuk tarikh ini</div>';
+
+      ${ulasan.length ? `<div class="ulasan-box"><div class="ulasan-label">💬 Ulasan Guru</div><div class="ulasan-teks">${ulasan.map(u=>`<strong>${u.nama}:</strong> ${u.komen}`).join(' · ')}</div></div>` : ''}
+
+      <div style="margin-top:10px;font-size:.72rem;color:var(--text2)">👆 Ketuk untuk lihat ranking penuh</div>
+    </div>`;
+  }).join('');
 }
 
 async function bukaDetail(id) {
   const res = await fetch(`${API}/api/sesi/${id}`);
   const s = await res.json();
-  const modNama = ['','Kuiz Ramai-ramai','Dwi-Padu','Susunan Hafalan','Imbas AI'];
-  const ranking = (s.keputusan||[]).sort((a,b)=>b.markah-a.markah);
+  const ranking = (s.keputusan||[]).sort((a,b) => b.markah-a.markah);
 
   document.getElementById('detailBadan').innerHTML = `
-    <h2 style="font-family:'Orbitron',monospace;color:var(--accent);font-size:1.1rem;margin-bottom:6px">${s.tajuk}</h2>
-    <div style="font-size:0.8rem;color:var(--text2);margin-bottom:20px">
-      📅 ${new Date(s.tarikh).toLocaleDateString('ms-MY',{weekday:'long',year:'numeric',month:'long',day:'numeric'})} &nbsp;|&nbsp;
-      Mod ${s.mod} — ${modNama[s.mod]||''}
+    <h2 style="font-family:'Orbitron',monospace;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:1.1rem;margin-bottom:6px">${s.tajuk}</h2>
+    <div style="font-size:.78rem;color:var(--text2);margin-bottom:6px">
+      📅 ${new Date(s.tarikh).toLocaleDateString('ms-MY',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}
     </div>
-    <div style="font-size:0.8rem;color:var(--text2);margin-bottom:10px;font-family:'Orbitron',monospace">RANKING</div>
-    ${ranking.map((k,i)=>`
-      <div class="ranking-item ${['r1-item','r2-item','r3-item',''][i]||''}">
-        <div class="rank-no" style="color:${['var(--gold)','#c0c0c0','#cd7f32','var(--text2)'][i]||'var(--text2)'}">${['🥇','🥈','🥉',''][i]||i+1}</div>
-        <div style="font-size:1.5rem">${k.avatar||'👤'}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+      ${s.kelas?`<span style="background:rgba(168,85,247,.1);color:var(--purple);border:1px solid rgba(168,85,247,.3);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700">🏫 ${s.kelas}</span>`:''}
+      <span class="sesi-mod-badge ${MOD_BADGE[s.mod]||''}">${MOD_IKON[s.mod]||''} Mod ${s.mod} — ${MOD_NAMA[s.mod]||''}</span>
+    </div>
+
+    <div style="font-family:'Orbitron',monospace;font-size:.78rem;color:var(--text2);margin-bottom:12px;letter-spacing:1px">🏆 RANKING</div>
+    ${ranking.map((k,i) => {
+      const murid = cariMurid(k.muridId||k.nama);
+      const av = murid?.avatar || k.avatar || '👤';
+      return `<div class="ranking-item ${['r1-item','r2-item','r3-item',''][i]||''}">
+        <div class="rank-no" style="color:${['var(--gold)','#9ca3af','#b45309','var(--text2)'][i]||'var(--text2)'}">${['🥇','🥈','🥉',''][i]||i+1}</div>
+        <div class="rank-avatar">${renderAvatarChip(av, 40)}</div>
         <div class="rank-nama">${k.nama}</div>
         <div class="rank-markah">${k.markah} ⭐</div>
-      </div>`).join('')}
+      </div>`;
+    }).join('')}
+
     ${s.ulasan?.length ? `
-      <div style="margin-top:16px">
-        <div style="font-size:0.8rem;color:var(--text2);font-family:'Orbitron',monospace;margin-bottom:10px">ULASAN GURU</div>
+      <div style="margin-top:18px">
+        <div style="font-family:'Orbitron',monospace;font-size:.78rem;color:var(--text2);margin-bottom:12px;letter-spacing:1px">💬 ULASAN GURU</div>
         ${s.ulasan.map(u=>`
           <div class="ulasan-box" style="margin-bottom:8px">
-            <div class="ulasan-label">${u.nama} — ${new Date(u.tarikhKomen).toLocaleDateString('ms-MY')}</div>
+            <div class="ulasan-label">${u.nama} — <span style="font-size:.65rem">${new Date(u.tarikhKomen).toLocaleDateString('ms-MY')}</span></div>
             <div class="ulasan-teks">${u.komen}</div>
           </div>`).join('')}
       </div>` : ''}`;
@@ -227,22 +421,115 @@ async function bukaDetail(id) {
   document.getElementById('overlayDetail').classList.add('buka');
 }
 
-async function muatSiaran() {
-  const res = await fetch(`${API}/api/siaran`);
-  semuaSiaran = await res.json();
-  const el = document.getElementById('siaranGrid');
-  el.innerHTML = semuaSiaran.length ? semuaSiaran.map(s=>`
-    <div class="siaran-kad">
-      <div class="siaran-header">
-        <div class="siaran-tajuk">${s.tajuk}</div>
-        <div class="siaran-tarikh">📅 ${new Date(s.tarikhDihantar).toLocaleDateString('ms-MY')}</div>
-      </div>
-      ${s.embedLink ? `<iframe class="siaran-embed" src="${s.embedLink}" allowfullscreen loading="lazy"></iframe>
-        <a class="siaran-link" href="${s.embedLink}" target="_blank">🔗 Buka Pautan Penuh</a>` : ''}
-      ${s.komen ? `<div class="siaran-komen">📝 ${s.komen}</div>` : ''}
-    </div>`).join('') : '<div class="kosong"><div class="kosong-ikon">📢</div>Tiada siaran lagi</div>';
+// ============================================================
+// KEHADIRAN
+// ============================================================
+function kemaskiniKelasList() {
+  const kelas = [...new Set(semuaMurid.map(m=>m.kelas||'').filter(k=>k))].sort();
+  const el = document.getElementById('filterKehadiranKelas');
+  if (!el) return;
+  const val = el.value;
+  el.innerHTML = '<option value="">Semua Kelas</option>' + kelas.map(k=>`<option value="${k}">${k}</option>`).join('');
+  if (val) el.value = val;
 }
 
+async function muatKehadiran() {
+  const kelas = document.getElementById('filterKehadiranKelas').value;
+  const tarikh = document.getElementById('filterKehadiranTarikh').value;
+  
+  try {
+    let url = `${API}/api/kehadiran`;
+    const params = [];
+    if (kelas) params.push(`kelas=${encodeURIComponent(kelas)}`);
+    if (tarikh) params.push(`tarikh=${tarikh}`);
+    if (params.length) url += '?' + params.join('&');
+    
+    const res = await fetch(url);
+    semuaKehadiran = await res.json();
+    renderKehadiran();
+  } catch(e) {
+    renderKehadiran();
+  }
+}
+
+function renderKehadiran() {
+  const el = document.getElementById('kehadiranRekodList');
+  
+  if (!semuaKehadiran.length) {
+    el.innerHTML = '<div class="kosong"><div class="kosong-ikon">📋</div><div class="kosong-teks">Tiada rekod kehadiran untuk pilihan ini</div></div>';
+    return;
+  }
+
+  el.innerHTML = semuaKehadiran.map(r => {
+    const hadir = r.senarai.filter(m=>m.hadir);
+    const tidakHadir = r.senarai.filter(m=>!m.hadir);
+    const peratus = r.senarai.length ? Math.round((hadir.length/r.senarai.length)*100) : 0;
+    const warna = peratus>=80?'var(--green)':peratus>=60?'var(--gold)':'var(--red)';
+    
+    return `<div class="kehadiran-rekod-kad">
+      <div class="kehadiran-rekod-header">
+        <div>
+          <div class="kehadiran-rekod-tarikh">📅 ${new Date(r.tarikh).toLocaleDateString('ms-MY',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>
+          <div class="kehadiran-rekod-kelas">🏫 Kelas: <strong>${r.kelas}</strong></div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:'Orbitron',monospace;font-size:1.6rem;font-weight:900;color:${warna}">${peratus}%</div>
+          <div style="font-size:.7rem;color:var(--text2)">kehadiran</div>
+        </div>
+      </div>
+
+      <div class="kehadiran-stat-row">
+        <span class="kehadiran-stat-badge" style="background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.3)">✅ Hadir: ${hadir.length}</span>
+        <span class="kehadiran-stat-badge" style="background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.3)">❌ Tidak Hadir: ${tidakHadir.length}</span>
+        <span class="kehadiran-stat-badge" style="background:rgba(79,142,247,.1);color:var(--accent);border:1px solid rgba(79,142,247,.3)">👥 Jumlah: ${r.senarai.length}</span>
+      </div>
+
+      <div class="kehadiran-murid-chips">
+        ${hadir.map(m => {
+          const murid = cariMurid(m.id||m.nama);
+          const av = murid?.avatar || '👤';
+          return `<span class="chip-hadir">
+            <span class="chip-mini-avatar">${av&&av.startsWith('data:')?`<img src="${av}">`:`<span style="font-size:.7rem">${av}</span>`}</span>
+            ${m.nama}
+          </span>`;
+        }).join('')}
+        ${tidakHadir.map(m => {
+          const murid = cariMurid(m.id||m.nama);
+          const av = murid?.avatar || '👤';
+          return `<span class="chip-tidak-hadir">
+            <span class="chip-mini-avatar">${av&&av.startsWith('data:')?`<img src="${av}">`:`<span style="font-size:.7rem">${av}</span>`}</span>
+            ${m.nama}
+          </span>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// SIARAN
+// ============================================================
+async function muatSiaran() {
+  try {
+    const res = await fetch(`${API}/api/siaran`);
+    semuaSiaran = await res.json();
+    const el = document.getElementById('siaranGrid');
+    el.innerHTML = semuaSiaran.length ? semuaSiaran.map(s => `
+      <div class="siaran-kad">
+        <div class="siaran-header">
+          <div class="siaran-tajuk">${s.tajuk}</div>
+          <div class="siaran-tarikh">📅 ${new Date(s.tarikhDihantar).toLocaleDateString('ms-MY')}</div>
+        </div>
+        ${s.embedLink ? `<iframe class="siaran-embed" src="${s.embedLink}" allowfullscreen loading="lazy"></iframe>
+          <a class="siaran-link" href="${s.embedLink}" target="_blank">🔗 Buka Pautan Penuh →</a>` : ''}
+        ${s.komen ? `<div class="siaran-komen">📝 ${s.komen}</div>` : ''}
+      </div>`).join('') : '<div class="kosong"><div class="kosong-ikon">📢</div><div class="kosong-teks">Tiada siaran lagi</div></div>';
+  } catch(e) {}
+}
+
+// ============================================================
+// NOTIF
+// ============================================================
 function tunjukNotif(msg) {
   const el = document.getElementById('notifBar');
   el.textContent = msg; el.style.display = 'block';
@@ -250,11 +537,17 @@ function tunjukNotif(msg) {
   el._t = setTimeout(() => el.style.display = 'none', 4000);
 }
 
-window.addEventListener('load', () => {
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('load', async () => {
   document.getElementById('tarikhFilter').value = new Date().toLocaleDateString('fr-CA');
   sambungWS();
-  muatDashboard();
+  await muatMurid();
+  await muatDashboard();
   muatSiaran();
+  // Auto-set kehadiran filter tarikh
+  document.getElementById('filterKehadiranTarikh').value = new Date().toLocaleDateString('fr-CA');
 });
 </script>
 </body>
