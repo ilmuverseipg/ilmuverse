@@ -1785,5 +1785,196 @@ const style=document.createElement('style');
 style.textContent=`@keyframes fadeOut{to{opacity:0;transform:translateY(-10px)}}`;
 document.head.appendChild(style);
 </script>
+
+<script>
+// ============================================================
+// ILMUVERSE — ACCURACY FILTER untuk guru.html (Mod 4 / TM)
+// Tampal dalam bahagian <script> guru.html, dekat fungsi mod4
+// ============================================================
+
+// ── KELAS PENAPIS KETEPATAN ──
+class AkurasiFilter {
+  constructor(options = {}) {
+    this.bufferSaiz  = options.bufferSaiz  || 7;    // simpan 7 keputusan terakhir
+    this.minKeyakin  = options.minKeyakin  || 0.70;  // minimum 70% keyakinan
+    this.minBerturut = options.minBerturut || 3;     // perlu 3x berturut sama
+    this.reset();
+  }
+
+  reset() {
+    this.buffer     = [];  // [{label, confidence}]
+    this.berturut   = 0;
+    this.labelSemasa = null;
+  }
+
+  // Tambah keputusan baru — return hasil jika yakin, null jika belum
+  tambah(label, confidence) {
+    // Buang jika keyakinan rendah
+    if (confidence < this.minKeyakin) {
+      this.berturut = 0;
+      this.labelSemasa = null;
+      return null;
+    }
+
+    // Tambah ke buffer
+    this.buffer.push({ label, confidence });
+    if (this.buffer.length > this.bufferSaiz) {
+      this.buffer.shift();
+    }
+
+    // Kira berturut-turut
+    if (label === this.labelSemasa) {
+      this.berturut++;
+    } else {
+      this.berturut = 1;
+      this.labelSemasa = label;
+    }
+
+    // Belum cukup berturut
+    if (this.berturut < this.minBerturut) return null;
+
+    // ── MAJORITY VOTE ──
+    // Kira kemunculan setiap label dalam buffer
+    const kira = {};
+    this.buffer.forEach(b => {
+      kira[b.label] = (kira[b.label] || 0) + 1;
+    });
+
+    // Label paling kerap
+    let labelMenang = null;
+    let bilanganMaks = 0;
+    for (const [lbl, bil] of Object.entries(kira)) {
+      if (bil > bilanganMaks) {
+        bilanganMaks = bil;
+        labelMenang = lbl;
+      }
+    }
+
+    // Mesti majoriti (lebih separuh buffer)
+    const ambangMajoriti = Math.ceil(this.bufferSaiz / 2);
+    if (bilanganMaks < ambangMajoriti) return null;
+
+    // Purata keyakinan untuk label yang menang
+    const senaraiBerkaitan = this.buffer.filter(b => b.label === labelMenang);
+    const purata = senaraiBerkaitan.reduce((s, b) => s + b.confidence, 0) / senaraiBerkaitan.length;
+
+    // Reset lepas confirm untuk elak duplicate
+    this.reset();
+
+    return {
+      label:      labelMenang,
+      confidence: purata,
+      bilangan:   bilanganMaks,
+      jumlahSampel: this.bufferSaiz
+    };
+  }
+}
+
+// ============================================================
+// CONTOH PENGGUNAAN DALAM MOD4 guru.html
+// Ganti fungsi prosesFrameMod4 atau bahagian TM inference
+// ============================================================
+
+// 1. Buat filter — letak ini dalam scope global atau dalam mulaMod4()
+const penapis = new AkurasiFilter({
+  bufferSaiz:  7,    // buffer 7 frame
+  minKeyakin:  0.70, // 70% minimum
+  minBerturut: 3     // 3x berturut-turut
+});
+
+// Label Teachable Machine → Malay
+const LABEL_MAP = {
+  'Drink':      'air manis',
+  'Watermelon': 'tembikai',
+  'Apple':      'epal',
+  'Sausage':    'sosej',
+  'Banana':     'pisang'
+};
+
+// 2. Dalam loop inference TM, ganti logik biasa dengan ini:
+async function inferensDanFilter(model, imageElement) {
+  // Jalankan prediction TM
+  const predictions = await model.predict(imageElement);
+
+  // Cari label tertinggi
+  let labelTerbaik = null;
+  let keyakinanTerbaik = 0;
+  predictions.forEach(p => {
+    if (p.probability > keyakinanTerbaik) {
+      keyakinanTerbaik = p.probability;
+      labelTerbaik = p.className;
+    }
+  });
+
+  // Tunjuk info real-time (walaupun belum confirm)
+  updateUIRealtime(labelTerbaik, keyakinanTerbaik);
+
+  // Hantar ke filter
+  const hasil = penapis.tambah(labelTerbaik, keyakinanTerbaik);
+
+  // Hanya act bila filter confirm
+  if (hasil) {
+    const labelMelayu = LABEL_MAP[hasil.label] || hasil.label.toLowerCase();
+    console.log(`[AI] CONFIRM: ${labelMelayu} (${(hasil.confidence*100).toFixed(1)}%)`);
+
+    // Hantar ke server
+    hantarWS({
+      jenis:      'cam_result',
+      label:      labelMelayu,
+      confidence: hasil.confidence,
+      yakin:      true
+    });
+
+    // Hantar ACK ke ESP32 — minta frame baru
+    hantarKeCAM({ jenis: 'frame_ack' });
+  }
+}
+
+// 3. Update UI semasa inference berlangsung
+function updateUIRealtime(label, confidence) {
+  // Kemas kini progress bar confidence
+  const pct = Math.round(confidence * 100);
+  const labelMelayu = LABEL_MAP[label] || label;
+
+  // Warna mengikut tahap keyakinan
+  const warna = confidence >= 0.70 ? 'var(--green)' :
+                confidence >= 0.50 ? 'var(--yellow)' : 'var(--red)';
+
+  // Kemas kini elemen UI (ubah ID ikut guru.html kau)
+  const elLabel = document.getElementById('camDeteksiLabel');
+  const elBar   = document.getElementById('camKonfidensBar');
+  const elPct   = document.getElementById('camKonfidensPct');
+
+  if (elLabel) elLabel.textContent = labelMelayu;
+  if (elBar)   { elBar.style.width = pct + '%'; elBar.style.background = warna; }
+  if (elPct)   { elPct.textContent = pct + '%'; elPct.style.color = warna; }
+}
+
+// ============================================================
+// CARA GUNA — RINGKASAN
+// ============================================================
+/*
+  SEBELUM (tanpa filter):
+  ───────────────────────
+  predictions = await model.predict(img);
+  // terus hantar ke server → banyak false positive!
+
+  SELEPAS (dengan filter):
+  ────────────────────────
+  await inferensDanFilter(model, img);
+  // hanya hantar bila SAMA 3x berturut + keyakinan > 70%
+
+  TETAPAN BOLEH UBAH:
+  ───────────────────
+  bufferSaiz:  lebih besar = lebih stabil, tapi lambat sikit
+  minKeyakin:  naikkan jika terlalu banyak false positive
+  minBerturut: naikkan jika terlalu sensitif
+
+  RESET FILTER (e.g. bila tukar objek):
+  ───────────────────────────────────────
+  penapis.reset();
+*/
+
+</script>
 </body>
 </html>
