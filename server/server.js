@@ -50,7 +50,15 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/ilmuverse
 const MuridSchema = new mongoose.Schema({
   nama: String,
   avatar: String, // base64 image atau emoji
+  kelas: String,  // nama kelas murid
   createdAt: { type: Date, default: Date.now }
+});
+
+const KehadiranSchema = new mongoose.Schema({
+  kelas: String,
+  tarikh: { type: Date, default: Date.now },
+  senarai: [{ id: String, nama: String, hadir: Boolean }],
+  catatanAt: { type: Date, default: Date.now }
 });
 
 const SoalanSchema = new mongoose.Schema({
@@ -85,6 +93,7 @@ const Murid = mongoose.model('Murid', MuridSchema);
 const Soalan = mongoose.model('Soalan', SoalanSchema);
 const Sesi = mongoose.model('Sesi', SesiSchema);
 const Siaran = mongoose.model('Siaran', SiaranSchema);
+const Kehadiran = mongoose.model('Kehadiran', KehadiranSchema);
 
 // ============================================================
 // PENGURUSAN WEBSOCKET
@@ -108,19 +117,8 @@ let gameState = {
   mod4: { fasa: 'sihat', sihatDikesan: [], takSihatDikesan: [], autoScanTimer: null }
 };
 
-// Label Melayu + English (dari Teachable Machine model)
-const MAKANAN_SIHAT_LIST = ['pisang', 'tembikai', 'epal', 'banana', 'watermelon', 'apple'];
-const MAKANAN_TAK_SIHAT_LIST = ['air manis', 'sosej', 'sausage', 'drink'];
-
-// Map English label → Malay untuk display
-const LABEL_MAP = {
-  'apple': 'Epal', 'banana': 'Pisang', 'watermelon': 'Tembikai',
-  'sausage': 'Sosej', 'drink': 'Air Minuman'
-};
-function normLabel(label) {
-  const l = (label||'').toLowerCase().trim();
-  return LABEL_MAP[l] ? LABEL_MAP[l].toLowerCase() : l;
-}
+const MAKANAN_SIHAT_LIST = ['pisang', 'tembikai', 'epal'];
+const MAKANAN_TAK_SIHAT_LIST = ['air manis', 'sosej'];
 
 function hantarKeGuru(data) {
   const msg = JSON.stringify(data);
@@ -203,8 +201,7 @@ wss.on('connection', (ws, req) => {
         case 'flash_cam': hantarKeCAM({ jenis: 'flash', nyala: data.nyala }); break;
         case 'tambah_ulasan': await tambahUlasan(data); break;
         case 'push_telegram': await hantarTelegram(data); break;
-        // Hasil Teachable Machine dari browser guru — proses terus
-        case 'cam_keputusan_tm': await prosesCAMResult({ label: data.label, confidence: data.confidence }); break;
+        // Auto-scan mod4 tidak perlu trigger manual lagi
       }
     }
   });
@@ -440,27 +437,24 @@ function prosesNFCMod3(uid) {
 async function prosesCAMResult(data) {
   if (!gameState.aktif || gameState.mod !== 4) return;
 
-  const { label: rawLabel, confidence } = data;
+  const { label, confidence } = data;
   const m4 = gameState.mod4;
   const fasa = m4.fasa;
-
-  // Normalize label (English → key Melayu)
-  const labelNorm = normLabel(rawLabel);
-  const labelDisplay = LABEL_MAP[rawLabel.toLowerCase()] || rawLabel;
+  const labelLower = (label || '').toLowerCase();
 
   let betul = false;
   if (fasa === 'sihat') {
-    betul = MAKANAN_SIHAT_LIST.includes(rawLabel.toLowerCase()) && !m4.sihatDikesan.includes(labelNorm);
+    betul = MAKANAN_SIHAT_LIST.includes(labelLower) && !m4.sihatDikesan.includes(labelLower);
   } else {
-    betul = MAKANAN_TAK_SIHAT_LIST.includes(rawLabel.toLowerCase()) && !m4.takSihatDikesan.includes(labelNorm);
+    betul = MAKANAN_TAK_SIHAT_LIST.includes(labelLower) && !m4.takSihatDikesan.includes(labelLower);
   }
 
-  hantarKeGuru({ jenis: 'cam_keputusan', label: labelDisplay, labelKey: labelNorm, confidence, betul, kategori: fasa });
+  hantarKeGuru({ jenis: 'cam_keputusan', label, confidence, betul, kategori: fasa });
 
   if (betul) {
     hantarKeESP32({ jenis: 'betul' });
     if (fasa === 'sihat') {
-      m4.sihatDikesan.push(labelNorm);
+      m4.sihatDikesan.push(labelLower);
       if (m4.sihatDikesan.length >= MAKANAN_SIHAT_LIST.length) {
         // Tukar ke fasa tidak sihat
         m4.fasa = 'tidak_sihat';
@@ -469,7 +463,7 @@ async function prosesCAMResult(data) {
         return;
       }
     } else {
-      m4.takSihatDikesan.push(labelNorm);
+      m4.takSihatDikesan.push(labelLower);
       if (m4.takSihatDikesan.length >= MAKANAN_TAK_SIHAT_LIST.length) {
         // Mod4 selesai
         await tamatMod4();
@@ -584,6 +578,9 @@ app.post('/api/murid', async (req, res) => {
   const murid = new Murid(req.body);
   await murid.save(); res.json(murid);
 });
+app.put('/api/murid/:id', async (req, res) => {
+  const m = await Murid.findByIdAndUpdate(req.params.id, req.body, { new: true }); res.json(m);
+});
 app.delete('/api/murid/:id', async (req, res) => {
   await Murid.findByIdAndDelete(req.params.id); res.json({ ok: true });
 });
@@ -632,6 +629,51 @@ app.put('/api/siaran/:id', async (req, res) => {
 });
 app.delete('/api/siaran/:id', async (req, res) => {
   await Siaran.findByIdAndDelete(req.params.id); res.json({ ok: true });
+});
+
+// --- KEHADIRAN ---
+app.get('/api/kehadiran', async (req, res) => {
+  const query = {};
+  if (req.query.kelas) query.kelas = req.query.kelas;
+  if (req.query.tarikh) {
+    const t = new Date(req.query.tarikh);
+    const esok = new Date(t); esok.setDate(esok.getDate() + 1);
+    query.tarikh = { $gte: t, $lt: esok };
+  }
+  const data = await Kehadiran.find(query).sort({ tarikh: -1 });
+  res.json(data);
+});
+app.post('/api/kehadiran', async (req, res) => {
+  const { kelas, tarikh, senarai } = req.body;
+  // Upsert: kalau dah ada rekod untuk kelas+tarikh yang sama, kemaskini
+  const tarikhObj = new Date(tarikh);
+  const esok = new Date(tarikhObj); esok.setDate(esok.getDate() + 1);
+  const sedia = await Kehadiran.findOne({ kelas, tarikh: { $gte: tarikhObj, $lt: esok } });
+  let rekod;
+  if (sedia) {
+    rekod = await Kehadiran.findByIdAndUpdate(sedia._id, { senarai, catatanAt: new Date() }, { new: true });
+  } else {
+    rekod = new Kehadiran({ kelas, tarikh: tarikhObj, senarai });
+    await rekod.save();
+  }
+  res.json(rekod);
+});
+
+// --- TELEGRAM KEHADIRAN ---
+app.post('/api/telegram-kehadiran', async (req, res) => {
+  const { mesej } = req.body;
+  if (!mesej) return res.json({ ok: false, error: 'Tiada mesej' });
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: mesej, parse_mode: 'Markdown' })
+    });
+    const hasil = await r.json();
+    res.json({ ok: hasil.ok });
+  } catch(e) {
+    res.json({ ok: false, error: e.message });
+  }
 });
 
 // --- NFC HTTP fallback ---
