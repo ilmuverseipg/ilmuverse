@@ -7,39 +7,64 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#f0f5ff;
-  --bg2:#e6eeff;
-  --panel:#ffffff;
-  --panel2:#f5f8ff;
-  --accent:#4f8ef7;
-  --purple:#a855f7;
-  --pink:#ec4899;
-  --gold:#f59e0b;
-  --green:#10b981;
-  --teal:#06b6d4;
-  --orange:#f97316;
-  --red:#ef4444;
-  --text:#1e2d5a;
-  --text2:#6b7db3;
+  --bg:#f0f5ff;--bg2:#e6eeff;--panel:#ffffff;--panel2:#f5f8ff;
+  --accent:#4f8ef7;--purple:#a855f7;--pink:#ec4899;--gold:#f59e0b;
+  --green:#10b981;--teal:#06b6d4;--orange:#f97316;--red:#ef4444;
+  --text:#1e2d5a;--text2:#6b7db3;
   --border:rgba(79,142,247,0.18);
   --shadow:0 4px 20px rgba(79,142,247,0.1);
   --shadow2:0 8px 36px rgba(79,142,247,0.16);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif}
+html,body{min-height:100%;color:var(--text);font-family:'Exo 2',sans-serif;overflow-x:hidden;
+  background:linear-gradient(135deg,#dde8ff 0%,#ede0ff 28%,#fce4f4 52%,#d4f0ff 76%,#dcffe8 100%) fixed;
+  background-attachment:fixed}
 
-/* ── BACKGROUND DECO ── */
-body::before{content:'';position:fixed;inset:0;background:
-  radial-gradient(circle at 10% 20%, rgba(79,142,247,0.06) 0%, transparent 50%),
-  radial-gradient(circle at 90% 80%, rgba(168,85,247,0.06) 0%, transparent 50%),
-  radial-gradient(circle at 50% 50%, rgba(6,182,212,0.04) 0%, transparent 60%);
-pointer-events:none;z-index:0}
-body>*{position:relative;z-index:1}
+/* ── INTRO SPLASH ── */
+#introSplash{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;overflow:hidden;
+  background:linear-gradient(135deg,#1a0533 0%,#0d1b5e 40%,#0a2e3d 70%,#041a1a 100%)}
+.intro-grid{position:absolute;inset:0;
+  background-image:linear-gradient(rgba(79,142,247,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(79,142,247,.12) 1px,transparent 1px);
+  background-size:40px 40px;animation:igScroll 14s linear infinite}
+@keyframes igScroll{to{transform:translateY(40px)}}
+.intro-orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none}
+.iorb1{width:500px;height:500px;background:radial-gradient(circle,rgba(79,142,247,.3),transparent);top:-150px;left:-150px;animation:iOrb 10s ease-in-out infinite}
+.iorb2{width:400px;height:400px;background:radial-gradient(circle,rgba(168,85,247,.25),transparent);bottom:-100px;right:-100px;animation:iOrb 12s ease-in-out infinite reverse}
+.iorb3{width:280px;height:280px;background:radial-gradient(circle,rgba(6,182,212,.2),transparent);top:40%;left:60%;animation:iOrb 7s ease-in-out infinite 1s}
+@keyframes iOrb{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,-30px)}}
+.intro-stars{position:absolute;inset:0;overflow:hidden}
+.star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;animation:twinkle var(--d) ease-in-out infinite var(--delay)}
+@keyframes twinkle{0%,100%{opacity:.1}50%{opacity:.8}}
+.intro-logo{font-family:'Orbitron',monospace;font-size:4rem;font-weight:900;letter-spacing:12px;
+  background:linear-gradient(135deg,#7dd3fc,#c084fc,#f9a8d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 40px rgba(125,211,252,.5));
+  position:relative;z-index:1;opacity:0;animation:iLogoIn 1s .3s ease forwards}
+@keyframes iLogoIn{from{opacity:0;transform:scale(.7) translateY(30px);letter-spacing:20px}to{opacity:1;transform:scale(1) translateY(0);letter-spacing:12px}}
+.intro-tagline{font-family:'Orbitron',monospace;font-size:.85rem;color:rgba(255,255,255,.7);letter-spacing:6px;z-index:1;opacity:0;animation:iFadeUp .8s .9s ease forwards}
+.intro-by{font-size:.65rem;color:rgba(125,211,252,.6);letter-spacing:4px;z-index:1;opacity:0;animation:iFadeUp .8s 1.2s ease forwards}
+@keyframes iFadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.intro-divider{width:80px;height:2px;background:linear-gradient(90deg,transparent,rgba(125,211,252,.6),transparent);z-index:1;opacity:0;animation:iFadeUp .8s 1.4s ease forwards}
+.intro-subtitle{font-size:.9rem;color:rgba(255,255,255,.75);letter-spacing:2px;z-index:1;opacity:0;animation:iFadeUp .8s 1.6s ease forwards}
+.intro-progress{width:220px;height:3px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;z-index:1;opacity:0;animation:iFadeUp .6s 1.8s ease forwards}
+.intro-progress-bar{height:100%;background:linear-gradient(90deg,#7dd3fc,#c084fc);border-radius:2px;width:0;animation:iProgFill 2.2s 1.8s ease forwards}
+@keyframes iProgFill{to{width:100%}}
+.intro-btn{display:none;padding:16px 56px;background:linear-gradient(135deg,rgba(125,211,252,.15),rgba(192,132,252,.15));
+  border:1px solid rgba(125,211,252,.4);border-radius:50px;color:#7dd3fc;
+  font-family:'Orbitron',monospace;font-size:.95rem;font-weight:700;letter-spacing:4px;cursor:pointer;
+  z-index:1;transition:.3s;backdrop-filter:blur(10px);
+  box-shadow:0 0 30px rgba(125,211,252,.2)}
+.intro-btn:hover{background:linear-gradient(135deg,rgba(125,211,252,.25),rgba(192,132,252,.25));border-color:rgba(125,211,252,.7);box-shadow:0 0 50px rgba(125,211,252,.4);transform:scale(1.04)}
+.intro-particles{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.particle{position:absolute;width:4px;height:4px;border-radius:50%;animation:pFloat var(--pd) ease-in-out infinite var(--pdelay)}
+@keyframes pFloat{0%{transform:translateY(100vh) rotate(0);opacity:0}10%{opacity:.8}90%{opacity:.8}100%{transform:translateY(-100px) rotate(360deg);opacity:0}}
 
 /* ── TOPBAR ── */
-.topbar{background:rgba(255,255,255,.96);border-bottom:2px solid rgba(79,142,247,0.12);height:64px;display:flex;align-items:center;padding:0 20px;gap:16px;position:sticky;top:0;z-index:100;backdrop-filter:blur(16px);box-shadow:0 2px 20px rgba(79,142,247,0.08)}
-.logo{font-family:'Orbitron',monospace;font-size:1.25rem;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.logo-sub{font-size:.62rem;color:var(--text2);letter-spacing:2px;text-transform:uppercase;font-weight:600}
+#app{display:none}
+.topbar{background:rgba(255,255,255,.92);border-bottom:2px solid rgba(79,142,247,0.18);height:64px;display:flex;align-items:center;padding:0 20px;gap:16px;position:sticky;top:0;z-index:100;backdrop-filter:blur(18px);box-shadow:0 2px 20px rgba(79,142,247,0.08)}
+.logo-wrap{display:flex;flex-direction:column;line-height:1.2}
+.logo-main{font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo-by{font-size:.72rem;color:var(--purple);letter-spacing:2px;font-weight:700;text-transform:uppercase;opacity:.9}
+.logo-sub{font-size:.6rem;color:var(--text2);letter-spacing:1.5px;text-transform:uppercase;font-weight:600}
 .topbar-nav{display:flex;gap:4px;margin-left:auto}
 .nav-btn{padding:8px 16px;background:transparent;border:1px solid transparent;border-radius:8px;color:var(--text2);font-family:'Exo 2',sans-serif;font-size:.83rem;cursor:pointer;transition:.2s;font-weight:600}
 .nav-btn.aktif,.nav-btn:hover{background:linear-gradient(135deg,rgba(79,142,247,.1),rgba(168,85,247,.06));border-color:rgba(79,142,247,.25);color:var(--accent)}
@@ -48,20 +73,55 @@ body>*{position:relative;z-index:1}
 @keyframes livePulse{0%,100%{opacity:1}50%{opacity:.3}}
 
 /* ── HALAMAN ── */
-.halaman{display:none;padding:24px;max-width:960px;margin:0 auto;animation:fadeIn .3s ease}
+.halaman{display:none;padding:24px;max-width:980px;margin:0 auto;animation:fadeIn .3s ease}
 .halaman.aktif{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-
-/* ── SECTION HEADER ── */
 .sek-tajuk{font-family:'Orbitron',monospace;font-size:1rem;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px;margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid rgba(79,142,247,.12)}
+
+/* ── PROGRESSION BAR ── */
+.prog-section{margin-bottom:28px}
+.prog-section-tajuk{font-family:'Orbitron',monospace;font-size:.82rem;color:var(--text2);letter-spacing:2px;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.prog-wrap{position:relative;background:rgba(255,255,255,.88);border:1.5px solid rgba(79,142,247,.2);border-radius:20px;padding:28px 20px 52px;box-shadow:0 6px 28px rgba(79,142,247,.12);overflow:visible}
+.prog-label-row{display:flex;justify-content:space-between;margin-bottom:8px;font-size:.72rem;color:var(--text2);font-weight:600}
+.prog-track{position:relative;height:18px;background:rgba(79,142,247,.08);border-radius:10px;overflow:visible;border:1px solid rgba(79,142,247,.15)}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--purple),var(--pink));border-radius:10px;width:0;transition:none}
+/* Tick marks */
+.prog-ticks{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none}
+.prog-tick{position:absolute;top:0;bottom:0;width:1px;background:rgba(79,142,247,.18)}
+.prog-tick-label{position:absolute;bottom:-18px;transform:translateX(-50%);font-size:.6rem;color:var(--text2);font-weight:600;white-space:nowrap}
+/* Avatar pins on bar */
+.prog-pin{position:absolute;top:-20px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:3px;z-index:10;cursor:default;transition:transform .3s}
+.prog-pin:hover{transform:translateX(-50%) translateY(-4px)}
+.prog-avatar{width:36px;height:36px;border-radius:50%;overflow:hidden;border:2.5px solid #fff;box-shadow:0 2px 12px rgba(79,142,247,.35);display:flex;align-items:center;justify-content:center;font-size:1.1rem;background:linear-gradient(135deg,rgba(79,142,247,.15),rgba(168,85,247,.1));flex-shrink:0}
+.prog-avatar img{width:100%;height:100%;object-fit:cover}
+.prog-pin-name{font-size:.6rem;font-weight:700;color:var(--text);white-space:nowrap;max-width:60px;overflow:hidden;text-overflow:ellipsis;background:rgba(255,255,255,.9);border-radius:6px;padding:1px 5px;box-shadow:0 1px 6px rgba(79,142,247,.15)}
+.prog-score-badge{font-family:'Orbitron',monospace;font-size:.58rem;color:#fff;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:10px;padding:1px 5px;font-weight:700}
+/* Connector line from avatar to bar */
+.prog-pin-line{width:1.5px;height:16px;background:linear-gradient(180deg,rgba(79,142,247,.5),transparent)}
+/* Track below for overflow */
+.prog-below{height:70px}
+/* Legend */
+.prog-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.prog-legend-item{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.8);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:.78rem}
+.prog-legend-av{width:26px;height:26px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;background:linear-gradient(135deg,rgba(79,142,247,.15),rgba(168,85,247,.1))}
+.prog-legend-av img{width:100%;height:100%;object-fit:cover}
+.prog-legend-pts{font-family:'Orbitron',monospace;font-weight:700;color:var(--accent);font-size:.8rem}
+.prog-empty{text-align:center;padding:30px;color:var(--text2);font-size:.88rem}
 
 /* ── FILTER BAR ── */
 .filter-bar{display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap}
-.filter-input{padding:8px 14px;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.85rem;outline:none;box-shadow:var(--shadow)}
+.filter-input{padding:8px 14px;background:rgba(255,255,255,.88);border:1.5px solid rgba(79,142,247,.2);border-radius:8px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.85rem;outline:none;box-shadow:var(--shadow)}
 .filter-input:focus{border-color:var(--accent)}
 
+/* ── STAT CARDS ── */
+.stat-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
+.stat-card{background:rgba(255,255,255,.88);border:1.5px solid rgba(79,142,247,.18);border-radius:14px;padding:18px;text-align:center;box-shadow:var(--shadow);transition:.2s}
+.stat-card:hover{box-shadow:var(--shadow2);transform:translateY(-2px)}
+.stat-card-num{font-family:'Orbitron',monospace;font-size:2rem;font-weight:900;line-height:1.1}
+.stat-card-label{font-size:.72rem;color:var(--text2);margin-top:4px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+
 /* ── SESI KAD ── */
-.sesi-kad{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px;cursor:pointer;transition:.3s;box-shadow:var(--shadow)}
+.sesi-kad{background:rgba(255,255,255,.88);border:1.5px solid rgba(79,142,247,.18);border-radius:14px;padding:20px;margin-bottom:16px;cursor:pointer;transition:.3s;box-shadow:var(--shadow)}
 .sesi-kad:hover{border-color:rgba(79,142,247,.4);box-shadow:var(--shadow2);transform:translateY(-2px)}
 .sesi-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px}
 .sesi-tajuk-teks{font-size:1rem;font-weight:700;color:var(--text)}
@@ -70,7 +130,7 @@ body>*{position:relative;z-index:1}
 
 /* ── MURID CHIPS ── */
 .murid-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.murid-chip{background:var(--panel2);border-radius:20px;padding:6px 14px;display:flex;align-items:center;gap:8px;font-size:.85rem;border:1px solid var(--border);transition:.2s}
+.murid-chip{background:rgba(255,255,255,.85);border-radius:20px;padding:6px 14px;display:flex;align-items:center;gap:8px;font-size:.85rem;border:1.5px solid rgba(79,142,247,.18);transition:.2s}
 .murid-chip:hover{border-color:rgba(79,142,247,.4)}
 .chip-avatar-img{width:26px;height:26px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(79,142,247,.12),rgba(168,85,247,.1));font-size:1rem;flex-shrink:0}
 .chip-avatar-img img{width:100%;height:100%;object-fit:cover}
@@ -81,15 +141,15 @@ body>*{position:relative;z-index:1}
 .ulasan-label{font-size:.72rem;color:var(--text2);margin-bottom:4px;font-weight:700}
 .ulasan-teks{font-size:.9rem;line-height:1.5;color:var(--text)}
 
-/* ── DETAIL MODAL ── */
+/* ── OVERLAY & MODAL ── */
 .overlay{display:none;position:fixed;inset:0;background:rgba(30,45,90,.4);z-index:500;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;backdrop-filter:blur(8px)}
 .overlay.buka{display:flex;animation:fadeIn .2s}
-.modal{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:28px;width:100%;max-width:540px;position:relative;margin:auto;box-shadow:0 20px 60px rgba(30,45,90,.15)}
+.modal{background:rgba(255,255,255,.97);border:1.5px solid rgba(79,142,247,.2);border-radius:20px;padding:28px;width:100%;max-width:540px;position:relative;margin:auto;box-shadow:0 20px 60px rgba(30,45,90,.15)}
 .modal-tutup{position:absolute;top:14px;right:14px;background:var(--bg2);border:1px solid var(--border);color:var(--text2);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;transition:.2s}
 .modal-tutup:hover{background:var(--red);border-color:var(--red);color:#fff}
 
 /* ── RANKING ── */
-.ranking-item{display:flex;align-items:center;gap:14px;background:var(--panel2);border-radius:10px;padding:12px 16px;margin-bottom:10px;border:1px solid var(--border);transition:.2s}
+.ranking-item{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.85);border-radius:10px;padding:12px 16px;margin-bottom:10px;border:1.5px solid rgba(79,142,247,.15);transition:.2s}
 .ranking-item:hover{box-shadow:var(--shadow)}
 .r1-item{border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.04)}
 .r2-item{border-color:rgba(156,163,175,.4);background:rgba(156,163,175,.04)}
@@ -101,7 +161,7 @@ body>*{position:relative;z-index:1}
 .rank-markah{font-family:'Orbitron',monospace;color:var(--accent);font-size:1.1rem;font-weight:700}
 
 /* ── SIARAN ── */
-.siaran-kad{background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:16px;transition:.3s;box-shadow:var(--shadow)}
+.siaran-kad{background:rgba(255,255,255,.88);border:1.5px solid rgba(79,142,247,.18);border-radius:14px;overflow:hidden;margin-bottom:16px;transition:.3s;box-shadow:var(--shadow)}
 .siaran-kad:hover{box-shadow:var(--shadow2)}
 .siaran-header{padding:16px 20px;background:linear-gradient(135deg,rgba(79,142,247,.04),rgba(168,85,247,.03))}
 .siaran-tajuk{font-size:1rem;font-weight:700;margin-bottom:4px;color:var(--text)}
@@ -109,16 +169,15 @@ body>*{position:relative;z-index:1}
 .siaran-embed{width:100%;height:280px;border:none;background:var(--panel2)}
 .siaran-link{display:block;padding:10px 20px;background:rgba(79,142,247,.06);color:var(--accent);text-decoration:none;font-size:.84rem;border-top:1px solid var(--border);font-weight:600;transition:.2s}
 .siaran-link:hover{background:rgba(79,142,247,.12)}
-.siaran-komen{padding:12px 20px;color:var(--text2);font-size:.85rem;border-top:1px solid var(--border);line-height:1.6;background:var(--panel2)}
+.siaran-komen{padding:12px 20px;color:var(--text2);font-size:.85rem;border-top:1px solid var(--border);line-height:1.6;background:rgba(255,255,255,.6)}
 
 /* ── KEHADIRAN ── */
 .kehadiran-filter{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:20px}
-.kehadiran-select-kelas{padding:10px 14px;background:var(--panel);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.9rem;outline:none;min-width:200px;box-shadow:var(--shadow)}
+.kehadiran-select-kelas{padding:10px 14px;background:rgba(255,255,255,.88);border:1.5px solid rgba(79,142,247,.2);border-radius:10px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.9rem;outline:none;min-width:200px;box-shadow:var(--shadow)}
 .kehadiran-select-kelas:focus{border-color:var(--accent)}
-.kehadiran-tarikh{padding:10px 14px;background:var(--panel);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.9rem;outline:none;box-shadow:var(--shadow)}
-
+.kehadiran-tarikh{padding:10px 14px;background:rgba(255,255,255,.88);border:1.5px solid rgba(79,142,247,.2);border-radius:10px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.9rem;outline:none;box-shadow:var(--shadow)}
 .kehadiran-rekod-list{display:grid;gap:14px}
-.kehadiran-rekod-kad{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:var(--shadow);transition:.3s}
+.kehadiran-rekod-kad{background:rgba(255,255,255,.88);border:1.5px solid rgba(79,142,247,.18);border-radius:14px;padding:18px;box-shadow:var(--shadow);transition:.3s}
 .kehadiran-rekod-kad:hover{box-shadow:var(--shadow2)}
 .kehadiran-rekod-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px}
 .kehadiran-rekod-tarikh{font-size:1rem;font-weight:700;color:var(--text)}
@@ -131,49 +190,61 @@ body>*{position:relative;z-index:1}
 .chip-mini-avatar{width:20px;height:20px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0}
 .chip-mini-avatar img{width:100%;height:100%;object-fit:cover}
 
-/* ── KOSONG STATE ── */
-.kosong{text-align:center;padding:60px 20px;color:var(--text2)}
-.kosong-ikon{font-size:3rem;margin-bottom:12px}
-.kosong-teks{font-size:.9rem}
-
-/* ── SCROLLBAR ── */
-::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:var(--bg2)}
-::-webkit-scrollbar-thumb{background:rgba(79,142,247,.25);border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:var(--accent)}
-
-/* ── NOTIF ── */
-.notif-bar{position:fixed;bottom:20px;right:20px;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px 20px;font-size:.85rem;z-index:9999;display:none;animation:slideIn .3s;max-width:300px;box-shadow:var(--shadow2);color:var(--text)}
-@keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}
-
-/* ── CARDS STATS (Dashboard Summary) ── */
-.stat-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
-.stat-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px;text-align:center;box-shadow:var(--shadow);transition:.2s}
-.stat-card:hover{box-shadow:var(--shadow2);transform:translateY(-2px)}
-.stat-card-num{font-family:'Orbitron',monospace;font-size:2rem;font-weight:900;line-height:1.1}
-.stat-card-label{font-size:.72rem;color:var(--text2);margin-top:4px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
-
-/* ── MOD BADGES WARNA ── */
+/* ── MOD BADGES ── */
 .badge-mod1{background:rgba(79,142,247,.1);color:var(--accent);border:1px solid rgba(79,142,247,.3)}
 .badge-mod2{background:rgba(168,85,247,.1);color:var(--purple);border:1px solid rgba(168,85,247,.3)}
 .badge-mod3{background:rgba(245,158,11,.1);color:var(--gold);border:1px solid rgba(245,158,11,.3)}
 .badge-mod4{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.3)}
 
-/* ── RESPONSIVE ── */
+/* ── KOSONG ── */
+.kosong{text-align:center;padding:60px 20px;color:var(--text2)}
+.kosong-ikon{font-size:3rem;margin-bottom:12px}
+.kosong-teks{font-size:.9rem}
+
+/* ── NOTIF ── */
+.notif-bar{position:fixed;bottom:20px;right:20px;background:rgba(255,255,255,.97);border:1.5px solid rgba(79,142,247,.2);border-radius:12px;padding:12px 20px;font-size:.85rem;z-index:9999;display:none;animation:slideIn .3s;max-width:300px;box-shadow:var(--shadow2);color:var(--text)}
+@keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:rgba(79,142,247,.05)}
+::-webkit-scrollbar-thumb{background:rgba(79,142,247,.28);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+
 @media(max-width:600px){
   .topbar-nav{gap:2px}
   .nav-btn{padding:6px 10px;font-size:.75rem}
   .stat-cards{grid-template-columns:repeat(2,1fr)}
   .halaman{padding:16px}
+  .intro-logo{font-size:2.5rem;letter-spacing:8px}
 }
 </style>
 </head>
 <body>
 
+<!-- ====================== INTRO SPLASH ====================== -->
+<div id="introSplash">
+  <div class="intro-grid"></div>
+  <div class="intro-orb iorb1"></div>
+  <div class="intro-orb iorb2"></div>
+  <div class="intro-orb iorb3"></div>
+  <div class="intro-stars" id="introStars"></div>
+  <div class="intro-particles" id="introParticles"></div>
+  <div class="intro-logo">ILMUVERSE</div>
+  <div class="intro-tagline">SISTEM PEMBELAJARAN INTERAKTIF</div>
+  <div class="intro-by">BY FUTURE MINDS</div>
+  <div class="intro-divider"></div>
+  <div class="intro-subtitle">Portal Murid &amp; Ibu Bapa</div>
+  <div class="intro-progress"><div class="intro-progress-bar"></div></div>
+  <button class="intro-btn" id="introMasuk" onclick="masukApp()">MASUK ›</button>
+</div>
+
+<!-- ====================== APP ====================== -->
+<div id="app">
 <div class="topbar">
-  <div>
-    <div class="logo">ILMUVERSE</div>
-    <div class="logo-sub">Portal Murid &amp; Ibu Bapa</div>
+  <div class="logo-wrap">
+    <div class="logo-main">✦ ILMUVERSE</div>
+    <div class="logo-by">by Future Minds</div>
   </div>
   <div class="topbar-nav">
     <button class="nav-btn aktif" onclick="tukarHalaman('dashboard',this)">🏆 Pencapaian</button>
@@ -183,12 +254,37 @@ body>*{position:relative;z-index:1}
   <span class="live-badge" style="margin-left:8px"><span class="live-dot"></span>Live</span>
 </div>
 
-<!-- ======================== PENCAPAIAN ======================== -->
+<!-- ====================== PENCAPAIAN ====================== -->
 <div class="halaman aktif" id="halDashboard">
+
+  <!-- PROGRESSION BAR -->
+  <div class="prog-section">
+    <div class="prog-section-tajuk">
+      <span>🏅</span><span>KEDUDUKAN LEVEL MURID</span>
+      <span style="font-size:.7rem;color:var(--accent);margin-left:auto;font-style:normal">0 — 100 Mata</span>
+    </div>
+    <div class="prog-wrap">
+      <div class="prog-label-row"><span>0</span><span>25</span><span>50</span><span>75</span><span>100 ⭐</span></div>
+      <div class="prog-track" id="progTrack">
+        <!-- Tick marks -->
+        <div class="prog-ticks">
+          <div class="prog-tick" style="left:25%"><div class="prog-tick-label">25</div></div>
+          <div class="prog-tick" style="left:50%"><div class="prog-tick-label">50</div></div>
+          <div class="prog-tick" style="left:75%"><div class="prog-tick-label">75</div></div>
+        </div>
+        <div class="prog-fill" id="progFill"></div>
+        <!-- Avatar pins rendered by JS here -->
+      </div>
+      <div class="prog-below"></div>
+    </div>
+    <!-- Legend below bar -->
+    <div class="prog-legend" id="progLegend"></div>
+  </div>
+
   <div class="filter-bar">
     <div class="sek-tajuk" style="margin-bottom:0;border:none;padding:0">🏆 REKOD PENCAPAIAN</div>
     <input type="date" class="filter-input" id="tarikhFilter" onchange="tapisData()">
-    <button onclick="tapisData()" style="padding:8px 14px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:600;font-size:.83rem">🔄 Tapis</button>
+    <button onclick="tapisData()" style="padding:8px 14px;background:linear-gradient(135deg,var(--accent),var(--teal));color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:600;font-size:.83rem;box-shadow:0 3px 12px rgba(79,142,247,.3)">🔄 Tapis</button>
   </div>
 
   <!-- Stat summary -->
@@ -214,7 +310,7 @@ body>*{position:relative;z-index:1}
   <div id="sesiGrid"><div class="kosong"><div class="kosong-ikon">📋</div><div class="kosong-teks">Tiada rekod lagi</div></div></div>
 </div>
 
-<!-- ======================== KEHADIRAN ======================== -->
+<!-- ====================== KEHADIRAN ====================== -->
 <div class="halaman" id="halKehadiran">
   <div class="sek-tajuk">✅ REKOD KEHADIRAN</div>
 
@@ -236,11 +332,12 @@ body>*{position:relative;z-index:1}
   </div>
 </div>
 
-<!-- ======================== SIARAN ======================== -->
+<!-- ====================== SIARAN ====================== -->
 <div class="halaman" id="halSiaran">
   <div class="sek-tajuk">📢 SIARAN & NOTA DARIPADA GURU</div>
   <div id="siaranGrid"><div class="kosong"><div class="kosong-ikon">📢</div><div class="kosong-teks">Tiada siaran lagi</div></div></div>
 </div>
+</div><!-- /#app -->
 
 <!-- DETAIL MODAL -->
 <div class="overlay" id="overlayDetail">
@@ -266,6 +363,49 @@ let semuaMurid = [];
 const MOD_NAMA = ['','Kuiz Ramai-ramai','Dwi-Padu','Susunan Hafalan','Imbas AI'];
 const MOD_BADGE = ['','badge-mod1','badge-mod2','badge-mod3','badge-mod4'];
 const MOD_IKON  = ['','👥','⚡','📖','🤖'];
+
+// ============================================================
+// INTRO SPLASH
+// ============================================================
+(function initIntro() {
+  // Bintang
+  const stars = document.getElementById('introStars');
+  for (let i=0; i<80; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;
+      --d:${2+Math.random()*4}s;--delay:${Math.random()*4}s;
+      width:${1+Math.random()*2.5}px;height:${1+Math.random()*2.5}px;opacity:${.1+Math.random()*.7}`;
+    stars.appendChild(s);
+  }
+  // Particles
+  const colors = ['#7dd3fc','#c084fc','#f9a8d4','#4ade80','#fbbf24'];
+  const parts = document.getElementById('introParticles');
+  for (let i=0; i<20; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.cssText = `left:${Math.random()*100}%;background:${colors[Math.floor(Math.random()*colors.length)]};
+      opacity:.7;border-radius:50%;width:${2+Math.random()*4}px;height:${2+Math.random()*4}px;
+      --pd:${6+Math.random()*10}s;--pdelay:${Math.random()*8}s`;
+    parts.appendChild(p);
+  }
+  // Show button after progress bar
+  setTimeout(() => {
+    document.getElementById('introMasuk').style.display = 'block';
+  }, 3800);
+})();
+
+function masukApp() {
+  const splash = document.getElementById('introSplash');
+  splash.style.transition = 'opacity .6s, transform .6s';
+  splash.style.opacity = '0';
+  splash.style.transform = 'scale(1.04)';
+  setTimeout(() => {
+    splash.style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    muatSemua();
+  }, 600);
+}
 
 // ============================================================
 // WEBSOCKET
@@ -313,9 +453,110 @@ function renderAvatarChip(av, saiz=26) {
 }
 
 // ============================================================
+// PROGRESSION BAR
+// ============================================================
+function kiraMataSetiapMurid() {
+  // Kira jumlah markah dari semua sesi untuk setiap murid
+  const mataMap = {};
+  semuaMurid.forEach(m => { mataMap[m._id] = 0; });
+  semuaSesi.forEach(sesi => {
+    (sesi.keputusan||[]).forEach(k => {
+      // Cari murid ikut nama atau id
+      const m = cariMurid(k.muridId || k.nama);
+      if (m) {
+        if (!mataMap[m._id]) mataMap[m._id] = 0;
+        mataMap[m._id] += (k.markah||0);
+      }
+    });
+  });
+  return mataMap;
+}
+
+function renderProgression() {
+  const track = document.getElementById('progTrack');
+  const legend = document.getElementById('progLegend');
+
+  // Buang pin lama
+  track.querySelectorAll('.prog-pin').forEach(p=>p.remove());
+
+  if (!semuaMurid.length) {
+    legend.innerHTML = '<div class="prog-empty">Tiada murid didaftarkan lagi</div>';
+    return;
+  }
+
+  const mataMap = kiraMataSetiapMurid();
+  const MAX_PTS = 100;
+
+  // Sort ikut mata
+  const muridData = semuaMurid
+    .map(m => ({ m, pts: Math.min(mataMap[m._id]||0, MAX_PTS) }))
+    .sort((a,b) => b.pts - a.pts);
+
+  // Render legend
+  legend.innerHTML = muridData.map(({m, pts}) => {
+    const av = m.avatar||'👤';
+    const avHtml = av.startsWith('data:')
+      ? `<img src="${av}">`
+      : `<span style="font-size:.8rem">${av}</span>`;
+    return `<div class="prog-legend-item">
+      <div class="prog-legend-av">${avHtml}</div>
+      <span style="font-weight:700;font-size:.8rem;color:var(--text)">${m.nama}</span>
+      <span class="prog-legend-pts">${pts}⭐</span>
+    </div>`;
+  }).join('');
+
+  // Offset avatars yg sama posisi supaya x overlap
+  // Group by position (rounded to nearest 2%)
+  const posGroups = {};
+  muridData.forEach(({m, pts}) => {
+    const pct = (pts / MAX_PTS) * 100;
+    const bucket = Math.round(pct / 2) * 2;
+    if (!posGroups[bucket]) posGroups[bucket] = [];
+    posGroups[bucket].push({m, pts, pct});
+  });
+
+  // Render pins
+  Object.values(posGroups).forEach(group => {
+    group.forEach(({m, pts, pct}, gi) => {
+      const av = m.avatar||'👤';
+      const avHtml = av.startsWith('data:')
+        ? `<img src="${av}">`
+        : `<span style="font-size:1rem">${av}</span>`;
+
+      const pin = document.createElement('div');
+      pin.className = 'prog-pin';
+      // Offset vertically if multiple avatars at same spot
+      const vertOffset = gi * 46;
+      pin.style.cssText = `left:${Math.max(2,Math.min(98,pct))}%;top:${-20 - vertOffset}px`;
+      pin.title = `${m.nama}: ${pts} mata`;
+      pin.innerHTML = `
+        <div class="prog-avatar">${avHtml}</div>
+        <div class="prog-pin-name">${m.nama.split(' ')[0]}</div>
+        <div class="prog-score-badge">${pts}⭐</div>
+        <div class="prog-pin-line"></div>
+      `;
+      track.appendChild(pin);
+    });
+  });
+
+  // Update bar fill ikut murid tertinggi (untuk visual)
+  const maxPts = muridData.length ? muridData[0].pts : 0;
+  document.getElementById('progFill').style.width = `${(maxPts/MAX_PTS)*100}%`;
+}
+
+// ============================================================
 // DASHBOARD
 // ============================================================
 function tapisData() { renderDashboard(); }
+
+async function muatSemua() {
+  sambungWS();
+  await muatMurid();
+  await muatDashboard();
+  muatSiaran();
+  document.getElementById('tarikhFilter').value = new Date().toLocaleDateString('fr-CA');
+  document.getElementById('filterKehadiranTarikh').value = new Date().toLocaleDateString('fr-CA');
+}
 
 async function muatDashboard() {
   try {
@@ -323,6 +564,7 @@ async function muatDashboard() {
     semuaSesi = await res.json();
     renderDashboard();
     renderStatCards();
+    renderProgression();
   } catch(e) {}
 }
 
@@ -512,9 +754,9 @@ function renderKehadiran() {
 async function muatSiaran() {
   try {
     const res = await fetch(`${API}/api/siaran`);
-    semuaSiaran = await res.json();
+    const siaran = await res.json();
     const el = document.getElementById('siaranGrid');
-    el.innerHTML = semuaSiaran.length ? semuaSiaran.map(s => `
+    el.innerHTML = siaran.length ? siaran.map(s => `
       <div class="siaran-kad">
         <div class="siaran-header">
           <div class="siaran-tajuk">${s.tajuk}</div>
@@ -536,19 +778,6 @@ function tunjukNotif(msg) {
   clearTimeout(el._t);
   el._t = setTimeout(() => el.style.display = 'none', 4000);
 }
-
-// ============================================================
-// INIT
-// ============================================================
-window.addEventListener('load', async () => {
-  document.getElementById('tarikhFilter').value = new Date().toLocaleDateString('fr-CA');
-  sambungWS();
-  await muatMurid();
-  await muatDashboard();
-  muatSiaran();
-  // Auto-set kehadiran filter tarikh
-  document.getElementById('filterKehadiranTarikh').value = new Date().toLocaleDateString('fr-CA');
-});
 </script>
 </body>
 </html>
