@@ -25,9 +25,9 @@ const TELEGRAM_BOT_TOKEN = '8849507122:AAECl_Ms6z6xYcAfO6kBFAyBfjYoIhL6KrI';
 const TELEGRAM_CHAT_ID = '707286960';
 
 // ID Kad NFC Tetap — Ganti dengan ID sebenar kad anda
-const NFC_KAD_A = ''; // << LETAK ID KAD A DI SINI (contoh: '04A32F11')
-const NFC_KAD_B = ''; // << LETAK ID KAD B DI SINI
-const NFC_KAD_C = ''; // << LETAK ID KAD C DI SINI
+const NFC_KAD_A = '5A B2 F3 B1'; // << LETAK ID KAD A DI SINI (contoh: '04A32F11')
+const NFC_KAD_B = '47 84 21 25'; // << LETAK ID KAD B DI SINI
+const NFC_KAD_C = '45 E7 A5 AB'; // << LETAK ID KAD C DI SINI
 
 function uidKeJawapan(uid) {
   const u = uid.toUpperCase().trim();
