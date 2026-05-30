@@ -1,7 +1,6 @@
 // ============================================================
-// ILMUVERSE - SERVER UTAMA v2.1
+// ILMUVERSE - SERVER UTAMA v2.0
 // Node.js + Express + WebSocket + MongoDB
-// FIX: Keepalive ESP32, single close handler
 // ============================================================
 require('dotenv').config();
 const express = require('express');
@@ -26,9 +25,9 @@ const TELEGRAM_BOT_TOKEN = '8849507122:AAECl_Ms6z6xYcAfO6kBFAyBfjYoIhL6KrI';
 const TELEGRAM_CHAT_ID = '707286960';
 
 // ID Kad NFC Tetap — Ganti dengan ID sebenar kad anda
-const NFC_KAD_A = '5A B2 F3 B1'; // << LETAK ID KAD A DI SINI (contoh: '04A32F11')
-const NFC_KAD_B = '47 84 21 25'; // << LETAK ID KAD B DI SINI
-const NFC_KAD_C = '45 E7 A5 AB'; // << LETAK ID KAD C DI SINI
+const NFC_KAD_A = ''; // << LETAK ID KAD A DI SINI (contoh: '04A32F11')
+const NFC_KAD_B = ''; // << LETAK ID KAD B DI SINI
+const NFC_KAD_C = ''; // << LETAK ID KAD C DI SINI
 
 function uidKeJawapan(uid) {
   const u = uid.toUpperCase().trim();
@@ -50,8 +49,8 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/ilmuverse
 // ============================================================
 const MuridSchema = new mongoose.Schema({
   nama: String,
-  avatar: String,
-  kelas: String,
+  avatar: String, // base64 image atau emoji
+  kelas: String,  // nama kelas murid
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -155,35 +154,21 @@ wss.on('connection', (ws, req) => {
   const url = req.url;
   console.log(`[WS] Sambungan baru: ${url}`);
 
-  ws.espKeepAlive = null;
-
   if (url === '/esp32') {
     clients.esp32 = ws;
     console.log('[WS] ESP32 Utama disambung');
     updateStatusPeranti();
     ws.send(JSON.stringify({ jenis: 'sambut', mesej: 'ESP32 Utama bersambung' }));
-
-    // FIX: Keepalive ping setiap 20 saat — cegah Render.com putus idle connection
-    ws.espKeepAlive = setInterval(() => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.ping();
-      } else {
-        clearInterval(ws.espKeepAlive);
-      }
-    }, 20000);
-
   } else if (url === '/cam') {
     clients.cam = ws;
     console.log('[WS] ESP32-CAM disambung');
     updateStatusPeranti();
     ws.send(JSON.stringify({ jenis: 'sambut', mesej: 'CAM bersambung' }));
-
   } else if (url === '/guru') {
     clients.guru.push(ws);
     console.log('[WS] Aplikasi Guru disambung');
     updateStatusPeranti();
     ws.send(JSON.stringify({ jenis: 'game_state', data: gameState }));
-
   } else if (url === '/murid') {
     clients.murid.push(ws);
     console.log('[WS] Aplikasi Murid disambung');
@@ -216,13 +201,12 @@ wss.on('connection', (ws, req) => {
         case 'flash_cam': hantarKeCAM({ jenis: 'flash', nyala: data.nyala }); break;
         case 'tambah_ulasan': await tambahUlasan(data); break;
         case 'push_telegram': await hantarTelegram(data); break;
+        // Auto-scan mod4 tidak perlu trigger manual lagi
       }
     }
   });
 
-  // FIX: SATU close handler sahaja untuk semua jenis client
   ws.on('close', () => {
-    if (ws.espKeepAlive) clearInterval(ws.espKeepAlive);
     if (url === '/esp32') { clients.esp32 = null; updateStatusPeranti(); }
     else if (url === '/cam') { clients.cam = null; updateStatusPeranti(); }
     else if (url === '/guru') clients.guru = clients.guru.filter(c => c !== ws);
@@ -252,6 +236,7 @@ async function mulaMod(data) {
   });
   await sesi.save();
 
+  // Clear mod4 auto-scan timer
   if (gameState.mod4?.autoScanTimer) clearTimeout(gameState.mod4.autoScanTimer);
 
   gameState = {
@@ -272,6 +257,7 @@ async function mulaMod(data) {
 
   if (mod === 1) mulaTimerMod1();
   else if (mod === 4) {
+    // Auto-scan terus bermula
     setTimeout(() => autoScanMod4(), 1500);
   }
 
@@ -318,6 +304,7 @@ async function tamatMod1() {
 
 async function prosesNFC(uid) {
   if (!gameState.aktif) {
+    // Hantar ke guru untuk UI feedback walaupun tiada mod aktif
     hantarKeGuru({ jenis: 'nfc_scan', uid });
     return;
   }
@@ -337,6 +324,7 @@ function prosesNFCMod1(uid) {
   const murid = gameState.muridSenarai[gameState.muridSemasa];
   if (!murid) return;
 
+  // Guna kad NFC tetap A/B/C
   const jawapanDiberi = uidKeJawapan(uid);
   if (!jawapanDiberi) return;
 
@@ -468,6 +456,7 @@ async function prosesCAMResult(data) {
     if (fasa === 'sihat') {
       m4.sihatDikesan.push(labelLower);
       if (m4.sihatDikesan.length >= MAKANAN_SIHAT_LIST.length) {
+        // Tukar ke fasa tidak sihat
         m4.fasa = 'tidak_sihat';
         hantarKeGuru({ jenis: 'mod4_tukar_fasa', fasa: 'tidak_sihat' });
         setTimeout(() => autoScanMod4(), 2000);
@@ -476,6 +465,7 @@ async function prosesCAMResult(data) {
     } else {
       m4.takSihatDikesan.push(labelLower);
       if (m4.takSihatDikesan.length >= MAKANAN_TAK_SIHAT_LIST.length) {
+        // Mod4 selesai
         await tamatMod4();
         return;
       }
@@ -484,6 +474,7 @@ async function prosesCAMResult(data) {
     hantarKeESP32({ jenis: 'salah' });
   }
 
+  // Auto-scan semula selepas 2 saat
   if (gameState.aktif && gameState.mod === 4) {
     m4.autoScanTimer = setTimeout(() => autoScanMod4(), 2500);
   }
@@ -525,6 +516,7 @@ async function tambahUlasan(data) {
   semuaHantar({ jenis: 'ulasan_baharu', sesiId, muridId, muridNama, komen });
 }
 
+// Telegram — guna credentials tetap
 async function hantarTelegram(data) {
   const { sesiId } = data;
   const sesi = await Sesi.findById(sesiId);
@@ -653,6 +645,7 @@ app.get('/api/kehadiran', async (req, res) => {
 });
 app.post('/api/kehadiran', async (req, res) => {
   const { kelas, tarikh, senarai } = req.body;
+  // Upsert: kalau dah ada rekod untuk kelas+tarikh yang sama, kemaskini
   const tarikhObj = new Date(tarikh);
   const esok = new Date(tarikhObj); esok.setDate(esok.getDate() + 1);
   const sedia = await Kehadiran.findOne({ kelas, tarikh: { $gte: tarikhObj, $lt: esok } });
@@ -693,5 +686,5 @@ app.post('/api/nfc', async (req, res) => {
 // ============================================================
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`[SERVER] ILMUVERSE v2.1 berjalan pada port ${PORT}`);
+  console.log(`[SERVER] ILMUVERSE v2.0 berjalan pada port ${PORT}`);
 });
