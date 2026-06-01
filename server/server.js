@@ -1,1771 +1,690 @@
-<!DOCTYPE html>
-<html lang="ms">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ILMUVERSE — Guru</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#f0f4ff;--bg2:#e8eeff;--panel:#ffffff;--panel2:#f5f7ff;
-  --accent:#4f8ef7;--accent2:#7c3aed;--purple:#a855f7;
-  --pink:#ec4899;--gold:#f59e0b;--green:#10b981;
-  --teal:#06b6d4;--orange:#f97316;
-  --red:#ef4444;--yellow:#eab308;
-  --text:#1e2d5a;--text2:#6b7db3;
-  --border:rgba(79,142,247,0.2);
-  --shadow:0 4px 24px rgba(79,142,247,0.12);
-  --shadow2:0 8px 40px rgba(79,142,247,0.18);
-  --card-border:1px solid rgba(79,142,247,0.15);
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;color:var(--text);font-family:'Exo 2',sans-serif;overflow-x:hidden;
-  background:linear-gradient(135deg,#dde8ff 0%,#ede0ff 28%,#fce4f4 52%,#d4f0ff 76%,#dcffe8 100%) fixed;
-  background-attachment:fixed;min-height:100vh}
-.logo-by{font-size:.58rem;color:var(--text2);letter-spacing:2px;font-weight:600;text-transform:uppercase;opacity:.75;margin-top:-2px}
-
-/* ── SPLASH ── */
-#splash{position:fixed;inset:0;background:linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;overflow:hidden}
-.splash-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px);background-size:44px 44px;animation:gridScroll 18s linear infinite}
-@keyframes gridScroll{to{transform:translateY(44px)}}
-.splash-orb{position:absolute;border-radius:50%;filter:blur(60px);pointer-events:none}
-.orb1{width:400px;height:400px;background:radial-gradient(circle,rgba(255,255,255,.25),transparent);top:-100px;left:-100px;animation:orbFloat 8s ease-in-out infinite}
-.orb2{width:350px;height:350px;background:radial-gradient(circle,rgba(255,200,255,.2),transparent);bottom:-80px;right:-80px;animation:orbFloat 10s ease-in-out infinite reverse}
-.orb3{width:250px;height:250px;background:radial-gradient(circle,rgba(200,200,255,.2),transparent);top:50%;left:50%;transform:translate(-50%,-50%);animation:orbFloat 6s ease-in-out infinite 2s}
-@keyframes orbFloat{0%,100%{transform:translate(0,0)}50%{transform:translate(20px,-20px)}}
-.splash-logo{font-family:'Orbitron',monospace;font-size:3.5rem;font-weight:900;letter-spacing:10px;color:#fff;text-shadow:0 0 40px rgba(255,255,255,0.6);position:relative;z-index:1;animation:logoAppear 1s ease forwards;opacity:0}
-@keyframes logoAppear{from{opacity:0;transform:scale(.8) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
-.splash-sub{font-family:'Orbitron',monospace;font-size:.9rem;color:rgba(255,255,255,.8);letter-spacing:5px;z-index:1;opacity:0;animation:fadeUp .8s .5s ease forwards}
-.splash-by{font-size:.7rem;color:rgba(255,255,255,.5);letter-spacing:3px;z-index:1;opacity:0;animation:fadeUp .8s .8s ease forwards}
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.conn-bar{display:flex;gap:28px;z-index:1;opacity:0;animation:fadeUp .8s 1s ease forwards}
-.conn-item{display:flex;align-items:center;gap:8px;font-size:.78rem;color:rgba(255,255,255,.7)}
-.conn-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.3);transition:.4s}
-.conn-dot.hidup{background:#4ade80;box-shadow:0 0 12px #4ade80}
-.conn-dot.mati{background:#f87171;box-shadow:0 0 8px #f87171}
-.splash-status{font-size:.88rem;color:rgba(255,255,255,.9);letter-spacing:2px;z-index:1;min-height:22px;opacity:0;animation:fadeUp .8s 1.2s ease forwards}
-.splash-btn{display:none;padding:14px 52px;background:rgba(255,255,255,.95);border:none;border-radius:50px;color:#7c3aed;font-family:'Orbitron',monospace;font-size:1rem;font-weight:700;letter-spacing:3px;cursor:pointer;box-shadow:0 8px 32px rgba(0,0,0,.2);z-index:1;transition:.2s}
-.splash-btn:hover{transform:scale(1.06);box-shadow:0 12px 48px rgba(0,0,0,.3)}
-.splash-progress{width:200px;height:3px;background:rgba(255,255,255,.2);border-radius:2px;overflow:hidden;z-index:1;opacity:0;animation:fadeUp .8s 1.4s ease forwards}
-.splash-progress-bar{height:100%;background:rgba(255,255,255,.8);border-radius:2px;animation:progressFill 2s 1.4s ease forwards;width:0}
-@keyframes progressFill{to{width:100%}}
-
-/* ── APP LAYOUT ── */
-#app{display:none;min-height:100vh;flex-direction:column}
-.topbar{height:64px;background:rgba(255,255,255,.92);border-bottom:2px solid rgba(79,142,247,0.18);display:flex;align-items:center;padding:0 20px;gap:16px;position:sticky;top:0;z-index:100;backdrop-filter:blur(18px);box-shadow:0 2px 20px rgba(79,142,247,0.1)}
-.logo-wrap{display:flex;flex-direction:column;line-height:1.15}
-.logo-kecil{font-family:'Orbitron',monospace;font-size:1.15rem;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.topbar-nav{display:flex;gap:4px;margin-left:auto}
-.nav-btn{padding:8px 16px;background:transparent;border:1px solid transparent;border-radius:8px;color:var(--text2);font-family:'Exo 2',sans-serif;font-size:.83rem;cursor:pointer;transition:.2s;letter-spacing:.5px;font-weight:600}
-.nav-btn.aktif{background:linear-gradient(135deg,rgba(79,142,247,.12),rgba(168,85,247,.08));border-color:rgba(79,142,247,.3);color:var(--accent)}
-.nav-btn:hover:not(.aktif){background:rgba(79,142,247,.06);color:var(--text)}
-.status-bar{display:flex;gap:8px;margin-left:8px}
-.status-chip{display:flex;align-items:center;gap:6px;padding:5px 12px;background:var(--panel2);border-radius:20px;font-size:.72rem;border:var(--card-border);box-shadow:var(--shadow)}
-.s-dot{width:8px;height:8px;border-radius:50%;background:#d1d5db;transition:.3s}
-.s-dot.on{background:var(--green);box-shadow:0 0 8px var(--green)}
-.s-dot.off{background:var(--red);box-shadow:0 0 6px var(--red)}
-
-/* ── HALAMAN ── */
-.halaman{display:none;padding:24px;animation:fadeIn .3s ease;max-width:1200px;margin:0 auto;width:100%}
-.halaman.aktif{display:block}
-@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.sek-tajuk{font-family:'Orbitron',monospace;font-size:1rem;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px;margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid rgba(79,142,247,.15)}
-
-/* ── HOME ── */
-.home-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
-.mod-kad{background:rgba(255,255,255,.88);border:1.5px solid rgba(79,142,247,.22);border-radius:16px;padding:28px;cursor:pointer;transition:.3s;position:relative;overflow:hidden;box-shadow:0 4px 20px rgba(79,142,247,.1)}
-.mod-kad::before{content:'';position:absolute;inset:0;opacity:0;transition:.3s;border-radius:16px}
-.mod-kad.m1{background:linear-gradient(135deg,rgba(255,255,255,.92) 60%,rgba(79,142,247,.1))}
-.mod-kad.m2{background:linear-gradient(135deg,rgba(255,255,255,.92) 60%,rgba(168,85,247,.1))}
-.mod-kad.m3{background:linear-gradient(135deg,rgba(255,255,255,.92) 60%,rgba(245,158,11,.1))}
-.mod-kad.m4{background:linear-gradient(135deg,rgba(255,255,255,.92) 60%,rgba(16,185,129,.1))}
-.mod-kad:hover{transform:translateY(-5px);box-shadow:var(--shadow2)}
-.mod-kad:hover::before{opacity:1}
-.mod-num{font-family:'Orbitron',monospace;font-size:2.4rem;font-weight:900;line-height:1;position:relative;z-index:1}
-.mod-kad.m1 .mod-num{color:var(--accent)}
-.mod-kad.m2 .mod-num{color:var(--purple)}
-.mod-kad.m3 .mod-num{color:var(--gold)}
-.mod-kad.m4 .mod-num{color:var(--green)}
-.mod-tajuk{font-size:1.05rem;font-weight:700;margin:8px 0 4px;color:var(--text);position:relative;z-index:1}
-.mod-desc{font-size:.78rem;color:var(--text2);line-height:1.55;position:relative;z-index:1}
-.mod-ikon{position:absolute;right:20px;top:20px;font-size:3rem;opacity:.12;z-index:0}
-
-/* ── FORM ELEMENTS ── */
-label{display:block;font-size:.75rem;color:var(--text2);margin-bottom:6px;letter-spacing:.8px;text-transform:uppercase;font-weight:600}
-input,select,textarea{width:100%;background:rgba(255,255,255,.9);border:1.5px solid rgba(79,142,247,.22);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.9rem;outline:none;transition:.2s}
-input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,142,247,.12);background:#fff}
-select option{background:#fff}
-textarea{resize:vertical;min-height:80px}
-.form-row{display:flex;gap:12px;margin-bottom:16px;align-items:flex-end}
-.form-kump{flex:1}
-.form-kump.w2{flex:2}
-
-/* ── BUTANG ── */
-.btn{padding:10px 22px;border-radius:8px;border:none;font-family:'Exo 2',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;transition:.2s;letter-spacing:.5px}
-.btn-utama{background:linear-gradient(135deg,var(--accent),var(--teal));color:#fff;box-shadow:0 4px 16px rgba(79,142,247,.3)}
-.btn-utama:hover{box-shadow:0 6px 24px rgba(79,142,247,.45);transform:translateY(-1px)}
-.btn-purple{background:linear-gradient(135deg,var(--accent2),var(--purple));color:#fff;box-shadow:0 4px 16px rgba(168,85,247,.3)}
-.btn-merah{background:linear-gradient(135deg,#dc2626,var(--red));color:#fff;box-shadow:0 4px 12px rgba(239,68,68,.25)}
-.btn-hijau{background:linear-gradient(135deg,#059669,var(--green));color:#fff;font-weight:700;box-shadow:0 4px 12px rgba(16,185,129,.25)}
-.btn-kuning{background:linear-gradient(135deg,#d97706,var(--gold));color:#fff;font-weight:700}
-.btn-orange{background:linear-gradient(135deg,#ea580c,var(--orange));color:#fff;font-weight:700;box-shadow:0 4px 12px rgba(249,115,22,.25)}
-.btn-teal{background:linear-gradient(135deg,#0891b2,var(--teal));color:#fff;box-shadow:0 4px 12px rgba(6,182,212,.25)}
-.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text2)}
-.btn-outline:hover{border-color:var(--accent);color:var(--accent);background:rgba(79,142,247,.05)}
-.btn-kecil{padding:6px 14px;font-size:.78rem}
-.btn-besar{padding:16px 48px;font-size:1.05rem;letter-spacing:2px}
-
-/* ── OVERLAY & MODAL ── */
-.overlay{display:none;position:fixed;inset:0;background:rgba(30,45,90,.45);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(8px)}
-.overlay.buka{display:flex;animation:fadeIn .2s}
-.modal{background:var(--panel);border:var(--card-border);border-radius:20px;padding:30px;width:90%;max-width:620px;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 20px 60px rgba(30,45,90,.2)}
-.modal h2{font-family:'Orbitron',monospace;font-size:1.1rem;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:22px}
-.modal-tutup{position:absolute;top:14px;right:14px;background:var(--bg2);border:1px solid var(--border);color:var(--text2);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:.9rem;transition:.2s;display:flex;align-items:center;justify-content:center}
-.modal-tutup:hover{background:var(--red);border-color:var(--red);color:#fff}
-
-/* ── MURID GRID PILIH ── */
-.murid-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:10px 0}
-.murid-item{background:var(--panel2);border:2px solid rgba(79,142,247,.15);border-radius:12px;padding:10px 6px;text-align:center;cursor:pointer;transition:.2s;position:relative}
-.murid-item.dipilih{border-color:var(--accent);background:rgba(79,142,247,.08);box-shadow:0 0 0 3px rgba(79,142,247,.15)}
-.murid-item .avatar-box{width:46px;height:46px;border-radius:50%;margin:0 auto 6px;overflow:hidden;background:linear-gradient(135deg,rgba(79,142,247,.1),rgba(168,85,247,.1));display:flex;align-items:center;justify-content:center;font-size:1.6rem}
-.murid-item .avatar-box img{width:100%;height:100%;object-fit:cover}
-.murid-item .nama{font-size:.72rem;color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tick{position:absolute;top:4px;right:4px;width:18px;height:18px;background:var(--green);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:.65rem;color:#fff;font-weight:700}
-.murid-item.dipilih .tick{display:flex}
-
-/* ── DASHBOARD ── */
-.dashboard-header{display:flex;gap:14px;align-items:center;margin-bottom:22px;flex-wrap:wrap}
-.tarikh-filter{padding:8px 14px;background:var(--panel);border:1px solid rgba(79,142,247,.2);border-radius:8px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.85rem;outline:none;box-shadow:var(--shadow)}
-.tarikh-filter:focus{border-color:var(--accent)}
-.sesi-grid{display:grid;gap:14px}
-.sesi-kad{background:rgba(255,255,255,.88);border:1.5px solid rgba(79,142,247,.2);border-radius:14px;padding:18px;transition:.3s;box-shadow:0 4px 18px rgba(79,142,247,.1)}
-.sesi-kad:hover{border-color:rgba(79,142,247,.45);box-shadow:var(--shadow2)}
-.sesi-kad-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;gap:8px;flex-wrap:wrap}
-.sesi-tajuk{font-size:.98rem;font-weight:700;color:var(--text)}
-.sesi-tarikh{font-size:.72rem;color:var(--text2);margin-top:2px}
-.sesi-mod-badge{padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:700;white-space:nowrap}
-.sesi-murid-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-.sesi-murid-chip{display:flex;align-items:center;gap:6px;background:var(--panel2);border-radius:20px;padding:4px 10px;font-size:.78rem;border:var(--card-border)}
-.chip-avatar{width:24px;height:24px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,rgba(79,142,247,.15),rgba(168,85,247,.1));display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
-.chip-avatar img{width:100%;height:100%;object-fit:cover}
-.chip-markah{font-family:'Orbitron',monospace;color:var(--accent);font-size:.82rem;font-weight:700}
-.sesi-aksi{display:flex;gap:8px;flex-wrap:wrap}
-
-/* ── ULASAN ── */
-.ulasan-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;max-height:180px;overflow-y:auto}
-.ulasan-item{background:var(--panel2);border-radius:10px;padding:10px 14px;font-size:.84rem;border-left:3px solid var(--purple)}
-.ulasan-nama{font-weight:700;color:var(--accent);margin-bottom:2px;font-size:.76rem}
-
-/* ── SIARAN ── */
-.siaran-grid{display:grid;gap:14px}
-.siaran-kad{background:var(--panel);border:var(--card-border);border-radius:14px;overflow:hidden;transition:.3s;box-shadow:var(--shadow)}
-.siaran-kad:hover{box-shadow:var(--shadow2)}
-.siaran-header{padding:16px 18px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:linear-gradient(135deg,rgba(79,142,247,.04),rgba(168,85,247,.03))}
-.siaran-tajuk{font-size:.96rem;font-weight:700;color:var(--text)}
-.siaran-embed-wrap{position:relative;padding-bottom:56.25%;height:0;overflow:hidden;background:var(--panel2)}
-.siaran-embed-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none}
-.siaran-komen{padding:12px 18px;font-size:.83rem;color:var(--text2);border-top:1px solid var(--border)}
-.siaran-aksi{padding:10px 18px;display:flex;gap:8px;border-top:1px solid var(--border);background:var(--panel2)}
-
-/* ── PENGURUSAN ── */
-.tab-group{display:flex;gap:4px;margin-bottom:20px;background:var(--panel2);padding:4px;border-radius:12px;width:fit-content;border:var(--card-border)}
-.tab-item{padding:8px 20px;background:transparent;border:none;color:var(--text2);cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.83rem;transition:.2s;border-radius:8px;font-weight:600}
-.tab-item.aktif{background:var(--panel);color:var(--accent);box-shadow:var(--shadow);font-weight:700}
-.sub-halaman{display:none}
-.sub-halaman.aktif{display:block}
-.jadual{width:100%;border-collapse:collapse}
-.jadual th{background:linear-gradient(135deg,rgba(79,142,247,.08),rgba(168,85,247,.04));padding:12px 14px;text-align:left;font-size:.76rem;color:var(--text2);letter-spacing:.8px;border-bottom:2px solid var(--border);font-weight:700}
-.jadual td{padding:12px 14px;border-bottom:1px solid rgba(79,142,247,.06);font-size:.83rem;vertical-align:middle}
-.jadual tr:hover td{background:rgba(79,142,247,.03)}
-
-/* ── PHOTO UPLOAD ── */
-.photo-upload-wrap{display:flex;align-items:center;gap:16px;margin:10px 0}
-.photo-preview{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,rgba(79,142,247,.1),rgba(168,85,247,.1));border:2px dashed rgba(79,142,247,.3);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0}
-.photo-preview img{width:100%;height:100%;object-fit:cover}
-.photo-upload-btn{padding:10px 20px;background:var(--panel2);border:1px dashed rgba(79,142,247,.3);border-radius:8px;color:var(--text2);cursor:pointer;font-size:.83rem;transition:.2s;text-align:center;flex:1}
-.photo-upload-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(79,142,247,.05)}
-
-/* ── KELAS BADGE ── */
-.kelas-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:700}
-
-/* ── KELAS SECTION HEADER ── */
-.kelas-section{margin-bottom:24px}
-.kelas-header{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;margin-bottom:10px;cursor:pointer;transition:.2s}
-.kelas-header:hover{filter:brightness(1.05)}
-.kelas-nama-label{font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700}
-.kelas-toggle{margin-left:auto;font-size:.9rem;transition:.3s}
-.kelas-murid-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;padding:4px}
-
-/* Card murid di pengurusan */
-.murid-kad{background:var(--panel);border:var(--card-border);border-radius:12px;padding:14px;text-align:center;transition:.2s;box-shadow:var(--shadow);position:relative}
-.murid-kad:hover{box-shadow:var(--shadow2);transform:translateY(-2px)}
-.murid-kad-avatar{width:60px;height:60px;border-radius:50%;margin:0 auto 8px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:2rem}
-.murid-kad-avatar img{width:100%;height:100%;object-fit:cover}
-.murid-kad-nama{font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:6px}
-.murid-kad-kelas{font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:10px;margin-bottom:8px;display:inline-block}
-.murid-kad-aksi{display:flex;gap:4px;justify-content:center}
-
-/* ── KEHADIRAN ── */
-.kehadiran-section{background:var(--panel);border:var(--card-border);border-radius:16px;padding:24px;box-shadow:var(--shadow)}
-.kehadiran-topbar{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
-.kehadiran-kelas-select{padding:10px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.9rem;outline:none;min-width:200px}
-.kehadiran-tarikh{padding:10px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.9rem;outline:none}
-.kehadiran-murid-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:20px}
-.kehadiran-item{background:var(--panel2);border:2px solid rgba(79,142,247,.15);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:.2s;user-select:none}
-.kehadiran-item:hover{border-color:rgba(79,142,247,.4)}
-.kehadiran-item.hadir{border-color:var(--green);background:rgba(16,185,129,.06)}
-.kehadiran-item.tidak-hadir{border-color:var(--red);background:rgba(239,68,68,.04)}
-.kehadiran-avatar{width:44px;height:44px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;background:linear-gradient(135deg,rgba(79,142,247,.1),rgba(168,85,247,.1))}
-.kehadiran-avatar img{width:100%;height:100%;object-fit:cover}
-.kehadiran-nama-teks{font-size:.85rem;font-weight:700;color:var(--text);flex:1}
-.hadir-tick{width:24px;height:24px;border-radius:50%;border:2px solid rgba(79,142,247,.3);display:flex;align-items:center;justify-content:center;font-size:.8rem;transition:.2s;flex-shrink:0}
-.kehadiran-item.hadir .hadir-tick{background:var(--green);border-color:var(--green);color:#fff}
-.kehadiran-item.tidak-hadir .hadir-tick{background:var(--red);border-color:var(--red);color:#fff}
-.kehadiran-stat{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap}
-.stat-box{padding:10px 16px;border-radius:10px;font-size:.8rem;font-weight:700}
-
-/* ── SOALAN BUILDER ── */
-.bil-soalan-ctrl{display:flex;align-items:center;gap:12px;margin:10px 0}
-.bil-num{font-family:'Orbitron',monospace;font-size:1.8rem;font-weight:900;color:var(--accent);min-width:44px;text-align:center}
-.soalan-jawapan-list{display:flex;flex-direction:column;gap:10px;margin:14px 0;max-height:320px;overflow-y:auto;padding-right:4px}
-.sj-row{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:14px;transition:.2s}
-.sj-num{font-family:'Orbitron',monospace;font-size:.78rem;color:var(--text2);min-width:60px}
-.sj-abc{display:flex;gap:8px}
-.sj-btn{width:44px;height:44px;border-radius:10px;border:2px solid rgba(79,142,247,.2);background:var(--panel);color:var(--text2);font-family:'Orbitron',monospace;font-size:1rem;font-weight:700;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center}
-.sj-btn:hover{border-color:var(--accent)}
-.sj-btn.dipilih-a{border-color:#3b82f6;background:rgba(59,130,246,.12);color:#3b82f6}
-.sj-btn.dipilih-b{border-color:#10b981;background:rgba(16,185,129,.12);color:#10b981}
-.sj-btn.dipilih-c{border-color:#f97316;background:rgba(249,115,22,.12);color:#f97316}
-.sj-nfc-hint{font-size:.68rem;color:var(--text2);margin-left:auto}
-
-/* ── PAPAN PERMAINAN ── */
-#papanPermainan{display:none;position:fixed;inset:0;background:linear-gradient(135deg,#1e2d5a 0%,#2d1b69 50%,#1a1a4e 100%);z-index:800;flex-direction:column;overflow:hidden}
-#papanPermainan.buka{display:flex}
-.papan-header{height:66px;background:rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;padding:0 22px;gap:18px;backdrop-filter:blur(10px);flex-shrink:0}
-.papan-tajuk{font-family:'Orbitron',monospace;font-size:1.15rem;background:linear-gradient(135deg,#7dd3fc,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.soalan-progress{display:flex;align-items:center;gap:10px;font-size:.8rem;color:rgba(255,255,255,.6)}
-.timer-box{margin-left:auto;display:flex;align-items:center;gap:10px}
-.timer-num{font-family:'Orbitron',monospace;font-size:2rem;font-weight:900;min-width:80px;text-align:center;transition:color .3s;color:#7dd3fc}
-.timer-num.merah{color:#f87171;animation:timerPulse .5s infinite}
-.timer-num.kuning{color:#fbbf24}
-.timer-num.hijau{color:#4ade80}
-@keyframes timerPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.1)}}
-.papan-badan{flex:1;display:grid;grid-template-columns:1fr 320px;overflow:hidden;min-height:0}
-.soalan-display{padding:24px;display:flex;flex-direction:column;gap:16px;overflow-y:auto}
-.soalan-box{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:26px;flex-shrink:0;backdrop-filter:blur(10px)}
-.soalan-no{font-family:'Orbitron',monospace;font-size:.78rem;color:rgba(255,255,255,.5);margin-bottom:10px;letter-spacing:2px}
-.soalan-teks{font-size:1.35rem;font-weight:600;line-height:1.6;color:#fff}
-.pilihan-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
-.pilihan-item{background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.12);border-radius:10px;padding:14px 16px;font-size:.95rem;display:flex;align-items:center;gap:12px;transition:.3s;color:#fff}
-.pilihan-item.betul-highlight{border-color:#4ade80;background:rgba(74,222,128,.1);box-shadow:0 0 18px rgba(74,222,128,.25)}
-.pilihan-item.salah-highlight{border-color:#f87171;background:rgba(248,113,113,.1)}
-.pilihan-badge{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0}
-.badge-a{background:rgba(59,130,246,.25);color:#7dd3fc}
-.badge-b{background:rgba(74,222,128,.25);color:#4ade80}
-.badge-c{background:rgba(251,146,60,.25);color:#fb923c}
-.giliran-box{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;flex-shrink:0;backdrop-filter:blur(10px)}
-.giliran-label{font-size:.78rem;color:rgba(255,255,255,.5)}
-.giliran-nama{font-size:1.1rem;font-weight:700;color:#7dd3fc}
-.giliran-avatar{width:44px;height:44px;border-radius:50%;overflow:hidden;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
-.giliran-avatar img{width:100%;height:100%;object-fit:cover}
-.skor-panel{background:rgba(255,255,255,.04);border-left:1px solid rgba(255,255,255,.08);padding:18px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;min-height:0}
-.skor-tajuk{font-family:'Orbitron',monospace;font-size:.82rem;color:#7dd3fc;margin-bottom:4px;letter-spacing:1px}
-.skor-murid{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px;transition:.3s;position:relative;overflow:hidden}
-.skor-murid.aktif-jawab{border-color:#7dd3fc;box-shadow:0 0 20px rgba(125,211,252,.2)}
-.skor-murid.betul-flash{animation:betulFlash .5s ease}
-@keyframes betulFlash{0%,100%{background:rgba(255,255,255,.06)}50%{background:rgba(74,222,128,.15)}}
-.skor-avatar{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;overflow:hidden}
-.skor-avatar img{width:100%;height:100%;object-fit:cover}
-.skor-info{flex:1;min-width:0}
-.skor-nama{font-weight:600;font-size:.86rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
-.skor-markah{font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:900;color:#7dd3fc}
-.skor-bar-wrap{height:4px;background:rgba(255,255,255,.1);border-radius:2px;margin-top:4px}
-.skor-bar{height:100%;background:linear-gradient(90deg,#c084fc,#7dd3fc);border-radius:2px;transition:.5s}
-.murid-semasa-tag{position:absolute;right:8px;top:6px;background:#7dd3fc;color:#1e2d5a;font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:10px}
-
-/* ── MOD 2 BUZZER ── */
-.buzzer-panel{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:18px;flex-shrink:0}
-.buzzer-murid-row{display:flex;gap:12px}
-.buzzer-murid-btn{flex:1;padding:18px 12px;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.12);border-radius:12px;cursor:pointer;transition:.3s;text-align:center;color:#fff}
-.buzzer-murid-btn:hover{border-color:#7dd3fc;background:rgba(125,211,252,.1)}
-.buzzer-murid-btn.dipilih2{border-color:#7dd3fc;background:rgba(125,211,252,.15);box-shadow:0 0 20px rgba(125,211,252,.25)}
-.buzzer-avatar{font-size:2.4rem;margin-bottom:6px}
-.buzzer-avatar img{width:64px;height:64px;border-radius:50%;object-fit:cover}
-.buzzer-nama{font-size:.9rem;font-weight:600;color:#fff}
-.mod2-status-box{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:20px;text-align:center;flex-shrink:0;backdrop-filter:blur(10px)}
-.mod2-status-teks{font-family:'Orbitron',monospace;font-size:1.1rem;color:#7dd3fc;min-height:36px;display:flex;align-items:center;justify-content:center;transition:.3s}
-.mod2-sedia-num{font-family:'Orbitron',monospace;font-size:4rem;font-weight:900;color:#fbbf24;animation:cntPulse .5s ease}
-@keyframes cntPulse{from{transform:scale(1.4);opacity:.3}to{transform:scale(1);opacity:1}}
-
-/* ── MOD 3 SUSUNAN ── */
-.susunan-track{display:flex;gap:8px;flex-wrap:wrap;padding:18px;background:rgba(255,255,255,.04);border-radius:12px;min-height:80px;border:1px solid rgba(255,255,255,.1)}
-.susun-kad{width:58px;height:78px;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.12);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:.72rem;text-align:center;transition:.3s;color:#fff}
-.susun-kad.betul{border-color:#4ade80;background:rgba(74,222,128,.1);box-shadow:0 0 14px rgba(74,222,128,.25)}
-.susun-kad.semasa{border-color:#7dd3fc;animation:kadPulse 1s infinite}
-.susun-num{font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:#7dd3fc}
-@keyframes kadPulse{0%,100%{box-shadow:0 0 10px rgba(125,211,252,.25)}50%{box-shadow:0 0 28px rgba(125,211,252,.7)}}
-
-/* ── MOD 4 KAMERA ── */
-.kamera-wrap{position:relative;background:#000;border-radius:12px;overflow:hidden;aspect-ratio:4/3;border:2px solid rgba(255,255,255,.1)}
-.kamera-feed{width:100%;height:100%;object-fit:cover}
-.kamera-overlay{position:absolute;inset:0;pointer-events:none}
-.scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#7dd3fc,transparent);animation:scanMove 2s linear infinite;box-shadow:0 0 10px #7dd3fc}
-@keyframes scanMove{0%{top:0}100%{top:100%}}
-.kamera-label{position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,.8);padding:4px 12px;border-radius:20px;font-size:.78rem;color:#7dd3fc;border:1px solid rgba(255,255,255,.1)}
-.auto-scan-badge{position:absolute;top:10px;right:10px;background:rgba(74,222,128,.2);border:1px solid #4ade80;border-radius:20px;padding:4px 12px;font-size:.72rem;color:#4ade80;display:flex;align-items:center;gap:6px}
-.auto-dot{width:7px;height:7px;border-radius:50%;background:#4ade80;animation:livePulse .8s infinite}
-.makanan-reveal{margin:14px 0}
-.makanan-fasa-title{font-size:.82rem;font-weight:700;margin-bottom:10px;padding:6px 14px;border-radius:20px;display:inline-block}
-.fasa-sihat{background:rgba(74,222,128,.15);color:#4ade80;border:1px solid rgba(74,222,128,.3)}
-.fasa-takshat{background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.3)}
-.makanan-reveal-list{display:flex;flex-direction:column;gap:8px}
-.makanan-item-reveal{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;transition:.3s;opacity:.4;color:#fff}
-.makanan-item-reveal.dikesan{border-color:#4ade80;background:rgba(74,222,128,.1);box-shadow:0 0 14px rgba(74,222,128,.2);opacity:1;animation:revealPop .4s cubic-bezier(.175,.885,.32,1.275)}
-@keyframes revealPop{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
-.makanan-ikon-big{font-size:1.8rem}
-.makanan-nama{font-size:.9rem;font-weight:600;flex:1}
-.makanan-dikesan-tag{background:#4ade80;color:#000;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:10px}
-
-/* ── POPUP BETUL/SALAH ── */
-.jawapan-popup{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:900;pointer-events:none}
-.jawapan-popup.tunjuk{display:flex}
-.jawapan-kad{padding:50px 90px;border-radius:24px;text-align:center;animation:popIn .35s cubic-bezier(.175,.885,.32,1.275)}
-@keyframes popIn{from{transform:scale(.4) rotate(-6deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
-.jawapan-kad.betul{background:linear-gradient(135deg,#052e16,#065f46,#059669);border:3px solid #4ade80;box-shadow:0 0 80px rgba(74,222,128,.6)}
-.jawapan-kad.salah{background:linear-gradient(135deg,#450a0a,#991b1b,#ef4444);border:3px solid #f87171;box-shadow:0 0 80px rgba(248,113,113,.6)}
-.jawapan-ikon{font-size:5rem;margin-bottom:10px}
-.jawapan-teks{font-family:'Orbitron',monospace;font-size:2.2rem;font-weight:900;color:#fff}
-.jawapan-sub{font-size:1.05rem;color:rgba(255,255,255,.85);margin-top:10px}
-.jawapan-jawapan{font-family:'Orbitron',monospace;font-size:1.4rem;margin-top:6px;color:#fff}
-
-/* ── GANJARAN OVERLAY ── */
-.ganjaran-overlay{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:1000;display:none;align-items:center;justify-content:center;flex-direction:column;gap:24px;backdrop-filter:blur(8px)}
-.ganjaran-overlay.buka{display:flex;animation:fadeIn .4s}
-.ganjaran-ikon{font-size:5.5rem;animation:trophySpin 2s ease-in-out infinite}
-@keyframes trophySpin{0%,100%{transform:rotate(-8deg) scale(1)}50%{transform:rotate(8deg) scale(1.12)}}
-.ganjaran-teks{font-family:'Orbitron',monospace;font-size:1.8rem;background:linear-gradient(135deg,#fbbf24,#fb923c,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;max-width:500px}
-.ganjaran-countdown{font-family:'Orbitron',monospace;font-size:4.5rem;font-weight:900;color:#7dd3fc;animation:countPulse .8s ease infinite}
-@keyframes countPulse{0%,100%{text-shadow:0 0 20px #7dd3fc}50%{text-shadow:0 0 60px #7dd3fc}}
-.ranking-list{display:flex;flex-direction:column;gap:10px;width:340px}
-.ranking-item{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.06);border-radius:10px;padding:12px 16px;border:1px solid rgba(251,191,36,.15);color:#fff}
-.ranking-no{font-family:'Orbitron',monospace;font-size:1.4rem;font-weight:900}
-.r1{color:#fbbf24}.r2{color:#d1d5db}.r3{color:#b45309}
-.ranking-avatar{width:40px;height:40px;border-radius:50%;overflow:hidden;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
-.ranking-avatar img{width:100%;height:100%;object-fit:cover}
-.ranking-nama{flex:1;font-weight:600}
-.ranking-markah{font-family:'Orbitron',monospace;color:#7dd3fc}
-
-/* ── NFC PING ── */
-.nfc-ping{position:fixed;bottom:22px;right:22px;background:var(--panel);border:1px solid var(--accent);border-radius:12px;padding:12px 18px;display:none;align-items:center;gap:10px;z-index:700;animation:slideIn .3s ease;box-shadow:var(--shadow2)}
-.nfc-ping.tunjuk{display:flex}
-@keyframes slideIn{from{transform:translateX(120px);opacity:0}to{transform:translateX(0);opacity:1}}
-.nfc-ring{width:20px;height:20px;border-radius:50%;border:3px solid var(--accent);animation:nfcRing .8s ease-out infinite}
-@keyframes nfcRing{0%{transform:scale(.5);opacity:1}100%{transform:scale(2);opacity:0}}
-
-/* ── NOTIF ── */
-.notif-bar{position:fixed;bottom:80px;right:22px;background:var(--panel);border:var(--card-border);border-radius:12px;padding:12px 18px;z-index:9999;font-size:.84rem;max-width:310px;box-shadow:var(--shadow2);display:none;animation:slideIn .3s ease;color:var(--text)}
-
-/* ── PROGRESS BAR ── */
-.progress-wrap{background:var(--bg2);border-radius:10px;height:8px;overflow:hidden;margin:8px 0}
-.progress-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--accent));border-radius:10px;transition:.6s}
-
-/* ── TAGS ── */
-.tag-hijau{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.3);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
-.tag-merah{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.3);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
-.tag-biru{background:rgba(79,142,247,.1);color:var(--accent);border:1px solid rgba(79,142,247,.3);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
-.tag-purple{background:rgba(168,85,247,.1);color:var(--purple);border:1px solid rgba(168,85,247,.3);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
-.tag-gold{background:rgba(245,158,11,.1);color:var(--gold);border:1px solid rgba(245,158,11,.3);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
-.tag-teal{background:rgba(6,182,212,.1);color:var(--teal);border:1px solid rgba(6,182,212,.3);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
-.tag-orange{background:rgba(249,115,22,.1);color:var(--orange);border:1px solid rgba(249,115,22,.3);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
-
-/* ── COUNTDOWN OVERLAY ── */
-#countdownOverlay{display:none;position:fixed;inset:0;background:rgba(10,15,50,.87);z-index:1200;align-items:center;justify-content:center;flex-direction:column;gap:16px;backdrop-filter:blur(14px)}
-#countdownOverlay.aktif{display:flex}
-.countdown-num{font-family:'Orbitron',monospace;font-size:10rem;font-weight:900;background:linear-gradient(135deg,#7dd3fc,#c084fc,#f9a8d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;animation:countPop .45s cubic-bezier(.175,.885,.32,1.275);filter:drop-shadow(0 0 30px rgba(125,211,252,.4))}
-@keyframes countPop{from{opacity:0;transform:scale(2.8)}to{opacity:1;transform:scale(1)}}
-.countdown-mula{font-family:'Orbitron',monospace;font-size:3.5rem;font-weight:900;color:#4ade80;letter-spacing:8px;filter:drop-shadow(0 0 20px rgba(74,222,128,.6));animation:mulaAppear .5s cubic-bezier(.175,.885,.32,1.275)}
-@keyframes mulaAppear{from{opacity:0;transform:scale(0) rotate(-15deg)}to{opacity:1;transform:scale(1) rotate(0)}}
-
-/* ── UTIL ── */
-.flex{display:flex}.gap8{gap:8px}.gap12{gap:12px}.gap16{gap:16px}
-.mb8{margin-bottom:8px}.mb16{margin-bottom:16px}.mb20{margin-bottom:20px}
-.penuh{width:100%}.divider{height:1px;background:var(--border);margin:14px 0}
-::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:rgba(79,142,247,.05)}
-::-webkit-scrollbar-thumb{background:rgba(79,142,247,.28);border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:var(--accent)}
-@keyframes livePulse{0%,100%{opacity:1}50%{opacity:.3}}
-</style>
-</head>
-<body>
-
-<!-- ============ SPLASH ============ -->
-<div id="splash">
-  <div class="splash-grid"></div>
-  <div class="splash-orb orb1"></div>
-  <div class="splash-orb orb2"></div>
-  <div class="splash-orb orb3"></div>
-  <div class="splash-logo">ILMUVERSE</div>
-  <div class="splash-sub">SISTEM PEMBELAJARAN INTERAKTIF</div>
-  <div class="splash-by">POWERED BY FUTURE MINDS</div>
-  <div class="conn-bar" id="connBar">
-    <div class="conn-item"><div class="conn-dot mati" id="dotESP"></div><span>NEXUS-UTAMA</span></div>
-    <div class="conn-item"><div class="conn-dot mati" id="dotCAM"></div><span>NEXUS-CAM</span></div>
-  </div>
-  <div class="splash-progress"><div class="splash-progress-bar"></div></div>
-  <div class="splash-status" id="splashStatus">Menyambung ke server<span id="splashDots">...</span></div>
-  <button class="splash-btn" id="splashMula" onclick="masukApp()">MASUK SISTEM ›</button>
-</div>
-
-<!-- COUNTDOWN OVERLAY -->
-<div id="countdownOverlay">
-  <div id="countdownNum" class="countdown-num">3</div>
-</div>
-
-<!-- ============ APP ============ -->
-<div id="app" style="display:none;flex-direction:column">
-  <div class="topbar">
-    <div class="logo-wrap">
-      <div class="logo-kecil">✦ ILMUVERSE</div>
-      <div class="logo-by">by Future Minds</div>
-    </div>
-    <div class="topbar-nav">
-      <button class="nav-btn aktif" onclick="bunyiKlik();tukarHalaman('home',this)">🎮 Aktiviti Kuiz</button>
-      <button class="nav-btn" onclick="bunyiKlik();tukarHalaman('dashboard',this)">📊 Dashboard</button>
-      <button class="nav-btn" onclick="bunyiKlik();tukarHalaman('siaran',this)">📢 Siaran</button>
-      <button class="nav-btn" onclick="bunyiKlik();tukarHalaman('kehadiran',this)">✅ Kehadiran</button>
-      <button class="nav-btn" onclick="bunyiKlik();tukarHalaman('pengurusan',this)">⚙️ Pengurusan</button>
-    </div>
-    <div class="status-bar">
-      <div class="status-chip"><div class="s-dot off" id="statusESP"></div><span id="labelESP">NEXUS-UTAMA</span></div>
-      <div class="status-chip"><div class="s-dot off" id="statusCAM"></div><span id="labelCAM">NEXUS-CAM</span></div>
-    </div>
-  </div>
-
-  <!-- AKTIVITI KUIZ -->
-  <div class="halaman aktif" id="halHome">
-    <div class="sek-tajuk">🎯 PILIH MOD PEMBELAJARAN</div>
-    <div class="home-grid">
-      <div class="mod-kad m1" onclick="bunyiKlik();bukaMod(1)">
-        <div class="mod-ikon">👥</div>
-        <div class="mod-num">01</div>
-        <div class="mod-tajuk">Kuiz Ramai-ramai</div>
-        <div class="mod-desc">Sehingga 10 murid menjawab secara bergilir menggunakan kad NFC. Pemenang teratas menerima ganjaran!</div>
-      </div>
-      <div class="mod-kad m2" onclick="bunyiKlik();bukaMod(2)">
-        <div class="mod-ikon">⚡</div>
-        <div class="mod-num">02</div>
-        <div class="mod-tajuk">Dwi-Padu (2 Orang)</div>
-        <div class="mod-desc">Pertandingan 1 lawan 1. Guru pilih murid menjawab. Ada peluang kedua untuk pesaing!</div>
-      </div>
-      <div class="mod-kad m3" onclick="bunyiKlik();bukaMod(3)">
-        <div class="mod-ikon">📖</div>
-        <div class="mod-num">03</div>
-        <div class="mod-tajuk">Susunan Hafalan</div>
-        <div class="mod-desc">Murid susun kad NFC mengikut urutan betul — pantun, doa, atau mana-mana urutan.</div>
-      </div>
-      <div class="mod-kad m4" onclick="bunyiKlik();bukaMod(4)">
-        <div class="mod-ikon">🤖</div>
-        <div class="mod-num">04</div>
-        <div class="mod-tajuk">Imbas AI Kesihatan</div>
-        <div class="mod-desc">Kamera AI kenal pasti makanan secara automatik. Murid teka sendiri kategori makanan!</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- DASHBOARD -->
-  <div class="halaman" id="halDashboard">
-    <div class="dashboard-header">
-      <div class="sek-tajuk" style="margin-bottom:0">📊 PAPAN PENCAPAIAN</div>
-      <input type="date" class="tarikh-filter" id="tarikhFilter" onchange="muatDashboard()">
-      <button class="btn btn-kecil btn-outline" onclick="bunyiKlik();document.getElementById('tarikhFilter').value='';muatDashboard()">📋 Semua</button>
-      <button class="btn btn-kecil btn-outline" onclick="bunyiKlik();muatDashboard()">🔄 Muat Semula</button>
-    </div>
-    <div class="sesi-grid" id="sesiGrid">
-      <div style="color:var(--text2);padding:40px;text-align:center">Tiada rekod. Jalankan sesi dahulu.</div>
-    </div>
-  </div>
-
-  <!-- SIARAN -->
-  <div class="halaman" id="halSiaran">
-    <div class="flex gap12 mb20" style="align-items:center">
-      <div class="sek-tajuk" style="margin-bottom:0">📢 SIARAN & NOTA KEPADA MURID</div>
-      <button class="btn btn-kecil btn-utama" onclick="bunyiKlik();bukaModalSiaran()" style="margin-left:auto">+ Tambah Siaran</button>
-    </div>
-    <div class="siaran-grid" id="siaranGrid">
-      <div style="color:var(--text2);padding:40px;text-align:center">Tiada siaran. Tambah siaran baharu.</div>
-    </div>
-  </div>
-
-  <!-- KEHADIRAN -->
-  <div class="halaman" id="halKehadiran">
-    <div class="sek-tajuk">✅ PENGURUSAN KEHADIRAN</div>
-    <div class="kehadiran-section">
-      <div class="kehadiran-topbar">
-        <div>
-          <label style="margin-bottom:4px">PILIH KELAS</label>
-          <select class="kehadiran-kelas-select" id="kehadiranKelasSelect" onchange="muatKehadiran()">
-            <option value="">-- Pilih Kelas --</option>
-          </select>
-        </div>
-        <div>
-          <label style="margin-bottom:4px">TARIKH</label>
-          <input type="date" class="kehadiran-tarikh" id="kehadiranTarikh" onchange="semakKehadiranSedia()">
-        </div>
-        <div style="margin-top:auto">
-          <button class="btn btn-teal btn-kecil" onclick="bunyiKlik();pilihSemuaHadir()">✓ Semua Hadir</button>
-        </div>
-        <div style="margin-top:auto">
-          <button class="btn btn-orange btn-kecil" onclick="bunyiKlik();resetKehadiran()">↺ Reset</button>
-        </div>
-      </div>
-
-      <div class="kehadiran-stat" id="kehadiranStat" style="display:none">
-        <div class="stat-box" style="background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.3)">
-          ✅ Hadir: <span id="bilHadir">0</span>
-        </div>
-        <div class="stat-box" style="background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.3)">
-          ❌ Tidak Hadir: <span id="bilTidakHadir">0</span>
-        </div>
-        <div class="stat-box" style="background:rgba(79,142,247,.1);color:var(--accent);border:1px solid rgba(79,142,247,.3)">
-          👥 Jumlah: <span id="bilJumlah">0</span>
-        </div>
-      </div>
-
-      <div class="kehadiran-murid-list" id="kehadiranMuridList">
-        <div style="color:var(--text2);padding:40px;text-align:center;grid-column:1/-1">Pilih kelas dahulu</div>
-      </div>
-
-      <div id="kehadiranAksi" style="display:none;gap:12px" class="flex">
-        <button class="btn btn-hijau" onclick="bunyiKlik();simpanKehadiran()">📤 Simpan & Hantar ke Telegram</button>
-        <button class="btn btn-outline" onclick="bunyiKlik();lihatSejarahKehadiran()">📋 Lihat Sejarah</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- PENGURUSAN -->
-  <div class="halaman" id="halPengurusan">
-    <div class="sek-tajuk">⚙️ PENGURUSAN DATA</div>
-    <div class="tab-group">
-      <button class="tab-item aktif" onclick="bunyiKlik();tukarTab('murid',this)">👤 Murid</button>
-      <button class="tab-item" onclick="bunyiKlik();tukarTab('soalan',this)">📝 Set Soalan</button>
-    </div>
-
-    <!-- TAB MURID -->
-    <div class="sub-halaman aktif" id="tabMurid">
-      <div class="flex gap8 mb20" style="align-items:center;flex-wrap:wrap">
-        <button class="btn btn-kecil btn-utama" onclick="bunyiKlik();bukaModalMurid()">+ Tambah Murid</button>
-        <button class="btn btn-kecil btn-purple" onclick="bunyiKlik();bukaModalKelas()">🏫 Urus Kelas</button>
-        <div id="filterKelasWrap" style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap" id="filterKelasGroup"></div>
-      </div>
-      <div id="muridByKelas">
-        <div style="color:var(--text2);padding:40px;text-align:center">Tiada murid. Tambah murid dahulu.</div>
-      </div>
-    </div>
-
-    <!-- TAB SOALAN -->
-    <div class="sub-halaman" id="tabSoalan">
-      <button class="btn btn-kecil btn-utama mb16" onclick="bunyiKlik();bukaModalSoalan()">+ Tambah Set Soalan</button>
-      <table class="jadual">
-        <thead><tr><th>Tajuk</th><th>Kelas</th><th>Mod</th><th>Bil. Soalan</th><th>Aksi</th></tr></thead>
-        <tbody id="bodySoalan"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- NFC PING -->
-<div class="nfc-ping" id="nfcPing">
-  <div class="nfc-ring"></div>
-  <span id="nfcMsg">Kad diimbas</span>
-</div>
-
-<!-- ======= PAPAN PERMAINAN ======= -->
-<div id="papanPermainan">
-  <div class="papan-header">
-    <div class="papan-tajuk" id="papanTajuk">—</div>
-    <div class="soalan-progress">
-      <span style="color:rgba(255,255,255,.5)">Soalan</span>
-      <span id="soalanIdx" style="color:#7dd3fc;font-weight:700">1</span>/<span id="soalanJumlah" style="color:rgba(255,255,255,.5)">—</span>
-    </div>
-    <div style="flex:1"></div>
-    <div class="timer-box">
-      <span style="font-size:.72rem;color:rgba(255,255,255,.5)">MASA</span>
-      <div class="timer-num hijau" id="timerDisplay">02:00</div>
-    </div>
-    <button class="btn btn-kecil btn-merah" style="margin-left:14px" onclick="bunyiKlik();sahkanTamat()">■ TAMAT</button>
-  </div>
-
-  <div class="papan-badan">
-    <div class="soalan-display">
-      <div id="papanMod12" style="display:none;flex-direction:column;gap:14px">
-        <div class="soalan-box">
-          <div class="soalan-no" id="soalanNoLabel">SOALAN 1</div>
-          <div class="soalan-teks" id="soalanTeks">—</div>
-          <div class="pilihan-grid" id="pilihanGrid"></div>
-        </div>
-        <div id="mod1Info" class="giliran-box" style="display:none">
-          <div class="giliran-avatar" id="giliranAvatar"><span id="giliranAvatarContent">👤</span></div>
-          <div>
-            <div class="giliran-label">GILIRAN MENJAWAB</div>
-            <div class="giliran-nama" id="muridGiliranTeks">—</div>
-          </div>
-          <button class="btn btn-kecil btn-outline" style="margin-left:auto;color:#fff;border-color:rgba(255,255,255,.3)" onclick="bunyiKlik();soalanSeterusnya()">Seterusnya ›</button>
-        </div>
-        <div id="mod2Info" style="display:none;flex-direction:column;gap:12px">
-          <div class="mod2-status-box">
-            <div style="font-size:.78rem;color:rgba(255,255,255,.5);margin-bottom:6px;letter-spacing:1px">STATUS</div>
-            <div class="mod2-status-teks" id="mod2Status">Tekan SEDIA untuk mula</div>
-          </div>
-          <div class="buzzer-panel">
-            <div style="font-family:'Orbitron',monospace;font-size:.78rem;color:#7dd3fc;margin-bottom:12px;letter-spacing:1px">PILIH MURID YANG MENJAWAB</div>
-            <div class="buzzer-murid-row" id="buzzerMuridRow"></div>
-          </div>
-          <div class="flex gap8">
-            <button class="btn btn-kuning" onclick="bunyiKlik();mulaSedia()">⚡ SEDIA!</button>
-            <button class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,.3)" onclick="bunyiKlik();soalanSeterusnya()">Soalan Seterusnya ›</button>
-          </div>
-        </div>
-      </div>
-
-      <div id="papanMod3" style="display:none">
-        <div class="soalan-box">
-          <div style="font-size:.88rem;color:rgba(255,255,255,.6);margin-bottom:14px">Imbas kad NFC mengikut susunan yang betul:</div>
-          <div class="susunan-track" id="susunanTrack"></div>
-          <div class="progress-wrap" style="margin-top:14px"><div class="progress-fill" id="mod3Progress" style="width:0%"></div></div>
-        </div>
-      </div>
-
-      <div id="papanMod4" style="display:none">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
-          <div>
-            <div style="font-size:.82rem;color:rgba(255,255,255,.5);margin-bottom:10px">PAPARAN KAMERA LANGSUNG</div>
-            <div class="kamera-wrap">
-              <img id="camFeed" class="kamera-feed" src="" alt="Tiada paparan">
-              <div class="kamera-overlay">
-                <div class="scan-line"></div>
-                <div class="kamera-label" id="camLabel">Menunggu kamera...</div>
-                <div class="auto-scan-badge"><div class="auto-dot"></div>AUTO SCAN AKTIF</div>
-              </div>
-            </div>
-            <div style="margin-top:10px;display:flex;gap:8px">
-              <button class="btn btn-kecil btn-outline" style="color:#fff;border-color:rgba(255,255,255,.3)" id="btnFlash" onclick="bunyiKlik();togolFlash()">🔦 Flash: OFF</button>
-            </div>
-          </div>
-          <div id="mod4HasilPanel">
-            <div id="mod4Fasa1Panel">
-              <div class="makanan-fasa-title fasa-sihat">✅ FASA 1 — MAKANAN SIHAT</div>
-              <div class="makanan-reveal-list" id="listMakananSihat"></div>
-            </div>
-            <div id="mod4Fasa2Panel" style="display:none">
-              <div class="makanan-fasa-title fasa-takshat">❌ FASA 2 — MAKANAN TIDAK SIHAT</div>
-              <div class="makanan-reveal-list" id="listMakananTakSihat"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="skor-panel">
-      <div class="skor-tajuk">📊 PAPAN MARKAH</div>
-      <div id="skorList"></div>
-    </div>
-  </div>
-</div>
-
-<!-- POPUP BETUL/SALAH -->
-<div class="jawapan-popup" id="jawapanPopup">
-  <div class="jawapan-kad" id="jawapanKad">
-    <div class="jawapan-ikon" id="jawapanIkon">✓</div>
-    <div class="jawapan-teks" id="jawapanTeks">BETUL!</div>
-    <div class="jawapan-jawapan" id="jawapanJawapan"></div>
-    <div class="jawapan-sub" id="jawapanSub"></div>
-  </div>
-</div>
-
-<!-- GANJARAN -->
-<div class="ganjaran-overlay" id="ganjaranOverlay">
-  <div class="ganjaran-ikon">🏆</div>
-  <div class="ganjaran-teks" id="ganjaranTeks">TAHNIAH! AMBIL GANJARAN ANDA!</div>
-  <div class="ganjaran-countdown" id="ganjaranCount">6</div>
-  <div class="ranking-list" id="rankingList"></div>
-</div>
-
-<!-- ======= MODALS ======= -->
-
-<!-- Modal Setup Mod -->
-<div class="overlay" id="overlayMod">
-  <div class="modal" id="modalMod">
-    <button class="modal-tutup" onclick="tutupModal('overlayMod')">✕</button>
-    <h2 id="modalModTajuk">PERSEDIAAN MOD</h2>
-    <div id="modalModBadan"></div>
-  </div>
-</div>
-
-<!-- Modal Tambah Murid -->
-<div class="overlay" id="overlayMurid">
-  <div class="modal" style="max-width:440px">
-    <button class="modal-tutup" onclick="tutupModal('overlayMurid')">✕</button>
-    <h2 id="modalMuridTajuk">TAMBAH MURID</h2>
-    <div class="form-kump mb16">
-      <label>NAMA MURID</label>
-      <input id="inputNamaMurid" placeholder="Masukkan nama murid" maxlength="30">
-    </div>
-    <div class="form-kump mb16">
-      <label>KELAS</label>
-      <select id="inputKelasMurid">
-        <option value="">-- Tiada Kelas --</option>
-      </select>
-    </div>
-    <div class="form-kump mb16">
-      <label>GAMBAR PROFIL</label>
-      <div class="photo-upload-wrap">
-        <div class="photo-preview" id="photoPreview">👤</div>
-        <div>
-          <div class="photo-upload-btn" onclick="document.getElementById('inputFotoMurid').click()">
-            📷 Klik untuk upload gambar
-          </div>
-          <input type="file" id="inputFotoMurid" accept="image/*" style="display:none" onchange="pratukarGambar(this)">
-          <div style="font-size:.7rem;color:var(--text2);margin-top:6px">JPG, PNG — disyorkan gambar bulat</div>
-        </div>
-      </div>
-    </div>
-    <input type="hidden" id="editMuridId">
-    <button class="btn btn-utama penuh" onclick="bunyiKlik();simpanMurid()">SIMPAN MURID</button>
-  </div>
-</div>
-
-<!-- Modal Urus Kelas -->
-<div class="overlay" id="overlayKelas">
-  <div class="modal" style="max-width:440px">
-    <button class="modal-tutup" onclick="tutupModal('overlayKelas')">✕</button>
-    <h2>URUS KELAS</h2>
-    <div class="form-row mb16">
-      <div class="form-kump">
-        <label>NAMA KELAS BAHARU</label>
-        <input id="inputNamaKelas" placeholder="Contoh: 4 Bestari">
-      </div>
-      <div style="align-self:flex-end">
-        <button class="btn btn-utama" onclick="bunyiKlik();tambahKelas()">+ Tambah</button>
-      </div>
-    </div>
-    <div id="senaraKelasModal">
-      <div style="color:var(--text2);font-size:.85rem;padding:16px;text-align:center">Tiada kelas lagi</div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Tambah Soalan -->
-<div class="overlay" id="overlaySoalan">
-  <div class="modal" style="max-width:580px">
-    <button class="modal-tutup" onclick="tutupModal('overlaySoalan')">✕</button>
-    <h2 id="modalSoalanTajuk">TAMBAH SET SOALAN</h2>
-    <div class="form-row mb16">
-      <div class="form-kump w2">
-        <label>TAJUK SET SOALAN</label>
-        <input id="inputTajukSoalan" placeholder="Contoh: Matematik Bab 3">
-      </div>
-      <div class="form-kump">
-        <label>KELAS</label>
-        <input id="inputKelasSoalan" placeholder="Contoh: 4 Bestari">
-      </div>
-    </div>
-    <div class="form-row mb16">
-      <div class="form-kump">
-        <label>MOD</label>
-        <select id="inputModSoalan" onchange="renderSoalanBuilder()">
-          <option value="1">Mod 1 — Ramai-ramai</option>
-          <option value="2">Mod 2 — Dua Orang</option>
-          <option value="3">Mod 3 — Susunan</option>
-        </select>
-      </div>
-    </div>
-    <div id="soalanBuilder"></div>
-    <div class="flex gap8" style="margin-top:16px">
-      <button class="btn btn-utama" onclick="bunyiKlik();simpanSoalan()">SIMPAN SET SOALAN</button>
-      <button class="btn btn-outline" onclick="tutupModal('overlaySoalan')">Batal</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Tambah Siaran -->
-<div class="overlay" id="overlaySiaran">
-  <div class="modal" style="max-width:480px">
-    <button class="modal-tutup" onclick="tutupModal('overlaySiaran')">✕</button>
-    <h2 id="modalSiaranTajuk">TAMBAH SIARAN</h2>
-    <div class="form-kump mb16">
-      <label>TAJUK SIARAN</label>
-      <input id="inputTajukSiaran" placeholder="Contoh: Nota Matematik Bab 3">
-    </div>
-    <div class="form-kump mb16">
-      <label>LINK GOOGLE SLIDES (atau URL lain)</label>
-      <input id="inputEmbedLink" placeholder="https://docs.google.com/presentation/d/...">
-      <div style="font-size:.7rem;color:var(--text2);margin-top:4px">URL Google Slides akan ditukar kepada paparan embed fullscreen automatik</div>
-    </div>
-    <div class="form-kump mb16">
-      <label>NOTA / KOMEN (pilihan)</label>
-      <textarea id="inputKomenSiaran" rows="3" placeholder="Nota untuk murid..."></textarea>
-    </div>
-    <div class="flex gap8">
-      <button class="btn btn-utama" onclick="bunyiKlik();simpanSiaran()">HANTAR SIARAN</button>
-      <button class="btn btn-outline" onclick="tutupModal('overlaySiaran')">Batal</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Detail Sesi -->
-<div class="overlay" id="overlaySesi">
-  <div class="modal" style="max-width:580px">
-    <button class="modal-tutup" onclick="tutupModal('overlaySesi')">✕</button>
-    <h2 id="sesiDetailTajuk">DETAIL SESI</h2>
-    <div id="sesiDetailBadan"></div>
-    <div class="divider"></div>
-    <div style="font-family:'Orbitron',monospace;font-size:.78rem;color:var(--text2);margin-bottom:10px">ULASAN GURU</div>
-    <div class="ulasan-list" id="ulasanList"></div>
-    <div class="form-row mb8">
-      <div class="form-kump">
-        <label>MURID</label>
-        <select id="selectUlasanMurid"></select>
-      </div>
-    </div>
-    <div class="form-kump mb16">
-      <label>ULASAN</label>
-      <textarea id="inputUlasan" rows="2" placeholder="Taip ulasan..."></textarea>
-    </div>
-    <div class="flex gap8">
-      <button class="btn btn-utama btn-kecil" onclick="bunyiKlik();hantarUlasan()">Hantar Ulasan</button>
-      <button class="btn btn-purple btn-kecil" onclick="bunyiKlik();pushTelegram()">📨 Hantar ke Telegram</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Sejarah Kehadiran -->
-<div class="overlay" id="overlaySejarahKehadiran">
-  <div class="modal" style="max-width:600px">
-    <button class="modal-tutup" onclick="tutupModal('overlaySejarahKehadiran')">✕</button>
-    <h2>📋 SEJARAH KEHADIRAN</h2>
-    <div id="sejarahKehadiranBadan">
-      <div style="color:var(--text2);text-align:center;padding:20px">Memuatkan...</div>
-    </div>
-  </div>
-</div>
-
-<div class="notif-bar" id="notifBar"></div>
-
-<script>
 // ============================================================
-// AUDIO ENGINE
+// ILMUVERSE - SERVER UTAMA v2.0
+// Node.js + Express + WebSocket + MongoDB
 // ============================================================
-let AC;
-function getAC(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}return AC;}
-function bunyiKlik(){
-  try{const ac=getAC();if(!ac)return;
-    const o=ac.createOscillator(),g=ac.createGain();
-    o.connect(g);g.connect(ac.destination);
-    o.type='sine';o.frequency.setValueAtTime(800,ac.currentTime);
-    o.frequency.exponentialRampToValueAtTime(1400,ac.currentTime+0.07);
-    g.gain.setValueAtTime(0.1,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.1);
-    o.start(ac.currentTime);o.stop(ac.currentTime+0.1);
-  }catch(e){}
-}
-function bunyiCountdown(){
-  try{const ac=getAC();if(!ac)return;
-    const o=ac.createOscillator(),g=ac.createGain();
-    o.connect(g);g.connect(ac.destination);
-    o.type='triangle';o.frequency.value=440;
-    g.gain.setValueAtTime(0.22,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.22);
-    o.start(ac.currentTime);o.stop(ac.currentTime+0.22);
-  }catch(e){}
-}
-function bunyiMula(){
-  try{const ac=getAC();if(!ac)return;
-    [523,659,784].forEach((freq,i)=>{
-      const o=ac.createOscillator(),g=ac.createGain();
-      o.connect(g);g.connect(ac.destination);
-      o.type='sine';o.frequency.value=freq;
-      g.gain.setValueAtTime(0.25,ac.currentTime+i*0.12);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+i*0.12+0.2);
-      o.start(ac.currentTime+i*0.12);o.stop(ac.currentTime+i*0.12+0.22);
-    });
-  }catch(e){}
-}
-function bunyiAmaran(){
-  try{const ac=getAC();if(!ac)return;
-    [0,0.28,0.56].forEach(t=>{
-      const o=ac.createOscillator(),g=ac.createGain();
-      o.connect(g);g.connect(ac.destination);
-      o.type='sawtooth';o.frequency.value=220;
-      g.gain.setValueAtTime(0.18,ac.currentTime+t);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+t+0.22);
-      o.start(ac.currentTime+t);o.stop(ac.currentTime+t+0.25);
-    });
-  }catch(e){}
+require('dotenv').config();
+const express = require('express');
+const http = require('http');
+const WebSocket = require('ws');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const path = require('path');
+
+const app = express();
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
+
+app.use(cors());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.static(path.join(__dirname, '../public')));
+
+// ============================================================
+// TETAPAN TETAP (JANGAN UBAH TANPA KEBENARAN)
+// ============================================================
+const TELEGRAM_BOT_TOKEN = '8849507122:AAECl_Ms6z6xYcAfO6kBFAyBfjYoIhL6KrI';
+const TELEGRAM_CHAT_ID = '707286960';
+
+// ID Kad NFC Tetap — Ganti dengan ID sebenar kad anda
+const NFC_KAD_A = '5A B2 F3 B1'; // << LETAK ID KAD A DI SINI (contoh: '04A32F11')
+const NFC_KAD_B = '47 84 21 25'; // << LETAK ID KAD B DI SINI
+const NFC_KAD_C = '45 E7 A5 AB'; // << LETAK ID KAD C DI SINI
+
+function uidKeJawapan(uid) {
+  const u = uid.toUpperCase().trim();
+  if (NFC_KAD_A && u === NFC_KAD_A.toUpperCase()) return 'A';
+  if (NFC_KAD_B && u === NFC_KAD_B.toUpperCase()) return 'B';
+  if (NFC_KAD_C && u === NFC_KAD_C.toUpperCase()) return 'C';
+  return null;
 }
 
 // ============================================================
-// COUNTDOWN 3 2 1 MULA!
+// SAMBUNGAN MONGODB
 // ============================================================
-function tunjukCountdown(callback){
-  const overlay=document.getElementById('countdownOverlay');
-  const numEl=document.getElementById('countdownNum');
-  overlay.classList.add('aktif');
-  let count=3;
-  function step(){
-    // Reset animation
-    numEl.style.animation='none'; void numEl.offsetWidth;
-    if(count>0){
-      numEl.className='countdown-num';
-      numEl.textContent=count;
-      numEl.style.animation='countPop .45s cubic-bezier(.175,.885,.32,1.275)';
-      bunyiCountdown();count--;
-      setTimeout(step,950);
-    }else{
-      numEl.className='countdown-mula';
-      numEl.textContent='MULA!';
-      numEl.style.animation='mulaAppear .5s cubic-bezier(.175,.885,.32,1.275)';
-      bunyiMula();
-      setTimeout(()=>{overlay.classList.remove('aktif');numEl.className='countdown-num';callback();},850);
-    }
-  }
-  step();
-}
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/ilmuverse')
+  .then(() => console.log('[DB] MongoDB Disambung'))
+  .catch(err => console.error('[DB] Ralat:', err));
 
 // ============================================================
-// GLOBALS
+// SKEMA MONGODB
 // ============================================================
-const SERVER_URL=window.location.hostname==='localhost'?'ws://localhost:3000':`wss://${window.location.hostname}`;
-const API=window.location.origin;
-let ws,wsReconnectTimer;
-let statusESP=false,statusCAM=false;
-let sesiSemasa=null,soalanBina=[],editSoalanId=null,editSiaranId=null,editMuridId=null;
-let sesiDetailSemasa=null,flashStateCam=false,gambarMuridBase64='';
-let mod4FasaUI='sihat',mod4SihatUI=[],mod4TakSihatUI=[];
-let senaraiKelas=[],kehadiranSemasa={};
-let senaraiMurid=[],senaraiSoalan=[];
-let pendingModData=null;
-const MAKANAN_SIHAT_UI=[{nama:'Pisang',ikon:'🍌'},{nama:'Tembikai',ikon:'🍉'},{nama:'Epal',ikon:'🍎'}];
-const MAKANAN_TAK_SIHAT_UI=[{nama:'Air Manis',ikon:'🥤'},{nama:'Sosej',ikon:'🌭'}];
-const WARNA_KELAS=[
-  {bg:'rgba(79,142,247,.12)',warna:'#1d4ed8',border:'rgba(79,142,247,.32)'},
-  {bg:'rgba(168,85,247,.12)',warna:'#6b21a8',border:'rgba(168,85,247,.32)'},
-  {bg:'rgba(16,185,129,.12)',warna:'#065f46',border:'rgba(16,185,129,.32)'},
-  {bg:'rgba(249,115,22,.12)',warna:'#9a3412',border:'rgba(249,115,22,.32)'},
-  {bg:'rgba(236,72,153,.12)',warna:'#9d174d',border:'rgba(236,72,153,.32)'},
-  {bg:'rgba(245,158,11,.12)',warna:'#78350f',border:'rgba(245,158,11,.32)'},
-  {bg:'rgba(6,182,212,.12)',warna:'#164e63',border:'rgba(6,182,212,.32)'},
-];
-
-// ============================================================
-// WEBSOCKET
-// ============================================================
-function sambungWS() {
-  if (ws && (ws.readyState===WebSocket.CONNECTING||ws.readyState===WebSocket.OPEN)) return;
-  ws = new WebSocket(`${SERVER_URL}/guru`);
-  ws.onopen = () => { updateSplash('Server Bersambung!', true); clearTimeout(wsReconnectTimer); };
-  ws.onmessage = (e) => { let d; try{d=JSON.parse(e.data);}catch{return;} prosesMsg(d); };
-  ws.onclose = () => {
-    statusESP=false; statusCAM=false; kemaskiniStatusUI();
-    wsReconnectTimer = setTimeout(sambungWS, 3000);
-  };
-  ws.onerror = () => ws.close();
-}
-function hantarWS(data) { if (ws && ws.readyState===WebSocket.OPEN) ws.send(JSON.stringify(data)); }
-
-function prosesMsg(d) {
-  switch(d.jenis) {
-    case 'status_peranti': statusESP=d.esp32; statusCAM=d.cam; kemaskiniStatusUI(); kemaskiniSplashConn(d.esp32, d.cam); break;
-    case 'mod_bermula': papanPermainanMula(d.gameState); break;
-    case 'timer_update': kemaskiniTimer(d.sisa); break;
-    case 'jawapan': paparJawapan(d.betul, d.murid, d.markah, d.jawapan); kemaskiniSkorPanel(d); break;
-    case 'mod1_tamat': case 'mod2_tamat': paparGanjaran(d.ranking); break;
-    case 'mod3_tamat': paparGanjaranMod3(); break;
-    case 'mod4_tamat': paparGanjaran(d.ranking||[]); break;
-    case 'mod3_betul': kemaskiniSusunan(d.susunan-1, true, d.jumlah); break;
-    case 'mod3_salah': tunjukJawapanPopup(false,null,'Cuba imbas sekali lagi!'); break;
-    case 'mod2_giliran': kemaskiniMod2Status(`✦ ${d.murid} menjawab...`); highlightBuzzer(d.murid); break;
-    case 'mod2_peluang_kedua': kemaskiniMod2Status(`⚡ Peluang kepada ${d.murid}!`); tunjukJawapanPopup(false,null,`Peluang kepada ${d.murid}!`); break;
-    case 'mod2_kedua_salah': kemaskiniMod2Status('Kedua-dua salah. Soalan seterusnya...'); tunjukJawapanPopup(false,null,'Kedua-dua salah!'); break;
-    case 'mod2_betul': paparJawapan(true,d.murid,d.markah,d.jawapan); break;
-    case 'cam_frame': if(d.data) document.getElementById('camFeed').src='data:image/jpeg;base64,'+d.data; break;
-    case 'cam_keputusan': prosesCAMKeputusanUI(d); break;
-    case 'mod4_tukar_fasa': tukarFasaMod4(d.fasa); break;
-    case 'nfc_scan': tunjukNFCPing(d.uid); break;
-    case 'ulasan_baharu': if(sesiDetailSemasa&&sesiDetailSemasa._id===d.sesiId) tambahUlasanUI(d); break;
-    case 'siaran_baharu': if(document.getElementById('halSiaran').classList.contains('aktif')) muatSiaran(); break;
-    case 'telegram_status': tunjukNotif(d.berjaya?'✅ Berjaya dihantar ke Telegram!':'❌ Gagal hantar Telegram'); break;
-    case 'state_update': kemaskiniStatePermainan(d.gameState); break;
-    case 'game_state': if(d.data&&d.data.aktif) papanPermainanMula(d.data); break;
-  }
-}
-
-// ============================================================
-// SPLASH
-// ============================================================
-let splashConn=false;
-function updateSplash(msg, ok) {
-  if (!ok) return;
-  splashConn=true;
-  const el=document.getElementById('splashStatus');
-  el.innerHTML=`<span style="color:#4ade80">✓ ${msg}</span>`;
-  setTimeout(()=>{ document.getElementById('splashMula').style.display='block'; },1200);
-}
-function kemaskiniSplashConn(esp,cam) {
-  document.getElementById('dotESP').className='conn-dot '+(esp?'hidup':'mati');
-  document.getElementById('dotCAM').className='conn-dot '+(cam?'hidup':'mati');
-}
-function kemaskiniStatusUI() {
-  document.getElementById('statusESP').className='s-dot '+(statusESP?'on':'off');
-  document.getElementById('statusCAM').className='s-dot '+(statusCAM?'on':'off');
-}
-function masukApp() {
-  const s=document.getElementById('splash');
-  s.style.transition='opacity .5s';s.style.opacity='0';
-  setTimeout(()=>{ s.style.display='none'; const app=document.getElementById('app'); app.style.display='flex'; muatSemua(); },500);
-}
-
-// ============================================================
-// NAVIGASI
-// ============================================================
-function tukarHalaman(id,btn) {
-  document.querySelectorAll('.halaman').forEach(h=>h.classList.remove('aktif'));
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('aktif'));
-  document.getElementById('hal'+id.charAt(0).toUpperCase()+id.slice(1)).classList.add('aktif');
-  if(btn)btn.classList.add('aktif');
-  if(id==='dashboard')muatDashboard();
-  if(id==='siaran')muatSiaran();
-  if(id==='pengurusan')muatSemuaData();
-  if(id==='kehadiran')initKehadiran();
-}
-function tukarTab(id,btn) {
-  document.querySelectorAll('.sub-halaman').forEach(h=>h.classList.remove('aktif'));
-  document.querySelectorAll('.tab-item').forEach(b=>b.classList.remove('aktif'));
-  document.getElementById('tab'+id.charAt(0).toUpperCase()+id.slice(1)).classList.add('aktif');
-  if(btn)btn.classList.add('aktif');
-}
-function bukaModal(id){document.getElementById(id).classList.add('buka');}
-function tutupModal(id){document.getElementById(id).classList.remove('buka');}
-
-// ============================================================
-// MUAT DATA
-// ============================================================
-
-async function muatSemua() {
-  muatKelasLokal();
-  await muatMurid();
-  await muatSoalan();
-  await muatDashboard();
-  await muatSiaran();
-}
-async function muatSemuaData() { await muatMurid(); await muatSoalan(); }
-
-async function muatMurid() {
-  const res=await fetch(`${API}/api/murid`);
-  senaraiMurid=await res.json();
-  renderMuridByKelas();
-  kemaskiniSelectKelas();
-}
-async function muatSoalan() {
-  const res=await fetch(`${API}/api/soalan`);
-  senaraiSoalan=await res.json();
-  renderJadualSoalan();
-}
-
-// ============================================================
-// PENGURUSAN KELAS
-// ============================================================
-function muatKelasLokal() {
-  try { senaraiKelas=JSON.parse(localStorage.getItem('ilmuverse_kelas')||'[]'); } catch { senaraiKelas=[]; }
-}
-function simpanKelasLokal() {
-  localStorage.setItem('ilmuverse_kelas', JSON.stringify(senaraiKelas));
-}
-
-function bukaModalKelas() {
-  renderSenaraKelasModal();
-  bukaModal('overlayKelas');
-}
-
-function tambahKelas() {
-  const nama=document.getElementById('inputNamaKelas').value.trim();
-  if(!nama) return tunjukNotif('Sila masukkan nama kelas');
-  if(senaraiKelas.includes(nama)) return tunjukNotif('Kelas sudah wujud');
-  senaraiKelas.push(nama);
-  simpanKelasLokal();
-  document.getElementById('inputNamaKelas').value='';
-  renderSenaraKelasModal();
-  kemaskiniSelectKelas();
-  renderMuridByKelas();
-  tunjukNotif('✅ Kelas ditambah: '+nama);
-}
-
-function padamKelas(nama) {
-  if(!confirm(`Padam kelas "${nama}"? Murid dalam kelas ini tidak akan dipadam, hanya kelas sahaja.`)) return;
-  senaraiKelas=senaraiKelas.filter(k=>k!==nama);
-  simpanKelasLokal();
-  renderSenaraKelasModal();
-  kemaskiniSelectKelas();
-  renderMuridByKelas();
-}
-
-function renderSenaraKelasModal() {
-  const el=document.getElementById('senaraKelasModal');
-  el.innerHTML=senaraiKelas.length ? senaraiKelas.map((k,i)=>{
-    const warna=WARNA_KELAS[i%WARNA_KELAS.length];
-    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:${warna.bg};border:1px solid ${warna.border};border-radius:10px;margin-bottom:8px">
-      <span style="flex:1;font-weight:700;color:${warna.warna}">🏫 ${k}</span>
-      <span style="font-size:.75rem;color:var(--text2)">${senaraiMurid.filter(m=>(m.kelas||'')==k).length} murid</span>
-      <button class="btn btn-kecil btn-merah" onclick="padamKelas('${k}')">Padam</button>
-    </div>`;
-  }).join('') : '<div style="color:var(--text2);font-size:.85rem;padding:16px;text-align:center">Tiada kelas lagi</div>';
-}
-
-function kemaskiniSelectKelas() {
-  // Update semua select kelas dalam sistem
-  ['inputKelasMurid','kehadiranKelasSelect'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(!el) return;
-    const val=el.value;
-    const prefix=id==='kehadiranKelasSelect'?'<option value="">-- Pilih Kelas --</option>':'<option value="">-- Tiada Kelas --</option>';
-    el.innerHTML=prefix+senaraiKelas.map(k=>`<option value="${k}">${k}</option>`).join('');
-    if(val) el.value=val;
-  });
-}
-
-// ============================================================
-// MURID UI — IKUT KELAS
-// ============================================================
-function renderMuridByKelas() {
-  const el=document.getElementById('muridByKelas');
-  if(!senaraiMurid.length){el.innerHTML='<div style="color:var(--text2);padding:40px;text-align:center">Tiada murid. Tambah murid dahulu.</div>';return;}
-
-  // Group by kelas
-  const groups={};
-  senaraiMurid.forEach(m=>{
-    const k=m.kelas||'Tiada Kelas';
-    if(!groups[k]) groups[k]=[];
-    groups[k].push(m);
-  });
-
-  el.innerHTML=Object.entries(groups).map(([kelas,muridList],gi)=>{
-    const warna=WARNA_KELAS[gi%WARNA_KELAS.length];
-    const isNoKelas=kelas==='Tiada Kelas';
-    return `<div class="kelas-section">
-      <div class="kelas-header" style="background:${warna.bg};border:1px solid ${warna.border}" onclick="togolKelasSection(this)">
-        <span style="font-size:1.4rem">${isNoKelas?'❓':'🏫'}</span>
-        <div class="kelas-nama-label" style="color:${warna.warna}">${kelas}</div>
-        <span class="tag-kecil" style="background:${warna.bg};color:${warna.warna};border:1px solid ${warna.border};padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700">${muridList.length} murid</span>
-        <span class="kelas-toggle">▼</span>
-      </div>
-      <div class="kelas-murid-grid">
-        ${muridList.map(m=>renderMuridKad(m,warna)).join('')}
-        <div style="border:2px dashed rgba(79,142,247,.2);border-radius:12px;padding:14px;text-align:center;display:flex;align-items:center;justify-content:center;cursor:pointer;min-height:100px;color:var(--text2);transition:.2s" onmouseenter="this.style.borderColor='var(--accent)'" onmouseleave="this.style.borderColor='rgba(79,142,247,.2)'" onclick="bunyiKlik();bukaModalMurid('${kelas==='Tiada Kelas'?'':kelas}')">
-          <span style="font-size:.8rem">+ Tambah<br>Murid</span>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function renderMuridKad(m, warna) {
-  return `<div class="murid-kad">
-    <div class="murid-kad-avatar" style="background:${warna.bg}">
-      ${m.avatar&&m.avatar.startsWith('data:')?`<img src="${m.avatar}">`:`<span>${m.avatar||'👤'}</span>`}
-    </div>
-    <div class="murid-kad-nama">${m.nama}</div>
-    <div class="murid-kad-kelas" style="background:${warna.bg};color:${warna.warna};border:1px solid ${warna.border}">${m.kelas||'Tiada Kelas'}</div>
-    <div class="murid-kad-aksi">
-      <button class="btn btn-kecil btn-outline" onclick='bukaMuridEdit(${JSON.stringify(m).replace(/'/g,"&#39;")})' title="Edit">✏️</button>
-      <button class="btn btn-kecil btn-merah" onclick="bunyiKlik();padamMurid('${m._id}')">🗑</button>
-    </div>
-  </div>`;
-}
-
-function togolKelasSection(header) {
-  const grid=header.nextElementSibling;
-  const toggle=header.querySelector('.kelas-toggle');
-  const isHidden=grid.style.display==='none';
-  grid.style.display=isHidden?'grid':'none';
-  toggle.style.transform=isHidden?'':'rotate(-90deg)';
-}
-
-function bukaModalMurid(kelasDefault='') {
-  editMuridId=null;
-  document.getElementById('editMuridId').value='';
-  document.getElementById('modalMuridTajuk').textContent='TAMBAH MURID';
-  document.getElementById('inputNamaMurid').value='';
-  document.getElementById('inputKelasMurid').value=kelasDefault;
-  gambarMuridBase64='';
-  document.getElementById('photoPreview').innerHTML='👤';
-  document.getElementById('inputFotoMurid').value='';
-  bukaModal('overlayMurid');
-}
-
-function bukaMuridEdit(m) {
-  editMuridId=m._id;
-  document.getElementById('editMuridId').value=m._id;
-  document.getElementById('modalMuridTajuk').textContent='EDIT MURID';
-  document.getElementById('inputNamaMurid').value=m.nama;
-  kemaskiniSelectKelas();
-  document.getElementById('inputKelasMurid').value=m.kelas||'';
-  gambarMuridBase64=m.avatar&&m.avatar.startsWith('data:')?m.avatar:'';
-  if(m.avatar&&m.avatar.startsWith('data:')) {
-    document.getElementById('photoPreview').innerHTML=`<img src="${m.avatar}">`;
-  } else {
-    document.getElementById('photoPreview').innerHTML=`<span style="font-size:2rem">${m.avatar||'👤'}</span>`;
-  }
-  bukaModal('overlayMurid');
-}
-
-function pratukarGambar(input) {
-  const file=input.files[0];
-  if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    gambarMuridBase64=e.target.result;
-    document.getElementById('photoPreview').innerHTML=`<img src="${gambarMuridBase64}">`;
-  };
-  reader.readAsDataURL(file);
-}
-
-async function simpanMurid() {
-  const nama=document.getElementById('inputNamaMurid').value.trim();
-  const kelas=document.getElementById('inputKelasMurid').value;
-  const id=document.getElementById('editMuridId').value;
-  if(!nama)return tunjukNotif('Sila masukkan nama murid');
-  const avatar=gambarMuridBase64||'👤';
-  
-  if(id) {
-    // Edit
-    await fetch(`${API}/api/murid/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nama,kelas,avatar})});
-    tunjukNotif('✅ Murid dikemaskini!');
-  } else {
-    // Tambah
-    await fetch(`${API}/api/murid`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nama,kelas,avatar})});
-    tunjukNotif('✅ Murid ditambah!');
-  }
-  tutupModal('overlayMurid');
-  await muatMurid();
-}
-
-async function padamMurid(id) {
-  if(!confirm('Padam murid ini?'))return;
-  await fetch(`${API}/api/murid/${id}`,{method:'DELETE'});
-  await muatMurid();
-  tunjukNotif('🗑 Murid dipadam');
-}
-
-// ============================================================
-// KEHADIRAN
-// ============================================================
-function initKehadiran() {
-  muatKelasLokal();
-  kemaskiniSelectKelas();
-  document.getElementById('kehadiranTarikh').value=new Date().toLocaleDateString('fr-CA');
-  kehadiranSemasa={};
-}
-
-function muatKehadiran() {
-  const kelas=document.getElementById('kehadiranKelasSelect').value;
-  if(!kelas){ document.getElementById('kehadiranMuridList').innerHTML='<div style="color:var(--text2);padding:40px;text-align:center;grid-column:1/-1">Pilih kelas dahulu</div>'; document.getElementById('kehadiranStat').style.display='none'; document.getElementById('kehadiranAksi').style.display='none'; return; }
-  
-  const muridKelas=senaraiMurid.filter(m=>(m.kelas||'')==kelas);
-  kehadiranSemasa={};
-  muridKelas.forEach(m=>kehadiranSemasa[m._id]='belum');
-  renderKehadiranList(muridKelas);
-  document.getElementById('kehadiranStat').style.display='flex';
-  document.getElementById('kehadiranAksi').style.display='flex';
-  kemaskiniStatKehadiran();
-}
-
-function renderKehadiranList(muridList) {
-  const el=document.getElementById('kehadiranMuridList');
-  if(!muridList.length){ el.innerHTML='<div style="color:var(--text2);padding:20px;text-align:center;grid-column:1/-1">Tiada murid dalam kelas ini</div>'; return; }
-  el.innerHTML=muridList.map(m=>`
-    <div class="kehadiran-item" id="kh_${m._id}" onclick="togolKehadiran('${m._id}')">
-      <div class="kehadiran-avatar">
-        ${m.avatar&&m.avatar.startsWith('data:')?`<img src="${m.avatar}">`:`<span>${m.avatar||'👤'}</span>`}
-      </div>
-      <div class="kehadiran-nama-teks">${m.nama}</div>
-      <div class="hadir-tick" id="tick_${m._id}"></div>
-    </div>`).join('');
-}
-
-function togolKehadiran(muridId) {
-  const item=document.getElementById('kh_'+muridId);
-  const tick=document.getElementById('tick_'+muridId);
-  const status=kehadiranSemasa[muridId];
-  
-  if(status==='belum'||status===false) {
-    kehadiranSemasa[muridId]=true;
-    item.className='kehadiran-item hadir';
-    tick.textContent='✓';
-  } else if(status===true) {
-    kehadiranSemasa[muridId]=false;
-    item.className='kehadiran-item tidak-hadir';
-    tick.textContent='✗';
-  } else {
-    kehadiranSemasa[muridId]=true;
-    item.className='kehadiran-item hadir';
-    tick.textContent='✓';
-  }
-  kemaskiniStatKehadiran();
-}
-
-function pilihSemuaHadir() {
-  Object.keys(kehadiranSemasa).forEach(id=>{
-    kehadiranSemasa[id]=true;
-    const item=document.getElementById('kh_'+id);
-    const tick=document.getElementById('tick_'+id);
-    if(item) item.className='kehadiran-item hadir';
-    if(tick) tick.textContent='✓';
-  });
-  kemaskiniStatKehadiran();
-}
-
-function resetKehadiran() {
-  Object.keys(kehadiranSemasa).forEach(id=>{
-    kehadiranSemasa[id]='belum';
-    const item=document.getElementById('kh_'+id);
-    const tick=document.getElementById('tick_'+id);
-    if(item) item.className='kehadiran-item';
-    if(tick) tick.textContent='';
-  });
-  kemaskiniStatKehadiran();
-}
-
-function kemaskiniStatKehadiran() {
-  const hadir=Object.values(kehadiranSemasa).filter(v=>v===true).length;
-  const tidakHadir=Object.values(kehadiranSemasa).filter(v=>v===false).length;
-  const jumlah=Object.keys(kehadiranSemasa).length;
-  document.getElementById('bilHadir').textContent=hadir;
-  document.getElementById('bilTidakHadir').textContent=tidakHadir;
-  document.getElementById('bilJumlah').textContent=jumlah;
-}
-
-function semakKehadiranSedia() {} // placeholder
-
-async function simpanKehadiran() {
-  const kelas=document.getElementById('kehadiranKelasSelect').value;
-  const tarikh=document.getElementById('kehadiranTarikh').value;
-  if(!kelas) return tunjukNotif('Pilih kelas dahulu');
-  if(!tarikh) return tunjukNotif('Pilih tarikh dahulu');
-
-  // Check ada yang belum ditanda
-  const belumDitanda=Object.values(kehadiranSemasa).filter(v=>v==='belum').length;
-  if(belumDitanda>0) { if(!confirm(`${belumDitanda} murid belum ditanda. Teruskan? Mereka akan dianggap tidak hadir.`)) return; }
-
-  // Format data
-  const muridKelas=senaraiMurid.filter(m=>(m.kelas||'')==kelas);
-  const senarai=muridKelas.map(m=>({ id:m._id, nama:m.nama, hadir:kehadiranSemasa[m._id]===true }));
-  const hadir=senarai.filter(m=>m.hadir);
-  const tidakHadir=senarai.filter(m=>!m.hadir);
-
-  // Simpan ke API
-  try {
-    const res=await fetch(`${API}/api/kehadiran`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ kelas, tarikh, senarai })
-    });
-    if(res.ok) {
-      tunjukNotif('✅ Kehadiran disimpan!');
-    }
-  } catch(e) {
-    // Gagal simpan ke server tapi teruskan hantar Telegram
-  }
-
-  // Hantar ke Telegram
-  await hantarKehadiranTelegram(kelas, tarikh, hadir, tidakHadir, senarai.length);
-}
-
-async function hantarKehadiranTelegram(kelas, tarikh, hadir, tidakHadir, jumlah) {
-  const tarikhFormat=new Date(tarikh).toLocaleDateString('ms-MY',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  let mesej=`📋 *LAPORAN KEHADIRAN — ILMUVERSE*\n`;
-  mesej+=`📅 ${tarikhFormat}\n`;
-  mesej+=`🏫 Kelas: *${kelas}*\n\n`;
-  mesej+=`👥 Jumlah Murid: *${jumlah}*\n`;
-  mesej+=`✅ Hadir: *${hadir.length}*\n`;
-  mesej+=`❌ Tidak Hadir: *${tidakHadir.length}*\n\n`;
-  if(hadir.length) { mesej+=`✅ *SENARAI HADIR:*\n`; hadir.forEach((m,i)=>{ mesej+=`${i+1}. ${m.nama}\n`; }); mesej+='\n'; }
-  if(tidakHadir.length) { mesej+=`❌ *TIDAK HADIR:*\n`; tidakHadir.forEach((m,i)=>{ mesej+=`${i+1}. ${m.nama}\n`; }); mesej+='\n'; }
-  mesej+=`✨ _Dihantar oleh sistem ILMUVERSE_`;
-
-  try {
-    const res=await fetch(`${API}/api/telegram-kehadiran`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ mesej })
-    });
-    const hasil=await res.json();
-    tunjukNotif(hasil.ok?'📨 Kehadiran dihantar ke Telegram!':'⚠️ Telegram gagal. Data disimpan.');
-  } catch(e) {
-    tunjukNotif('⚠️ Telegram gagal. Data disimpan secara tempatan.');
-  }
-}
-
-async function lihatSejarahKehadiran() {
-  bukaModal('overlaySejarahKehadiran');
-  const kelas=document.getElementById('kehadiranKelasSelect').value;
-  const el=document.getElementById('sejarahKehadiranBadan');
-  try {
-    const url=kelas?`${API}/api/kehadiran?kelas=${encodeURIComponent(kelas)}`:`${API}/api/kehadiran`;
-    const res=await fetch(url);
-    const data=await res.json();
-    if(!data.length){ el.innerHTML='<div style="color:var(--text2);text-align:center;padding:20px">Tiada rekod kehadiran</div>'; return; }
-    el.innerHTML=data.map(r=>{
-      const hadir=r.senarai.filter(m=>m.hadir).length;
-      return `<div style="background:var(--panel2);border-radius:10px;padding:14px;margin-bottom:10px;border:var(--card-border)">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-          <div><div style="font-weight:700">${r.kelas}</div><div style="font-size:.75rem;color:var(--text2)">📅 ${new Date(r.tarikh).toLocaleDateString('ms-MY',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div></div>
-          <div style="display:flex;gap:8px">
-            <span class="tag-hijau">✅ ${hadir} hadir</span>
-            <span class="tag-merah">❌ ${r.senarai.length-hadir} tidak hadir</span>
-          </div>
-        </div>
-        <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
-          ${r.senarai.map(m=>`<span style="font-size:.75rem;padding:3px 10px;border-radius:20px;${m.hadir?'background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.3)':'background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.3)'}">${m.hadir?'✓':'✗'} ${m.nama}</span>`).join('')}
-        </div>
-      </div>`;
-    }).join('');
-  } catch(e) {
-    el.innerHTML='<div style="color:var(--text2);text-align:center;padding:20px">Tiada rekod kehadiran</div>';
-  }
-}
-
-// ============================================================
-// SOALAN BUILDER
-// ============================================================
-function bukaModalSoalan(soalan=null) {
-  editSoalanId=soalan?soalan._id:null;
-  document.getElementById('modalSoalanTajuk').textContent=soalan?'EDIT SET SOALAN':'TAMBAH SET SOALAN';
-  document.getElementById('inputTajukSoalan').value=soalan?soalan.tajuk:'';
-  document.getElementById('inputKelasSoalan').value=soalan?soalan.kelas||'':'';
-  document.getElementById('inputModSoalan').value=soalan?soalan.mod:'1';
-  soalanBina=soalan?JSON.parse(JSON.stringify(soalan.soalan)):[];
-  if(!soalanBina.length)soalanBina.push(soalanKosong());
-  renderSoalanBuilder();
-  bukaModal('overlaySoalan');
-}
-function soalanKosong(){return{teks:'',jawapanA:'A',jawapanB:'B',jawapanC:'C',betul:'A',uidA:'',uidB:'',uidC:'',uidBetul:''};}
-function renderSoalanBuilder() {
-  const mod=parseInt(document.getElementById('inputModSoalan').value);
-  const el=document.getElementById('soalanBuilder');
-  if(mod===3) {
-    el.innerHTML=`<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px"><div class="bil-num">${soalanBina.length}</div><div><button class="btn btn-kecil btn-outline" onclick="bunyiKlik();tambahSoalan()">+ Tambah Susunan</button><div style="font-size:.7rem;color:var(--text2);margin-top:4px">Imbas kad NFC atau taip UID untuk daftar susunan</div></div></div>
-    <div class="soalan-jawapan-list">${soalanBina.map((s,i)=>`<div class="sj-row"><div class="sj-num">SUSUNAN ${i+1}</div><input value="${s.teks||''}" oninput="soalanBina[${i}].teks=this.value" placeholder="Label..." style="max-width:160px"><div style="font-size:.75rem;color:var(--text2)">UID:</div><input value="${s.uidBetul||''}" oninput="soalanBina[${i}].uidBetul=this.value" placeholder="XX:XX:XX:XX" style="max-width:130px" id="uid_mod3_${i}"><button class="btn btn-kecil btn-outline" onclick="bunyiKlik();imbasNFC(${i},'uidBetul')">📡</button><button class="btn btn-kecil btn-merah" onclick="bunyiKlik();padamSoalan(${i})" style="margin-left:auto">✕</button></div>`).join('')}</div>`;
-  } else {
-    el.innerHTML=`<div class="bil-soalan-ctrl"><button class="btn btn-kecil btn-outline" onclick="bunyiKlik();kurangSoalan()">−</button><div class="bil-num">${soalanBina.length}</div><button class="btn btn-kecil btn-outline" onclick="bunyiKlik();tambahSoalan()">+</button><span style="font-size:.78rem;color:var(--text2)">soalan</span></div>
-    <div style="font-size:.75rem;color:var(--text2);margin-bottom:10px">Tekan A, B, atau C untuk set jawapan betul.</div>
-    <div class="soalan-jawapan-list">${soalanBina.map((s,i)=>`<div class="sj-row"><div class="sj-num">SOALAN ${i+1}</div><div class="sj-abc"><button class="sj-btn ${s.betul==='A'?'dipilih-a':''}" onclick="bunyiKlik();setBetul(${i},'A')">A</button><button class="sj-btn ${s.betul==='B'?'dipilih-b':''}" onclick="bunyiKlik();setBetul(${i},'B')">B</button><button class="sj-btn ${s.betul==='C'?'dipilih-c':''}" onclick="bunyiKlik();setBetul(${i},'C')">C</button></div><div class="sj-nfc-hint">📡 Imbas NFC untuk pilih otomatis</div></div>`).join('')}</div>`;
-  }
-}
-function setBetul(idx,j){soalanBina[idx].betul=j;renderSoalanBuilder();}
-function tambahSoalan(){soalanBina.push(soalanKosong());renderSoalanBuilder();}
-function kurangSoalan(){if(soalanBina.length>1){soalanBina.pop();renderSoalanBuilder();}}
-function padamSoalan(i){soalanBina.splice(i,1);if(!soalanBina.length)soalanBina.push(soalanKosong());renderSoalanBuilder();}
-
-let nfcImbasBuilderCallback=null;
-function imbasNFC(soalanIdx,field) {
-  tunjukNotif('📡 Sila imbas kad NFC...');
-  nfcImbasBuilderCallback=(uid)=>{
-    soalanBina[soalanIdx][field]=uid;
-    const el=document.getElementById(`uid_mod3_${soalanIdx}`);
-    if(el)el.value=uid;
-    nfcImbasBuilderCallback=null;
-    tunjukNotif(`✅ UID berdaftar: ${uid}`);
-  };
-  setTimeout(()=>{nfcImbasBuilderCallback=null;},15000);
-}
-async function simpanSoalan() {
-  const tajuk=document.getElementById('inputTajukSoalan').value.trim();
-  const kelas=document.getElementById('inputKelasSoalan').value.trim();
-  const mod=parseInt(document.getElementById('inputModSoalan').value);
-  if(!tajuk)return tunjukNotif('Sila masukkan tajuk');
-  const data={tajuk,kelas,mod,soalan:soalanBina};
-  if(editSoalanId){ await fetch(`${API}/api/soalan/${editSoalanId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}); }
-  else { await fetch(`${API}/api/soalan`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}); }
-  tutupModal('overlaySoalan');
-  await muatSoalan();
-  tunjukNotif('✅ Set soalan disimpan!');
-}
-function renderJadualSoalan() {
-  const tbody=document.getElementById('bodySoalan');
-  const modNama=['','Ramai-ramai','Dua Orang','Susunan'];
-  tbody.innerHTML=senaraiSoalan.map(s=>`<tr><td><strong>${s.tajuk}</strong></td><td>${s.kelas||'—'}</td><td><span class="tag-biru">Mod ${s.mod}</span></td><td>${s.soalan.length}</td><td class="flex gap8"><button class="btn btn-kecil btn-outline" onclick='bukaModalSoalan(${JSON.stringify(s).replace(/'/g,"&#39;")})'>Edit</button><button class="btn btn-kecil btn-merah" onclick="padamSet('${s._id}')">Padam</button></td></tr>`).join('')||'<tr><td colspan="5" style="color:var(--text2);text-align:center;padding:20px">Tiada set soalan</td></tr>';
-}
-async function padamSet(id){if(!confirm('Padam set soalan ini?'))return;await fetch(`${API}/api/soalan/${id}`,{method:'DELETE'});await muatSoalan();}
-
-// ============================================================
-// MOD SETUP MODAL — KELAS DROPDOWN + TAPIS MURID
-// ============================================================
-function bukaMod(mod) {
-  const tajukMod=['','KUIZ RAMAI-RAMAI','DWI-PADU (2 ORANG)','SUSUNAN HAFALAN','IMBAS AI KESIHATAN'];
-  document.getElementById('modalModTajuk').textContent=`MOD ${mod} — ${tajukMod[mod]}`;
-  const soalanMod=senaraiSoalan.filter(s=>s.mod===mod);
-  const kelasOpt='<option value="">Semua Kelas</option>'+senaraiKelas.map(k=>`<option value="${k}">${k}</option>`).join('');
-  let html='';
-  if(mod===1){
-    html=`<div class="form-row mb16">
-      <div class="form-kump w2"><label>TAJUK SESI</label><input id="tajukMod1" placeholder="Contoh: Matematik Bab 3"></div>
-      <div class="form-kump"><label>KELAS</label><select id="kelasMod1" onchange="tapisMuridMod(1,10,'pilihMuridMod1')">${kelasOpt}</select></div>
-    </div>
-    <div class="form-row mb16">
-      <div class="form-kump"><label>PILIH SET SOALAN</label><select id="setMod1">${soalanMod.length?soalanMod.map(s=>`<option value="${s._id}">${s.tajuk}${s.kelas?' ('+s.kelas+')':''}</option>`).join(''):'<option value="">Tiada set soalan</option>'}</select></div>
-      <div class="form-kump" style="max-width:120px"><label>MASA (saat)</label><input type="number" id="masaMod1" value="120" min="30" max="600"></div>
-    </div>
-    <div class="form-kump mb16"><label>PILIH MURID (sehingga 10)</label><div class="murid-grid" id="pilihMuridMod1">${renderMuridPilih(10)}</div></div>
-    <button class="btn btn-utama btn-besar penuh" onclick="bunyiKlik();siapMulaPermainan(1)">▶ MULA MOD 1</button>`;
-  }else if(mod===2){
-    html=`<div class="form-row mb16">
-      <div class="form-kump w2"><label>TAJUK SESI</label><input id="tajukMod2" placeholder="Contoh: Dwi-Padu Sains"></div>
-      <div class="form-kump"><label>KELAS</label><select id="kelasMod2" onchange="tapisMuridMod(2,2,'pilihMuridMod2')">${kelasOpt}</select></div>
-    </div>
-    <div class="form-kump mb16"><label>PILIH SET SOALAN</label><select id="setMod2">${soalanMod.length?soalanMod.map(s=>`<option value="${s._id}">${s.tajuk}${s.kelas?' ('+s.kelas+')':''}</option>`).join(''):'<option value="">Tiada set soalan</option>'}</select></div>
-    <div class="form-kump mb16"><label>PILIH TEPAT 2 MURID</label><div class="murid-grid" id="pilihMuridMod2">${renderMuridPilih(2)}</div></div>
-    <button class="btn btn-utama btn-besar penuh" onclick="bunyiKlik();siapMulaPermainan(2)">▶ MULA MOD 2</button>`;
-  }else if(mod===3){
-    html=`<div class="form-row mb16">
-      <div class="form-kump"><label>KELAS</label><select id="kelasMod3" onchange="tapisMuridMod(3,1,'pilihMuridMod3')">${kelasOpt}</select></div>
-    </div>
-    <div class="form-kump mb16"><label>PILIH SET SUSUNAN</label><select id="setMod3">${soalanMod.length?soalanMod.map(s=>`<option value="${s._id}">${s.tajuk}</option>`).join(''):'<option value="">Tiada set susunan</option>'}</select></div>
-    <div class="form-kump mb16"><label>PILIH MURID</label><div class="murid-grid" id="pilihMuridMod3">${renderMuridPilih(1)}</div></div>
-    <button class="btn btn-utama btn-besar penuh" onclick="bunyiKlik();siapMulaPermainan(3)">▶ MULA MOD 3</button>`;
-  }else if(mod===4){
-    html=`<div style="background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.18);border-radius:12px;padding:16px;margin-bottom:16px"><div style="font-size:.88rem;color:var(--text2);line-height:1.8">🌟 <strong style="color:var(--text)">Arahan Rangsangan:</strong><br>"Makanan yang ada di sekeliling kita sangat pelbagai. Jom kita belajar kelaskan makanan menggunakan teknologi kecerdasan buatan!"</div></div>
-    <div class="form-row mb16">
-      <div class="form-kump w2"><label>TAJUK SESI</label><input id="tajukMod4" value="Makanan Sihat dan Tidak Sihat"></div>
-      <div class="form-kump"><label>KELAS</label><select id="kelasMod4" onchange="tapisMuridMod(4,1,'pilihMuridMod4')">${kelasOpt}</select></div>
-    </div>
-    <div class="form-kump mb16"><label>PILIH MURID</label><div class="murid-grid" id="pilihMuridMod4">${renderMuridPilih(1)}</div></div>
-    <button class="btn btn-utama btn-besar penuh" onclick="bunyiKlik();siapMulaPermainan(4)">▶ MULA MOD 4</button>`;
-  }
-  document.getElementById('modalModBadan').innerHTML=html;
-  // Populate murid grid immediately (tunjuk semua kelas dahulu)
-  if(mod===1) tapisMuridMod(1,10,'pilihMuridMod1');
-  else if(mod===2) tapisMuridMod(2,2,'pilihMuridMod2');
-  else if(mod===3) tapisMuridMod(3,1,'pilihMuridMod3');
-  else if(mod===4) tapisMuridMod(4,1,'pilihMuridMod4');
-  bukaModal('overlayMod');
-}
-
-function tapisMuridMod(mod,max,gridId){
-  const selectMap={1:'kelasMod1',2:'kelasMod2',3:'kelasMod3',4:'kelasMod4'};
-  const kelas=document.getElementById(selectMap[mod])?.value||'';
-  const muridTapis=kelas?senaraiMurid.filter(m=>(m.kelas||'')==kelas):senaraiMurid;
-  const el=document.getElementById(gridId);
-  if(el)el.innerHTML=muridTapis.length?muridTapis.map(m=>`<div class="murid-item" data-id="${m._id}" data-nama="${m.nama}" data-avfull="${m.avatar||'👤'}" onclick="togolMurid(this,${max})"><div class="tick">✓</div><div class="avatar-box">${m.avatar&&m.avatar.startsWith('data:')?`<img src="${m.avatar}">`:`<span>${m.avatar||'👤'}</span>`}</div><div class="nama">${m.nama}</div></div>`).join(''):'<div style="color:var(--text2);font-size:.8rem;padding:10px;grid-column:1/-1">Tiada murid dalam kelas ini.</div>';
-}
-
-function renderMuridPilih(max=10){
-  return senaraiMurid.map(m=>`<div class="murid-item" data-id="${m._id}" data-nama="${m.nama}" data-avfull="${m.avatar||'👤'}" onclick="togolMurid(this,${max})"><div class="tick">✓</div><div class="avatar-box">${m.avatar&&m.avatar.startsWith('data:')?`<img src="${m.avatar}">`:`<span>${m.avatar||'👤'}</span>`}</div><div class="nama">${m.nama}</div></div>`).join('')||'<div style="color:var(--text2);font-size:.8rem;padding:10px">Tiada murid. Tambah murid dahulu.</div>';
-}
-function togolMurid(el,max){const dipilih=el.parentElement.querySelectorAll('.dipilih').length;if(el.classList.contains('dipilih')){el.classList.remove('dipilih');return;}if(dipilih>=max){if(max<=2)el.parentElement.querySelectorAll('.dipilih').forEach(e=>e.classList.remove('dipilih'));else{tunjukNotif(`Maksimum ${max} murid`);return;}}el.classList.add('dipilih');}
-function getMuridDipilih(containerId){return[...document.querySelectorAll(`#${containerId} .murid-item.dipilih`)].map(el=>({_id:el.dataset.id,nama:el.dataset.nama,avatar:el.dataset.avfull}));}
-
-// ============================================================
-// MULA PERMAINAN — countdown dulu baru hantar WS
-// ============================================================
-function siapMulaPermainan(mod){
-  let soalanId=null,murid=[],masa=120,tajuk='',kelas='';
-  if(mod===1){soalanId=document.getElementById('setMod1')?.value;murid=getMuridDipilih('pilihMuridMod1');masa=parseInt(document.getElementById('masaMod1')?.value)||120;tajuk=document.getElementById('tajukMod1')?.value||'';kelas=document.getElementById('kelasMod1')?.value||'';if(!murid.length)return tunjukNotif('Pilih sekurang-kurangnya 1 murid');}
-  else if(mod===2){soalanId=document.getElementById('setMod2')?.value;murid=getMuridDipilih('pilihMuridMod2');tajuk=document.getElementById('tajukMod2')?.value||'';kelas=document.getElementById('kelasMod2')?.value||'';if(murid.length!==2)return tunjukNotif('Pilih tepat 2 murid');}
-  else if(mod===3){soalanId=document.getElementById('setMod3')?.value;murid=getMuridDipilih('pilihMuridMod3');kelas=document.getElementById('kelasMod3')?.value||'';if(!murid.length)return tunjukNotif('Pilih 1 murid');}
-  else if(mod===4){tajuk=document.getElementById('tajukMod4')?.value||'Makanan Sihat dan Tidak Sihat';kelas=document.getElementById('kelasMod4')?.value||'';murid=getMuridDipilih('pilihMuridMod4');}
-  if(!soalanId&&mod!==4)return tunjukNotif('Pilih set soalan dahulu');
-  pendingModData={mod,murid,soalanId,masa,tajuk,kelas};
-  tutupModal('overlayMod');
-  tunjukCountdown(()=>{hantarWS({jenis:'mula_mod',...pendingModData});pendingModData=null;});
-}
-
-// ============================================================
-// PAPAN PERMAINAN
-// ============================================================
-function papanPermainanMula(state) {
-  sesiSemasa=state;
-  document.getElementById('papanPermainan').classList.add('buka');
-  const tajukMod=['','KUIZ RAMAI-RAMAI','DWI-PADU','SUSUNAN HAFALAN','IMBAS AI'];
-  document.getElementById('papanTajuk').textContent=`MOD ${state.mod} — ${tajukMod[state.mod]}`;
-  document.getElementById('soalanJumlah').textContent=state.jumlahSoalan||'—';
-  document.getElementById('soalanIdx').textContent=(state.soalanSemasa||0)+1;
-  document.getElementById('papanMod12').style.display=(state.mod<=2)?'flex':'none';
-  document.getElementById('papanMod3').style.display=state.mod===3?'block':'none';
-  document.getElementById('papanMod4').style.display=state.mod===4?'block':'none';
-  document.getElementById('mod1Info').style.display=state.mod===1?'flex':'none';
-  document.getElementById('mod2Info').style.display=state.mod===2?'flex':'none';
-  renderSkorPanel(state.muridSenarai);
-  if(state.mod===3)renderSusunanTrack(state.jumlahSoalan);
-  if(state.mod===4)renderMod4UI();
-  if(state.mod===2)renderBuzzerPanel(state.muridSenarai);
-  if(state.mod===1)kemaskiniMuridGiliran(state);
-  if(state.mod<=2)renderPilihan(state);
-}
-function renderAvatarEl(av){if(av&&av.startsWith('data:'))return`<img src="${av}" style="width:100%;height:100%;object-fit:cover">`;return`<span>${av||'👤'}</span>`;}
-
-function renderSkorPanel(murid) {
-  const el=document.getElementById('skorList');
-  if(!murid||!murid.length){el.innerHTML='<div style="color:rgba(255,255,255,.4);font-size:.8rem">Tiada murid</div>';return;}
-  el.innerHTML=murid.map(m=>`<div class="skor-murid" id="skor_${m._id||m.nama}"><div class="skor-avatar">${renderAvatarEl(m.avatar)}</div><div class="skor-info"><div class="skor-nama">${m.nama}</div><div class="skor-markah" id="markah_${m._id||m.nama}">0</div><div class="skor-bar-wrap"><div class="skor-bar" id="bar_${m._id||m.nama}" style="width:0%"></div></div></div></div>`).join('');
-}
-
-function kemaskiniSkorPanel(d) {
-  if(!d.murid)return;
-  const key=sesiSemasa?.muridSenarai?.find(m=>m.nama===d.murid)?._id||d.murid;
-  const mel=document.getElementById('markah_'+key),bel=document.getElementById('bar_'+key),kel=document.getElementById('skor_'+key);
-  if(mel)mel.textContent=d.markah||0;
-  const mx=sesiSemasa?.jumlahSoalan||1;
-  if(bel)bel.style.width=Math.min(100,((d.markah||0)/mx)*100)+'%';
-  if(kel&&d.betul){kel.classList.add('betul-flash');setTimeout(()=>kel.classList.remove('betul-flash'),600);}
-}
-
-function kemaskiniStatePermainan(state) {
-  sesiSemasa=state;
-  document.getElementById('soalanIdx').textContent=(state.soalanSemasa||0)+1;
-  if(state.mod===1)kemaskiniMuridGiliran(state);
-  if(state.muridSenarai&&state.skor){state.muridSenarai.forEach(m=>{const key=m._id||m.nama;const markah=state.skor[key]||0;const el=document.getElementById('markah_'+key);if(el)el.textContent=markah;});}
-  if(state.mod<=2)renderPilihan(state);
-}
-
-function renderPilihan(state) {
-  document.getElementById('soalanNoLabel').textContent=`SOALAN ${(state.soalanSemasa||0)+1}`;
-  document.getElementById('soalanTeks').textContent='[Lihat skrin persembahan]';
-  document.getElementById('pilihanGrid').innerHTML=`<div class="pilihan-item"><div class="pilihan-badge badge-a">A</div><span>Jawapan A</span></div><div class="pilihan-item"><div class="pilihan-badge badge-b">B</div><span>Jawapan B</span></div><div class="pilihan-item"><div class="pilihan-badge badge-c">C</div><span>Jawapan C</span></div>`;
-}
-
-function kemaskiniMuridGiliran(state) {
-  const murid=state.muridSenarai?.[state.muridSemasa];
-  if(murid){const avEl=document.getElementById('giliranAvatarContent');if(avEl)avEl.innerHTML=renderAvatarEl(murid.avatar);document.getElementById('muridGiliranTeks').textContent=murid.nama;document.querySelectorAll('.skor-murid').forEach(el=>el.classList.remove('aktif-jawab'));document.getElementById('skor_'+(murid._id||murid.nama))?.classList.add('aktif-jawab');}
-}
-
-function kemaskiniTimer(sisa) {
-  const el=document.getElementById('timerDisplay');
-  if(!el)return;
-  el.textContent=`${String(Math.floor(sisa/60)).padStart(2,'0')}:${String(sisa%60).padStart(2,'0')}`;
-  el.className='timer-num '+(sisa<=10?'merah':sisa<=30?'kuning':'hijau');
-}
-
-function soalanSeterusnya(){hantarWS({jenis:'soalan_seterusnya'});}
-
-// ============================================================
-// POPUP BETUL/SALAH
-// ============================================================
-let popupTimer;
-function tunjukJawapanPopup(betul,nama,sub,jawapan) {
-  clearTimeout(popupTimer);
-  const popup=document.getElementById('jawapanPopup'),kad=document.getElementById('jawapanKad');
-  document.getElementById('jawapanIkon').textContent=betul?'✓':'✗';
-  document.getElementById('jawapanTeks').textContent=betul?'BETUL!':'SALAH!';
-  document.getElementById('jawapanJawapan').textContent=jawapan?`Jawapan ${jawapan}`:'';
-  document.getElementById('jawapanSub').textContent=sub||(nama?nama:'');
-  kad.className='jawapan-kad '+(betul?'betul':'salah');
-  popup.classList.add('tunjuk');
-  popupTimer=setTimeout(()=>popup.classList.remove('tunjuk'),2200);
-}
-function paparJawapan(betul,murid,markah,jawapan){tunjukJawapanPopup(betul,murid,betul?`+1 markah — jumlah: ${markah}`:'Cuba lagi!',jawapan);}
-
-// ============================================================
-// MOD 2
-// ============================================================
-function renderBuzzerPanel(murid) {
-  if(!murid||murid.length<2)return;
-  document.getElementById('buzzerMuridRow').innerHTML=murid.slice(0,2).map(m=>`<div class="buzzer-murid-btn" id="buzz_${m._id||m.nama}" onclick="pilihMuridBuzzer('${m._id||m.nama}','${m.nama}')"><div class="buzzer-avatar">${renderAvatarEl(m.avatar)}</div><div class="buzzer-nama">${m.nama}</div></div>`).join('');
-}
-function pilihMuridBuzzer(id,nama){document.querySelectorAll('.buzzer-murid-btn').forEach(b=>b.classList.remove('dipilih2'));document.getElementById('buzz_'+id)?.classList.add('dipilih2');hantarWS({jenis:'pilih_murid_mode2',muridId:id,muridNama:nama});}
-function kemaskiniMod2Status(teks){const el=document.getElementById('mod2Status');if(el){el.style.animation='none';void el.offsetWidth;el.textContent=teks;el.style.animation='';}}
-function highlightBuzzer(nama){document.querySelectorAll('.buzzer-murid-btn').forEach(b=>b.classList.toggle('dipilih2',b.querySelector('.buzzer-nama')?.textContent===nama));}
-function mulaSedia(){let count=3;const statusEl=document.getElementById('mod2Status');if(!statusEl)return;statusEl.style.fontSize='3.5rem';statusEl.style.color='#fbbf24';const iv=setInterval(()=>{if(count>0){statusEl.innerHTML=`<span class="mod2-sedia-num">${count}</span>`;count--;}else{clearInterval(iv);statusEl.textContent='⚡ TEKAN!';statusEl.style.fontSize='1.4rem';statusEl.style.color='#4ade80';}},800);}
-
-// ============================================================
-// MOD 3
-// ============================================================
-function renderSusunanTrack(jumlah){document.getElementById('susunanTrack').innerHTML=Array.from({length:jumlah||7},(_,i)=>`<div class="susun-kad ${i===0?'semasa':''}" id="susun_${i}"><div class="susun-num">${i+1}</div></div>`).join('');}
-function kemaskiniSusunan(idx,betul,jumlah){const el=document.getElementById('susun_'+idx);if(el){el.classList.remove('semasa');if(betul)el.classList.add('betul');}const next=document.getElementById('susun_'+(idx+1));if(next)next.classList.add('semasa');if(betul)tunjukJawapanPopup(true,null,`Susunan ${idx+1} betul! ✓`);const prog=document.getElementById('mod3Progress');if(prog&&jumlah)prog.style.width=((idx+1)/jumlah*100)+'%';}
-
-// ============================================================
-// MOD 4 UI
-// ============================================================
-function renderMod4UI(){mod4FasaUI='sihat';mod4SihatUI=[];mod4TakSihatUI=[];document.getElementById('mod4Fasa1Panel').style.display='block';document.getElementById('mod4Fasa2Panel').style.display='none';renderMakananList();}
-function renderMakananList(){document.getElementById('listMakananSihat').innerHTML=MAKANAN_SIHAT_UI.map(m=>`<div class="makanan-item-reveal ${mod4SihatUI.includes(m.nama.toLowerCase())?'dikesan':''}" id="mk_s_${m.nama}"><div class="makanan-ikon-big">${m.ikon}</div><div class="makanan-nama">${m.nama}</div>${mod4SihatUI.includes(m.nama.toLowerCase())?'<div class="makanan-dikesan-tag">✓ DIKESAN</div>':''}</div>`).join('');document.getElementById('listMakananTakSihat').innerHTML=MAKANAN_TAK_SIHAT_UI.map(m=>`<div class="makanan-item-reveal ${mod4TakSihatUI.includes(m.nama.toLowerCase())?'dikesan':''}" id="mk_ts_${m.nama}"><div class="makanan-ikon-big">${m.ikon}</div><div class="makanan-nama">${m.nama}</div>${mod4TakSihatUI.includes(m.nama.toLowerCase())?'<div class="makanan-dikesan-tag">✓ DIKESAN</div>':''}</div>`).join('');}
-function tukarFasaMod4(fasa){mod4FasaUI=fasa;document.getElementById('mod4Fasa1Panel').style.display=fasa==='sihat'?'block':'none';document.getElementById('mod4Fasa2Panel').style.display=fasa!=='sihat'?'block':'none';tunjukNotif('✅ Semua makanan sihat dikesan! Kini fasa makanan tidak sihat.');}
-function prosesCAMKeputusanUI(d){document.getElementById('camLabel').textContent=`${d.label} (${Math.round((d.confidence||0)*100)}%)`;if(d.betul){tunjukJawapanPopup(true,null,`${d.label} dikesan! ✓`);if(d.kategori==='sihat'){if(!mod4SihatUI.includes(d.label.toLowerCase()))mod4SihatUI.push(d.label.toLowerCase());}else{if(!mod4TakSihatUI.includes(d.label.toLowerCase()))mod4TakSihatUI.push(d.label.toLowerCase());}renderMakananList();}else{tunjukJawapanPopup(false,null,`${d.label} — terus mengimbas...`);}}
-function togolFlash(){flashStateCam=!flashStateCam;hantarWS({jenis:'flash_cam',nyala:flashStateCam});document.getElementById('btnFlash').textContent=`🔦 Flash: ${flashStateCam?'ON':'OFF'}`;}
-
-// ============================================================
-// GANJARAN & TAMAT
-// ============================================================
-function paparGanjaran(ranking){const overlay=document.getElementById('ganjaranOverlay');document.getElementById('ganjaranTeks').textContent='🏆 TAHNIAH! PEMENANG TERATAS AMBIL GANJARAN!';document.getElementById('rankingList').innerHTML=(ranking||[]).slice(0,3).map((r,i)=>`<div class="ranking-item"><div class="ranking-no ${['r1','r2','r3'][i]||''}">${['🥇','🥈','🥉'][i]||i+1}</div><div class="ranking-avatar">${renderAvatarEl(r.avatar)}</div><div class="ranking-nama">${r.nama}</div><div class="ranking-markah">${r.markah} ⭐</div></div>`).join('');overlay.classList.add('buka');hantarWS({jenis:'buka_ganjaran'});mulaGanjaranCountdown();}
-function paparGanjaranMod3(){paparGanjaran([]);document.getElementById('ganjaranTeks').textContent='🎊 SUSUNAN LENGKAP! AMBIL GANJARAN!';}
-function mulaGanjaranCountdown(){let count=6;document.getElementById('ganjaranCount').textContent=count;const t=setInterval(()=>{count--;document.getElementById('ganjaranCount').textContent=count;if(count<=0){clearInterval(t);document.getElementById('ganjaranOverlay').classList.remove('buka');tunjukSesiTamat();}},1000);}
-function tunjukSesiTamat(){const pilihan=confirm('Sesi tamat! OK untuk ulangi, Batal untuk ke menu utama.');document.getElementById('papanPermainan').classList.remove('buka');if(pilihan&&sesiSemasa)bukaMod(sesiSemasa.mod);else{muatDashboard();tukarHalaman('dashboard',document.querySelectorAll('.nav-btn')[1]);}}
-function sahkanTamat(){if(!confirm('Tamatkan sesi ini?'))return;hantarWS({jenis:'tamat_mod'});document.getElementById('papanPermainan').classList.remove('buka');}
-
-// ============================================================
-// DASHBOARD
-// ============================================================
-async function muatDashboard() {
-  const res=await fetch(`${API}/api/sesi`);
-  const sesi=await res.json();
-  const tarikh=document.getElementById('tarikhFilter')?.value;
-  // Guna UTC untuk elak timezone offset (MongoDB simpan UTC, toLocaleDateString boleh beza sehari)
-  const filtered=tarikh?sesi.filter(s=>{
-    const d=new Date(s.tarikh);
-    const utcStr=d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');
-    return utcStr===tarikh;
-  }):sesi;
-  renderDashboard(filtered);
-}
-function renderDashboard(sesi) {
-  const el=document.getElementById('sesiGrid');
-  const modNama=['','Kuiz Ramai-ramai','Dwi-Padu','Susunan Hafalan','Imbas AI'];
-  const modWarna=['','var(--accent)','var(--purple)','var(--gold)','var(--green)'];
-  el.innerHTML=sesi.length?sesi.map(s=>`<div class="sesi-kad"><div class="sesi-kad-header"><div><div class="sesi-tajuk">${s.tajuk}${s.kelas?` <span class="tag-purple">${s.kelas}</span>`:''}</div><div class="sesi-tarikh">📅 ${new Date(s.tarikh).toLocaleDateString('ms-MY',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div></div><span class="sesi-mod-badge" style="background:${modWarna[s.mod]||'var(--accent)'}1a;color:${modWarna[s.mod]||'var(--accent)'};border:1px solid ${modWarna[s.mod]||'var(--accent)'}33">Mod ${s.mod} — ${modNama[s.mod]||''}</span></div><div class="sesi-murid-row">${(s.keputusan||[]).map(k=>`<div class="sesi-murid-chip"><div class="chip-avatar">${k.avatar&&k.avatar.startsWith('data:')?`<img src="${k.avatar}">`:`<span>${k.avatar||'👤'}</span>`}</div><span>${k.nama}</span><span class="chip-markah">${k.markah}★</span></div>`).join('')}</div>${s.ulasan?.length?`<div style="font-size:.72rem;color:var(--text2);margin-bottom:8px">💬 ${s.ulasan.length} ulasan guru</div>`:''}<div class="sesi-aksi"><button class="btn btn-kecil btn-outline" onclick="bukaSesiDetail('${s._id}')">Detail & Ulasan</button><button class="btn btn-kecil btn-merah" onclick="padamSesi('${s._id}',event)">🗑 Padam</button></div></div>`).join(''):'<div style="color:var(--text2);padding:40px;text-align:center">Tiada rekod untuk tarikh ini.</div>';
-}
-async function padamSesi(id,e){e.stopPropagation();if(!confirm('Padam aktiviti ini?'))return;await fetch(`${API}/api/sesi/${id}`,{method:'DELETE'});await muatDashboard();tunjukNotif('🗑 Aktiviti dipadam');}
-
-async function bukaSesiDetail(id) {
-  const res=await fetch(`${API}/api/sesi/${id}`);
-  sesiDetailSemasa=await res.json();
-  const s=sesiDetailSemasa;
-  const modNama=['','Kuiz Ramai-ramai','Dwi-Padu','Susunan Hafalan','Imbas AI'];
-  document.getElementById('sesiDetailTajuk').textContent=s.tajuk;
-  document.getElementById('sesiDetailBadan').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px"><div><div style="font-size:.72rem;color:var(--text2)">TARIKH</div><div style="font-weight:600">${new Date(s.tarikh).toLocaleDateString('ms-MY')}</div></div><div><div style="font-size:.72rem;color:var(--text2)">KELAS</div><div style="font-weight:600">${s.kelas||'—'}</div></div><div><div style="font-size:.72rem;color:var(--text2)">MOD</div><div><span class="tag-biru">Mod ${s.mod}</span></div></div></div><div style="font-size:.78rem;color:var(--text2);margin-bottom:10px;font-family:'Orbitron',monospace">KEPUTUSAN</div>${(s.keputusan||[]).sort((a,b)=>b.markah-a.markah).map((k,i)=>`<div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--panel2);border-radius:8px;margin-bottom:8px;border:1px solid ${['rgba(245,158,11,.2)','rgba(192,192,192,.2)','rgba(180,83,9,.2)','transparent'][i]||'transparent'}"><div style="font-size:1.3rem">${['🥇','🥈','🥉',''][i]||i+1}</div><div style="width:36px;height:36px;border-radius:50%;overflow:hidden;background:var(--panel);display:flex;align-items:center;justify-content:center">${k.avatar&&k.avatar.startsWith('data:')?`<img src="${k.avatar}" style="width:100%;height:100%;object-fit:cover">`:`<span style="font-size:1.2rem">${k.avatar||'👤'}</span>`}</div><div style="flex:1;font-weight:600">${k.nama}</div><div style="font-family:'Orbitron',monospace;color:var(--accent);font-weight:700">${k.markah} ⭐</div></div>`).join('')}`;
-  document.getElementById('ulasanList').innerHTML=(s.ulasan||[]).map(u=>`<div class="ulasan-item"><div class="ulasan-nama">${u.nama} — <span style="font-size:.68rem;color:var(--text2)">${new Date(u.tarikhKomen).toLocaleString('ms-MY')}</span></div>${u.komen}</div>`).join('')||'<div style="color:var(--text2);font-size:.8rem;padding:8px">Tiada ulasan lagi</div>';
-  document.getElementById('selectUlasanMurid').innerHTML=(s.keputusan||[]).map(k=>`<option value="${k.muridId||k.nama}" data-nama="${k.nama}">${k.nama}</option>`).join('');
-  bukaModal('overlaySesi');
-}
-
-async function hantarUlasan(){const sel=document.getElementById('selectUlasanMurid');const komen=document.getElementById('inputUlasan').value.trim();if(!komen)return tunjukNotif('Sila taip ulasan');const muridId=sel.value;const muridNama=sel.options[sel.selectedIndex].dataset.nama;await fetch(`${API}/api/sesi/${sesiDetailSemasa._id}/ulasan`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({muridId,muridNama,komen})});document.getElementById('inputUlasan').value='';await bukaSesiDetail(sesiDetailSemasa._id);tunjukNotif('✅ Ulasan dihantar!');}
-
-function tambahUlasanUI(d){const el=document.getElementById('ulasanList');const item=document.createElement('div');item.className='ulasan-item';item.style.animation='fadeIn .3s';item.innerHTML=`<div class="ulasan-nama">${d.muridNama}</div>${d.komen}`;el.appendChild(item);}
-
-function pushTelegram(){if(!sesiDetailSemasa)return;hantarWS({jenis:'push_telegram',sesiId:sesiDetailSemasa._id});tunjukNotif('📨 Menghantar ke Telegram...');}
-
-// ============================================================
-// SIARAN
-// ============================================================
-function tukarUrlGoogleSlides(url){const match=url.match(/presentation\/d\/([a-zA-Z0-9_-]+)/);if(match)return`https://docs.google.com/presentation/d/${match[1]}/embed?rm=minimal&start=false&loop=false&delayms=3000`;return url;}
-async function muatSiaran(){const res=await fetch(`${API}/api/siaran`);renderSiaran(await res.json());}
-function renderSiaran(data){const el=document.getElementById('siaranGrid');el.innerHTML=data.length?data.map(s=>`<div class="siaran-kad"><div class="siaran-header"><div><div class="siaran-tajuk">${s.tajuk}</div><div style="font-size:.72rem;color:var(--text2)">📅 ${new Date(s.tarikhDihantar).toLocaleDateString('ms-MY')}</div></div></div>${s.embedLink?`<div class="siaran-embed-wrap"><iframe src="${tukarUrlGoogleSlides(s.embedLink)}" allowfullscreen loading="lazy"></iframe></div>`:''}<div class="siaran-aksi">${s.komen?`<div style="flex:1;font-size:.83rem;color:var(--text2)">📝 ${s.komen}</div>`:''}<button class="btn btn-kecil btn-outline" onclick='bukaSiaranEdit(${JSON.stringify(s).replace(/'/g,"&#39;")})'>Edit</button><button class="btn btn-kecil btn-merah" onclick="padamSiaran('${s._id}')">🗑 Padam</button></div></div>`).join(''):'<div style="color:var(--text2);padding:40px;text-align:center">Tiada siaran. Tambah siaran baharu.</div>';}
-function bukaModalSiaran(s=null){editSiaranId=s?s._id:null;document.getElementById('modalSiaranTajuk').textContent=s?'EDIT SIARAN':'TAMBAH SIARAN';document.getElementById('inputTajukSiaran').value=s?.tajuk||'';document.getElementById('inputEmbedLink').value=s?.embedLink||'';document.getElementById('inputKomenSiaran').value=s?.komen||'';bukaModal('overlaySiaran');}
-function bukaSiaranEdit(s){bukaModalSiaran(s);}
-async function simpanSiaran(){const data={tajuk:document.getElementById('inputTajukSiaran').value.trim(),embedLink:document.getElementById('inputEmbedLink').value.trim(),komen:document.getElementById('inputKomenSiaran').value.trim()};if(!data.tajuk)return tunjukNotif('Sila masukkan tajuk');if(editSiaranId){await fetch(`${API}/api/siaran/${editSiaranId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});}else{await fetch(`${API}/api/siaran`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});}tutupModal('overlaySiaran');await muatSiaran();tunjukNotif('✅ Siaran disimpan!');}
-async function padamSiaran(id){if(!confirm('Padam siaran ini?'))return;await fetch(`${API}/api/siaran/${id}`,{method:'DELETE'});await muatSiaran();}
-
-// ============================================================
-// NOTIF & NFC
-// ============================================================
-function tunjukNotif(msg){const el=document.getElementById('notifBar');el.textContent=msg;el.style.display='block';clearTimeout(el._t);el._t=setTimeout(()=>el.style.display='none',3500);}
-function tunjukNFCPing(uid){if(nfcImbasBuilderCallback){nfcImbasBuilderCallback(uid);return;}const el=document.getElementById('nfcPing');document.getElementById('nfcMsg').textContent=`Kad: ${uid}`;el.classList.add('tunjuk');setTimeout(()=>el.classList.remove('tunjuk'),2500);}
-
-// ============================================================
-// INIT
-// ============================================================
-window.addEventListener('load',()=>{
-  const tf=document.getElementById('tarikhFilter');
-  if(tf)tf.value=new Date().toLocaleDateString('fr-CA');
-  muatKelasLokal();
-  sambungWS();
+const MuridSchema = new mongoose.Schema({
+  nama: String,
+  avatar: String, // base64 image atau emoji
+  kelas: String,  // nama kelas murid
+  createdAt: { type: Date, default: Date.now }
 });
 
-setInterval(()=>{const d=document.getElementById('splashDots');if(d){const t=d.textContent;d.textContent=t.length>=3?'':t+'.';}},400);
-</script>
-</body>
-</html>
+const KehadiranSchema = new mongoose.Schema({
+  kelas: String,
+  tarikh: { type: Date, default: Date.now },
+  senarai: [{ id: String, nama: String, hadir: Boolean }],
+  catatanAt: { type: Date, default: Date.now }
+});
+
+const SoalanSchema = new mongoose.Schema({
+  mod: Number,
+  tajuk: String,
+  kelas: String,
+  soalan: [{
+    teks: String,
+    jawapanA: String, jawapanB: String, jawapanC: String,
+    betul: String,
+    uidA: String, uidB: String, uidC: String, uidBetul: String
+  }]
+});
+
+const SesiSchema = new mongoose.Schema({
+  tarikh: { type: Date, default: Date.now },
+  tajuk: String,
+  kelas: String,
+  mod: Number,
+  keputusan: [{ muridId: String, nama: String, markah: Number, avatar: String }],
+  ulasan: [{ muridId: String, nama: String, komen: String, tarikhKomen: Date }]
+});
+
+const SiaranSchema = new mongoose.Schema({
+  tajuk: String,
+  embedLink: String,
+  komen: String,
+  tarikhDihantar: { type: Date, default: Date.now }
+});
+
+const Murid = mongoose.model('Murid', MuridSchema);
+const Soalan = mongoose.model('Soalan', SoalanSchema);
+const Sesi = mongoose.model('Sesi', SesiSchema);
+const Siaran = mongoose.model('Siaran', SiaranSchema);
+const Kehadiran = mongoose.model('Kehadiran', KehadiranSchema);
+
+// ============================================================
+// PENGURUSAN WEBSOCKET
+// ============================================================
+let clients = {
+  esp32: null,
+  cam: null,
+  guru: [],
+  murid: []
+};
+
+let gameState = {
+  mod: null, aktif: false,
+  soalanSemasa: 0, muridSemasa: 0,
+  muridSenarai: [], skor: {},
+  masa: 0, masaAsal: 0,
+  timer: null, sesiId: null,
+  soalan: [], giliran: null,
+  peluangKedua: false,
+  mod3Seq: 0,
+  mod4: { fasa: 'sihat', sihatDikesan: [], takSihatDikesan: [], autoScanTimer: null }
+};
+
+const MAKANAN_SIHAT_LIST = ['pisang', 'tembikai', 'epal'];
+const MAKANAN_TAK_SIHAT_LIST = ['air manis', 'sosej'];
+
+function hantarKeGuru(data) {
+  const msg = JSON.stringify(data);
+  clients.guru.forEach(ws => { if (ws.readyState === WebSocket.OPEN) ws.send(msg); });
+}
+function hantarKeMurid(data) {
+  const msg = JSON.stringify(data);
+  clients.murid.forEach(ws => { if (ws.readyState === WebSocket.OPEN) ws.send(msg); });
+}
+function hantarKeESP32(data) {
+  if (clients.esp32 && clients.esp32.readyState === WebSocket.OPEN)
+    clients.esp32.send(JSON.stringify(data));
+}
+function hantarKeCAM(data) {
+  if (clients.cam && clients.cam.readyState === WebSocket.OPEN)
+    clients.cam.send(JSON.stringify(data));
+}
+function semuaHantar(data) { hantarKeGuru(data); hantarKeMurid(data); }
+
+function updateStatusPeranti() {
+  const status = {
+    jenis: 'status_peranti',
+    esp32: !!(clients.esp32 && clients.esp32.readyState === WebSocket.OPEN),
+    cam: !!(clients.cam && clients.cam.readyState === WebSocket.OPEN)
+  };
+  hantarKeGuru(status);
+}
+
+// ============================================================
+// WEBSOCKET EVENTS
+// ============================================================
+wss.on('connection', (ws, req) => {
+  const url = req.url;
+  console.log(`[WS] Sambungan baru: ${url}`);
+
+  if (url === '/esp32') {
+    clients.esp32 = ws;
+    console.log('[WS] ESP32 Utama disambung');
+    updateStatusPeranti();
+    ws.send(JSON.stringify({ jenis: 'sambut', mesej: 'ESP32 Utama bersambung' }));
+  } else if (url === '/cam') {
+    clients.cam = ws;
+    console.log('[WS] ESP32-CAM disambung');
+    updateStatusPeranti();
+    ws.send(JSON.stringify({ jenis: 'sambut', mesej: 'CAM bersambung' }));
+  } else if (url === '/guru') {
+    clients.guru.push(ws);
+    console.log('[WS] Aplikasi Guru disambung');
+    updateStatusPeranti();
+    ws.send(JSON.stringify({ jenis: 'game_state', data: gameState }));
+  } else if (url === '/murid') {
+    clients.murid.push(ws);
+    console.log('[WS] Aplikasi Murid disambung');
+  }
+
+  ws.on('message', async (raw) => {
+    let data;
+    try { data = JSON.parse(raw); } catch { return; }
+
+    if (url === '/esp32') {
+      if (data.jenis === 'nfc_scan') await prosesNFC(data.uid);
+      else if (data.jenis === 'siap') hantarKeGuru({ jenis: 'esp32_siap' });
+    }
+
+    if (url === '/cam') {
+      if (data.jenis === 'cam_frame') {
+        hantarKeGuru({ jenis: 'cam_frame', data: data.data });
+      } else if (data.jenis === 'cam_result') {
+        await prosesCAMResult(data);
+      }
+    }
+
+    if (url === '/guru') {
+      switch (data.jenis) {
+        case 'mula_mod': await mulaMod(data); break;
+        case 'pilih_murid_mode2': prosesMode2PilihMurid(data); break;
+        case 'soalan_seterusnya': soalanSeterusnya(); break;
+        case 'tamat_mod': tamatMod(data); break;
+        case 'buka_ganjaran': hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 }); break;
+        case 'flash_cam': hantarKeCAM({ jenis: 'flash', nyala: data.nyala }); break;
+        case 'tambah_ulasan': await tambahUlasan(data); break;
+        case 'push_telegram': await hantarTelegram(data); break;
+        // Auto-scan mod4 tidak perlu trigger manual lagi
+      }
+    }
+  });
+
+  ws.on('close', () => {
+    if (url === '/esp32') { clients.esp32 = null; updateStatusPeranti(); }
+    else if (url === '/cam') { clients.cam = null; updateStatusPeranti(); }
+    else if (url === '/guru') clients.guru = clients.guru.filter(c => c !== ws);
+    else if (url === '/murid') clients.murid = clients.murid.filter(c => c !== ws);
+    console.log(`[WS] Putus: ${url}`);
+  });
+});
+
+// ============================================================
+// LOGIK MOD
+// ============================================================
+async function mulaMod(data) {
+  const { mod, murid, soalanId, masa, tajuk: tajukSesi, kelas } = data;
+
+  const soalan = soalanId ? await Soalan.findById(soalanId) : null;
+  if (!soalan && mod !== 4) {
+    hantarKeGuru({ jenis: 'ralat', mesej: 'Soalan tidak dijumpai' });
+    return;
+  }
+
+  const tajukFinal = tajukSesi || (soalan ? soalan.tajuk : 'Sesi Mod 4');
+  const sesi = new Sesi({
+    tajuk: tajukFinal,
+    kelas: kelas || (soalan ? soalan.kelas : ''),
+    mod,
+    keputusan: murid ? murid.map(m => ({ muridId: m._id, nama: m.nama, markah: 0, avatar: m.avatar })) : []
+  });
+  await sesi.save();
+
+  // Clear mod4 auto-scan timer
+  if (gameState.mod4?.autoScanTimer) clearTimeout(gameState.mod4.autoScanTimer);
+
+  gameState = {
+    mod, aktif: true,
+    soalanSemasa: 0, muridSemasa: 0,
+    muridSenarai: murid || [],
+    skor: {}, masa: masa || 120, masaAsal: masa || 120,
+    soalan: soalan ? soalan.soalan : [],
+    sesiId: sesi._id.toString(),
+    buzzerAktif: false, giliran: null,
+    peluangKedua: false, mod3Seq: 0,
+    mod4: { fasa: 'sihat', sihatDikesan: [], takSihatDikesan: [], autoScanTimer: null }
+  };
+
+  if (murid) murid.forEach(m => { gameState.skor[m._id || m.nama] = 0; });
+
+  hantarKeESP32({ jenis: 'set_mod', mod });
+
+  if (mod === 1) mulaTimerMod1();
+  else if (mod === 4) {
+    // Auto-scan terus bermula
+    setTimeout(() => autoScanMod4(), 1500);
+  }
+
+  semuaHantar({ jenis: 'mod_bermula', gameState: sanitizeGameState() });
+  console.log(`[GAME] Mod ${mod} bermula — ${tajukFinal}`);
+}
+
+function autoScanMod4() {
+  if (!gameState.aktif || gameState.mod !== 4) return;
+  const fasa = gameState.mod4.fasa;
+  hantarKeCAM({ jenis: 'mula_scan', kategori: fasa === 'sihat' ? 'sihat' : 'tidak_sihat' });
+}
+
+function mulaTimerMod1() {
+  let sisa = gameState.masa;
+  if (gameState.timer) clearInterval(gameState.timer);
+  hantarKeGuru({ jenis: 'timer_update', sisa });
+
+  gameState.timer = setInterval(() => {
+    if (!gameState.aktif) { clearInterval(gameState.timer); return; }
+    sisa--;
+    gameState.masa = sisa;
+    hantarKeGuru({ jenis: 'timer_update', sisa });
+    if (sisa <= 0) { clearInterval(gameState.timer); tamatMod1(); }
+  }, 1000);
+}
+
+async function tamatMod1() {
+  if (gameState.timer) clearInterval(gameState.timer);
+  gameState.aktif = false;
+
+  const ranking = gameState.muridSenarai.map(m => ({
+    nama: m.nama, avatar: m.avatar,
+    markah: gameState.skor[m._id || m.nama] || 0
+  })).sort((a, b) => b.markah - a.markah);
+
+  await Sesi.findByIdAndUpdate(gameState.sesiId, {
+    keputusan: ranking.map((r, i) => ({ nama: r.nama, markah: r.markah, avatar: r.avatar, tempat: i + 1 }))
+  });
+
+  hantarKeGuru({ jenis: 'mod1_tamat', ranking });
+  if (ranking.length > 0) setTimeout(() => hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 }), 2000);
+}
+
+async function prosesNFC(uid) {
+  if (!gameState.aktif) {
+    // Hantar ke guru untuk UI feedback walaupun tiada mod aktif
+    hantarKeGuru({ jenis: 'nfc_scan', uid });
+    return;
+  }
+  hantarKeGuru({ jenis: 'nfc_scan', uid });
+  const mod = gameState.mod;
+  uid = uid.toUpperCase().trim();
+  if (mod === 1) prosesNFCMod1(uid);
+  else if (mod === 2) prosesNFCMod2(uid);
+  else if (mod === 3) prosesNFCMod3(uid);
+}
+
+function prosesNFCMod1(uid) {
+  const soalanIdx = gameState.soalanSemasa;
+  if (soalanIdx >= gameState.soalan.length) return;
+
+  const soalan = gameState.soalan[soalanIdx];
+  const murid = gameState.muridSenarai[gameState.muridSemasa];
+  if (!murid) return;
+
+  // Guna kad NFC tetap A/B/C
+  const jawapanDiberi = uidKeJawapan(uid);
+  if (!jawapanDiberi) return;
+
+  const betul = jawapanDiberi === soalan.betul;
+  const key = murid._id || murid.nama;
+
+  if (betul) {
+    gameState.skor[key] = (gameState.skor[key] || 0) + 1;
+    hantarKeESP32({ jenis: 'betul' });
+    hantarKeGuru({ jenis: 'jawapan', betul: true, murid: murid.nama, jawapan: jawapanDiberi, markah: gameState.skor[key] });
+  } else {
+    hantarKeESP32({ jenis: 'salah' });
+    hantarKeGuru({ jenis: 'jawapan', betul: false, murid: murid.nama, jawapan: jawapanDiberi });
+  }
+
+  gameState.muridSemasa++;
+  if (gameState.muridSemasa >= gameState.muridSenarai.length) {
+    gameState.muridSemasa = 0;
+    gameState.soalanSemasa++;
+    if (gameState.soalanSemasa >= gameState.soalan.length) {
+      clearInterval(gameState.timer);
+      tamatMod1();
+      return;
+    }
+  }
+  hantarKeGuru({ jenis: 'state_update', gameState: sanitizeGameState() });
+}
+
+function prosesNFCMod2(uid) {
+  if (!gameState.giliran) return;
+
+  const soalanIdx = gameState.soalanSemasa;
+  if (soalanIdx >= gameState.soalan.length) return;
+
+  const soalan = gameState.soalan[soalanIdx];
+  const jawapanDiberi = uidKeJawapan(uid);
+  if (!jawapanDiberi) return;
+
+  const betul = jawapanDiberi === soalan.betul;
+  const muridSemasa = gameState.giliran;
+
+  if (betul) {
+    gameState.skor[muridSemasa] = (gameState.skor[muridSemasa] || 0) + 1;
+    hantarKeESP32({ jenis: 'betul' });
+    hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 });
+    hantarKeGuru({ jenis: 'mod2_betul', murid: muridSemasa, jawapan: jawapanDiberi, markah: gameState.skor[muridSemasa] });
+    gameState.giliran = null;
+    gameState.peluangKedua = false;
+    gameState.soalanSemasa++;
+    if (gameState.soalanSemasa >= gameState.soalan.length) { tamatMod2(); return; }
+  } else {
+    hantarKeESP32({ jenis: 'salah' });
+    if (!gameState.peluangKedua) {
+      const muridLain = gameState.muridSenarai.find(m => (m._id || m.nama) !== muridSemasa);
+      if (muridLain) {
+        gameState.giliran = muridLain._id || muridLain.nama;
+        gameState.peluangKedua = true;
+        hantarKeGuru({ jenis: 'mod2_peluang_kedua', murid: muridLain.nama });
+      }
+    } else {
+      gameState.giliran = null;
+      gameState.peluangKedua = false;
+      gameState.soalanSemasa++;
+      hantarKeGuru({ jenis: 'mod2_kedua_salah' });
+      if (gameState.soalanSemasa >= gameState.soalan.length) { tamatMod2(); return; }
+    }
+  }
+  hantarKeGuru({ jenis: 'state_update', gameState: sanitizeGameState() });
+}
+
+function prosesMode2PilihMurid(data) {
+  gameState.giliran = data.muridId;
+  gameState.peluangKedua = false;
+  hantarKeGuru({ jenis: 'mod2_giliran', murid: data.muridNama });
+  hantarKeESP32({ jenis: 'sedia_jawab' });
+}
+
+async function tamatMod2() {
+  gameState.aktif = false;
+  const ranking = gameState.muridSenarai.map(m => ({
+    nama: m.nama, avatar: m.avatar,
+    markah: gameState.skor[m._id || m.nama] || 0
+  })).sort((a, b) => b.markah - a.markah);
+  await Sesi.findByIdAndUpdate(gameState.sesiId, { keputusan: ranking });
+  hantarKeGuru({ jenis: 'mod2_tamat', ranking });
+  setTimeout(() => hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 }), 1500);
+}
+
+function prosesNFCMod3(uid) {
+  const idx = gameState.mod3Seq || 0;
+  const soalan = gameState.soalan;
+  if (!soalan || idx >= soalan.length) return;
+
+  const betul = soalan[idx].uidBetul === uid;
+  if (betul) {
+    gameState.mod3Seq = idx + 1;
+    hantarKeESP32({ jenis: 'betul' });
+    hantarKeGuru({ jenis: 'mod3_betul', susunan: idx + 1, jumlah: soalan.length });
+    if (gameState.mod3Seq >= soalan.length) {
+      hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 });
+      hantarKeGuru({ jenis: 'mod3_tamat' });
+      gameState.aktif = false;
+    }
+  } else {
+    hantarKeESP32({ jenis: 'salah' });
+    hantarKeGuru({ jenis: 'mod3_salah', susunan: idx + 1 });
+  }
+}
+
+async function prosesCAMResult(data) {
+  if (!gameState.aktif || gameState.mod !== 4) return;
+
+  const { label, confidence } = data;
+  const m4 = gameState.mod4;
+  const fasa = m4.fasa;
+  const labelLower = (label || '').toLowerCase();
+
+  let betul = false;
+  if (fasa === 'sihat') {
+    betul = MAKANAN_SIHAT_LIST.includes(labelLower) && !m4.sihatDikesan.includes(labelLower);
+  } else {
+    betul = MAKANAN_TAK_SIHAT_LIST.includes(labelLower) && !m4.takSihatDikesan.includes(labelLower);
+  }
+
+  hantarKeGuru({ jenis: 'cam_keputusan', label, confidence, betul, kategori: fasa });
+
+  if (betul) {
+    hantarKeESP32({ jenis: 'betul' });
+    if (fasa === 'sihat') {
+      m4.sihatDikesan.push(labelLower);
+      if (m4.sihatDikesan.length >= MAKANAN_SIHAT_LIST.length) {
+        // Tukar ke fasa tidak sihat
+        m4.fasa = 'tidak_sihat';
+        hantarKeGuru({ jenis: 'mod4_tukar_fasa', fasa: 'tidak_sihat' });
+        setTimeout(() => autoScanMod4(), 2000);
+        return;
+      }
+    } else {
+      m4.takSihatDikesan.push(labelLower);
+      if (m4.takSihatDikesan.length >= MAKANAN_TAK_SIHAT_LIST.length) {
+        // Mod4 selesai
+        await tamatMod4();
+        return;
+      }
+    }
+  } else {
+    hantarKeESP32({ jenis: 'salah' });
+  }
+
+  // Auto-scan semula selepas 2 saat
+  if (gameState.aktif && gameState.mod === 4) {
+    m4.autoScanTimer = setTimeout(() => autoScanMod4(), 2500);
+  }
+}
+
+async function tamatMod4() {
+  gameState.aktif = false;
+  const murid = gameState.muridSenarai[0];
+  const ranking = murid ? [{ nama: murid.nama, avatar: murid.avatar, markah: gameState.mod4.sihatDikesan.length + gameState.mod4.takSihatDikesan.length }] : [];
+  await Sesi.findByIdAndUpdate(gameState.sesiId, { keputusan: ranking });
+  hantarKeGuru({ jenis: 'mod4_tamat', ranking });
+  setTimeout(() => hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 }), 1000);
+}
+
+function soalanSeterusnya() {
+  if (!gameState.aktif) return;
+  gameState.soalanSemasa++;
+  gameState.muridSemasa = 0;
+  if (gameState.soalanSemasa >= gameState.soalan.length) {
+    if (gameState.mod === 1) tamatMod1();
+    else if (gameState.mod === 2) tamatMod2();
+  } else {
+    hantarKeGuru({ jenis: 'state_update', gameState: sanitizeGameState() });
+  }
+}
+
+async function tamatMod(data) {
+  if (gameState.timer) clearInterval(gameState.timer);
+  if (gameState.mod4?.autoScanTimer) clearTimeout(gameState.mod4.autoScanTimer);
+  gameState.aktif = false;
+  hantarKeGuru({ jenis: 'mod_tamat' });
+}
+
+async function tambahUlasan(data) {
+  const { sesiId, muridId, muridNama, komen } = data;
+  await Sesi.findByIdAndUpdate(sesiId, {
+    $push: { ulasan: { muridId, nama: muridNama, komen, tarikhKomen: new Date() } }
+  });
+  semuaHantar({ jenis: 'ulasan_baharu', sesiId, muridId, muridNama, komen });
+}
+
+// Telegram — guna credentials tetap
+async function hantarTelegram(data) {
+  const { sesiId } = data;
+  const sesi = await Sesi.findById(sesiId);
+  if (!sesi) return;
+
+  const ranking = sesi.keputusan.sort((a, b) => b.markah - a.markah);
+  let mesej = `🎓 *LAPORAN PENCAPAIAN ILMUVERSE*\n`;
+  mesej += `📅 Tarikh: ${new Date(sesi.tarikh).toLocaleDateString('ms-MY')}\n`;
+  if (sesi.kelas) mesej += `🏫 Kelas: *${sesi.kelas}*\n`;
+  mesej += `📖 Tajuk: *${sesi.tajuk}*\n`;
+  mesej += `🎯 Mod: ${['', 'Kuiz Ramai-ramai', 'Dwi-Padu', 'Susunan Hafalan', 'Imbas AI'][sesi.mod]}\n\n`;
+  mesej += `🏆 *KEPUTUSAN:*\n`;
+  ranking.forEach((r, i) => {
+    const emoji = ['🥇', '🥈', '🥉'][i] || '🎖️';
+    mesej += `${emoji} ${r.nama}: *${r.markah} markah*\n`;
+  });
+  if (sesi.ulasan?.length) {
+    mesej += `\n💬 *ULASAN GURU:*\n`;
+    sesi.ulasan.forEach(u => { mesej += `• ${u.nama}: _${u.komen}_\n`; });
+  }
+  mesej += `\n✨ _Dihantar oleh sistem ILMUVERSE_`;
+
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: mesej, parse_mode: 'Markdown' })
+    });
+    const hasil = await res.json();
+    hantarKeGuru({ jenis: 'telegram_status', berjaya: hasil.ok });
+  } catch (e) {
+    hantarKeGuru({ jenis: 'telegram_status', berjaya: false, ralat: e.message });
+  }
+}
+
+function sanitizeGameState() {
+  return {
+    mod: gameState.mod,
+    aktif: gameState.aktif,
+    soalanSemasa: gameState.soalanSemasa,
+    muridSemasa: gameState.muridSemasa,
+    muridSenarai: gameState.muridSenarai,
+    skor: gameState.skor,
+    masa: gameState.masa,
+    sesiId: gameState.sesiId,
+    giliran: gameState.giliran,
+    jumlahSoalan: gameState.soalan ? gameState.soalan.length : 0,
+    mod4Fasa: gameState.mod4?.fasa
+  };
+}
+
+// ============================================================
+// REST API
+// ============================================================
+
+// --- MURID ---
+app.get('/api/murid', async (req, res) => { res.json(await Murid.find()); });
+app.post('/api/murid', async (req, res) => {
+  const murid = new Murid(req.body);
+  await murid.save(); res.json(murid);
+});
+app.put('/api/murid/:id', async (req, res) => {
+  const m = await Murid.findByIdAndUpdate(req.params.id, req.body, { new: true }); res.json(m);
+});
+app.delete('/api/murid/:id', async (req, res) => {
+  await Murid.findByIdAndDelete(req.params.id); res.json({ ok: true });
+});
+
+// --- SOALAN ---
+app.get('/api/soalan', async (req, res) => { res.json(await Soalan.find()); });
+app.post('/api/soalan', async (req, res) => {
+  const s = new Soalan(req.body); await s.save(); res.json(s);
+});
+app.put('/api/soalan/:id', async (req, res) => {
+  const s = await Soalan.findByIdAndUpdate(req.params.id, req.body, { new: true }); res.json(s);
+});
+app.delete('/api/soalan/:id', async (req, res) => {
+  await Soalan.findByIdAndDelete(req.params.id); res.json({ ok: true });
+});
+
+// --- SESI & DASHBOARD ---
+app.get('/api/sesi', async (req, res) => {
+  res.json(await Sesi.find().sort({ tarikh: -1 }).limit(50));
+});
+app.get('/api/sesi/:id', async (req, res) => {
+  res.json(await Sesi.findById(req.params.id));
+});
+app.delete('/api/sesi/:id', async (req, res) => {
+  await Sesi.findByIdAndDelete(req.params.id); res.json({ ok: true });
+});
+app.put('/api/sesi/:id/ulasan', async (req, res) => {
+  const { muridId, muridNama, komen } = req.body;
+  const sesi = await Sesi.findByIdAndUpdate(req.params.id, {
+    $push: { ulasan: { muridId, nama: muridNama, komen, tarikhKomen: new Date() } }
+  }, { new: true });
+  semuaHantar({ jenis: 'ulasan_baharu', sesiId: req.params.id, muridId, muridNama, komen });
+  res.json(sesi);
+});
+
+// --- SIARAN ---
+app.get('/api/siaran', async (req, res) => {
+  res.json(await Siaran.find().sort({ tarikhDihantar: -1 }));
+});
+app.post('/api/siaran', async (req, res) => {
+  const s = new Siaran(req.body); await s.save();
+  semuaHantar({ jenis: 'siaran_baharu', data: s }); res.json(s);
+});
+app.put('/api/siaran/:id', async (req, res) => {
+  const s = await Siaran.findByIdAndUpdate(req.params.id, req.body, { new: true }); res.json(s);
+});
+app.delete('/api/siaran/:id', async (req, res) => {
+  await Siaran.findByIdAndDelete(req.params.id); res.json({ ok: true });
+});
+
+// --- KEHADIRAN ---
+app.get('/api/kehadiran', async (req, res) => {
+  const query = {};
+  if (req.query.kelas) query.kelas = req.query.kelas;
+  if (req.query.tarikh) {
+    const t = new Date(req.query.tarikh);
+    const esok = new Date(t); esok.setDate(esok.getDate() + 1);
+    query.tarikh = { $gte: t, $lt: esok };
+  }
+  const data = await Kehadiran.find(query).sort({ tarikh: -1 });
+  res.json(data);
+});
+app.post('/api/kehadiran', async (req, res) => {
+  const { kelas, tarikh, senarai } = req.body;
+  // Upsert: kalau dah ada rekod untuk kelas+tarikh yang sama, kemaskini
+  const tarikhObj = new Date(tarikh);
+  const esok = new Date(tarikhObj); esok.setDate(esok.getDate() + 1);
+  const sedia = await Kehadiran.findOne({ kelas, tarikh: { $gte: tarikhObj, $lt: esok } });
+  let rekod;
+  if (sedia) {
+    rekod = await Kehadiran.findByIdAndUpdate(sedia._id, { senarai, catatanAt: new Date() }, { new: true });
+  } else {
+    rekod = new Kehadiran({ kelas, tarikh: tarikhObj, senarai });
+    await rekod.save();
+  }
+  res.json(rekod);
+});
+
+// --- TELEGRAM KEHADIRAN ---
+app.post('/api/telegram-kehadiran', async (req, res) => {
+  const { mesej } = req.body;
+  if (!mesej) return res.json({ ok: false, error: 'Tiada mesej' });
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: mesej, parse_mode: 'Markdown' })
+    });
+    const hasil = await r.json();
+    res.json({ ok: hasil.ok });
+  } catch(e) {
+    res.json({ ok: false, error: e.message });
+  }
+});
+
+// --- NFC HTTP fallback ---
+app.post('/api/nfc', async (req, res) => {
+  await prosesNFC(req.body.uid); res.json({ ok: true });
+});
+
+// ============================================================
+// MULAKAN SERVER
+// ============================================================
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`[SERVER] ILMUVERSE v2.0 berjalan pada port ${PORT}`);
+});
