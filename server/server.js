@@ -227,14 +227,28 @@ async function mulaMod(data) {
     return;
   }
 
-  const tajukFinal = tajukSesi || (soalan ? soalan.tajuk : 'Sesi Mod 4');
-  const sesi = new Sesi({
-    tajuk: tajukFinal,
-    kelas: kelas || (soalan ? soalan.kelas : ''),
-    mod,
-    keputusan: murid ? murid.map(m => ({ muridId: m._id, nama: m.nama, markah: 0, avatar: m.avatar })) : []
-  });
-  await sesi.save();
+ const tajukFinal = tajukSesi || (soalan ? soalan.tajuk : 'Sesi Mod 4');
+
+const tarikhMalaysia = new Date(
+  new Date().toLocaleString('en-US', {
+    timeZone: 'Asia/Kuala_Lumpur'
+  })
+);
+
+const sesi = new Sesi({
+  tarikh: tarikhMalaysia,
+  tajuk: tajukFinal,
+  kelas: kelas || (soalan ? soalan.kelas : ''),
+  mod,
+  keputusan: murid ? murid.map(m => ({
+    muridId: m._id,
+    nama: m.nama,
+    markah: 0,
+    avatar: m.avatar
+  })) : []
+});
+
+await sesi.save();
 
   // Clear mod4 auto-scan timer
   if (gameState.mod4?.autoScanTimer) clearTimeout(gameState.mod4.autoScanTimer);
