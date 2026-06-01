@@ -479,7 +479,6 @@ textarea{resize:vertical;min-height:80px}
     <div class="dashboard-header">
       <div class="sek-tajuk" style="margin-bottom:0">📊 PAPAN PENCAPAIAN</div>
       <input type="date" class="tarikh-filter" id="tarikhFilter" onchange="muatDashboard()">
-      <button class="btn btn-kecil btn-outline" onclick="bunyiKlik();document.getElementById('tarikhFilter').value='';muatDashboard()">📋 Semua</button>
       <button class="btn btn-kecil btn-outline" onclick="bunyiKlik();muatDashboard()">🔄 Muat Semula</button>
     </div>
     <div class="sesi-grid" id="sesiGrid">
@@ -1704,15 +1703,7 @@ async function muatDashboard() {
   const res=await fetch(`${API}/api/sesi`);
   const sesi=await res.json();
   const tarikh=document.getElementById('tarikhFilter')?.value;
-  // Guna UTC untuk elak timezone offset (MongoDB simpan UTC, toLocaleDateString boleh beza sehari)
-const d = new Date(s.tarikh);
-
-const localStr =
-  d.getFullYear() + '-' +
-  String(d.getMonth()+1).padStart(2,'0') + '-' +
-  String(d.getDate()).padStart(2,'0');
-
-return localStr === tarikh;):sesi;
+  const filtered=tarikh?sesi.filter(s=>new Date(s.tarikh).toLocaleDateString('fr-CA')===tarikh):sesi;
   renderDashboard(filtered);
 }
 function renderDashboard(sesi) {
