@@ -51,6 +51,32 @@ html,body{height:100%;color:var(--text);font-family:'Exo 2',sans-serif;overflow-
 .splash-progress-bar{height:100%;background:rgba(255,255,255,.8);border-radius:2px;animation:progressFill 2s 1.4s ease forwards;width:0}
 @keyframes progressFill{to{width:100%}}
 
+  /* ── LATIHAN ── */
+.latihan-kad{background:rgba(255,255,255,.88);border:1.5px solid rgba(79,142,247,.2);border-radius:14px;padding:20px;transition:.3s;box-shadow:0 4px 18px rgba(79,142,247,.1);margin-bottom:14px}
+.latihan-kad:hover{border-color:rgba(79,142,247,.45);box-shadow:0 8px 40px rgba(79,142,247,.18)}
+.latihan-header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.latihan-tajuk{font-size:.98rem;font-weight:700;color:var(--text)}
+.latihan-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.jawapan-item{background:var(--panel2);border:1.5px solid rgba(79,142,247,.15);border-radius:10px;padding:14px;margin-bottom:10px;transition:.2s}
+.jawapan-item:hover{border-color:rgba(79,142,247,.35)}
+.jawapan-header{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.status-belum{background:rgba(245,158,11,.1);color:var(--gold);border:1px solid rgba(245,158,11,.3);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
+.status-disemak{background:rgba(79,142,247,.1);color:var(--accent);border:1px solid rgba(79,142,247,.3);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
+.status-approved{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.3);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
+.komen-list{display:flex;flex-direction:column;gap:6px;margin:8px 0;max-height:160px;overflow-y:auto}
+.komen-item{padding:8px 12px;border-radius:8px;font-size:.82rem}
+.komen-guru{background:rgba(79,142,247,.08);border-left:3px solid var(--accent)}
+.komen-murid{background:rgba(168,85,247,.06);border-left:3px solid var(--purple)}
+.komen-nama{font-weight:700;font-size:.72rem;margin-bottom:2px}
+.upload-drop-zone{border:2px dashed rgba(79,142,247,.3);border-radius:10px;padding:24px;text-align:center;cursor:pointer;transition:.2s;background:rgba(79,142,247,.02)}
+.upload-drop-zone:hover{border-color:var(--accent);background:rgba(79,142,247,.06)}
+.upload-drop-zone.dragover{border-color:var(--accent);background:rgba(79,142,247,.1)}
+.fail-preview{display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-top:8px}
+.fail-ikon{font-size:1.8rem}
+.fail-nama{font-size:.83rem;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fail-saiz{font-size:.72rem;color:var(--text2)}
+.latihan-stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.lat-stat{padding:8px 14px;border-radius:8px;font-size:.78rem;font-weight:700}
 /* ── APP LAYOUT ── */
 #app{display:none;min-height:100vh;flex-direction:column}
 .topbar{height:64px;background:rgba(255,255,255,.92);border-bottom:2px solid rgba(79,142,247,0.18);display:flex;align-items:center;padding:0 20px;gap:16px;position:sticky;top:0;z-index:100;backdrop-filter:blur(18px);box-shadow:0 2px 20px rgba(79,142,247,0.1)}
