@@ -379,6 +379,33 @@ textarea{resize:vertical;min-height:80px}
 .tag-teal{background:rgba(6,182,212,.1);color:var(--teal);border:1px solid rgba(6,182,212,.3);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
 .tag-orange{background:rgba(249,115,22,.1);color:var(--orange);border:1px solid rgba(249,115,22,.3);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
 
+  /* ── LATIHAN ── */
+.latihan-kad{background:rgba(255,255,255,.88);border:1.5px solid rgba(79,142,247,.2);border-radius:14px;padding:20px;transition:.3s;box-shadow:0 4px 18px rgba(79,142,247,.1);margin-bottom:14px}
+.latihan-kad:hover{border-color:rgba(79,142,247,.45);box-shadow:0 8px 40px rgba(79,142,247,.18)}
+.latihan-header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.latihan-tajuk{font-size:.98rem;font-weight:700;color:var(--text)}
+.latihan-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.jawapan-item{background:var(--panel2);border:1.5px solid rgba(79,142,247,.15);border-radius:10px;padding:14px;margin-bottom:10px;transition:.2s}
+.jawapan-item:hover{border-color:rgba(79,142,247,.35)}
+.jawapan-header{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.status-belum{background:rgba(245,158,11,.1);color:var(--gold);border:1px solid rgba(245,158,11,.3);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
+.status-disemak{background:rgba(79,142,247,.1);color:var(--accent);border:1px solid rgba(79,142,247,.3);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
+.status-approved{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.3);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
+.komen-list{display:flex;flex-direction:column;gap:6px;margin:8px 0;max-height:160px;overflow-y:auto}
+.komen-item{padding:8px 12px;border-radius:8px;font-size:.82rem}
+.komen-guru{background:rgba(79,142,247,.08);border-left:3px solid var(--accent)}
+.komen-murid{background:rgba(168,85,247,.06);border-left:3px solid var(--purple)}
+.komen-nama{font-weight:700;font-size:.72rem;margin-bottom:2px}
+.upload-drop-zone{border:2px dashed rgba(79,142,247,.3);border-radius:10px;padding:24px;text-align:center;cursor:pointer;transition:.2s;background:rgba(79,142,247,.02)}
+.upload-drop-zone:hover{border-color:var(--accent);background:rgba(79,142,247,.06)}
+.upload-drop-zone.dragover{border-color:var(--accent);background:rgba(79,142,247,.1)}
+.fail-preview{display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-top:8px}
+.fail-ikon{font-size:1.8rem}
+.fail-nama{font-size:.83rem;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fail-saiz{font-size:.72rem;color:var(--text2)}
+.latihan-stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.lat-stat{padding:8px 14px;border-radius:8px;font-size:.78rem;font-weight:700}
+  
 /* ── COUNTDOWN OVERLAY ── */
 #countdownOverlay{display:none;position:fixed;inset:0;background:rgba(10,15,50,.87);z-index:1200;align-items:center;justify-content:center;flex-direction:column;gap:16px;backdrop-filter:blur(14px)}
 #countdownOverlay.aktif{display:flex}
@@ -435,7 +462,8 @@ textarea{resize:vertical;min-height:80px}
       <button class="nav-btn" onclick="bunyiKlik();tukarHalaman('dashboard',this)">📊 Dashboard</button>
       <button class="nav-btn" onclick="bunyiKlik();tukarHalaman('siaran',this)">📢 Siaran</button>
       <button class="nav-btn" onclick="bunyiKlik();tukarHalaman('kehadiran',this)">✅ Kehadiran</button>
-      <button class="nav-btn" onclick="bunyiKlik();tukarHalaman('pengurusan',this)">⚙️ Pengurusan</button>
+      <button class="nav-btn" onclick="bunyiKlik();tukarHalaman('latihan',this)">📚 Latihan</button>
+<button class="nav-btn" onclick="bunyiKlik();tukarHalaman('pengurusan',this)">⚙️ Pengurusan</button>
     </div>
     <div class="status-bar">
       <div class="status-chip"><div class="s-dot off" id="statusESP"></div><span id="labelESP">NEXUS-UTAMA</span></div>
@@ -550,6 +578,30 @@ textarea{resize:vertical;min-height:80px}
       <button class="tab-item aktif" onclick="bunyiKlik();tukarTab('murid',this)">👤 Murid</button>
       <button class="tab-item" onclick="bunyiKlik();tukarTab('soalan',this)">📝 Set Soalan</button>
     </div>
+
+    <!-- LATIHAN -->
+  <div class="halaman" id="halLatihan">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+      <div class="sek-tajuk" style="margin-bottom:0">📚 PENGURUSAN LATIHAN</div>
+      <button class="btn btn-kecil btn-utama" onclick="bunyiKlik();bukaModalLatihan()" style="margin-left:auto">+ Cipta Latihan</button>
+    </div>
+
+    <!-- Filter -->
+    <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center">
+      <select id="latihanFilterKelas" onchange="muatLatihan()" style="padding:8px 14px;background:var(--panel);border:1px solid rgba(79,142,247,.2);border-radius:8px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.85rem;outline:none">
+        <option value="">Semua Kelas</option>
+      </select>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-kecil btn-outline" id="filterLatihanAktif" onclick="filterStatusLatihan('aktif',this)" style="border-color:var(--accent);color:var(--accent)">Aktif</button>
+        <button class="btn btn-kecil btn-outline" id="filterLatihanSemua" onclick="filterStatusLatihan('semua',this)">Semua</button>
+      </div>
+      <button class="btn btn-kecil btn-outline" onclick="muatLatihan()">🔄 Muat Semula</button>
+    </div>
+
+    <div id="latihanGrid">
+      <div style="color:var(--text2);padding:40px;text-align:center">Tiada latihan. Cipta latihan baharu.</div>
+    </div>
+  </div>
 
     <!-- TAB MURID -->
     <div class="sub-halaman aktif" id="tabMurid">
@@ -989,6 +1041,8 @@ function prosesMsg(d) {
     case 'mod4_tukar_fasa': tukarFasaMod4(d.fasa); break;
     case 'nfc_scan': tunjukNFCPing(d.uid); break;
     case 'ulasan_baharu': if(sesiDetailSemasa&&sesiDetailSemasa._id===d.sesiId) tambahUlasanUI(d); break;
+     case 'jawapan_baharu': tunjukNotif(`📥 Jawapan baharu dari ${d.muridNama} (${d.kelas||'?'})`); if(document.getElementById('halLatihan').classList.contains('aktif'))muatLatihan(); break;
+    case 'latihan_baharu': if(document.getElementById('halLatihan').classList.contains('aktif'))muatLatihan(); break;
     case 'siaran_baharu': if(document.getElementById('halSiaran').classList.contains('aktif')) muatSiaran(); break;
     case 'telegram_status': tunjukNotif(d.berjaya?'✅ Berjaya dihantar ke Telegram!':'❌ Gagal hantar Telegram'); break;
     case 'state_update': kemaskiniStatePermainan(d.gameState); break;
@@ -1033,6 +1087,7 @@ function tukarHalaman(id,btn) {
   if(id==='siaran')muatSiaran();
   if(id==='pengurusan')muatSemuaData();
   if(id==='kehadiran')initKehadiran();
+  if(id==='latihan'){muatLatihan();kemaskiniLatihanFilterKelas();}
 }
 function tukarTab(id,btn) {
   document.querySelectorAll('.sub-halaman').forEach(h=>h.classList.remove('aktif'));
@@ -1053,6 +1108,7 @@ async function muatSemua() {
   await muatSoalan();
   await muatDashboard();
   await muatSiaran();
+  await muatLatihan();
 }
 async function muatSemuaData() { await muatMurid(); await muatSoalan(); }
 
@@ -1749,6 +1805,342 @@ async function padamSiaran(id){if(!confirm('Padam siaran ini?'))return;await fet
 function tunjukNotif(msg){const el=document.getElementById('notifBar');el.textContent=msg;el.style.display='block';clearTimeout(el._t);el._t=setTimeout(()=>el.style.display='none',3500);}
 function tunjukNFCPing(uid){if(nfcImbasBuilderCallback){nfcImbasBuilderCallback(uid);return;}const el=document.getElementById('nfcPing');document.getElementById('nfcMsg').textContent=`Kad: ${uid}`;el.classList.add('tunjuk');setTimeout(()=>el.classList.remove('tunjuk'),2500);}
 
+  // ============================================================
+// LATIHAN — GURU
+// ============================================================
+let latihanStatusFilter = 'aktif';
+let guruFailBase64 = '', guruFailNama = '', guruFailJenis = '';
+let senaraiLatihan = [];
+let latihanDetailSemasa = null;
+
+function filterStatusLatihan(status, btn) {
+  latihanStatusFilter = status;
+  document.querySelectorAll('#filterLatihanAktif,#filterLatihanSemua').forEach(b => {
+    b.style.borderColor = ''; b.style.color = '';
+  });
+  btn.style.borderColor = 'var(--accent)';
+  btn.style.color = 'var(--accent)';
+  muatLatihan();
+}
+
+async function muatLatihan() {
+  const kelas = document.getElementById('latihanFilterKelas')?.value || '';
+  let url = `${API}/api/latihan`;
+  if (kelas) url += `?kelas=${encodeURIComponent(kelas)}`;
+  try {
+    const res = await fetch(url);
+    senaraiLatihan = await res.json();
+    renderLatihanGrid();
+    kemaskiniLatihanFilterKelas();
+  } catch(e) { console.error(e); }
+}
+
+function kemaskiniLatihanFilterKelas() {
+  const el = document.getElementById('latihanFilterKelas');
+  if (!el) return;
+  const val = el.value;
+  el.innerHTML = '<option value="">Semua Kelas</option>' + senaraiKelas.map(k => `<option value="${k}">${k}</option>`).join('');
+  if (val) el.value = val;
+  // Update modal select
+  const mEl = document.getElementById('inputKelasLatihan');
+  if (mEl) {
+    const mVal = mEl.value;
+    mEl.innerHTML = '<option value="">Semua Kelas</option>' + senaraiKelas.map(k => `<option value="${k}">${k}</option>`).join('');
+    if (mVal) mEl.value = mVal;
+  }
+}
+
+function failIkon(jenis) {
+  if (!jenis) return '📄';
+  if (jenis.includes('pdf')) return '📕';
+  if (jenis.includes('word') || jenis.includes('doc')) return '📘';
+  if (jenis.includes('sheet') || jenis.includes('excel') || jenis.includes('xls')) return '📗';
+  if (jenis.includes('image')) return '🖼️';
+  if (jenis.includes('presentation') || jenis.includes('ppt')) return '📊';
+  if (jenis.includes('text')) return '📝';
+  return '📎';
+}
+
+function renderLatihanGrid() {
+  const el = document.getElementById('latihanGrid');
+  let data = latihanStatusFilter === 'aktif' ? senaraiLatihan.filter(l => l.aktif !== false) : senaraiLatihan;
+
+  if (!data.length) {
+    el.innerHTML = '<div style="color:var(--text2);padding:40px;text-align:center">Tiada latihan. Cipta latihan baharu.</div>';
+    return;
+  }
+
+  el.innerHTML = data.map(l => {
+    const tamat = l.tarikhTutup ? new Date(l.tarikhTutup) < new Date() : false;
+    const bilanganJawapan = l.jawapan?.length || 0;
+    const bilanganSemak = l.jawapan?.filter(j => j.statusSemak !== 'belum')?.length || 0;
+
+    return `<div class="latihan-kad">
+      <div class="latihan-header">
+        <div>
+          <div class="latihan-tajuk">${l.tajuk}</div>
+          <div style="font-size:.72rem;color:var(--text2);margin-top:3px">
+            📅 ${new Date(l.tarikhHantar).toLocaleDateString('ms-MY')}
+            ${l.tarikhTutup ? ` · ⏰ Tutup: ${new Date(l.tarikhTutup).toLocaleDateString('ms-MY',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}` : ''}
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap">
+          ${l.kelas ? `<span class="tag-purple">${l.kelas}</span>` : '<span class="tag-biru">Semua Kelas</span>'}
+          ${tamat ? '<span class="tag-merah">Tamat</span>' : '<span class="tag-hijau">Aktif</span>'}
+        </div>
+      </div>
+      ${l.arahan ? `<div style="font-size:.82rem;color:var(--text2);margin-bottom:10px;line-height:1.5">📋 ${l.arahan}</div>` : ''}
+      <div class="latihan-stats">
+        <div class="lat-stat" style="background:rgba(79,142,247,.08);color:var(--accent)">📥 ${bilanganJawapan} jawapan</div>
+        <div class="lat-stat" style="background:rgba(16,185,129,.08);color:var(--green)">✅ ${bilanganSemak} disemak</div>
+        ${l.failNama ? `<div class="lat-stat" style="background:rgba(245,158,11,.08);color:var(--gold)">${failIkon(l.failJenis)} ${l.failNama}</div>` : ''}
+        ${l.komen?.length ? `<div class="lat-stat" style="background:rgba(168,85,247,.08);color:var(--purple)">💬 ${l.komen.length} komen</div>` : ''}
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-kecil btn-utama" onclick="bukaDetailLatihan('${l._id}')">👁 Lihat Jawapan</button>
+        ${l.failNama ? `<button class="btn btn-kecil btn-teal" onclick="muat_turun_fail_latihan('${l._id}','${l.failNama}')">⬇ Muat Turun Soalan</button>` : ''}
+        <button class="btn btn-kecil btn-outline" onclick='bukaModalLatihanEdit(${JSON.stringify({_id:l._id,tajuk:l.tajuk,arahan:l.arahan||"",kelas:l.kelas||"",tarikhTutup:l.tarikhTutup||""}).replace(/'/g,"&#39;")})'>✏️ Edit</button>
+        <button class="btn btn-kecil btn-merah" onclick="padamLatihan('${l._id}')">🗑 Padam</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function bukaModalLatihan() {
+  document.getElementById('editLatihanId').value = '';
+  document.getElementById('modalLatihanTajuk').textContent = 'CIPTA LATIHAN BAHARU';
+  document.getElementById('inputTajukLatihan').value = '';
+  document.getElementById('inputArahanLatihan').value = '';
+  document.getElementById('inputKelasLatihan').value = '';
+  document.getElementById('inputTarikhTutupLatihan').value = '';
+  clearGuruFail();
+  kemaskiniLatihanFilterKelas();
+  bukaModal('overlayLatihan');
+}
+
+function bukaModalLatihanEdit(l) {
+  document.getElementById('editLatihanId').value = l._id;
+  document.getElementById('modalLatihanTajuk').textContent = 'EDIT LATIHAN';
+  document.getElementById('inputTajukLatihan').value = l.tajuk || '';
+  document.getElementById('inputArahanLatihan').value = l.arahan || '';
+  kemaskiniLatihanFilterKelas();
+  setTimeout(() => {
+    document.getElementById('inputKelasLatihan').value = l.kelas || '';
+  }, 100);
+  if (l.tarikhTutup) {
+    const dt = new Date(l.tarikhTutup);
+    document.getElementById('inputTarikhTutupLatihan').value = dt.toISOString().slice(0,16);
+  } else {
+    document.getElementById('inputTarikhTutupLatihan').value = '';
+  }
+  clearGuruFail();
+  bukaModal('overlayLatihan');
+}
+
+function handleGuruDragOver(e) { e.preventDefault(); document.getElementById('guruDropZone').classList.add('dragover'); }
+function handleGuruDragLeave(e) { document.getElementById('guruDropZone').classList.remove('dragover'); }
+function handleGuruDrop(e) {
+  e.preventDefault();
+  document.getElementById('guruDropZone').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) prosesGuruFail(file);
+}
+function handleGuruFailPilih(input) {
+  if (input.files[0]) prosesGuruFail(input.files[0]);
+}
+function prosesGuruFail(file) {
+  if (file.size > 10 * 1024 * 1024) { tunjukNotif('⚠️ Fail terlalu besar (maks 10MB)'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    guruFailBase64 = e.target.result;
+    guruFailNama = file.name;
+    guruFailJenis = file.type;
+    document.getElementById('guruFailNama').textContent = file.name;
+    document.getElementById('guruFailSaiz').textContent = (file.size / 1024).toFixed(1) + ' KB';
+    document.getElementById('guruFailIkon').textContent = failIkon(file.type);
+    document.getElementById('guruFailPreview').style.display = 'flex';
+    document.getElementById('guruDropZone').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+function clearGuruFail() {
+  guruFailBase64 = ''; guruFailNama = ''; guruFailJenis = '';
+  document.getElementById('guruFailPreview').style.display = 'none';
+  document.getElementById('guruDropZone').style.display = 'block';
+  document.getElementById('inputFailLatihan').value = '';
+}
+
+async function simpanLatihan() {
+  const tajuk = document.getElementById('inputTajukLatihan').value.trim();
+  const arahan = document.getElementById('inputArahanLatihan').value.trim();
+  const kelas = document.getElementById('inputKelasLatihan').value;
+  const tarikhTutup = document.getElementById('inputTarikhTutupLatihan').value;
+  const id = document.getElementById('editLatihanId').value;
+
+  if (!tajuk) return tunjukNotif('Sila masukkan tajuk latihan');
+
+  const body = { tajuk, arahan, kelas, tarikhTutup };
+  if (guruFailBase64) {
+    body.failData = guruFailBase64;
+    body.failNama = guruFailNama;
+    body.failJenis = guruFailJenis;
+  }
+
+  try {
+    if (id) {
+      await fetch(`${API}/api/latihan/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      tunjukNotif('✅ Latihan dikemaskini!');
+    } else {
+      await fetch(`${API}/api/latihan`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      tunjukNotif('✅ Latihan dicipta!');
+    }
+    tutupModal('overlayLatihan');
+    await muatLatihan();
+  } catch(e) { tunjukNotif('❌ Ralat: ' + e.message); }
+}
+
+async function padamLatihan(id) {
+  if (!confirm('Padam latihan ini? Semua jawapan murid juga akan dipadam.')) return;
+  await fetch(`${API}/api/latihan/${id}`, { method: 'DELETE' });
+  await muatLatihan();
+  tunjukNotif('🗑 Latihan dipadam');
+}
+
+function muat_turun_fail_latihan(id, nama) {
+  const a = document.createElement('a');
+  a.href = `${API}/api/latihan/${id}/fail`;
+  a.download = nama;
+  a.click();
+}
+
+async function bukaDetailLatihan(id) {
+  const res = await fetch(`${API}/api/latihan/${id}`);
+  latihanDetailSemasa = await res.json();
+  renderDetailLatihan();
+  bukaModal('overlayDetailLatihan');
+}
+
+function renderDetailLatihan() {
+  const l = latihanDetailSemasa;
+  if (!l) return;
+
+  document.getElementById('detailLatihanTajuk').textContent = l.tajuk;
+
+  const jawapan = l.jawapan || [];
+  const belum = jawapan.filter(j => j.statusSemak === 'belum').length;
+  const disemak = jawapan.filter(j => j.statusSemak === 'disemak').length;
+  const approved = jawapan.filter(j => j.statusSemak === 'approved').length;
+
+  document.getElementById('detailLatihanBadan').innerHTML = `
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      ${l.kelas ? `<span class="tag-purple">🏫 ${l.kelas}</span>` : '<span class="tag-biru">Semua Kelas</span>'}
+      <span style="font-size:.72rem;color:var(--text2)">📅 ${new Date(l.tarikhHantar).toLocaleDateString('ms-MY')}</span>
+      ${l.tarikhTutup ? `<span class="tag-${new Date(l.tarikhTutup)<new Date()?'merah':'hijau'}">⏰ Tutup: ${new Date(l.tarikhTutup).toLocaleDateString('ms-MY',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</span>` : ''}
+    </div>
+    ${l.arahan ? `<div style="background:rgba(79,142,247,.06);border-left:3px solid var(--accent);padding:10px 14px;border-radius:0 8px 8px 0;font-size:.85rem;margin-bottom:14px;line-height:1.6">${l.arahan}</div>` : ''}
+    ${l.failNama ? `<button class="btn btn-kecil btn-teal mb16" onclick="muat_turun_fail_latihan('${l._id}','${l.failNama}')">⬇ ${failIkon(l.failJenis)} Muat Turun Soalan: ${l.failNama}</button>` : ''}
+
+    <div class="latihan-stats mb16">
+      <div class="lat-stat" style="background:rgba(79,142,247,.08);color:var(--accent)">📥 ${jawapan.length} jawapan</div>
+      <div class="lat-stat" style="background:rgba(245,158,11,.08);color:var(--gold)">⏳ ${belum} belum disemak</div>
+      <div class="lat-stat" style="background:rgba(79,142,247,.08);color:var(--accent)">🔍 ${disemak} disemak</div>
+      <div class="lat-stat" style="background:rgba(16,185,129,.08);color:var(--green)">✅ ${approved} diluluskan</div>
+    </div>
+
+    <!-- KOMEN UMUM LATIHAN -->
+    <div style="margin-bottom:18px">
+      <div style="font-family:'Orbitron',monospace;font-size:.78rem;color:var(--text2);margin-bottom:8px;letter-spacing:1px">💬 RUANGAN KOMEN LATIHAN</div>
+      <div class="komen-list" id="komentarLatihanList">
+        ${(l.komen||[]).map(k => `<div class="komen-item ${k.peranan==='guru'?'komen-guru':'komen-murid'}">
+          <div class="komen-nama">${k.peranan==='guru'?'👨‍🏫':'🎒'} ${k.nama} <span style="font-weight:400;color:var(--text2);font-size:.68rem">${new Date(k.tarikhKomen).toLocaleString('ms-MY')}</span></div>
+          ${k.teks}
+        </div>`).join('') || '<div style="color:var(--text2);font-size:.8rem;padding:8px">Tiada komen lagi</div>'}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <input id="inputKomenGuruLatihan" placeholder="Tulis komen kepada semua murid..." style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'Exo 2',sans-serif;font-size:.85rem;outline:none;background:var(--panel2)">
+        <button class="btn btn-kecil btn-utama" onclick="hantarKomenLatihan()">Hantar</button>
+      </div>
+    </div>
+
+    <!-- SENARAI JAWAPAN MURID -->
+    <div>
+      <div style="font-family:'Orbitron',monospace;font-size:.78rem;color:var(--text2);margin-bottom:12px;letter-spacing:1px">📝 JAWAPAN MURID (${jawapan.length})</div>
+      <div id="senaraJawapanMurid">
+        ${jawapan.length ? jawapan.map(j => renderJawapanItem(l._id, j)).join('') : '<div style="color:var(--text2);font-size:.85rem;padding:20px;text-align:center">Tiada jawapan lagi</div>'}
+      </div>
+    </div>`;
+}
+
+function renderJawapanItem(latihanId, j) {
+  const statusClass = j.statusSemak === 'approved' ? 'status-approved' : j.statusSemak === 'disemak' ? 'status-disemak' : 'status-belum';
+  const statusLabel = j.statusSemak === 'approved' ? '✅ Diluluskan' : j.statusSemak === 'disemak' ? '🔍 Disemak' : '⏳ Belum Disemak';
+
+  return `<div class="jawapan-item" id="jwpn_${j._id}">
+    <div class="jawapan-header">
+      <div style="font-weight:700;font-size:.9rem">${j.muridNama}</div>
+      ${j.kelas ? `<span class="tag-purple" style="font-size:.68rem">${j.kelas}</span>` : ''}
+      <span class="${statusClass}">${statusLabel}</span>
+      <span style="font-size:.72rem;color:var(--text2);margin-left:auto">${new Date(j.tarikhHantar).toLocaleString('ms-MY')}</span>
+    </div>
+    ${j.failNama ? `<div class="fail-preview" style="margin-bottom:8px">
+      <div class="fail-ikon">${failIkon(j.failJenis)}</div>
+      <div style="flex:1;min-width:0"><div class="fail-nama">${j.failNama}</div></div>
+      <a href="${API}/api/latihan/${latihanId}/jawapan/${j._id}/fail" download="${j.failNama}" class="btn btn-kecil btn-teal">⬇ Muat Turun</a>
+    </div>` : '<div style="color:var(--text2);font-size:.8rem;margin-bottom:8px">Tiada fail dilampirkan</div>'}
+
+    <!-- Komen pada jawapan ini -->
+    <div class="komen-list" id="komentarJawapan_${j._id}">
+      ${(j.komen||[]).map(k => `<div class="komen-item ${k.peranan==='guru'?'komen-guru':'komen-murid'}">
+        <div class="komen-nama">${k.peranan==='guru'?'👨‍🏫':'🎒'} ${k.nama} <span style="font-weight:400;color:var(--text2);font-size:.68rem">${new Date(k.tarikhKomen).toLocaleString('ms-MY')}</span></div>
+        ${k.teks}
+      </div>`).join('') || '<div style="color:var(--text2);font-size:.75rem;padding:4px">Tiada maklum balas</div>'}
+    </div>
+    <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+      <input id="komenJwpn_${j._id}" placeholder="Maklum balas kepada murid ini..." style="flex:1;min-width:160px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-family:'Exo 2',sans-serif;font-size:.82rem;outline:none;background:var(--panel2)">
+      <button class="btn btn-kecil btn-utama" onclick="hantarKomenJawapan('${latihanId}','${j._id}')">Hantar</button>
+      <select onchange="kemaskiniStatusJawapan('${latihanId}','${j._id}',this.value)" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-family:'Exo 2',sans-serif;font-size:.78rem;outline:none;background:var(--panel2);color:var(--text)">
+        <option value="belum" ${j.statusSemak==='belum'?'selected':''}>⏳ Belum Semak</option>
+        <option value="disemak" ${j.statusSemak==='disemak'?'selected':''}>🔍 Disemak</option>
+        <option value="approved" ${j.statusSemak==='approved'?'selected':''}>✅ Luluskan</option>
+      </select>
+    </div>
+  </div>`;
+}
+
+async function hantarKomenLatihan() {
+  const teks = document.getElementById('inputKomenGuruLatihan').value.trim();
+  if (!teks || !latihanDetailSemasa) return;
+  await fetch(`${API}/api/latihan/${latihanDetailSemasa._id}/komen`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nama: 'Guru', peranan: 'guru', teks })
+  });
+  document.getElementById('inputKomenGuruLatihan').value = '';
+  await bukaDetailLatihan(latihanDetailSemasa._id);
+  tunjukNotif('✅ Komen dihantar!');
+}
+
+async function hantarKomenJawapan(latihanId, jawapanId) {
+  const teks = document.getElementById(`komenJwpn_${jawapanId}`)?.value?.trim();
+  if (!teks) return;
+  await fetch(`${API}/api/latihan/${latihanId}/jawapan/${jawapanId}/komen`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nama: 'Guru', peranan: 'guru', teks })
+  });
+  await bukaDetailLatihan(latihanId);
+  tunjukNotif('✅ Maklum balas dihantar!');
+}
+
+async function kemaskiniStatusJawapan(latihanId, jawapanId, status) {
+  await fetch(`${API}/api/latihan/${latihanId}/jawapan/${jawapanId}/status`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status })
+  });
+  tunjukNotif('✅ Status dikemaskini!');
+  await muatLatihan();
+}
 // ============================================================
 // INIT
 // ============================================================
@@ -1761,5 +2153,63 @@ window.addEventListener('load',()=>{
 
 setInterval(()=>{const d=document.getElementById('splashDots');if(d){const t=d.textContent;d.textContent=t.length>=3?'':t+'.';}},400);
 </script>
+  <!-- Modal Latihan -->
+<div class="overlay" id="overlayLatihan">
+  <div class="modal" style="max-width:560px">
+    <button class="modal-tutup" onclick="tutupModal('overlayLatihan')">✕</button>
+    <h2 id="modalLatihanTajuk">CIPTA LATIHAN</h2>
+    <div class="form-kump mb16">
+      <label>TAJUK LATIHAN</label>
+      <input id="inputTajukLatihan" placeholder="Contoh: Latihan Matematik Bab 4">
+    </div>
+    <div class="form-row mb16">
+      <div class="form-kump">
+        <label>KELAS SASARAN</label>
+        <select id="inputKelasLatihan">
+          <option value="">Semua Kelas</option>
+        </select>
+      </div>
+      <div class="form-kump">
+        <label>TARIKH TUTUP (pilihan)</label>
+        <input type="datetime-local" id="inputTarikhTutupLatihan">
+      </div>
+    </div>
+    <div class="form-kump mb16">
+      <label>ARAHAN LATIHAN</label>
+      <textarea id="inputArahanLatihan" rows="3" placeholder="Tuliskan arahan kepada murid..."></textarea>
+    </div>
+    <div class="form-kump mb16">
+      <label>FAIL SOALAN (PDF, Word, Gambar, dll)</label>
+      <div class="upload-drop-zone" id="guruDropZone" onclick="document.getElementById('inputFailLatihan').click()" ondrop="handleGuruDrop(event)" ondragover="handleGuruDragOver(event)" ondragleave="handleGuruDragLeave(event)">
+        <div style="font-size:2rem;margin-bottom:8px">📎</div>
+        <div style="font-size:.85rem;color:var(--text2)">Klik atau seret fail ke sini</div>
+        <div style="font-size:.72rem;color:var(--text2);margin-top:4px">PDF, DOC, DOCX, JPG, PNG (maks 10MB)</div>
+      </div>
+      <div id="guruFailPreview" style="display:none" class="fail-preview">
+        <div class="fail-ikon" id="guruFailIkon">📄</div>
+        <div style="flex:1;min-width:0">
+          <div class="fail-nama" id="guruFailNama"></div>
+          <div class="fail-saiz" id="guruFailSaiz"></div>
+        </div>
+        <button class="btn btn-kecil btn-merah" onclick="clearGuruFail()">✕</button>
+      </div>
+      <input type="file" id="inputFailLatihan" style="display:none" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.txt,.ppt,.pptx,.xls,.xlsx" onchange="handleGuruFailPilih(this)">
+    </div>
+    <input type="hidden" id="editLatihanId">
+    <div class="flex gap8">
+      <button class="btn btn-utama" onclick="bunyiKlik();simpanLatihan()">SIMPAN LATIHAN</button>
+      <button class="btn btn-outline" onclick="tutupModal('overlayLatihan')">Batal</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Detail Latihan (semua jawapan murid) -->
+<div class="overlay" id="overlayDetailLatihan">
+  <div class="modal" style="max-width:700px">
+    <button class="modal-tutup" onclick="tutupModal('overlayDetailLatihan')">✕</button>
+    <h2 id="detailLatihanTajuk">DETAIL LATIHAN</h2>
+    <div id="detailLatihanBadan"></div>
+  </div>
+</div>
 </body>
 </html>
