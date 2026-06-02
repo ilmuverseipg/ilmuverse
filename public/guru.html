@@ -1454,7 +1454,7 @@ function renderSoalanBuilder() {
   } else {
     el.innerHTML=`<div class="bil-soalan-ctrl"><button class="btn btn-kecil btn-outline" onclick="bunyiKlik();kurangSoalan()">−</button><div class="bil-num">${soalanBina.length}</div><button class="btn btn-kecil btn-outline" onclick="bunyiKlik();tambahSoalan()">+</button><span style="font-size:.78rem;color:var(--text2)">soalan</span></div>
     <div style="font-size:.75rem;color:var(--text2);margin-bottom:10px">Tekan A, B, atau C untuk set jawapan betul.</div>
-    <div class="soalan-jawapan-list">${soalanBina.map((s,i)=>`<div class="sj-row"><div class="sj-num">SOALAN ${i+1}</div><div class="sj-abc"><button class="sj-btn ${s.betul==='A'?'dipilih-a':''}" onclick="bunyiKlik();setBetul(${i},'A')">A</button><button class="sj-btn ${s.betul==='B'?'dipilih-b':''}" onclick="bunyiKlik();setBetul(${i},'B')">B</button><button class="sj-btn ${s.betul==='C'?'dipilih-c':''}" onclick="bunyiKlik();setBetul(${i},'C')">C</button></div><div class="sj-nfc-hint">📡 Imbas NFC untuk pilih otomatis</div></div>`).join('')}</div>`;
+    <div class="soalan-jawapan-list">${soalanBina.map((s,i)=>`<div class="sj-row"><div class="sj-num">SOALAN ${i+1}</div><div class="sj-abc"><button class="sj-btn ${s.betul==='A'?'dipilih-a':''}" onclick="bunyiKlik();setBetul(${i},'A')">A</button><button class="sj-btn ${s.betul==='B'?'dipilih-b':''}" onclick="bunyiKlik();setBetul(${i},'B')">B</button><button class="sj-btn ${s.betul==='C'?'dipilih-c':''}" onclick="bunyiKlik();setBetul(${i},'C')">C</button></div><div class="sj-nfc-hint">📡 Imbas NFC </div></div>`).join('')}</div>`;
   }
 }
 function setBetul(idx,j){soalanBina[idx].betul=j;renderSoalanBuilder();}
