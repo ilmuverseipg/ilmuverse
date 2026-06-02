@@ -51,32 +51,6 @@ html,body{height:100%;color:var(--text);font-family:'Exo 2',sans-serif;overflow-
 .splash-progress-bar{height:100%;background:rgba(255,255,255,.8);border-radius:2px;animation:progressFill 2s 1.4s ease forwards;width:0}
 @keyframes progressFill{to{width:100%}}
 
-  /* ── LATIHAN ── */
-.latihan-kad{background:rgba(255,255,255,.88);border:1.5px solid rgba(79,142,247,.2);border-radius:14px;padding:20px;transition:.3s;box-shadow:0 4px 18px rgba(79,142,247,.1);margin-bottom:14px}
-.latihan-kad:hover{border-color:rgba(79,142,247,.45);box-shadow:0 8px 40px rgba(79,142,247,.18)}
-.latihan-header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:12px}
-.latihan-tajuk{font-size:.98rem;font-weight:700;color:var(--text)}
-.latihan-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-.jawapan-item{background:var(--panel2);border:1.5px solid rgba(79,142,247,.15);border-radius:10px;padding:14px;margin-bottom:10px;transition:.2s}
-.jawapan-item:hover{border-color:rgba(79,142,247,.35)}
-.jawapan-header{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
-.status-belum{background:rgba(245,158,11,.1);color:var(--gold);border:1px solid rgba(245,158,11,.3);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
-.status-disemak{background:rgba(79,142,247,.1);color:var(--accent);border:1px solid rgba(79,142,247,.3);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
-.status-approved{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.3);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
-.komen-list{display:flex;flex-direction:column;gap:6px;margin:8px 0;max-height:160px;overflow-y:auto}
-.komen-item{padding:8px 12px;border-radius:8px;font-size:.82rem}
-.komen-guru{background:rgba(79,142,247,.08);border-left:3px solid var(--accent)}
-.komen-murid{background:rgba(168,85,247,.06);border-left:3px solid var(--purple)}
-.komen-nama{font-weight:700;font-size:.72rem;margin-bottom:2px}
-.upload-drop-zone{border:2px dashed rgba(79,142,247,.3);border-radius:10px;padding:24px;text-align:center;cursor:pointer;transition:.2s;background:rgba(79,142,247,.02)}
-.upload-drop-zone:hover{border-color:var(--accent);background:rgba(79,142,247,.06)}
-.upload-drop-zone.dragover{border-color:var(--accent);background:rgba(79,142,247,.1)}
-.fail-preview{display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-top:8px}
-.fail-ikon{font-size:1.8rem}
-.fail-nama{font-size:.83rem;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.fail-saiz{font-size:.72rem;color:var(--text2)}
-.latihan-stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-.lat-stat{padding:8px 14px;border-radius:8px;font-size:.78rem;font-weight:700}
 /* ── APP LAYOUT ── */
 #app{display:none;min-height:100vh;flex-direction:column}
 .topbar{height:64px;background:rgba(255,255,255,.92);border-bottom:2px solid rgba(79,142,247,0.18);display:flex;align-items:center;padding:0 20px;gap:16px;position:sticky;top:0;z-index:100;backdrop-filter:blur(18px);box-shadow:0 2px 20px rgba(79,142,247,0.1)}
@@ -471,65 +445,6 @@ textarea{resize:vertical;min-height:80px}
   <button class="splash-btn" id="splashMula" onclick="masukApp()">MASUK SISTEM ›</button>
 </div>
 
-   <!-- Modal Latihan -->
-<div class="overlay" id="overlayLatihan">
-  <div class="modal" style="max-width:560px">
-    <button class="modal-tutup" onclick="tutupModal('overlayLatihan')">✕</button>
-    <h2 id="modalLatihanTajuk">CIPTA LATIHAN</h2>
-    <div class="form-kump mb16">
-      <label>TAJUK LATIHAN</label>
-      <input id="inputTajukLatihan" placeholder="Contoh: Latihan Matematik Bab 4">
-    </div>
-    <div class="form-row mb16">
-      <div class="form-kump">
-        <label>KELAS SASARAN</label>
-        <select id="inputKelasLatihan">
-          <option value="">Semua Kelas</option>
-        </select>
-      </div>
-      <div class="form-kump">
-        <label>TARIKH TUTUP (pilihan)</label>
-        <input type="datetime-local" id="inputTarikhTutupLatihan">
-      </div>
-    </div>
-    <div class="form-kump mb16">
-      <label>ARAHAN LATIHAN</label>
-      <textarea id="inputArahanLatihan" rows="3" placeholder="Tuliskan arahan kepada murid..."></textarea>
-    </div>
-    <div class="form-kump mb16">
-      <label>FAIL SOALAN (PDF, Word, Gambar, dll)</label>
-      <div class="upload-drop-zone" id="guruDropZone" onclick="document.getElementById('inputFailLatihan').click()" ondrop="handleGuruDrop(event)" ondragover="handleGuruDragOver(event)" ondragleave="handleGuruDragLeave(event)">
-        <div style="font-size:2rem;margin-bottom:8px">📎</div>
-        <div style="font-size:.85rem;color:var(--text2)">Klik atau seret fail ke sini</div>
-        <div style="font-size:.72rem;color:var(--text2);margin-top:4px">PDF, DOC, DOCX, JPG, PNG (maks 10MB)</div>
-      </div>
-      <div id="guruFailPreview" style="display:none" class="fail-preview">
-        <div class="fail-ikon" id="guruFailIkon">📄</div>
-        <div style="flex:1;min-width:0">
-          <div class="fail-nama" id="guruFailNama"></div>
-          <div class="fail-saiz" id="guruFailSaiz"></div>
-        </div>
-        <button class="btn btn-kecil btn-merah" onclick="clearGuruFail()">✕</button>
-      </div>
-      <input type="file" id="inputFailLatihan" style="display:none" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.txt,.ppt,.pptx,.xls,.xlsx" onchange="handleGuruFailPilih(this)">
-    </div>
-    <input type="hidden" id="editLatihanId">
-    <div class="flex gap8">
-      <button class="btn btn-utama" onclick="bunyiKlik();simpanLatihan()">SIMPAN LATIHAN</button>
-      <button class="btn btn-outline" onclick="tutupModal('overlayLatihan')">Batal</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Detail Latihan (semua jawapan murid) -->
-<div class="overlay" id="overlayDetailLatihan">
-  <div class="modal" style="max-width:700px">
-    <button class="modal-tutup" onclick="tutupModal('overlayDetailLatihan')">✕</button>
-    <h2 id="detailLatihanTajuk">DETAIL LATIHAN</h2>
-    <div id="detailLatihanBadan"></div>
-  </div>
-</div>
-  
 <!-- COUNTDOWN OVERLAY -->
 <div id="countdownOverlay">
   <div id="countdownNum" class="countdown-num">3</div>
@@ -656,16 +571,7 @@ textarea{resize:vertical;min-height:80px}
     </div>
   </div>
 
- 
-  <!-- PENGURUSAN -->
-  <div class="halaman" id="halPengurusan">
-    <div class="sek-tajuk">⚙️ PENGURUSAN DATA</div>
-    <div class="tab-group">
-      <button class="tab-item aktif" onclick="bunyiKlik();tukarTab('murid',this)">👤 Murid</button>
-      <button class="tab-item" onclick="bunyiKlik();tukarTab('soalan',this)">📝 Set Soalan</button>
-    </div>
-
-      <!-- LATIHAN -->
+  <!-- LATIHAN -->
   <div class="halaman" id="halLatihan">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">
       <div class="sek-tajuk" style="margin-bottom:0">📚 PENGURUSAN LATIHAN</div>
@@ -689,7 +595,14 @@ textarea{resize:vertical;min-height:80px}
     </div>
   </div>
 
-   
+  <!-- PENGURUSAN -->
+  <div class="halaman" id="halPengurusan">
+    <div class="sek-tajuk">⚙️ PENGURUSAN DATA</div>
+    <div class="tab-group">
+      <button class="tab-item aktif" onclick="bunyiKlik();tukarTab('murid',this)">👤 Murid</button>
+      <button class="tab-item" onclick="bunyiKlik();tukarTab('soalan',this)">📝 Set Soalan</button>
+    </div>
+
     <!-- TAB MURID -->
     <div class="sub-halaman aktif" id="tabMurid">
       <div class="flex gap8 mb20" style="align-items:center;flex-wrap:wrap">
@@ -2240,6 +2153,63 @@ window.addEventListener('load',()=>{
 
 setInterval(()=>{const d=document.getElementById('splashDots');if(d){const t=d.textContent;d.textContent=t.length>=3?'':t+'.';}},400);
 </script>
- 
+  <!-- Modal Latihan -->
+<div class="overlay" id="overlayLatihan">
+  <div class="modal" style="max-width:560px">
+    <button class="modal-tutup" onclick="tutupModal('overlayLatihan')">✕</button>
+    <h2 id="modalLatihanTajuk">CIPTA LATIHAN</h2>
+    <div class="form-kump mb16">
+      <label>TAJUK LATIHAN</label>
+      <input id="inputTajukLatihan" placeholder="Contoh: Latihan Matematik Bab 4">
+    </div>
+    <div class="form-row mb16">
+      <div class="form-kump">
+        <label>KELAS SASARAN</label>
+        <select id="inputKelasLatihan">
+          <option value="">Semua Kelas</option>
+        </select>
+      </div>
+      <div class="form-kump">
+        <label>TARIKH TUTUP (pilihan)</label>
+        <input type="datetime-local" id="inputTarikhTutupLatihan">
+      </div>
+    </div>
+    <div class="form-kump mb16">
+      <label>ARAHAN LATIHAN</label>
+      <textarea id="inputArahanLatihan" rows="3" placeholder="Tuliskan arahan kepada murid..."></textarea>
+    </div>
+    <div class="form-kump mb16">
+      <label>FAIL SOALAN (PDF, Word, Gambar, dll)</label>
+      <div class="upload-drop-zone" id="guruDropZone" onclick="document.getElementById('inputFailLatihan').click()" ondrop="handleGuruDrop(event)" ondragover="handleGuruDragOver(event)" ondragleave="handleGuruDragLeave(event)">
+        <div style="font-size:2rem;margin-bottom:8px">📎</div>
+        <div style="font-size:.85rem;color:var(--text2)">Klik atau seret fail ke sini</div>
+        <div style="font-size:.72rem;color:var(--text2);margin-top:4px">PDF, DOC, DOCX, JPG, PNG (maks 10MB)</div>
+      </div>
+      <div id="guruFailPreview" style="display:none" class="fail-preview">
+        <div class="fail-ikon" id="guruFailIkon">📄</div>
+        <div style="flex:1;min-width:0">
+          <div class="fail-nama" id="guruFailNama"></div>
+          <div class="fail-saiz" id="guruFailSaiz"></div>
+        </div>
+        <button class="btn btn-kecil btn-merah" onclick="clearGuruFail()">✕</button>
+      </div>
+      <input type="file" id="inputFailLatihan" style="display:none" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.txt,.ppt,.pptx,.xls,.xlsx" onchange="handleGuruFailPilih(this)">
+    </div>
+    <input type="hidden" id="editLatihanId">
+    <div class="flex gap8">
+      <button class="btn btn-utama" onclick="bunyiKlik();simpanLatihan()">SIMPAN LATIHAN</button>
+      <button class="btn btn-outline" onclick="tutupModal('overlayLatihan')">Batal</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Detail Latihan (semua jawapan murid) -->
+<div class="overlay" id="overlayDetailLatihan">
+  <div class="modal" style="max-width:700px">
+    <button class="modal-tutup" onclick="tutupModal('overlayDetailLatihan')">✕</button>
+    <h2 id="detailLatihanTajuk">DETAIL LATIHAN</h2>
+    <div id="detailLatihanBadan"></div>
+  </div>
+</div>
 </body>
 </html>
