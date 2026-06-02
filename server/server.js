@@ -9,13 +9,15 @@ const WebSocket = require('ws');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+const multer = require('multer');
 
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static(path.join(__dirname, '../public')));
 
 // ============================================================
@@ -25,9 +27,9 @@ const TELEGRAM_BOT_TOKEN = '8849507122:AAECl_Ms6z6xYcAfO6kBFAyBfjYoIhL6KrI';
 const TELEGRAM_CHAT_ID = '707286960';
 
 // ID Kad NFC Tetap — Ganti dengan ID sebenar kad anda
-const NFC_KAD_A = '5A B2 F3 B1'; // << LETAK ID KAD A DI SINI (contoh: '04A32F11')
-const NFC_KAD_B = '47 84 21 25'; // << LETAK ID KAD B DI SINI
-const NFC_KAD_C = '45 E7 A5 AB'; // << LETAK ID KAD C DI SINI
+const NFC_KAD_A = '5A B2 F3 B1';
+const NFC_KAD_B = '47 84 21 25';
+const NFC_KAD_C = '45 E7 A5 AB';
 
 function uidKeJawapan(uid) {
   const u = uid.toUpperCase().trim();
@@ -49,8 +51,8 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/ilmuverse
 // ============================================================
 const MuridSchema = new mongoose.Schema({
   nama: String,
-  avatar: String, // base64 image atau emoji
-  kelas: String,  // nama kelas murid
+  avatar: String,
+  kelas: String,
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -89,11 +91,47 @@ const SiaranSchema = new mongoose.Schema({
   tarikhDihantar: { type: Date, default: Date.now }
 });
 
+// === SKEMA LATIHAN ===
+const LatihanSchema = new mongoose.Schema({
+  tajuk: String,
+  arahan: String,
+  kelas: String, // Kelas sasaran (boleh kosong = semua kelas)
+  failNama: String, // Nama fail asal
+  failData: String, // Base64 data fail
+  failJenis: String, // MIME type
+  tarikhHantar: { type: Date, default: Date.now },
+  tarikhTutup: Date, // Tarikh akhir hantar
+  aktif: { type: Boolean, default: true },
+  komen: [{ // Komen guru pada latihan umum
+    nama: String,
+    peranan: String, // 'guru' atau 'murid'
+    teks: String,
+    tarikhKomen: { type: Date, default: Date.now }
+  }],
+  jawapan: [{
+    muridId: String,
+    muridNama: String,
+    kelas: String,
+    failNama: String,
+    failData: String, // Base64
+    failJenis: String,
+    tarikhHantar: { type: Date, default: Date.now },
+    komen: [{ // Komen pada jawapan spesifik
+      nama: String,
+      peranan: String,
+      teks: String,
+      tarikhKomen: { type: Date, default: Date.now }
+    }],
+    statusSemak: { type: String, default: 'belum' } // 'belum', 'disemak', 'approved'
+  }]
+});
+
 const Murid = mongoose.model('Murid', MuridSchema);
 const Soalan = mongoose.model('Soalan', SoalanSchema);
 const Sesi = mongoose.model('Sesi', SesiSchema);
 const Siaran = mongoose.model('Siaran', SiaranSchema);
 const Kehadiran = mongoose.model('Kehadiran', KehadiranSchema);
+const Latihan = mongoose.model('Latihan', LatihanSchema);
 
 // ============================================================
 // PENGURUSAN WEBSOCKET
@@ -201,7 +239,6 @@ wss.on('connection', (ws, req) => {
         case 'flash_cam': hantarKeCAM({ jenis: 'flash', nyala: data.nyala }); break;
         case 'tambah_ulasan': await tambahUlasan(data); break;
         case 'push_telegram': await hantarTelegram(data); break;
-        // Auto-scan mod4 tidak perlu trigger manual lagi
       }
     }
   });
@@ -236,7 +273,6 @@ async function mulaMod(data) {
   });
   await sesi.save();
 
-  // Clear mod4 auto-scan timer
   if (gameState.mod4?.autoScanTimer) clearTimeout(gameState.mod4.autoScanTimer);
 
   gameState = {
@@ -257,7 +293,6 @@ async function mulaMod(data) {
 
   if (mod === 1) mulaTimerMod1();
   else if (mod === 4) {
-    // Auto-scan terus bermula
     setTimeout(() => autoScanMod4(), 1500);
   }
 
@@ -304,7 +339,6 @@ async function tamatMod1() {
 
 async function prosesNFC(uid) {
   if (!gameState.aktif) {
-    // Hantar ke guru untuk UI feedback walaupun tiada mod aktif
     hantarKeGuru({ jenis: 'nfc_scan', uid });
     return;
   }
@@ -324,7 +358,6 @@ function prosesNFCMod1(uid) {
   const murid = gameState.muridSenarai[gameState.muridSemasa];
   if (!murid) return;
 
-  // Guna kad NFC tetap A/B/C
   const jawapanDiberi = uidKeJawapan(uid);
   if (!jawapanDiberi) return;
 
@@ -456,7 +489,6 @@ async function prosesCAMResult(data) {
     if (fasa === 'sihat') {
       m4.sihatDikesan.push(labelLower);
       if (m4.sihatDikesan.length >= MAKANAN_SIHAT_LIST.length) {
-        // Tukar ke fasa tidak sihat
         m4.fasa = 'tidak_sihat';
         hantarKeGuru({ jenis: 'mod4_tukar_fasa', fasa: 'tidak_sihat' });
         setTimeout(() => autoScanMod4(), 2000);
@@ -465,7 +497,6 @@ async function prosesCAMResult(data) {
     } else {
       m4.takSihatDikesan.push(labelLower);
       if (m4.takSihatDikesan.length >= MAKANAN_TAK_SIHAT_LIST.length) {
-        // Mod4 selesai
         await tamatMod4();
         return;
       }
@@ -474,7 +505,6 @@ async function prosesCAMResult(data) {
     hantarKeESP32({ jenis: 'salah' });
   }
 
-  // Auto-scan semula selepas 2 saat
   if (gameState.aktif && gameState.mod === 4) {
     m4.autoScanTimer = setTimeout(() => autoScanMod4(), 2500);
   }
@@ -516,7 +546,6 @@ async function tambahUlasan(data) {
   semuaHantar({ jenis: 'ulasan_baharu', sesiId, muridId, muridNama, komen });
 }
 
-// Telegram — guna credentials tetap
 async function hantarTelegram(data) {
   const { sesiId } = data;
   const sesi = await Sesi.findById(sesiId);
@@ -645,7 +674,6 @@ app.get('/api/kehadiran', async (req, res) => {
 });
 app.post('/api/kehadiran', async (req, res) => {
   const { kelas, tarikh, senarai } = req.body;
-  // Upsert: kalau dah ada rekod untuk kelas+tarikh yang sama, kemaskini
   const tarikhObj = new Date(tarikh);
   const esok = new Date(tarikhObj); esok.setDate(esok.getDate() + 1);
   const sedia = await Kehadiran.findOne({ kelas, tarikh: { $gte: tarikhObj, $lt: esok } });
@@ -679,6 +707,153 @@ app.post('/api/telegram-kehadiran', async (req, res) => {
 // --- NFC HTTP fallback ---
 app.post('/api/nfc', async (req, res) => {
   await prosesNFC(req.body.uid); res.json({ ok: true });
+});
+
+// ============================================================
+// REST API — LATIHAN
+// ============================================================
+
+// Dapatkan semua latihan (boleh tapis ikut kelas)
+app.get('/api/latihan', async (req, res) => {
+  const query = {};
+  if (req.query.kelas) query.$or = [{ kelas: req.query.kelas }, { kelas: '' }, { kelas: null }];
+  const data = await Latihan.find(query)
+    .sort({ tarikhHantar: -1 })
+    .select('-jawapan.failData -failData'); // Exclude base64 in list untuk jimat bandwidth
+  res.json(data);
+});
+
+// Dapatkan detail satu latihan (dengan fail guru tapi tanpa fail jawapan murid)
+app.get('/api/latihan/:id', async (req, res) => {
+  try {
+    const l = await Latihan.findById(req.params.id).select('-jawapan.failData');
+    res.json(l);
+  } catch(e) { res.status(404).json({ error: 'Tidak dijumpai' }); }
+});
+
+// Muat turun fail latihan guru
+app.get('/api/latihan/:id/fail', async (req, res) => {
+  try {
+    const l = await Latihan.findById(req.params.id).select('failData failJenis failNama');
+    if (!l || !l.failData) return res.status(404).json({ error: 'Fail tidak ada' });
+    const buf = Buffer.from(l.failData.split(',')[1] || l.failData, 'base64');
+    res.set('Content-Type', l.failJenis || 'application/octet-stream');
+    res.set('Content-Disposition', `attachment; filename="${l.failNama || 'latihan'}"`);
+    res.send(buf);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Cipta latihan baru (guru)
+app.post('/api/latihan', async (req, res) => {
+  try {
+    const { tajuk, arahan, kelas, failNama, failData, failJenis, tarikhTutup } = req.body;
+    const l = new Latihan({ tajuk, arahan, kelas: kelas||'', failNama, failData, failJenis, tarikhTutup: tarikhTutup ? new Date(tarikhTutup) : null });
+    await l.save();
+    semuaHantar({ jenis: 'latihan_baharu', data: { _id: l._id, tajuk: l.tajuk, kelas: l.kelas, tarikhHantar: l.tarikhHantar } });
+    res.json({ ...l.toObject(), failData: undefined });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Kemaskini latihan (guru)
+app.put('/api/latihan/:id', async (req, res) => {
+  try {
+    const { tajuk, arahan, kelas, tarikhTutup, aktif } = req.body;
+    const update = { tajuk, arahan, kelas, aktif };
+    if (tarikhTutup !== undefined) update.tarikhTutup = tarikhTutup ? new Date(tarikhTutup) : null;
+    const l = await Latihan.findByIdAndUpdate(req.params.id, update, { new: true }).select('-failData -jawapan.failData');
+    res.json(l);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Padam latihan
+app.delete('/api/latihan/:id', async (req, res) => {
+  await Latihan.findByIdAndDelete(req.params.id);
+  res.json({ ok: true });
+});
+
+// Tambah komen pada latihan (guru atau murid)
+app.post('/api/latihan/:id/komen', async (req, res) => {
+  try {
+    const { nama, peranan, teks } = req.body;
+    const l = await Latihan.findByIdAndUpdate(req.params.id, {
+      $push: { komen: { nama, peranan, teks, tarikhKomen: new Date() } }
+    }, { new: true }).select('-failData -jawapan.failData');
+    semuaHantar({ jenis: 'latihan_komen_baharu', latihanId: req.params.id, komen: { nama, peranan, teks } });
+    res.json(l);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Hantar jawapan murid (dengan fail)
+app.post('/api/latihan/:id/jawapan', async (req, res) => {
+  try {
+    const { muridId, muridNama, kelas, failNama, failData, failJenis } = req.body;
+    // Semak sama ada murid dah hantar sebelum ini
+    const latihan = await Latihan.findById(req.params.id);
+    if (!latihan) return res.status(404).json({ error: 'Latihan tidak dijumpai' });
+
+    const idx = latihan.jawapan.findIndex(j => j.muridId === muridId || j.muridNama === muridNama);
+    if (idx >= 0) {
+      // Kemaskini jawapan sedia ada
+      latihan.jawapan[idx].failNama = failNama;
+      latihan.jawapan[idx].failData = failData;
+      latihan.jawapan[idx].failJenis = failJenis;
+      latihan.jawapan[idx].tarikhHantar = new Date();
+      latihan.jawapan[idx].statusSemak = 'belum';
+    } else {
+      latihan.jawapan.push({ muridId, muridNama, kelas, failNama, failData, failJenis, tarikhHantar: new Date() });
+    }
+    await latihan.save();
+    hantarKeGuru({ jenis: 'jawapan_baharu', latihanId: req.params.id, muridNama, kelas });
+    res.json({ ok: true, mesej: 'Jawapan berjaya dihantar!' });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Muat turun fail jawapan murid
+app.get('/api/latihan/:id/jawapan/:jawapanId/fail', async (req, res) => {
+  try {
+    const l = await Latihan.findById(req.params.id);
+    const j = l?.jawapan?.id(req.params.jawapanId);
+    if (!j || !j.failData) return res.status(404).json({ error: 'Fail tidak ada' });
+    const buf = Buffer.from(j.failData.split(',')[1] || j.failData, 'base64');
+    res.set('Content-Type', j.failJenis || 'application/octet-stream');
+    res.set('Content-Disposition', `attachment; filename="${j.failNama || 'jawapan'}"`);
+    res.send(buf);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Tambah komen pada jawapan murid
+app.post('/api/latihan/:id/jawapan/:jawapanId/komen', async (req, res) => {
+  try {
+    const { nama, peranan, teks } = req.body;
+    const l = await Latihan.findById(req.params.id);
+    const j = l?.jawapan?.id(req.params.jawapanId);
+    if (!j) return res.status(404).json({ error: 'Jawapan tidak dijumpai' });
+    j.komen.push({ nama, peranan, teks, tarikhKomen: new Date() });
+    await l.save();
+    semuaHantar({ jenis: 'jawapan_komen_baharu', latihanId: req.params.id, jawapanId: req.params.jawapanId, nama, peranan, teks });
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Kemaskini status semak jawapan (guru)
+app.put('/api/latihan/:id/jawapan/:jawapanId/status', async (req, res) => {
+  try {
+    const { status } = req.body; // 'belum', 'disemak', 'approved'
+    const l = await Latihan.findById(req.params.id);
+    const j = l?.jawapan?.id(req.params.jawapanId);
+    if (!j) return res.status(404).json({ error: 'Jawapan tidak dijumpai' });
+    j.statusSemak = status;
+    await l.save();
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Dapatkan semua jawapan untuk latihan tertentu (guru sahaja)
+app.get('/api/latihan/:id/jawapan', async (req, res) => {
+  try {
+    const l = await Latihan.findById(req.params.id).select('-jawapan.failData -failData');
+    res.json(l?.jawapan || []);
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 // ============================================================
