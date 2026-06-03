@@ -1,5 +1,5 @@
 // ============================================================
-// ILMUVERSE - SERVER UTAMA v2.0
+// ILMUVERSE - SERVER UTAMA v2.0 (DIKEMASKINI)
 // Node.js + Express + WebSocket + MongoDB
 // ============================================================
 require('dotenv').config();
@@ -91,20 +91,20 @@ const SiaranSchema = new mongoose.Schema({
   tarikhDihantar: { type: Date, default: Date.now }
 });
 
-// === SKEMA LATIHAN ===
+// === SKEMA LATIHAN === (PATCH 1: tambah field 'markah' dalam jawapan)
 const LatihanSchema = new mongoose.Schema({
   tajuk: String,
   arahan: String,
-  kelas: String, // Kelas sasaran (boleh kosong = semua kelas)
-  failNama: String, // Nama fail asal
-  failData: String, // Base64 data fail
-  failJenis: String, // MIME type
+  kelas: String,
+  failNama: String,
+  failData: String,
+  failJenis: String,
   tarikhHantar: { type: Date, default: Date.now },
-  tarikhTutup: Date, // Tarikh akhir hantar
+  tarikhTutup: Date,
   aktif: { type: Boolean, default: true },
-  komen: [{ // Komen guru pada latihan umum
+  komen: [{
     nama: String,
-    peranan: String, // 'guru' atau 'murid'
+    peranan: String,
     teks: String,
     tarikhKomen: { type: Date, default: Date.now }
   }],
@@ -113,16 +113,17 @@ const LatihanSchema = new mongoose.Schema({
     muridNama: String,
     kelas: String,
     failNama: String,
-    failData: String, // Base64
+    failData: String,
     failJenis: String,
     tarikhHantar: { type: Date, default: Date.now },
-    komen: [{ // Komen pada jawapan spesifik
+    komen: [{
       nama: String,
       peranan: String,
       teks: String,
       tarikhKomen: { type: Date, default: Date.now }
     }],
-    statusSemak: { type: String, default: 'belum' } // 'belum', 'disemak', 'approved'
+    statusSemak: { type: String, default: 'belum' }, // 'belum', 'disemak', 'approved'
+    markah: { type: Number, default: null }           // PATCH 1: field markah baharu
   }]
 });
 
@@ -239,6 +240,8 @@ wss.on('connection', (ws, req) => {
         case 'flash_cam': hantarKeCAM({ jenis: 'flash', nyala: data.nyala }); break;
         case 'tambah_ulasan': await tambahUlasan(data); break;
         case 'push_telegram': await hantarTelegram(data); break;
+        // PATCH 2: handler cam_result dari browser (bukan ESP32-CAM)
+        case 'cam_result_browser': await prosesCAMResult(data); break;
       }
     }
   });
@@ -546,8 +549,9 @@ async function tambahUlasan(data) {
   semuaHantar({ jenis: 'ulasan_baharu', sesiId, muridId, muridNama, komen });
 }
 
+// PATCH 3: hantarTelegram dikemaskini — terima namaCikgu
 async function hantarTelegram(data) {
-  const { sesiId } = data;
+  const { sesiId, namaCikgu } = data;
   const sesi = await Sesi.findById(sesiId);
   if (!sesi) return;
 
@@ -566,7 +570,9 @@ async function hantarTelegram(data) {
     mesej += `\n💬 *ULASAN GURU:*\n`;
     sesi.ulasan.forEach(u => { mesej += `• ${u.nama}: _${u.komen}_\n`; });
   }
-  mesej += `\n✨ _Dihantar oleh sistem ILMUVERSE_`;
+  // Nama guru dari data, jika tiada guna 'Cikgu'
+  const namaGuru = namaCikgu || 'Cikgu';
+  mesej += `\n✨ _Dihantar oleh ${namaGuru} menggunakan sistem ILMUVERSE_`;
 
   try {
     const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
@@ -719,7 +725,7 @@ app.get('/api/latihan', async (req, res) => {
   if (req.query.kelas) query.$or = [{ kelas: req.query.kelas }, { kelas: '' }, { kelas: null }];
   const data = await Latihan.find(query)
     .sort({ tarikhHantar: -1 })
-    .select('-jawapan.failData -failData'); // Exclude base64 in list untuk jimat bandwidth
+    .select('-jawapan.failData -failData');
   res.json(data);
 });
 
@@ -787,18 +793,17 @@ app.post('/api/latihan/:id/komen', async (req, res) => {
 app.post('/api/latihan/:id/jawapan', async (req, res) => {
   try {
     const { muridId, muridNama, kelas, failNama, failData, failJenis } = req.body;
-    // Semak sama ada murid dah hantar sebelum ini
     const latihan = await Latihan.findById(req.params.id);
     if (!latihan) return res.status(404).json({ error: 'Latihan tidak dijumpai' });
 
     const idx = latihan.jawapan.findIndex(j => j.muridId === muridId || j.muridNama === muridNama);
     if (idx >= 0) {
-      // Kemaskini jawapan sedia ada
       latihan.jawapan[idx].failNama = failNama;
       latihan.jawapan[idx].failData = failData;
       latihan.jawapan[idx].failJenis = failJenis;
       latihan.jawapan[idx].tarikhHantar = new Date();
       latihan.jawapan[idx].statusSemak = 'belum';
+      latihan.jawapan[idx].markah = null; // Reset markah bila hantar semula
     } else {
       latihan.jawapan.push({ muridId, muridNama, kelas, failNama, failData, failJenis, tarikhHantar: new Date() });
     }
@@ -835,15 +840,32 @@ app.post('/api/latihan/:id/jawapan/:jawapanId/komen', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// Kemaskini status semak jawapan (guru)
+// PATCH 4: Kemaskini status semak jawapan (guru) — kini sokong field markah
 app.put('/api/latihan/:id/jawapan/:jawapanId/status', async (req, res) => {
   try {
-    const { status } = req.body; // 'belum', 'disemak', 'approved'
+    const { status, markah } = req.body; // 'belum', 'disemak', 'approved' + markah (nombor)
     const l = await Latihan.findById(req.params.id);
     const j = l?.jawapan?.id(req.params.jawapanId);
     if (!j) return res.status(404).json({ error: 'Jawapan tidak dijumpai' });
-    j.statusSemak = status;
+
+    if (status) j.statusSemak = status;
+    if (markah !== undefined && markah !== null) {
+      j.markah = markah;
+      j.statusSemak = 'disemak'; // auto set disemak bila ada markah
+    }
+
     await l.save();
+
+    // Broadcast ke semua klien supaya murid nampak markahnya
+    semuaHantar({
+      jenis: 'markah_dikemaskini',
+      latihanId: req.params.id,
+      jawapanId: req.params.jawapanId,
+      muridId: j.muridId,
+      muridNama: j.muridNama,
+      markah: j.markah
+    });
+
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
