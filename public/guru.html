@@ -1833,6 +1833,10 @@ async function jalanInferenceTM() {
   const img = document.getElementById('camFeed');
   if (!img || !img.src || img.src === '' || img.naturalWidth === 0) return;
 
+  // Dalam jalanInferenceTM(), tambah selepas dapat 'best'
+if (best.className.toLowerCase() === 'background' || 
+    best.className.toLowerCase() === 'tiada') return;
+  
   try {
     const predictions = await tmModel.predict(img);
     // Cari prediction tertinggi
