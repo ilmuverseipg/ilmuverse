@@ -1038,7 +1038,7 @@ function prosesMsg(d) {
     case 'mod2_betul': paparJawapan(true,d.murid,d.markah,d.jawapan); break;
     case 'cam_frame': if(d.data) document.getElementById('camFeed').src='data:image/jpeg;base64,'+d.data; break;
     case 'cam_keputusan': prosesCAMKeputusanUI(d); break;
-    case 'mod4_tukar_fasa': tukarFasaMod4(d.fasa); break;
+    case 'mod4_tukar_fasa': tukarFasaMod4(d.fasa); sesiSemasa && (sesiSemasa.mod4Fasa=d.fasa); break;
     case 'nfc_scan': tunjukNFCPing(d.uid); break;
     case 'ulasan_baharu': if(sesiDetailSemasa&&sesiDetailSemasa._id===d.sesiId) tambahUlasanUI(d); break;
      case 'jawapan_baharu': tunjukNotif(`📥 Jawapan baharu dari ${d.muridNama} (${d.kelas||'?'})`); if(document.getElementById('halLatihan').classList.contains('aktif'))muatLatihan(); break;
@@ -1636,6 +1636,7 @@ function siapMulaPermainan(mod){
 // ============================================================
 function papanPermainanMula(state) {
   sesiSemasa=state;
+  clearInterval(_clientTimerInterval);
   document.getElementById('papanPermainan').classList.add('buka');
   const tajukMod=['','KUIZ RAMAI-RAMAI','DWI-PADU','SUSUNAN HAFALAN','IMBAS AI'];
   document.getElementById('papanTajuk').textContent=`MOD ${state.mod} — ${tajukMod[state.mod]}`;
@@ -1648,10 +1649,11 @@ function papanPermainanMula(state) {
   document.getElementById('mod2Info').style.display=state.mod===2?'flex':'none';
   renderSkorPanel(state.muridSenarai);
   if(state.mod===3)renderSusunanTrack(state.jumlahSoalan);
-  if(state.mod===4)renderMod4UI();
+  if(state.mod===4){renderMod4UI();mulaTeachableMachine();}
   if(state.mod===2)renderBuzzerPanel(state.muridSenarai);
   if(state.mod===1)kemaskiniMuridGiliran(state);
   if(state.mod<=2)renderPilihan(state);
+  if(state.mod===1 && state.masa>0) mulaClientTimer(state.masa);
 }
 function renderAvatarEl(av){if(av&&av.startsWith('data:'))return`<img src="${av}" style="width:100%;height:100%;object-fit:cover">`;return`<span>${av||'👤'}</span>`;}
 
@@ -1690,11 +1692,34 @@ function kemaskiniMuridGiliran(state) {
   if(murid){const avEl=document.getElementById('giliranAvatarContent');if(avEl)avEl.innerHTML=renderAvatarEl(murid.avatar);document.getElementById('muridGiliranTeks').textContent=murid.nama;document.querySelectorAll('.skor-murid').forEach(el=>el.classList.remove('aktif-jawab'));document.getElementById('skor_'+(murid._id||murid.nama))?.classList.add('aktif-jawab');}
 }
 
+// ── CLIENT TIMER (ticks setiap saat, sync dengan server) ──
+let _clientTimerInterval = null;
+let _clientTimerSisa = 0;
+
+function mulaClientTimer(sisa) {
+  clearInterval(_clientTimerInterval);
+  _clientTimerSisa = sisa;
+  renderTimerDisplay(_clientTimerSisa);
+  _clientTimerInterval = setInterval(() => {
+    if (_clientTimerSisa > 0) {
+      _clientTimerSisa--;
+      renderTimerDisplay(_clientTimerSisa);
+    } else {
+      clearInterval(_clientTimerInterval);
+    }
+  }, 1000);
+}
+
+function renderTimerDisplay(sisa) {
+  const el = document.getElementById('timerDisplay');
+  if (!el) return;
+  el.textContent = `${String(Math.floor(sisa/60)).padStart(2,'0')}:${String(sisa%60).padStart(2,'0')}`;
+  el.className = 'timer-num ' + (sisa<=10?'merah':sisa<=30?'kuning':'hijau');
+}
+
 function kemaskiniTimer(sisa) {
-  const el=document.getElementById('timerDisplay');
-  if(!el)return;
-  el.textContent=`${String(Math.floor(sisa/60)).padStart(2,'0')}:${String(sisa%60).padStart(2,'0')}`;
-  el.className='timer-num '+(sisa<=10?'merah':sisa<=30?'kuning':'hijau');
+  // Sync dari server — restart client timer
+  mulaClientTimer(sisa);
 }
 
 function soalanSeterusnya(){hantarWS({jenis:'soalan_seterusnya'});}
@@ -1735,18 +1760,112 @@ function renderSusunanTrack(jumlah){document.getElementById('susunanTrack').inne
 function kemaskiniSusunan(idx,betul,jumlah){const el=document.getElementById('susun_'+idx);if(el){el.classList.remove('semasa');if(betul)el.classList.add('betul');}const next=document.getElementById('susun_'+(idx+1));if(next)next.classList.add('semasa');if(betul)tunjukJawapanPopup(true,null,`Susunan ${idx+1} betul! ✓`);const prog=document.getElementById('mod3Progress');if(prog&&jumlah)prog.style.width=((idx+1)/jumlah*100)+'%';}
 
 // ============================================================
-// MOD 4 UI
+// MOD 4 — TEACHABLE MACHINE (browser inference dari CAM frame)
 // ============================================================
+const TM_MODEL_URL = 'https://teachablemachine.withgoogle.com/models/unHcOy5zU/';
+let tmModel = null, tmMaxPred = null;
+let tmLoadStatus = 'idle'; // 'idle','loading','ready','error'
+// Filter: label mesti stable 98%+ selama 2 saat
+let tmStableLabel = null, tmStableStart = 0;
+const TM_CONF_MIN = 0.98;
+const TM_STABLE_MS = 2000;
+let tmScanInterval = null;
+
+async function mulaTeachableMachine() {
+  if (tmLoadStatus === 'ready') { mulaScanTM(); return; }
+  if (tmLoadStatus === 'loading') return;
+  tmLoadStatus = 'loading';
+  document.getElementById('camLabel').textContent = 'Memuatkan model AI...';
+  try {
+    if (!window.tmImage) {
+      // Load TM library dynamically
+      await new Promise((res,rej) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js';
+        s.onload = res; s.onerror = rej;
+        document.head.appendChild(s);
+      });
+    }
+    const modelURL = TM_MODEL_URL + 'model.json';
+    const metadataURL = TM_MODEL_URL + 'metadata.json';
+    tmModel = await window.tmImage.load(modelURL, metadataURL);
+    tmMaxPred = tmModel.getTotalClasses();
+    tmLoadStatus = 'ready';
+    document.getElementById('camLabel').textContent = 'Model AI bersedia ✓';
+    mulaScanTM();
+  } catch(e) {
+    tmLoadStatus = 'error';
+    document.getElementById('camLabel').textContent = 'Gagal muatkan model!';
+    console.error('[TM]', e);
+  }
+}
+
+function mulaScanTM() {
+  clearInterval(tmScanInterval);
+  tmScanInterval = setInterval(jalanInferenceTM, 500);
+}
+
+async function jalanInferenceTM() {
+  if (!tmModel || !sesiSemasa?.aktif) return;
+  const img = document.getElementById('camFeed');
+  if (!img || !img.src || img.src === '' || img.naturalWidth === 0) return;
+
+  try {
+    const predictions = await tmModel.predict(img);
+    // Cari prediction tertinggi
+    let best = predictions.reduce((a,b) => b.probability > a.probability ? b : a);
+    const conf = best.probability;
+    const label = best.className.toLowerCase();
+
+    // Update label display
+    document.getElementById('camLabel').textContent = `${best.className} (${Math.round(conf*100)}%)`;
+
+    // Filter: hanya proses jika confidence 98%+
+    if (conf < TM_CONF_MIN) {
+      // Ragu-ragu / noisy — reset stable counter
+      tmStableLabel = null; tmStableStart = 0;
+      return;
+    }
+
+    // Check stability — label mesti sama selama 2 saat
+    const now = Date.now();
+    if (label !== tmStableLabel) {
+      tmStableLabel = label;
+      tmStableStart = now;
+      return;
+    }
+    if (now - tmStableStart < TM_STABLE_MS) return;
+
+    // Stable 2 saat pada 98%+ — hantar sebagai result
+    tmStableLabel = null; tmStableStart = 0; // Reset lepas trigger
+
+    // Hantar ke server (simulate cam_result via WS)
+    hantarWS({ jenis: 'cam_result_browser', label: best.className, confidence: conf });
+
+    // Juga proses UI terus
+    const d = { label: best.className, confidence: conf };
+    // Tentukan betul/salah ikut fasa
+    const fasa = sesiSemasa?.mod4Fasa || 'sihat';
+    const lbl = best.className.toLowerCase();
+    const SIHAT = ['pisang','tembikai','epal'];
+    const TAKSHAT = ['air manis','sosej'];
+    let betul = false;
+    if (fasa === 'sihat') betul = SIHAT.includes(lbl) && !mod4SihatUI.includes(lbl);
+    else betul = TAKSHAT.includes(lbl) && !mod4TakSihatUI.includes(lbl);
+    prosesCAMKeputusanUI({...d, betul, kategori: fasa});
+  } catch(e) { /* ignore frame errors */ }
+}
+
 function renderMod4UI(){mod4FasaUI='sihat';mod4SihatUI=[];mod4TakSihatUI=[];document.getElementById('mod4Fasa1Panel').style.display='block';document.getElementById('mod4Fasa2Panel').style.display='none';renderMakananList();}
 function renderMakananList(){document.getElementById('listMakananSihat').innerHTML=MAKANAN_SIHAT_UI.map(m=>`<div class="makanan-item-reveal ${mod4SihatUI.includes(m.nama.toLowerCase())?'dikesan':''}" id="mk_s_${m.nama}"><div class="makanan-ikon-big">${m.ikon}</div><div class="makanan-nama">${m.nama}</div>${mod4SihatUI.includes(m.nama.toLowerCase())?'<div class="makanan-dikesan-tag">✓ DIKESAN</div>':''}</div>`).join('');document.getElementById('listMakananTakSihat').innerHTML=MAKANAN_TAK_SIHAT_UI.map(m=>`<div class="makanan-item-reveal ${mod4TakSihatUI.includes(m.nama.toLowerCase())?'dikesan':''}" id="mk_ts_${m.nama}"><div class="makanan-ikon-big">${m.ikon}</div><div class="makanan-nama">${m.nama}</div>${mod4TakSihatUI.includes(m.nama.toLowerCase())?'<div class="makanan-dikesan-tag">✓ DIKESAN</div>':''}</div>`).join('');}
 function tukarFasaMod4(fasa){mod4FasaUI=fasa;document.getElementById('mod4Fasa1Panel').style.display=fasa==='sihat'?'block':'none';document.getElementById('mod4Fasa2Panel').style.display=fasa!=='sihat'?'block':'none';tunjukNotif('✅ Semua makanan sihat dikesan! Kini fasa makanan tidak sihat.');}
-function prosesCAMKeputusanUI(d){document.getElementById('camLabel').textContent=`${d.label} (${Math.round((d.confidence||0)*100)}%)`;if(d.betul){tunjukJawapanPopup(true,null,`${d.label} dikesan! ✓`);if(d.kategori==='sihat'){if(!mod4SihatUI.includes(d.label.toLowerCase()))mod4SihatUI.push(d.label.toLowerCase());}else{if(!mod4TakSihatUI.includes(d.label.toLowerCase()))mod4TakSihatUI.push(d.label.toLowerCase());}renderMakananList();}else{tunjukJawapanPopup(false,null,`${d.label} — terus mengimbas...`);}}
+function prosesCAMKeputusanUI(d){document.getElementById('camLabel').textContent=`${d.label} (${Math.round((d.confidence||0)*100)}%)`;if(d.betul){tunjukJawapanPopup(true,null,`${d.label} dikesan! ✓`);if(d.kategori==='sihat'){if(!mod4SihatUI.includes(d.label.toLowerCase()))mod4SihatUI.push(d.label.toLowerCase());}else{if(!mod4TakSihatUI.includes(d.label.toLowerCase()))mod4TakSihatUI.push(d.label.toLowerCase());}renderMakananList();}else{/* silent — noisy predictions diabaikan */}}
 function togolFlash(){flashStateCam=!flashStateCam;hantarWS({jenis:'flash_cam',nyala:flashStateCam});document.getElementById('btnFlash').textContent=`🔦 Flash: ${flashStateCam?'ON':'OFF'}`;}
 
 // ============================================================
 // GANJARAN & TAMAT
 // ============================================================
-function paparGanjaran(ranking){const overlay=document.getElementById('ganjaranOverlay');document.getElementById('ganjaranTeks').textContent='🏆 TAHNIAH! PEMENANG TERATAS AMBIL GANJARAN!';document.getElementById('rankingList').innerHTML=(ranking||[]).slice(0,3).map((r,i)=>`<div class="ranking-item"><div class="ranking-no ${['r1','r2','r3'][i]||''}">${['🥇','🥈','🥉'][i]||i+1}</div><div class="ranking-avatar">${renderAvatarEl(r.avatar)}</div><div class="ranking-nama">${r.nama}</div><div class="ranking-markah">${r.markah} ⭐</div></div>`).join('');overlay.classList.add('buka');hantarWS({jenis:'buka_ganjaran'});mulaGanjaranCountdown();}
+function paparGanjaran(ranking){clearInterval(_clientTimerInterval);const overlay=document.getElementById('ganjaranOverlay');document.getElementById('ganjaranTeks').textContent='🏆 TAHNIAH! PEMENANG TERATAS AMBIL GANJARAN!';document.getElementById('rankingList').innerHTML=(ranking||[]).slice(0,3).map((r,i)=>`<div class="ranking-item"><div class="ranking-no ${['r1','r2','r3'][i]||''}">${['🥇','🥈','🥉'][i]||i+1}</div><div class="ranking-avatar">${renderAvatarEl(r.avatar)}</div><div class="ranking-nama">${r.nama}</div><div class="ranking-markah">${r.markah} ⭐</div></div>`).join('');overlay.classList.add('buka');hantarWS({jenis:'buka_ganjaran'});mulaGanjaranCountdown();}
 function paparGanjaranMod3(){paparGanjaran([]);document.getElementById('ganjaranTeks').textContent='🎊 SUSUNAN LENGKAP! AMBIL GANJARAN!';}
 function mulaGanjaranCountdown(){let count=6;document.getElementById('ganjaranCount').textContent=count;const t=setInterval(()=>{count--;document.getElementById('ganjaranCount').textContent=count;if(count<=0){clearInterval(t);document.getElementById('ganjaranOverlay').classList.remove('buka');tunjukSesiTamat();}},1000);}
 function tunjukSesiTamat(){const pilihan=confirm('Sesi tamat! OK untuk ulangi, Batal untuk ke menu utama.');document.getElementById('papanPermainan').classList.remove('buka');if(pilihan&&sesiSemasa)bukaMod(sesiSemasa.mod);else{muatDashboard();tukarHalaman('dashboard',document.querySelectorAll('.nav-btn')[1]);}}
@@ -1786,7 +1905,14 @@ async function hantarUlasan(){const sel=document.getElementById('selectUlasanMur
 
 function tambahUlasanUI(d){const el=document.getElementById('ulasanList');const item=document.createElement('div');item.className='ulasan-item';item.style.animation='fadeIn .3s';item.innerHTML=`<div class="ulasan-nama">${d.muridNama}</div>${d.komen}`;el.appendChild(item);}
 
-function pushTelegram(){if(!sesiDetailSemasa)return;hantarWS({jenis:'push_telegram',sesiId:sesiDetailSemasa._id});tunjukNotif('📨 Menghantar ke Telegram...');}
+function pushTelegram(){
+  if(!sesiDetailSemasa)return;
+  const namaCikgu = prompt('Nama cikgu untuk laporan Telegram:','');
+  if(namaCikgu===null)return; // user tekan cancel
+  if(!namaCikgu.trim()){tunjukNotif('⚠️ Sila masukkan nama cikgu');return;}
+  hantarWS({jenis:'push_telegram',sesiId:sesiDetailSemasa._id,namaCikgu:namaCikgu.trim()});
+  tunjukNotif('📨 Menghantar ke Telegram...');
+}
 
 // ============================================================
 // SIARAN
@@ -2027,9 +2153,9 @@ function renderDetailLatihan() {
   document.getElementById('detailLatihanTajuk').textContent = l.tajuk;
 
   const jawapan = l.jawapan || [];
-  const belum = jawapan.filter(j => j.statusSemak === 'belum').length;
-  const disemak = jawapan.filter(j => j.statusSemak === 'disemak').length;
-  const approved = jawapan.filter(j => j.statusSemak === 'approved').length;
+  const belum = jawapan.filter(j => j.markah === undefined || j.markah === null || j.markah === '').length;
+  const disemak = jawapan.filter(j => j.markah !== undefined && j.markah !== null && j.markah !== '').length;
+  const approved = disemak; // disemak = ada markah
 
   document.getElementById('detailLatihanBadan').innerHTML = `
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
@@ -2043,8 +2169,7 @@ function renderDetailLatihan() {
     <div class="latihan-stats mb16">
       <div class="lat-stat" style="background:rgba(79,142,247,.08);color:var(--accent)">📥 ${jawapan.length} jawapan</div>
       <div class="lat-stat" style="background:rgba(245,158,11,.08);color:var(--gold)">⏳ ${belum} belum disemak</div>
-      <div class="lat-stat" style="background:rgba(79,142,247,.08);color:var(--accent)">🔍 ${disemak} disemak</div>
-      <div class="lat-stat" style="background:rgba(16,185,129,.08);color:var(--green)">✅ ${approved} diluluskan</div>
+      <div class="lat-stat" style="background:rgba(16,185,129,.08);color:var(--green)">📊 ${disemak} ada markah</div>
     </div>
 
     <!-- KOMEN UMUM LATIHAN -->
@@ -2072,8 +2197,9 @@ function renderDetailLatihan() {
 }
 
 function renderJawapanItem(latihanId, j) {
-  const statusClass = j.statusSemak === 'approved' ? 'status-approved' : j.statusSemak === 'disemak' ? 'status-disemak' : 'status-belum';
-  const statusLabel = j.statusSemak === 'approved' ? '✅ Diluluskan' : j.statusSemak === 'disemak' ? '🔍 Disemak' : '⏳ Belum Disemak';
+  const ada_markah = j.markah !== undefined && j.markah !== null && j.markah !== '';
+  const statusClass = ada_markah ? 'status-approved' : 'status-belum';
+  const statusLabel = ada_markah ? `✅ Markah: ${j.markah}/100` : '⏳ Belum Disemak';
 
   return `<div class="jawapan-item" id="jwpn_${j._id}">
     <div class="jawapan-header">
@@ -2088,6 +2214,15 @@ function renderJawapanItem(latihanId, j) {
       <a href="${API}/api/latihan/${latihanId}/jawapan/${j._id}/fail" download="${j.failNama}" class="btn btn-kecil btn-teal">⬇ Muat Turun</a>
     </div>` : '<div style="color:var(--text2);font-size:.8rem;margin-bottom:8px">Tiada fail dilampirkan</div>'}
 
+    <!-- Beri Markah -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;background:rgba(245,158,11,.06);padding:8px 12px;border-radius:8px;border:1px solid rgba(245,158,11,.2)">
+      <span style="font-size:.78rem;font-weight:700;color:var(--gold)">📊 Markah:</span>
+      <input type="number" id="markahJwpn_${j._id}" min="0" max="100" value="${ada_markah?j.markah:''}" placeholder="0–100"
+        style="width:80px;padding:5px 8px;border:1px solid rgba(245,158,11,.3);border-radius:6px;font-family:'Orbitron',monospace;font-size:.88rem;font-weight:700;color:var(--gold);background:var(--panel2);outline:none;text-align:center">
+      <span style="font-size:.78rem;color:var(--text2)">/ 100</span>
+      <button class="btn btn-kecil btn-kuning" onclick="simpanMarkahJawapan('${latihanId}','${j._id}')">Simpan Markah</button>
+    </div>
+
     <!-- Komen pada jawapan ini -->
     <div class="komen-list" id="komentarJawapan_${j._id}">
       ${(j.komen||[]).map(k => `<div class="komen-item ${k.peranan==='guru'?'komen-guru':'komen-murid'}">
@@ -2098,11 +2233,6 @@ function renderJawapanItem(latihanId, j) {
     <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
       <input id="komenJwpn_${j._id}" placeholder="Maklum balas kepada murid ini..." style="flex:1;min-width:160px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-family:'Exo 2',sans-serif;font-size:.82rem;outline:none;background:var(--panel2)">
       <button class="btn btn-kecil btn-utama" onclick="hantarKomenJawapan('${latihanId}','${j._id}')">Hantar</button>
-      <select onchange="kemaskiniStatusJawapan('${latihanId}','${j._id}',this.value)" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-family:'Exo 2',sans-serif;font-size:.78rem;outline:none;background:var(--panel2);color:var(--text)">
-        <option value="belum" ${j.statusSemak==='belum'?'selected':''}>⏳ Belum Semak</option>
-        <option value="disemak" ${j.statusSemak==='disemak'?'selected':''}>🔍 Disemak</option>
-        <option value="approved" ${j.statusSemak==='approved'?'selected':''}>✅ Luluskan</option>
-      </select>
     </div>
   </div>`;
 }
@@ -2130,6 +2260,26 @@ async function hantarKomenJawapan(latihanId, jawapanId) {
   });
   await bukaDetailLatihan(latihanId);
   tunjukNotif('✅ Maklum balas dihantar!');
+}
+
+async function simpanMarkahJawapan(latihanId, jawapanId) {
+  const val = document.getElementById(`markahJwpn_${jawapanId}`)?.value;
+  if (val === '' || val === null || val === undefined) { tunjukNotif('⚠️ Sila masukkan markah'); return; }
+  const markah = parseInt(val);
+  if (isNaN(markah) || markah < 0 || markah > 100) { tunjukNotif('⚠️ Markah mesti antara 0–100'); return; }
+  await fetch(`${API}/api/latihan/${latihanId}/jawapan/${jawapanId}/status`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: 'disemak', markah })
+  });
+  tunjukNotif(`✅ Markah ${markah}/100 disimpan!`);
+  await bukaDetailLatihan(latihanId);
+  // Notify murid via WS
+  semuaHantarMarkah(latihanId, jawapanId, markah);
+}
+
+function semuaHantarMarkah(latihanId, jawapanId, markah) {
+  hantarWS({ jenis: 'markah_dikemaskini', latihanId, jawapanId, markah });
 }
 
 async function kemaskiniStatusJawapan(latihanId, jawapanId, status) {
