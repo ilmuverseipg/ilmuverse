@@ -424,6 +424,7 @@ textarea{resize:vertical;min-height:80px}
 ::-webkit-scrollbar-thumb:hover{background:var(--accent)}
 @keyframes livePulse{0%,100%{opacity:1}50%{opacity:.3}}
 </style>
+  <script src="/teachablemachine-image.min.js"></script>
 </head>
 <body>
 
@@ -1800,11 +1801,8 @@ async function mulaTeachableMachine() {
   if (labelEl) labelEl.textContent = 'Memuatkan model AI...';
 
   try {
-    if (!window.tmImage) {
-      const berjaya = await muatSkripTM(TM_CDNS);
-      if (!berjaya || !window.tmImage) throw new Error('Semua CDN gagal');
-    }
-    if (labelEl) labelEl.textContent = 'Muat model dari server...';
+    if (!window.tmImage) throw new Error('Library tmImage tidak dijumpai');
+    
     const modelURL = TM_MODEL_URL + 'model.json';
     const metadataURL = TM_MODEL_URL + 'metadata.json';
     tmModel = await window.tmImage.load(modelURL, metadataURL);
@@ -1814,15 +1812,8 @@ async function mulaTeachableMachine() {
     mulaScanTM();
   } catch(e) {
     tmLoadStatus = 'error';
-    console.error('[TM] Ralat:', e);
-    if (labelEl) labelEl.textContent = '⚠ Model gagal — semak konsol';
-    // Cuba semula selepas 5 saat
-    setTimeout(() => {
-      if (sesiSemasa?.aktif && sesiSemasa?.mod === 4) {
-        tmLoadStatus = 'idle';
-        mulaTeachableMachine();
-      }
-    }, 5000);
+    console.error('[TM] Ralat:', e.message);
+    if (labelEl) labelEl.textContent = '⚠ ' + e.message;
   }
 }
 
