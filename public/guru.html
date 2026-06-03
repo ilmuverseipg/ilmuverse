@@ -308,7 +308,7 @@ textarea{resize:vertical;min-height:80px}
 
 /* ── MOD 4 KAMERA ── */
 .kamera-wrap{position:relative;background:#000;border-radius:12px;overflow:hidden;aspect-ratio:4/3;border:2px solid rgba(255,255,255,.1)}
-.kamera-feed{width:100%;height:100%;object-fit:cover}
+.kamera-feed{width:100%;height:100%;object-fit:cover;transform:rotate(180deg);}
 .kamera-overlay{position:absolute;inset:0;pointer-events:none}
 .scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#7dd3fc,transparent);animation:scanMove 2s linear infinite;box-shadow:0 0 10px #7dd3fc}
 @keyframes scanMove{0%{top:0}100%{top:100%}}
