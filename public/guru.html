@@ -1771,32 +1771,58 @@ const TM_CONF_MIN = 0.98;
 const TM_STABLE_MS = 2000;
 let tmScanInterval = null;
 
+const TM_CDNS = [
+  'https://unpkg.com/@teachablemachine/image@0.8.5/dist/teachablemachine-image.min.js',
+  'https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.5/dist/teachablemachine-image.min.js',
+];
+
+async function muatSkripTM(urls) {
+  for (const url of urls) {
+    try {
+      await new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = url;
+        s.onload = res;
+        s.onerror = rej;
+        document.head.appendChild(s);
+      });
+      if (window.tmImage) return true;
+    } catch(e) { console.warn('[TM] Gagal muatkan dari:', url); }
+  }
+  return false;
+}
+
 async function mulaTeachableMachine() {
   if (tmLoadStatus === 'ready') { mulaScanTM(); return; }
   if (tmLoadStatus === 'loading') return;
   tmLoadStatus = 'loading';
-  document.getElementById('camLabel').textContent = 'Memuatkan model AI...';
+  const labelEl = document.getElementById('camLabel');
+  if (labelEl) labelEl.textContent = 'Memuatkan model AI...';
+
   try {
     if (!window.tmImage) {
-      // Load TM library dynamically
-      await new Promise((res,rej) => {
-        const s = document.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js';
-        s.onload = res; s.onerror = rej;
-        document.head.appendChild(s);
-      });
+      const berjaya = await muatSkripTM(TM_CDNS);
+      if (!berjaya || !window.tmImage) throw new Error('Semua CDN gagal');
     }
+    if (labelEl) labelEl.textContent = 'Muat model dari server...';
     const modelURL = TM_MODEL_URL + 'model.json';
     const metadataURL = TM_MODEL_URL + 'metadata.json';
     tmModel = await window.tmImage.load(modelURL, metadataURL);
     tmMaxPred = tmModel.getTotalClasses();
     tmLoadStatus = 'ready';
-    document.getElementById('camLabel').textContent = 'Model AI bersedia ✓';
+    if (labelEl) labelEl.textContent = 'Model AI bersedia ✓';
     mulaScanTM();
   } catch(e) {
     tmLoadStatus = 'error';
-    document.getElementById('camLabel').textContent = 'Gagal muatkan model!';
-    console.error('[TM]', e);
+    console.error('[TM] Ralat:', e);
+    if (labelEl) labelEl.textContent = '⚠ Model gagal — semak konsol';
+    // Cuba semula selepas 5 saat
+    setTimeout(() => {
+      if (sesiSemasa?.aktif && sesiSemasa?.mod === 4) {
+        tmLoadStatus = 'idle';
+        mulaTeachableMachine();
+      }
+    }, 5000);
   }
 }
 
