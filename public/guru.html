@@ -571,15 +571,7 @@ textarea{resize:vertical;min-height:80px}
     </div>
   </div>
 
-  <!-- PENGURUSAN -->
-  <div class="halaman" id="halPengurusan">
-    <div class="sek-tajuk">⚙️ PENGURUSAN DATA</div>
-    <div class="tab-group">
-      <button class="tab-item aktif" onclick="bunyiKlik();tukarTab('murid',this)">👤 Murid</button>
-      <button class="tab-item" onclick="bunyiKlik();tukarTab('soalan',this)">📝 Set Soalan</button>
-    </div>
-
-    <!-- LATIHAN -->
+  <!-- LATIHAN -->
   <div class="halaman" id="halLatihan">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">
       <div class="sek-tajuk" style="margin-bottom:0">📚 PENGURUSAN LATIHAN</div>
@@ -602,6 +594,14 @@ textarea{resize:vertical;min-height:80px}
       <div style="color:var(--text2);padding:40px;text-align:center">Tiada latihan. Cipta latihan baharu.</div>
     </div>
   </div>
+
+  <!-- PENGURUSAN -->
+  <div class="halaman" id="halPengurusan">
+    <div class="sek-tajuk">⚙️ PENGURUSAN DATA</div>
+    <div class="tab-group">
+      <button class="tab-item aktif" onclick="bunyiKlik();tukarTab('murid',this)">👤 Murid</button>
+      <button class="tab-item" onclick="bunyiKlik();tukarTab('soalan',this)">📝 Set Soalan</button>
+    </div>
 
     <!-- TAB MURID -->
     <div class="sub-halaman aktif" id="tabMurid">
@@ -691,17 +691,17 @@ textarea{resize:vertical;min-height:80px}
       <div id="papanMod4" style="display:none">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
           <div>
-            <div style="font-size:.82rem;color:rgba(255,255,255,.5);margin-bottom:10px">IMBAS AI — TEACHABLE MACHINE</div>
+            <div style="font-size:.82rem;color:rgba(255,255,255,.5);margin-bottom:10px">PAPARAN KAMERA LANGSUNG</div>
             <div class="kamera-wrap">
-              <video id="tmVideo" autoplay playsinline style="width:100%;height:100%;object-fit:cover;border-radius:10px;display:block"></video>
+              <img id="camFeed" class="kamera-feed" src="" alt="Tiada paparan">
               <div class="kamera-overlay">
                 <div class="scan-line"></div>
                 <div class="kamera-label" id="camLabel">Menunggu kamera...</div>
-                <div class="kamera-label" id="camLabel">Memulakan kamera...</div>
+                <div class="auto-scan-badge"><div class="auto-dot"></div>AUTO SCAN AKTIF</div>
               </div>
             </div>
-            <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
-              <button class="btn btn-kecil btn-outline" style="color:#fff;border-color:rgba(255,255,255,.3)" onclick="mulaKameraTM()">📷 Mula Kamera</button>
+            <div style="margin-top:10px;display:flex;gap:8px">
+              <button class="btn btn-kecil btn-outline" style="color:#fff;border-color:rgba(255,255,255,.3)" id="btnFlash" onclick="bunyiKlik();togolFlash()">🔦 Flash: OFF</button>
             </div>
           </div>
           <div id="mod4HasilPanel">
@@ -1442,7 +1442,7 @@ async function hantarKehadiranTelegram(kelas, tarikh, hadir, tidakHadir, jumlah)
   mesej+=`❌ Tidak Hadir: *${tidakHadir.length}*\n\n`;
   if(hadir.length) { mesej+=`✅ *SENARAI HADIR:*\n`; hadir.forEach((m,i)=>{ mesej+=`${i+1}. ${m.nama}\n`; }); mesej+='\n'; }
   if(tidakHadir.length) { mesej+=`❌ *TIDAK HADIR:*\n`; tidakHadir.forEach((m,i)=>{ mesej+=`${i+1}. ${m.nama}\n`; }); mesej+='\n'; }
-  mesej+=`✨ _Dihantar oleh Cikgu ${data.namaCikgu||'—'}_`;
+  mesej+=`✨ _Dihantar oleh sistem ILMUVERSE_`;
 
   try {
     const res=await fetch(`${API}/api/telegram-kehadiran`,{
@@ -1650,7 +1650,7 @@ function papanPermainanMula(state) {
   if(state.mod===3)renderSusunanTrack(state.jumlahSoalan);
   if(state.mod===4)renderMod4UI();
   if(state.mod===2)renderBuzzerPanel(state.muridSenarai);
-  if(state.mod===1){kemaskiniMuridGiliran(state);if(state.masa>0)mulaTimerKlien(state.masa);}
+  if(state.mod===1)kemaskiniMuridGiliran(state);
   if(state.mod<=2)renderPilihan(state);
 }
 function renderAvatarEl(av){if(av&&av.startsWith('data:'))return`<img src="${av}" style="width:100%;height:100%;object-fit:cover">`;return`<span>${av||'👤'}</span>`;}
@@ -1690,11 +1690,12 @@ function kemaskiniMuridGiliran(state) {
   if(murid){const avEl=document.getElementById('giliranAvatarContent');if(avEl)avEl.innerHTML=renderAvatarEl(murid.avatar);document.getElementById('muridGiliranTeks').textContent=murid.nama;document.querySelectorAll('.skor-murid').forEach(el=>el.classList.remove('aktif-jawab'));document.getElementById('skor_'+(murid._id||murid.nama))?.classList.add('aktif-jawab');}
 }
 
-// Client-side timer — berjalan sendiri, disegerakkan oleh server
-let _timerSisa=0,_timerIv=null;
-function mulaTimerKlien(sisa){clearInterval(_timerIv);_timerSisa=sisa;_paparTimer(_timerSisa);_timerIv=setInterval(()=>{if(_timerSisa<=0){clearInterval(_timerIv);return;}_timerSisa--;_paparTimer(_timerSisa);},1000);}
-function _paparTimer(sisa){const el=document.getElementById('timerDisplay');if(!el)return;el.textContent=`${String(Math.floor(sisa/60)).padStart(2,'0')}:${String(sisa%60).padStart(2,'0')}`;el.className='timer-num '+(sisa<=10?'merah':sisa<=30?'kuning':'hijau');}
-function kemaskiniTimer(sisa){mulaTimerKlien(sisa);}
+function kemaskiniTimer(sisa) {
+  const el=document.getElementById('timerDisplay');
+  if(!el)return;
+  el.textContent=`${String(Math.floor(sisa/60)).padStart(2,'0')}:${String(sisa%60).padStart(2,'0')}`;
+  el.className='timer-num '+(sisa<=10?'merah':sisa<=30?'kuning':'hijau');
+}
 
 function soalanSeterusnya(){hantarWS({jenis:'soalan_seterusnya'});}
 
@@ -1785,13 +1786,7 @@ async function hantarUlasan(){const sel=document.getElementById('selectUlasanMur
 
 function tambahUlasanUI(d){const el=document.getElementById('ulasanList');const item=document.createElement('div');item.className='ulasan-item';item.style.animation='fadeIn .3s';item.innerHTML=`<div class="ulasan-nama">${d.muridNama}</div>${d.komen}`;el.appendChild(item);}
 
-function pushTelegram(){
-  if(!sesiDetailSemasa)return;
-  const namaCikgu=prompt('Masukkan nama cikgu untuk dihantar ke Telegram:','');
-  if(!namaCikgu||!namaCikgu.trim())return;
-  hantarWS({jenis:'push_telegram',sesiId:sesiDetailSemasa._id,namaCikgu:namaCikgu.trim()});
-  tunjukNotif('📨 Menghantar ke Telegram...');
-}
+function pushTelegram(){if(!sesiDetailSemasa)return;hantarWS({jenis:'push_telegram',sesiId:sesiDetailSemasa._id});tunjukNotif('📨 Menghantar ke Telegram...');}
 
 // ============================================================
 // SIARAN
@@ -1878,7 +1873,7 @@ function renderLatihanGrid() {
   el.innerHTML = data.map(l => {
     const tamat = l.tarikhTutup ? new Date(l.tarikhTutup) < new Date() : false;
     const bilanganJawapan = l.jawapan?.length || 0;
-    const bilanganSemak = l.jawapan?.filter(j => j.statusSemak==='disemak')?.length || 0;
+    const bilanganSemak = l.jawapan?.filter(j => j.statusSemak !== 'belum')?.length || 0;
 
     return `<div class="latihan-kad">
       <div class="latihan-header">
@@ -2032,9 +2027,9 @@ function renderDetailLatihan() {
   document.getElementById('detailLatihanTajuk').textContent = l.tajuk;
 
   const jawapan = l.jawapan || [];
-  const belum = jawapan.filter(j => !j.statusSemak||j.statusSemak==='belum').length;
-  const disemak = jawapan.filter(j => j.statusSemak==='disemak').length;
-  const approved = 0; // tidak digunakan lagi
+  const belum = jawapan.filter(j => j.statusSemak === 'belum').length;
+  const disemak = jawapan.filter(j => j.statusSemak === 'disemak').length;
+  const approved = jawapan.filter(j => j.statusSemak === 'approved').length;
 
   document.getElementById('detailLatihanBadan').innerHTML = `
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
@@ -2077,16 +2072,14 @@ function renderDetailLatihan() {
 }
 
 function renderJawapanItem(latihanId, j) {
-  const disemak = j.statusSemak && j.statusSemak!=='belum';
-  const statusClass = disemak ? 'status-approved' : 'status-belum';
-  const statusLabel = disemak ? '🔍 Disemak' : '⏳ Belum Disemak';
-  const markahPapar = j.markah != null ? ` <span style="font-family:'Orbitron',monospace;color:var(--gold);font-weight:700">${j.markah}/100</span>` : '';
+  const statusClass = j.statusSemak === 'approved' ? 'status-approved' : j.statusSemak === 'disemak' ? 'status-disemak' : 'status-belum';
+  const statusLabel = j.statusSemak === 'approved' ? '✅ Diluluskan' : j.statusSemak === 'disemak' ? '🔍 Disemak' : '⏳ Belum Disemak';
 
   return `<div class="jawapan-item" id="jwpn_${j._id}">
     <div class="jawapan-header">
       <div style="font-weight:700;font-size:.9rem">${j.muridNama}</div>
       ${j.kelas ? `<span class="tag-purple" style="font-size:.68rem">${j.kelas}</span>` : ''}
-      <span class="${statusClass}">${statusLabel}</span>${markahPapar}
+      <span class="${statusClass}">${statusLabel}</span>
       <span style="font-size:.72rem;color:var(--text2);margin-left:auto">${new Date(j.tarikhHantar).toLocaleString('ms-MY')}</span>
     </div>
     ${j.failNama ? `<div class="fail-preview" style="margin-bottom:8px">
@@ -2105,8 +2098,11 @@ function renderJawapanItem(latihanId, j) {
     <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
       <input id="komenJwpn_${j._id}" placeholder="Maklum balas kepada murid ini..." style="flex:1;min-width:160px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-family:'Exo 2',sans-serif;font-size:.82rem;outline:none;background:var(--panel2)">
       <button class="btn btn-kecil btn-utama" onclick="hantarKomenJawapan('${latihanId}','${j._id}')">Hantar</button>
-      <input type="number" id="markahInput_${j._id}" min="0" max="100" value="${j.markah||''}" placeholder="Markah (0-100)" style="width:120px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-family:'Exo 2',sans-serif;font-size:.82rem;outline:none;background:var(--panel2);color:var(--text)">
-      <button class="btn btn-kecil btn-utama" onclick="simpanMarkahJawapan('${latihanId}','${j._id}')">💯 Simpan Markah</button>
+      <select onchange="kemaskiniStatusJawapan('${latihanId}','${j._id}',this.value)" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-family:'Exo 2',sans-serif;font-size:.78rem;outline:none;background:var(--panel2);color:var(--text)">
+        <option value="belum" ${j.statusSemak==='belum'?'selected':''}>⏳ Belum Semak</option>
+        <option value="disemak" ${j.statusSemak==='disemak'?'selected':''}>🔍 Disemak</option>
+        <option value="approved" ${j.statusSemak==='approved'?'selected':''}>✅ Luluskan</option>
+      </select>
     </div>
   </div>`;
 }
@@ -2136,17 +2132,14 @@ async function hantarKomenJawapan(latihanId, jawapanId) {
   tunjukNotif('✅ Maklum balas dihantar!');
 }
 
-async function simpanMarkahJawapan(latihanId, jawapanId) {
-  const val = document.getElementById('markahInput_'+jawapanId)?.value;
-  if(val===''||val===undefined){tunjukNotif('⚠️ Sila masukkan markah');return;}
-  const markah = parseInt(val);
-  if(isNaN(markah)||markah<0||markah>100){tunjukNotif('⚠️ Markah mesti antara 0-100');return;}
-  await fetch(`${API}/api/latihan/${latihanId}/jawapan/${jawapanId}/status`,{
-    method:'PUT',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({status:'disemak',markah})
+async function kemaskiniStatusJawapan(latihanId, jawapanId, status) {
+  await fetch(`${API}/api/latihan/${latihanId}/jawapan/${jawapanId}/status`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status })
   });
-  tunjukNotif('✅ Markah disimpan!');
-  await bukaDetailLatihan(latihanId);
+  tunjukNotif('✅ Status dikemaskini!');
+  await muatLatihan();
 }
 // ============================================================
 // INIT
