@@ -1834,7 +1834,14 @@ async function jalanInferenceTM() {
   if (!img || !img.src || img.src === '' || img.naturalWidth === 0) return;
 
   try {
-    const predictions = await tmModel.predict(img);
+    const canvas = document.createElement('canvas');
+canvas.width = 224; canvas.height = 224;
+const ctx = canvas.getContext('2d');
+ctx.translate(224, 224);
+ctx.rotate(Math.PI);
+ctx.drawImage(img, 0, 0, 224, 224);
+
+const predictions = await tmModel.predict(canvas);
     let best = predictions.reduce((a,b) => b.probability > a.probability ? b : a);
     const conf = best.probability;
     const labelLower = best.className.toLowerCase();
