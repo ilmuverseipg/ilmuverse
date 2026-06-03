@@ -19,13 +19,9 @@
 html,body{min-height:100%;color:var(--text);font-family:'Exo 2',sans-serif;overflow-x:hidden;
   background:linear-gradient(135deg,#dde8ff 0%,#ede0ff 28%,#fce4f4 52%,#d4f0ff 76%,#dcffe8 100%) fixed;
   background-attachment:fixed}
-
-/* ── INTRO SPLASH ── */
 #introSplash{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;overflow:hidden;
   background:linear-gradient(135deg,#1a0533 0%,#0d1b5e 40%,#0a2e3d 70%,#041a1a 100%)}
-.intro-grid{position:absolute;inset:0;
-  background-image:linear-gradient(rgba(79,142,247,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(79,142,247,.12) 1px,transparent 1px);
-  background-size:40px 40px;animation:igScroll 14s linear infinite}
+.intro-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(79,142,247,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(79,142,247,.12) 1px,transparent 1px);background-size:40px 40px;animation:igScroll 14s linear infinite}
 @keyframes igScroll{to{transform:translateY(40px)}}
 .intro-orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none}
 .iorb1{width:500px;height:500px;background:radial-gradient(circle,rgba(79,142,247,.3),transparent);top:-150px;left:-150px;animation:iOrb 10s ease-in-out infinite}
@@ -35,10 +31,7 @@ html,body{min-height:100%;color:var(--text);font-family:'Exo 2',sans-serif;overf
 .intro-stars{position:absolute;inset:0;overflow:hidden}
 .star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;animation:twinkle var(--d) ease-in-out infinite var(--delay)}
 @keyframes twinkle{0%,100%{opacity:.1}50%{opacity:.8}}
-.intro-logo{font-family:'Orbitron',monospace;font-size:4rem;font-weight:900;letter-spacing:12px;
-  background:linear-gradient(135deg,#7dd3fc,#c084fc,#f9a8d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  filter:drop-shadow(0 0 40px rgba(125,211,252,.5));
-  position:relative;z-index:1;opacity:0;animation:iLogoIn 1s .3s ease forwards}
+.intro-logo{font-family:'Orbitron',monospace;font-size:4rem;font-weight:900;letter-spacing:12px;background:linear-gradient(135deg,#7dd3fc,#c084fc,#f9a8d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 40px rgba(125,211,252,.5));position:relative;z-index:1;opacity:0;animation:iLogoIn 1s .3s ease forwards}
 @keyframes iLogoIn{from{opacity:0;transform:scale(.7) translateY(30px);letter-spacing:20px}to{opacity:1;transform:scale(1) translateY(0);letter-spacing:12px}}
 .intro-tagline{font-family:'Orbitron',monospace;font-size:.85rem;color:rgba(255,255,255,.7);letter-spacing:6px;z-index:1;opacity:0;animation:iFadeUp .8s .9s ease forwards}
 .intro-by{font-size:.65rem;color:rgba(125,211,252,.6);letter-spacing:4px;z-index:1;opacity:0;animation:iFadeUp .8s 1.2s ease forwards}
@@ -48,37 +41,26 @@ html,body{min-height:100%;color:var(--text);font-family:'Exo 2',sans-serif;overf
 .intro-progress{width:220px;height:3px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;z-index:1;opacity:0;animation:iFadeUp .6s 1.8s ease forwards}
 .intro-progress-bar{height:100%;background:linear-gradient(90deg,#7dd3fc,#c084fc);border-radius:2px;width:0;animation:iProgFill 2.2s 1.8s ease forwards}
 @keyframes iProgFill{to{width:100%}}
-.intro-btn{display:none;padding:16px 56px;background:linear-gradient(135deg,rgba(125,211,252,.15),rgba(192,132,252,.15));
-  border:1px solid rgba(125,211,252,.4);border-radius:50px;color:#7dd3fc;
-  font-family:'Orbitron',monospace;font-size:.95rem;font-weight:700;letter-spacing:4px;cursor:pointer;
-  z-index:1;transition:.3s;backdrop-filter:blur(10px);
-  box-shadow:0 0 30px rgba(125,211,252,.2)}
+.intro-btn{display:none;padding:16px 56px;background:linear-gradient(135deg,rgba(125,211,252,.15),rgba(192,132,252,.15));border:1px solid rgba(125,211,252,.4);border-radius:50px;color:#7dd3fc;font-family:'Orbitron',monospace;font-size:.95rem;font-weight:700;letter-spacing:4px;cursor:pointer;z-index:1;transition:.3s;backdrop-filter:blur(10px);box-shadow:0 0 30px rgba(125,211,252,.2)}
 .intro-btn:hover{background:linear-gradient(135deg,rgba(125,211,252,.25),rgba(192,132,252,.25));border-color:rgba(125,211,252,.7);box-shadow:0 0 50px rgba(125,211,252,.4);transform:scale(1.04)}
 .intro-particles{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 .particle{position:absolute;width:4px;height:4px;border-radius:50%;animation:pFloat var(--pd) ease-in-out infinite var(--pdelay)}
 @keyframes pFloat{0%{transform:translateY(100vh) rotate(0);opacity:0}10%{opacity:.8}90%{opacity:.8}100%{transform:translateY(-100px) rotate(360deg);opacity:0}}
-
-/* ── TOPBAR ── */
 #app{display:none}
 .topbar{background:rgba(255,255,255,.92);border-bottom:2px solid rgba(79,142,247,0.18);height:64px;display:flex;align-items:center;padding:0 20px;gap:16px;position:sticky;top:0;z-index:100;backdrop-filter:blur(18px);box-shadow:0 2px 20px rgba(79,142,247,0.08)}
 .logo-wrap{display:flex;flex-direction:column;line-height:1.2}
 .logo-main{font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .logo-by{font-size:.72rem;color:var(--purple);letter-spacing:2px;font-weight:700;text-transform:uppercase;opacity:.9}
-.logo-sub{font-size:.6rem;color:var(--text2);letter-spacing:1.5px;text-transform:uppercase;font-weight:600}
 .topbar-nav{display:flex;gap:4px;margin-left:auto}
 .nav-btn{padding:8px 16px;background:transparent;border:1px solid transparent;border-radius:8px;color:var(--text2);font-family:'Exo 2',sans-serif;font-size:.83rem;cursor:pointer;transition:.2s;font-weight:600}
 .nav-btn.aktif,.nav-btn:hover{background:linear-gradient(135deg,rgba(79,142,247,.1),rgba(168,85,247,.06));border-color:rgba(79,142,247,.25);color:var(--accent)}
 .live-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);border-radius:20px;padding:4px 12px;font-size:.72rem;color:var(--green);font-weight:700}
 .live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:livePulse 1s infinite}
 @keyframes livePulse{0%,100%{opacity:1}50%{opacity:.3}}
-
-/* ── HALAMAN ── */
 .halaman{display:none;padding:24px;max-width:980px;margin:0 auto;animation:fadeIn .3s ease}
 .halaman.aktif{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .sek-tajuk{font-family:'Orbitron',monospace;font-size:1rem;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px;margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid rgba(79,142,247,.12)}
-
-/* ── PROGRESSION BAR ── */
 .prog-section{margin-bottom:28px}
 .prog-section-tajuk{font-family:'Orbitron',monospace;font-size:.82rem;color:var(--text2);letter-spacing:2px;margin-bottom:14px;display:flex;align-items:center;gap:10px}
 .prog-wrap{position:relative;background:rgba(255,255,255,.88);border:1.5px solid rgba(79,142,247,.2);border-radius:20px;padding:28px 20px 52px;box-shadow:0 6px 28px rgba(79,142,247,.12);overflow:visible}
@@ -101,49 +83,34 @@ html,body{min-height:100%;color:var(--text);font-family:'Exo 2',sans-serif;overf
 .prog-legend-av{width:26px;height:26px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;background:linear-gradient(135deg,rgba(79,142,247,.15),rgba(168,85,247,.1))}
 .prog-legend-av img{width:100%;height:100%;object-fit:cover}
 .prog-legend-pts{font-family:'Orbitron',monospace;font-weight:700;color:var(--accent);font-size:.8rem}
-.prog-empty{text-align:center;padding:30px;color:var(--text2);font-size:.88rem}
-
-/* ── FILTER BAR ── */
 .filter-bar{display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap}
 .filter-input{padding:8px 14px;background:rgba(255,255,255,.88);border:1.5px solid rgba(79,142,247,.2);border-radius:8px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.85rem;outline:none;box-shadow:var(--shadow)}
 .filter-input:focus{border-color:var(--accent)}
-
-/* ── STAT CARDS ── */
 .stat-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
 .stat-card{background:rgba(255,255,255,.88);border:1.5px solid rgba(79,142,247,.18);border-radius:14px;padding:18px;text-align:center;box-shadow:var(--shadow);transition:.2s}
 .stat-card:hover{box-shadow:var(--shadow2);transform:translateY(-2px)}
 .stat-card-num{font-family:'Orbitron',monospace;font-size:2rem;font-weight:900;line-height:1.1}
 .stat-card-label{font-size:.72rem;color:var(--text2);margin-top:4px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
-
-/* ── SESI KAD ── */
 .sesi-kad{background:rgba(255,255,255,.88);border:1.5px solid rgba(79,142,247,.18);border-radius:14px;padding:20px;margin-bottom:16px;cursor:pointer;transition:.3s;box-shadow:var(--shadow)}
 .sesi-kad:hover{border-color:rgba(79,142,247,.4);box-shadow:var(--shadow2);transform:translateY(-2px)}
 .sesi-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px}
 .sesi-tajuk-teks{font-size:1rem;font-weight:700;color:var(--text)}
 .sesi-tarikh-teks{font-size:.74rem;color:var(--text2);margin-top:4px}
 .sesi-mod-badge{padding:5px 14px;border-radius:20px;font-size:.74rem;font-weight:700}
-
-/* ── MURID CHIPS ── */
 .murid-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .murid-chip{background:rgba(255,255,255,.85);border-radius:20px;padding:6px 14px;display:flex;align-items:center;gap:8px;font-size:.85rem;border:1.5px solid rgba(79,142,247,.18);transition:.2s}
 .murid-chip:hover{border-color:rgba(79,142,247,.4)}
 .chip-avatar-img{width:26px;height:26px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(79,142,247,.12),rgba(168,85,247,.1));font-size:1rem;flex-shrink:0}
 .chip-avatar-img img{width:100%;height:100%;object-fit:cover}
 .markah-badge{font-family:'Orbitron',monospace;color:var(--accent);font-weight:700;font-size:.85rem}
-
-/* ── ULASAN BOX ── */
 .ulasan-box{background:linear-gradient(135deg,rgba(79,142,247,.04),rgba(168,85,247,.03));border-left:3px solid var(--accent);padding:12px 16px;border-radius:0 10px 10px 0;margin-top:12px}
 .ulasan-label{font-size:.72rem;color:var(--text2);margin-bottom:4px;font-weight:700}
 .ulasan-teks{font-size:.9rem;line-height:1.5;color:var(--text)}
-
-/* ── OVERLAY & MODAL ── */
 .overlay{display:none;position:fixed;inset:0;background:rgba(30,45,90,.4);z-index:500;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;backdrop-filter:blur(8px)}
 .overlay.buka{display:flex;animation:fadeIn .2s}
 .modal{background:rgba(255,255,255,.97);border:1.5px solid rgba(79,142,247,.2);border-radius:20px;padding:28px;width:100%;max-width:540px;position:relative;margin:auto;box-shadow:0 20px 60px rgba(30,45,90,.15)}
 .modal-tutup{position:absolute;top:14px;right:14px;background:var(--bg2);border:1px solid var(--border);color:var(--text2);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;transition:.2s}
 .modal-tutup:hover{background:var(--red);border-color:var(--red);color:#fff}
-
-/* ── RANKING ── */
 .ranking-item{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.85);border-radius:10px;padding:12px 16px;margin-bottom:10px;border:1.5px solid rgba(79,142,247,.15);transition:.2s}
 .ranking-item:hover{box-shadow:var(--shadow)}
 .r1-item{border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.04)}
@@ -154,8 +121,6 @@ html,body{min-height:100%;color:var(--text);font-family:'Exo 2',sans-serif;overf
 .rank-avatar img{width:100%;height:100%;object-fit:cover}
 .rank-nama{flex:1;font-weight:700}
 .rank-markah{font-family:'Orbitron',monospace;color:var(--accent);font-size:1.1rem;font-weight:700}
-
-/* ── SIARAN ── */
 .siaran-kad{background:rgba(255,255,255,.88);border:1.5px solid rgba(79,142,247,.18);border-radius:14px;overflow:hidden;margin-bottom:16px;transition:.3s;box-shadow:var(--shadow)}
 .siaran-kad:hover{box-shadow:var(--shadow2)}
 .siaran-header{padding:16px 20px;background:linear-gradient(135deg,rgba(79,142,247,.04),rgba(168,85,247,.03))}
@@ -165,11 +130,8 @@ html,body{min-height:100%;color:var(--text);font-family:'Exo 2',sans-serif;overf
 .siaran-link{display:block;padding:10px 20px;background:rgba(79,142,247,.06);color:var(--accent);text-decoration:none;font-size:.84rem;border-top:1px solid var(--border);font-weight:600;transition:.2s}
 .siaran-link:hover{background:rgba(79,142,247,.12)}
 .siaran-komen{padding:12px 20px;color:var(--text2);font-size:.85rem;border-top:1px solid var(--border);line-height:1.6;background:rgba(255,255,255,.6)}
-
-/* ── KEHADIRAN ── */
 .kehadiran-filter{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:20px}
 .kehadiran-select-kelas{padding:10px 14px;background:rgba(255,255,255,.88);border:1.5px solid rgba(79,142,247,.2);border-radius:10px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.9rem;outline:none;min-width:200px;box-shadow:var(--shadow)}
-.kehadiran-select-kelas:focus{border-color:var(--accent)}
 .kehadiran-tarikh{padding:10px 14px;background:rgba(255,255,255,.88);border:1.5px solid rgba(79,142,247,.2);border-radius:10px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.9rem;outline:none;box-shadow:var(--shadow)}
 .kehadiran-rekod-list{display:grid;gap:14px}
 .kehadiran-rekod-kad{background:rgba(255,255,255,.88);border:1.5px solid rgba(79,142,247,.18);border-radius:14px;padding:18px;box-shadow:var(--shadow);transition:.3s}
@@ -184,29 +146,16 @@ html,body{min-height:100%;color:var(--text);font-family:'Exo 2',sans-serif;overf
 .chip-tidak-hadir{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.3);padding:4px 12px;border-radius:20px;font-size:.78rem;font-weight:700;display:flex;align-items:center;gap:6px}
 .chip-mini-avatar{width:20px;height:20px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0}
 .chip-mini-avatar img{width:100%;height:100%;object-fit:cover}
-
-/* ── MOD BADGES ── */
 .badge-mod1{background:rgba(79,142,247,.1);color:var(--accent);border:1px solid rgba(79,142,247,.3)}
 .badge-mod2{background:rgba(168,85,247,.1);color:var(--purple);border:1px solid rgba(168,85,247,.3)}
 .badge-mod3{background:rgba(245,158,11,.1);color:var(--gold);border:1px solid rgba(245,158,11,.3)}
 .badge-mod4{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.3)}
-
-/* ── KOSONG ── */
 .kosong{text-align:center;padding:60px 20px;color:var(--text2)}
 .kosong-ikon{font-size:3rem;margin-bottom:12px}
 .kosong-teks{font-size:.9rem}
-
-/* ── NOTIF ── */
 .notif-bar{position:fixed;bottom:20px;right:20px;background:rgba(255,255,255,.97);border:1.5px solid rgba(79,142,247,.2);border-radius:12px;padding:12px 20px;font-size:.85rem;z-index:9999;display:none;animation:slideIn .3s;max-width:300px;box-shadow:var(--shadow2);color:var(--text)}
 @keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}
-
-/* ── SCROLLBAR ── */
-::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:rgba(79,142,247,.05)}
-::-webkit-scrollbar-thumb{background:rgba(79,142,247,.28);border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:var(--accent)}
-
-/* ── LATIHAN ── */
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:rgba(79,142,247,.05)}::-webkit-scrollbar-thumb{background:rgba(79,142,247,.28);border-radius:3px}
 .latihan-kad{background:rgba(255,255,255,.88);border:1.5px solid rgba(79,142,247,.2);border-radius:14px;padding:20px;margin-bottom:16px;transition:.3s;box-shadow:var(--shadow)}
 .latihan-kad:hover{border-color:rgba(79,142,247,.4);box-shadow:var(--shadow2)}
 .latihan-tajuk{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:6px}
@@ -218,8 +167,6 @@ html,body{min-height:100%;color:var(--text);font-family:'Exo 2',sans-serif;overf
 .tag-merah{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.3);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
 .tag-biru{background:rgba(79,142,247,.1);color:var(--accent);border:1px solid rgba(79,142,247,.3);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
 .tag-gold{background:rgba(245,158,11,.1);color:var(--gold);border:1px solid rgba(245,158,11,.3);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
-
-/* Hantar jawapan section */
 .hantar-jawapan-section{background:rgba(79,142,247,.04);border:1.5px dashed rgba(79,142,247,.25);border-radius:12px;padding:16px;margin-top:14px}
 .hantar-jawapan-tajuk{font-size:.78rem;font-weight:700;color:var(--accent);letter-spacing:.5px;text-transform:uppercase;margin-bottom:12px}
 .upload-drop-zone{border:2px dashed rgba(79,142,247,.3);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:.2s;background:rgba(79,142,247,.02)}
@@ -228,40 +175,27 @@ html,body{min-height:100%;color:var(--text);font-family:'Exo 2',sans-serif;overf
 .fail-ikon{font-size:1.6rem}
 .fail-nama{font-size:.84rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fail-saiz{font-size:.72rem;color:var(--text2)}
-
-/* Komen section */
 .komen-list{display:flex;flex-direction:column;gap:6px;margin:10px 0;max-height:180px;overflow-y:auto}
 .komen-item{padding:8px 12px;border-radius:8px;font-size:.84rem}
 .komen-guru{background:rgba(79,142,247,.08);border-left:3px solid var(--accent)}
 .komen-murid{background:rgba(168,85,247,.06);border-left:3px solid var(--purple)}
 .komen-nama{font-weight:700;font-size:.72rem;margin-bottom:2px}
-
-/* Status murid hantar */
 .status-hantar{display:inline-flex;align-items:center;gap:5px;font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:20px}
 .status-hantar.belum{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.3)}
 .status-hantar.dah-hantar{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.3)}
-.status-hantar.approved{background:rgba(245,158,11,.1);color:var(--gold);border:1px solid rgba(245,158,11,.3)}
-
-/* Pilih murid panel */
+.status-hantar.approved,.status-hantar.ada-markah{background:rgba(245,158,11,.1);color:var(--gold);border:1px solid rgba(245,158,11,.3)}
+.markah-display-box{background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(79,142,247,.05));border:1.5px solid rgba(245,158,11,.3);border-radius:10px;padding:12px 16px;margin-top:10px;display:flex;align-items:center;gap:12px}
+.markah-num{font-family:'Orbitron',monospace;font-size:2rem;font-weight:900;color:var(--gold)}
 .pilih-murid-section{background:rgba(255,255,255,.88);border:1.5px solid rgba(79,142,247,.15);border-radius:12px;padding:16px;margin-bottom:20px}
 .pilih-murid-tajuk{font-size:.78rem;font-weight:700;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:12px}
 .murid-pilih-grid{display:flex;gap:8px;flex-wrap:wrap}
 .murid-pilih-chip{display:flex;align-items:center;gap:8px;padding:8px 16px;background:rgba(255,255,255,.9);border:2px solid rgba(79,142,247,.2);border-radius:20px;cursor:pointer;transition:.2s;font-size:.85rem;font-weight:600}
 .murid-pilih-chip.dipilih{border-color:var(--accent);background:rgba(79,142,247,.08);color:var(--accent)}
 .murid-pilih-chip:hover:not(.dipilih){border-color:rgba(79,142,247,.4)}
-
-@media(max-width:600px){
-  .topbar-nav{gap:2px}
-  .nav-btn{padding:6px 10px;font-size:.75rem}
-  .stat-cards{grid-template-columns:repeat(2,1fr)}
-  .halaman{padding:16px}
-  .intro-logo{font-size:2.5rem;letter-spacing:8px}
-}
+@media(max-width:600px){.topbar-nav{gap:2px}.nav-btn{padding:6px 10px;font-size:.75rem}.stat-cards{grid-template-columns:repeat(2,1fr)}.halaman{padding:16px}.intro-logo{font-size:2.5rem;letter-spacing:8px}}
 </style>
 </head>
 <body>
-
-<!-- ====================== INTRO SPLASH ====================== -->
 <div id="introSplash">
   <div class="intro-grid"></div>
   <div class="intro-orb iorb1"></div>
@@ -278,7 +212,6 @@ html,body{min-height:100%;color:var(--text);font-family:'Exo 2',sans-serif;overf
   <button class="intro-btn" id="introMasuk" onclick="masukApp()">MASUK ›</button>
 </div>
 
-<!-- ====================== APP ====================== -->
 <div id="app">
 <div class="topbar">
   <div class="logo-wrap">
@@ -294,15 +227,10 @@ html,body{min-height:100%;color:var(--text);font-family:'Exo 2',sans-serif;overf
   <span class="live-badge" style="margin-left:8px"><span class="live-dot"></span>Live</span>
 </div>
 
-<!-- ====================== PENCAPAIAN ====================== -->
+<!-- PENCAPAIAN -->
 <div class="halaman aktif" id="halDashboard">
-
-  <!-- PROGRESSION BAR -->
   <div class="prog-section">
-    <div class="prog-section-tajuk">
-      <span>🏅</span><span>KEDUDUKAN LEVEL MURID</span>
-      <span style="font-size:.7rem;color:var(--accent);margin-left:auto;font-style:normal">0 — 100 Mata</span>
-    </div>
+    <div class="prog-section-tajuk"><span>🏅</span><span>KEDUDUKAN LEVEL MURID</span><span style="font-size:.7rem;color:var(--accent);margin-left:auto;font-style:normal">0 — 100 Mata</span></div>
     <div class="prog-wrap">
       <div class="prog-label-row"><span>0</span><span>25</span><span>50</span><span>75</span><span>100 ⭐</span></div>
       <div class="prog-track" id="progTrack">
@@ -317,89 +245,52 @@ html,body{min-height:100%;color:var(--text);font-family:'Exo 2',sans-serif;overf
     </div>
     <div class="prog-legend" id="progLegend"></div>
   </div>
-
   <div class="filter-bar">
     <div class="sek-tajuk" style="margin-bottom:0;border:none;padding:0">🏆 REKOD PENCAPAIAN</div>
     <input type="date" class="filter-input" id="tarikhFilter" onchange="tapisData()">
     <button onclick="tapisData()" style="padding:8px 14px;background:linear-gradient(135deg,var(--accent),var(--teal));color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:600;font-size:.83rem;box-shadow:0 3px 12px rgba(79,142,247,.3)">🔄 Tapis</button>
   </div>
-
   <div class="stat-cards" id="statCards" style="display:none">
-    <div class="stat-card">
-      <div class="stat-card-num" style="color:var(--accent)" id="statJumlahSesi">0</div>
-      <div class="stat-card-label">📚 Sesi</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-card-num" style="color:var(--gold)" id="statJumlahMurid">0</div>
-      <div class="stat-card-label">👥 Murid Aktif</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-card-num" style="color:var(--green)" id="statMarkahTertinggi">0</div>
-      <div class="stat-card-label">⭐ Markah Tertinggi</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-card-num" style="color:var(--purple)" id="statPemenang">—</div>
-      <div class="stat-card-label">🥇 Juara Terkini</div>
-    </div>
+    <div class="stat-card"><div class="stat-card-num" style="color:var(--accent)" id="statJumlahSesi">0</div><div class="stat-card-label">📚 Sesi</div></div>
+    <div class="stat-card"><div class="stat-card-num" style="color:var(--gold)" id="statJumlahMurid">0</div><div class="stat-card-label">👥 Murid Aktif</div></div>
+    <div class="stat-card"><div class="stat-card-num" style="color:var(--green)" id="statMarkahTertinggi">0</div><div class="stat-card-label">⭐ Markah Tertinggi</div></div>
+    <div class="stat-card"><div class="stat-card-num" style="color:var(--purple)" id="statPemenang">—</div><div class="stat-card-label">🥇 Juara Terkini</div></div>
   </div>
-
   <div id="sesiGrid"><div class="kosong"><div class="kosong-ikon">📋</div><div class="kosong-teks">Tiada rekod lagi</div></div></div>
 </div>
 
-<!-- ====================== KEHADIRAN ====================== -->
+<!-- KEHADIRAN -->
 <div class="halaman" id="halKehadiran">
   <div class="sek-tajuk">✅ REKOD KEHADIRAN</div>
-
   <div class="kehadiran-filter">
-    <div>
-      <label style="font-size:.72rem;color:var(--text2);display:block;margin-bottom:5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px">KELAS</label>
-      <select class="kehadiran-select-kelas" id="filterKehadiranKelas" onchange="muatKehadiran()">
-        <option value="">Semua Kelas</option>
-      </select>
-    </div>
-    <div>
-      <label style="font-size:.72rem;color:var(--text2);display:block;margin-bottom:5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px">TARIKH</label>
-      <input type="date" class="kehadiran-tarikh" id="filterKehadiranTarikh" onchange="muatKehadiran()">
-    </div>
+    <div><label style="font-size:.72rem;color:var(--text2);display:block;margin-bottom:5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px">KELAS</label>
+    <select class="kehadiran-select-kelas" id="filterKehadiranKelas" onchange="muatKehadiran()"><option value="">Semua Kelas</option></select></div>
+    <div><label style="font-size:.72rem;color:var(--text2);display:block;margin-bottom:5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px">TARIKH</label>
+    <input type="date" class="kehadiran-tarikh" id="filterKehadiranTarikh" onchange="muatKehadiran()"></div>
   </div>
-
-  <div class="kehadiran-rekod-list" id="kehadiranRekodList">
-    <div class="kosong"><div class="kosong-ikon">📋</div><div class="kosong-teks">Tiada rekod kehadiran lagi</div></div>
-  </div>
+  <div class="kehadiran-rekod-list" id="kehadiranRekodList"><div class="kosong"><div class="kosong-ikon">📋</div><div class="kosong-teks">Tiada rekod kehadiran lagi</div></div></div>
 </div>
 
-<!-- ====================== SIARAN ====================== -->
+<!-- SIARAN -->
 <div class="halaman" id="halSiaran">
   <div class="sek-tajuk">📢 SIARAN & NOTA DARIPADA GURU</div>
   <div id="siaranGrid"><div class="kosong"><div class="kosong-ikon">📢</div><div class="kosong-teks">Tiada siaran lagi</div></div></div>
 </div>
 
-<!-- ====================== LATIHAN ====================== -->
+<!-- LATIHAN -->
 <div class="halaman" id="halLatihan">
   <div class="sek-tajuk">📚 LATIHAN DARIPADA GURU</div>
-
-  <!-- Pilih Murid -->
   <div class="pilih-murid-section" id="pilihMuridSection">
     <div class="pilih-murid-tajuk">👤 Siapa anda? (pilih nama untuk hantar jawapan)</div>
-    <div class="murid-pilih-grid" id="muridPilihGrid">
-      <div style="color:var(--text2);font-size:.85rem">Memuatkan senarai murid...</div>
-    </div>
+    <div class="murid-pilih-grid" id="muridPilihGrid"><div style="color:var(--text2);font-size:.85rem">Memuatkan senarai murid...</div></div>
   </div>
-
-  <!-- Filter -->
   <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center">
-    <select id="latihanFilterKelasM" onchange="muatLatihanMurid()" style="padding:8px 14px;background:rgba(255,255,255,.88);border:1.5px solid rgba(79,142,247,.2);border-radius:8px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.85rem;outline:none;box-shadow:var(--shadow)">
-      <option value="">Semua Kelas</option>
-    </select>
+    <select id="latihanFilterKelasM" onchange="muatLatihanMurid()" style="padding:8px 14px;background:rgba(255,255,255,.88);border:1.5px solid rgba(79,142,247,.2);border-radius:8px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.85rem;outline:none;box-shadow:var(--shadow)"><option value="">Semua Kelas</option></select>
     <button onclick="muatLatihanMurid()" style="padding:8px 14px;background:linear-gradient(135deg,var(--accent),var(--teal));color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:600;font-size:.83rem;box-shadow:0 3px 12px rgba(79,142,247,.3)">🔄 Muat Semula</button>
   </div>
-
-  <div id="latihanMuridGrid">
-    <div class="kosong"><div class="kosong-ikon">📚</div><div class="kosong-teks">Tiada latihan lagi</div></div>
-  </div>
+  <div id="latihanMuridGrid"><div class="kosong"><div class="kosong-ikon">📚</div><div class="kosong-teks">Tiada latihan lagi</div></div></div>
 </div>
-
-</div><!-- /#app -->
+</div>
 
 <!-- DETAIL MODAL -->
 <div class="overlay" id="overlayDetail">
@@ -408,519 +299,213 @@ html,body{min-height:100%;color:var(--text);font-family:'Exo 2',sans-serif;overf
     <div id="detailBadan"></div>
   </div>
 </div>
-
 <div class="notif-bar" id="notifBar"></div>
 
 <script>
 const API = window.location.origin;
-const WS_URL = window.location.hostname === 'localhost'
-  ? 'ws://localhost:3000' : `wss://${window.location.hostname}`;
+const WS_URL = window.location.hostname === 'localhost' ? 'ws://localhost:3000' : `wss://${window.location.hostname}`;
+let ws, semuaSesi=[], semuaMurid=[], muridDipilih=null, semuaLatihan=[], failMuridMap={}, semuaKehadiran=[];
+const MOD_NAMA=['','Kuiz Ramai-ramai','Dwi-Padu','Susunan Hafalan','Imbas AI'];
+const MOD_BADGE=['','badge-mod1','badge-mod2','badge-mod3','badge-mod4'];
+const MOD_IKON=['','👥','⚡','📖','🤖'];
 
-let ws;
-let semuaSesi = [];
-let semuaSiaran = [];
-let semuaKehadiran = [];
-let semuaMurid = [];
-let muridDipilih = null; // { _id, nama, avatar, kelas }
-let semuaLatihan = [];
-let failMuridMap = {}; // { latihanId: { file, nama, saiz, data, jenis } }
-
-const MOD_NAMA = ['','Kuiz Ramai-ramai','Dwi-Padu','Susunan Hafalan','Imbas AI'];
-const MOD_BADGE = ['','badge-mod1','badge-mod2','badge-mod3','badge-mod4'];
-const MOD_IKON  = ['','👥','⚡','📖','🤖'];
-
-// ============================================================
-// INTRO SPLASH
-// ============================================================
-(function initIntro() {
-  const stars = document.getElementById('introStars');
-  for (let i=0; i<80; i++) {
-    const s = document.createElement('div');
-    s.className = 'star';
-    s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;
-      --d:${2+Math.random()*4}s;--delay:${Math.random()*4}s;
-      width:${1+Math.random()*2.5}px;height:${1+Math.random()*2.5}px;opacity:${.1+Math.random()*.7}`;
-    stars.appendChild(s);
-  }
-  const colors = ['#7dd3fc','#c084fc','#f9a8d4','#4ade80','#fbbf24'];
-  const parts = document.getElementById('introParticles');
-  for (let i=0; i<20; i++) {
-    const p = document.createElement('div');
-    p.className = 'particle';
-    p.style.cssText = `left:${Math.random()*100}%;background:${colors[Math.floor(Math.random()*colors.length)]};
-      opacity:.7;border-radius:50%;width:${2+Math.random()*4}px;height:${2+Math.random()*4}px;
-      --pd:${6+Math.random()*10}s;--pdelay:${Math.random()*8}s`;
-    parts.appendChild(p);
-  }
-  setTimeout(() => {
-    document.getElementById('introMasuk').style.display = 'block';
-  }, 3800);
+(function initIntro(){
+  const stars=document.getElementById('introStars');
+  for(let i=0;i<80;i++){const s=document.createElement('div');s.className='star';s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;--delay:${Math.random()*4}s;width:${1+Math.random()*2.5}px;height:${1+Math.random()*2.5}px;opacity:${.1+Math.random()*.7}`;stars.appendChild(s);}
+  const colors=['#7dd3fc','#c084fc','#f9a8d4','#4ade80','#fbbf24'];
+  const parts=document.getElementById('introParticles');
+  for(let i=0;i<20;i++){const p=document.createElement('div');p.className='particle';p.style.cssText=`left:${Math.random()*100}%;background:${colors[Math.floor(Math.random()*colors.length)]};opacity:.7;border-radius:50%;width:${2+Math.random()*4}px;height:${2+Math.random()*4}px;--pd:${6+Math.random()*10}s;--pdelay:${Math.random()*8}s`;parts.appendChild(p);}
+  setTimeout(()=>{document.getElementById('introMasuk').style.display='block';},3800);
 })();
 
-function masukApp() {
-  const splash = document.getElementById('introSplash');
-  splash.style.transition = 'opacity .6s, transform .6s';
-  splash.style.opacity = '0';
-  splash.style.transform = 'scale(1.04)';
-  setTimeout(() => {
-    splash.style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    muatSemua();
-  }, 600);
+function masukApp(){
+  const splash=document.getElementById('introSplash');
+  splash.style.transition='opacity .6s, transform .6s';splash.style.opacity='0';splash.style.transform='scale(1.04)';
+  setTimeout(()=>{splash.style.display='none';document.getElementById('app').style.display='block';muatSemua();},600);
 }
 
-// ============================================================
-// WEBSOCKET
-// ============================================================
-function sambungWS() {
-  ws = new WebSocket(`${WS_URL}/murid`);
-  ws.onmessage = (e) => {
-    let d; try { d = JSON.parse(e.data); } catch { return; }
-    if (d.jenis === 'siaran_baharu') { muatSiaran(); tunjukNotif('📢 Siaran baharu daripada guru!'); }
-    if (d.jenis === 'ulasan_baharu') { muatDashboard(); tunjukNotif('💬 Ulasan baharu daripada guru!'); }
-    if (d.jenis === 'latihan_baharu') { muatLatihanMurid(); tunjukNotif('📚 Latihan baharu daripada guru!'); }
-    if (d.jenis === 'jawapan_komen_baharu') { muatLatihanMurid(); tunjukNotif('💬 Guru hantar maklum balas pada latihan anda!'); }
+function sambungWS(){
+  ws=new WebSocket(`${WS_URL}/murid`);
+  ws.onmessage=(e)=>{
+    let d;try{d=JSON.parse(e.data);}catch{return;}
+    if(d.jenis==='siaran_baharu'){muatSiaran();tunjukNotif('📢 Siaran baharu daripada guru!');}
+    if(d.jenis==='ulasan_baharu'){muatDashboard();tunjukNotif('💬 Ulasan baharu daripada guru!');}
+    if(d.jenis==='latihan_baharu'){muatLatihanMurid();tunjukNotif('📚 Latihan baharu daripada guru!');}
+    if(d.jenis==='jawapan_komen_baharu'){muatLatihanMurid();tunjukNotif('💬 Guru hantar maklum balas pada latihan anda!');}
+    if(d.jenis==='markah_dikemaskini'){
+      muatLatihanMurid();
+      if(muridDipilih&&(d.muridId===muridDipilih._id||d.muridNama===muridDipilih.nama)){
+        tunjukNotif(`📊 Cikgu telah beri markah: ${d.markah}/100!`);
+      }
+    }
   };
-  ws.onclose = () => setTimeout(sambungWS, 4000);
+  ws.onclose=()=>setTimeout(sambungWS,4000);
 }
 
-// ============================================================
-// NAVIGASI
-// ============================================================
-function tukarHalaman(id, btn) {
-  document.querySelectorAll('.halaman').forEach(h => h.classList.remove('aktif'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('aktif'));
-  document.getElementById('hal' + id.charAt(0).toUpperCase() + id.slice(1)).classList.add('aktif');
-  if (btn) btn.classList.add('aktif');
-  if (id === 'siaran') muatSiaran();
-  if (id === 'kehadiran') muatKehadiran();
-  if (id === 'latihan') muatLatihanMurid();
+function tukarHalaman(id,btn){
+  document.querySelectorAll('.halaman').forEach(h=>h.classList.remove('aktif'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('aktif'));
+  document.getElementById('hal'+id.charAt(0).toUpperCase()+id.slice(1)).classList.add('aktif');
+  if(btn)btn.classList.add('aktif');
+  if(id==='siaran')muatSiaran();
+  if(id==='kehadiran')muatKehadiran();
+  if(id==='latihan')muatLatihanMurid();
 }
 
-// ============================================================
-// MURID
-// ============================================================
-async function muatMurid() {
-  try {
-    const res = await fetch(`${API}/api/murid`);
-    semuaMurid = await res.json();
-    kemaskiniKelasList();
-    renderMuridPilih();
-  } catch(e) { semuaMurid = []; }
+async function muatMurid(){
+  try{const res=await fetch(`${API}/api/murid`);semuaMurid=await res.json();kemaskiniKelasList();renderMuridPilih();}catch(e){semuaMurid=[];}
 }
-
-function cariMurid(id) {
-  return semuaMurid.find(m => m._id === id || m.nama === id);
-}
-
-function renderAvatarChip(av, saiz=26) {
-  if (av && av.startsWith('data:')) return `<img src="${av}" style="width:${saiz}px;height:${saiz}px;border-radius:50%;object-fit:cover;display:block">`;
-  return `<span style="font-size:${saiz*0.6}px">${av||'👤'}</span>`;
-}
-
-function renderMuridPilih() {
-  const el = document.getElementById('muridPilihGrid');
-  if (!semuaMurid.length) {
-    el.innerHTML = '<div style="color:var(--text2);font-size:.85rem">Tiada murid didaftarkan lagi</div>';
-    return;
-  }
-  el.innerHTML = semuaMurid.map(m => {
-    const av = m.avatar || '👤';
-    const avHtml = av.startsWith('data:') ? `<img src="${av}" style="width:22px;height:22px;border-radius:50%;object-fit:cover">` : `<span>${av}</span>`;
-    const dipilih = muridDipilih?._id === m._id ? 'dipilih' : '';
-    return `<div class="murid-pilih-chip ${dipilih}" onclick="pilihMurid('${m._id}')">
-      ${avHtml}
-      <span>${m.nama}</span>
-      ${m.kelas ? `<span style="font-size:.7rem;color:var(--text2)">(${m.kelas})</span>` : ''}
-    </div>`;
+function cariMurid(id){return semuaMurid.find(m=>m._id===id||m.nama===id);}
+function renderAvatarChip(av,saiz=26){if(av&&av.startsWith('data:'))return`<img src="${av}" style="width:${saiz}px;height:${saiz}px;border-radius:50%;object-fit:cover;display:block">`;return`<span style="font-size:${saiz*0.6}px">${av||'👤'}</span>`;}
+function renderMuridPilih(){
+  const el=document.getElementById('muridPilihGrid');
+  if(!semuaMurid.length){el.innerHTML='<div style="color:var(--text2);font-size:.85rem">Tiada murid didaftarkan lagi</div>';return;}
+  el.innerHTML=semuaMurid.map(m=>{
+    const av=m.avatar||'👤';
+    const avHtml=av.startsWith('data:')?`<img src="${av}" style="width:22px;height:22px;border-radius:50%;object-fit:cover">`:`<span>${av}</span>`;
+    return`<div class="murid-pilih-chip ${muridDipilih?._id===m._id?'dipilih':''}" onclick="pilihMurid('${m._id}')">${avHtml}<span>${m.nama}</span>${m.kelas?`<span style="font-size:.7rem;color:var(--text2)">(${m.kelas})</span>`:''}</div>`;
   }).join('');
 }
+function pilihMurid(id){muridDipilih=semuaMurid.find(m=>m._id===id)||null;renderMuridPilih();muatLatihanMurid();tunjukNotif(`👤 Dipilih: ${muridDipilih?.nama}`);}
 
-function pilihMurid(id) {
-  muridDipilih = semuaMurid.find(m => m._id === id) || null;
-  renderMuridPilih();
-  muatLatihanMurid();
-  tunjukNotif(`👤 Dipilih: ${muridDipilih?.nama}`);
-}
-
-// ============================================================
-// PROGRESSION BAR
-// ============================================================
-function kiraMataSetiapMurid() {
-  const mataMap = {};
-  semuaMurid.forEach(m => { mataMap[m._id] = 0; });
-  semuaSesi.forEach(sesi => {
-    (sesi.keputusan||[]).forEach(k => {
-      const m = cariMurid(k.muridId || k.nama);
-      if (m) {
-        if (!mataMap[m._id]) mataMap[m._id] = 0;
-        mataMap[m._id] += (k.markah||0);
-      }
-    });
-  });
+function kiraMataSetiapMurid(){
+  const mataMap={};semuaMurid.forEach(m=>{mataMap[m._id]=0;});
+  semuaSesi.forEach(sesi=>{(sesi.keputusan||[]).forEach(k=>{const m=cariMurid(k.muridId||k.nama);if(m){if(!mataMap[m._id])mataMap[m._id]=0;mataMap[m._id]+=(k.markah||0);}});});
   return mataMap;
 }
-
-function renderProgression() {
-  const track = document.getElementById('progTrack');
-  const legend = document.getElementById('progLegend');
+function renderProgression(){
+  const track=document.getElementById('progTrack');const legend=document.getElementById('progLegend');
   track.querySelectorAll('.prog-pin').forEach(p=>p.remove());
-
-  if (!semuaMurid.length) {
-    legend.innerHTML = '<div class="prog-empty">Tiada murid didaftarkan lagi</div>';
-    return;
-  }
-
-  const mataMap = kiraMataSetiapMurid();
-  const MAX_PTS = 100;
-
-  const muridData = semuaMurid
-    .map(m => ({ m, pts: Math.min(mataMap[m._id]||0, MAX_PTS) }))
-    .sort((a,b) => b.pts - a.pts);
-
-  legend.innerHTML = muridData.map(({m, pts}) => {
-    const av = m.avatar||'👤';
-    const avHtml = av.startsWith('data:') ? `<img src="${av}">` : `<span style="font-size:.8rem">${av}</span>`;
-    return `<div class="prog-legend-item">
-      <div class="prog-legend-av">${avHtml}</div>
-      <span style="font-weight:700;font-size:.8rem;color:var(--text)">${m.nama}</span>
-      <span class="prog-legend-pts">${pts}⭐</span>
-    </div>`;
-  }).join('');
-
-  const posGroups = {};
-  muridData.forEach(({m, pts}) => {
-    const pct = (pts / MAX_PTS) * 100;
-    const bucket = Math.round(pct / 2) * 2;
-    if (!posGroups[bucket]) posGroups[bucket] = [];
-    posGroups[bucket].push({m, pts, pct});
-  });
-
-  Object.values(posGroups).forEach(group => {
-    group.forEach(({m, pts, pct}, gi) => {
-      const av = m.avatar||'👤';
-      const avHtml = av.startsWith('data:') ? `<img src="${av}">` : `<span style="font-size:1rem">${av}</span>`;
-      const pin = document.createElement('div');
-      pin.className = 'prog-pin';
-      const vertOffset = gi * 46;
-      pin.style.cssText = `left:${Math.max(2,Math.min(98,pct))}%;top:${-20 - vertOffset}px`;
-      pin.title = `${m.nama}: ${pts} mata`;
-      pin.innerHTML = `
-        <div class="prog-avatar">${avHtml}</div>
-        <div class="prog-pin-name">${m.nama.split(' ')[0]}</div>
-        <div class="prog-score-badge">${pts}⭐</div>
-        <div class="prog-pin-line"></div>
-      `;
-      track.appendChild(pin);
-    });
-  });
-
-  const maxPts = muridData.length ? muridData[0].pts : 0;
-  document.getElementById('progFill').style.width = `${(maxPts/MAX_PTS)*100}%`;
+  if(!semuaMurid.length){legend.innerHTML='<div style="text-align:center;padding:20px;color:var(--text2);font-size:.85rem">Tiada murid</div>';return;}
+  const mataMap=kiraMataSetiapMurid();const MAX_PTS=100;
+  const muridData=semuaMurid.map(m=>({m,pts:Math.min(mataMap[m._id]||0,MAX_PTS)})).sort((a,b)=>b.pts-a.pts);
+  legend.innerHTML=muridData.map(({m,pts})=>{const av=m.avatar||'👤';const avHtml=av.startsWith('data:')?`<img src="${av}">`:`<span style="font-size:.8rem">${av}</span>`;return`<div class="prog-legend-item"><div class="prog-legend-av">${avHtml}</div><span style="font-weight:700;font-size:.8rem;color:var(--text)">${m.nama}</span><span class="prog-legend-pts">${pts}⭐</span></div>`;}).join('');
+  const posGroups={};muridData.forEach(({m,pts})=>{const pct=(pts/MAX_PTS)*100;const bucket=Math.round(pct/2)*2;if(!posGroups[bucket])posGroups[bucket]=[];posGroups[bucket].push({m,pts,pct});});
+  Object.values(posGroups).forEach(group=>{group.forEach(({m,pts,pct},gi)=>{const av=m.avatar||'👤';const avHtml=av.startsWith('data:')?`<img src="${av}">`:`<span style="font-size:1rem">${av}</span>`;const pin=document.createElement('div');pin.className='prog-pin';pin.style.cssText=`left:${Math.max(2,Math.min(98,pct))}%;top:${-20-gi*46}px`;pin.title=`${m.nama}: ${pts} mata`;pin.innerHTML=`<div class="prog-avatar">${avHtml}</div><div class="prog-pin-name">${m.nama.split(' ')[0]}</div><div class="prog-score-badge">${pts}⭐</div><div class="prog-pin-line"></div>`;track.appendChild(pin);});});
+  const maxPts=muridData.length?muridData[0].pts:0;document.getElementById('progFill').style.width=`${(maxPts/MAX_PTS)*100}%`;
 }
 
-// ============================================================
-// DASHBOARD
-// ============================================================
-function tapisData() { renderDashboard(); }
-
-async function muatSemua() {
-  sambungWS();
-  await muatMurid();
-  await muatDashboard();
-  muatSiaran();
-  document.getElementById('tarikhFilter').value = new Date().toLocaleDateString('fr-CA');
-  document.getElementById('filterKehadiranTarikh').value = new Date().toLocaleDateString('fr-CA');
+function tapisData(){renderDashboard();}
+async function muatSemua(){sambungWS();await muatMurid();await muatDashboard();muatSiaran();document.getElementById('tarikhFilter').value=new Date().toLocaleDateString('fr-CA');document.getElementById('filterKehadiranTarikh').value=new Date().toLocaleDateString('fr-CA');}
+async function muatDashboard(){try{const res=await fetch(`${API}/api/sesi`);semuaSesi=await res.json();renderDashboard();renderStatCards();renderProgression();}catch(e){}}
+function renderStatCards(){
+  if(!semuaSesi.length){document.getElementById('statCards').style.display='none';return;}
+  document.getElementById('statCards').style.display='grid';document.getElementById('statJumlahSesi').textContent=semuaSesi.length;
+  const muridSet=new Set();let maxMarkah=0,juara='—';
+  semuaSesi.forEach(s=>{(s.keputusan||[]).forEach(k=>{muridSet.add(k.nama);if(k.markah>maxMarkah){maxMarkah=k.markah;juara=k.nama;}});});
+  document.getElementById('statJumlahMurid').textContent=muridSet.size;document.getElementById('statMarkahTertinggi').textContent=maxMarkah;document.getElementById('statPemenang').textContent=juara.length>8?juara.substring(0,7)+'..':juara;
 }
-
-async function muatDashboard() {
-  try {
-    const res = await fetch(`${API}/api/sesi`);
-    semuaSesi = await res.json();
-    renderDashboard();
-    renderStatCards();
-    renderProgression();
-  } catch(e) {}
-}
-
-function renderStatCards() {
-  if (!semuaSesi.length) { document.getElementById('statCards').style.display='none'; return; }
-  document.getElementById('statCards').style.display='grid';
-  document.getElementById('statJumlahSesi').textContent = semuaSesi.length;
-
-  const muridSet = new Set();
-  let maxMarkah = 0, juara = '—';
-  semuaSesi.forEach(s => {
-    (s.keputusan||[]).forEach(k => { muridSet.add(k.nama); if(k.markah > maxMarkah){ maxMarkah=k.markah; juara=k.nama; }});
-  });
-  document.getElementById('statJumlahMurid').textContent = muridSet.size;
-  document.getElementById('statMarkahTertinggi').textContent = maxMarkah;
-  document.getElementById('statPemenang').textContent = juara.length>8?juara.substring(0,7)+'..':juara;
-}
-
-function renderDashboard() {
-  const tarikh = document.getElementById('tarikhFilter').value;
-  const data = tarikh ? semuaSesi.filter(s => new Date(s.tarikh).toLocaleDateString('fr-CA') === tarikh) : semuaSesi;
-  const el = document.getElementById('sesiGrid');
-
-  if (!data.length) { el.innerHTML='<div class="kosong"><div class="kosong-ikon">📋</div><div class="kosong-teks">Tiada rekod untuk tarikh ini</div></div>'; return; }
-
-  el.innerHTML = data.map(s => {
-    const keputusan = (s.keputusan||[]).sort((a,b) => b.markah-a.markah);
-    const ulasan = s.ulasan||[];
-    return `<div class="sesi-kad" onclick="bukaDetail('${s._id}')">
-      <div class="sesi-header">
-        <div>
-          <div class="sesi-tajuk-teks">${s.tajuk}${s.kelas?` <span style="background:rgba(168,85,247,.1);color:var(--purple);border:1px solid rgba(168,85,247,.3);padding:2px 8px;border-radius:10px;font-size:.7rem;font-weight:700;margin-left:6px">${s.kelas}</span>`:''}</div>
-          <div class="sesi-tarikh-teks">📅 ${new Date(s.tarikh).toLocaleDateString('ms-MY',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>
-        </div>
-        <span class="sesi-mod-badge ${MOD_BADGE[s.mod]||'badge-mod1'}">${MOD_IKON[s.mod]||''} Mod ${s.mod} — ${MOD_NAMA[s.mod]||''}</span>
-      </div>
-
-      <div class="murid-row">
-        ${keputusan.slice(0,5).map((k,i) => {
-          const murid = cariMurid(k.muridId||k.nama);
-          const av = murid?.avatar || k.avatar || '👤';
-          return `<div class="murid-chip">
-            <span>${['🥇','🥈','🥉','',''][i]||''}</span>
-            <div class="chip-avatar-img">${renderAvatarChip(av)}</div>
-            <span style="font-weight:600">${k.nama}</span>
-            <span class="markah-badge">${k.markah}★</span>
-          </div>`;
-        }).join('')}
-        ${keputusan.length>5?`<div style="font-size:.75rem;color:var(--text2);align-self:center">+${keputusan.length-5} lagi</div>`:''}
-      </div>
-
-      ${ulasan.length ? `<div class="ulasan-box"><div class="ulasan-label">💬 Ulasan Guru</div><div class="ulasan-teks">${ulasan.map(u=>`<strong>${u.nama}:</strong> ${u.komen}`).join(' · ')}</div></div>` : ''}
-
+function renderDashboard(){
+  const tarikh=document.getElementById('tarikhFilter').value;
+  const data=tarikh?semuaSesi.filter(s=>new Date(s.tarikh).toLocaleDateString('fr-CA')===tarikh):semuaSesi;
+  const el=document.getElementById('sesiGrid');
+  if(!data.length){el.innerHTML='<div class="kosong"><div class="kosong-ikon">📋</div><div class="kosong-teks">Tiada rekod untuk tarikh ini</div></div>';return;}
+  el.innerHTML=data.map(s=>{
+    const keputusan=(s.keputusan||[]).sort((a,b)=>b.markah-a.markah);const ulasan=s.ulasan||[];
+    return`<div class="sesi-kad" onclick="bukaDetail('${s._id}')">
+      <div class="sesi-header"><div><div class="sesi-tajuk-teks">${s.tajuk}${s.kelas?` <span style="background:rgba(168,85,247,.1);color:var(--purple);border:1px solid rgba(168,85,247,.3);padding:2px 8px;border-radius:10px;font-size:.7rem;font-weight:700;margin-left:6px">${s.kelas}</span>`:''}</div><div class="sesi-tarikh-teks">📅 ${new Date(s.tarikh).toLocaleDateString('ms-MY',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div></div><span class="sesi-mod-badge ${MOD_BADGE[s.mod]||'badge-mod1'}">${MOD_IKON[s.mod]||''} Mod ${s.mod} — ${MOD_NAMA[s.mod]||''}</span></div>
+      <div class="murid-row">${keputusan.slice(0,5).map((k,i)=>{const murid=cariMurid(k.muridId||k.nama);const av=murid?.avatar||k.avatar||'👤';return`<div class="murid-chip"><span>${['🥇','🥈','🥉','',''][i]||''}</span><div class="chip-avatar-img">${renderAvatarChip(av)}</div><span style="font-weight:600">${k.nama}</span><span class="markah-badge">${k.markah}★</span></div>`;}).join('')}${keputusan.length>5?`<div style="font-size:.75rem;color:var(--text2);align-self:center">+${keputusan.length-5} lagi</div>`:''}</div>
+      ${ulasan.length?`<div class="ulasan-box"><div class="ulasan-label">💬 Ulasan Guru</div><div class="ulasan-teks">${ulasan.map(u=>`<strong>${u.nama}:</strong> ${u.komen}`).join(' · ')}</div></div>`:''}
       <div style="margin-top:10px;font-size:.72rem;color:var(--text2)">👆 Ketuk untuk lihat ranking penuh</div>
     </div>`;
   }).join('');
 }
-
-async function bukaDetail(id) {
-  const res = await fetch(`${API}/api/sesi/${id}`);
-  const s = await res.json();
-  const ranking = (s.keputusan||[]).sort((a,b) => b.markah-a.markah);
-
-  document.getElementById('detailBadan').innerHTML = `
+async function bukaDetail(id){
+  const res=await fetch(`${API}/api/sesi/${id}`);const s=await res.json();
+  const ranking=(s.keputusan||[]).sort((a,b)=>b.markah-a.markah);
+  document.getElementById('detailBadan').innerHTML=`
     <h2 style="font-family:'Orbitron',monospace;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:1.1rem;margin-bottom:6px">${s.tajuk}</h2>
-    <div style="font-size:.78rem;color:var(--text2);margin-bottom:6px">
-      📅 ${new Date(s.tarikh).toLocaleDateString('ms-MY',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}
-    </div>
+    <div style="font-size:.78rem;color:var(--text2);margin-bottom:6px">📅 ${new Date(s.tarikh).toLocaleDateString('ms-MY',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
       ${s.kelas?`<span style="background:rgba(168,85,247,.1);color:var(--purple);border:1px solid rgba(168,85,247,.3);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700">🏫 ${s.kelas}</span>`:''}
       <span class="sesi-mod-badge ${MOD_BADGE[s.mod]||''}">${MOD_IKON[s.mod]||''} Mod ${s.mod} — ${MOD_NAMA[s.mod]||''}</span>
     </div>
-
     <div style="font-family:'Orbitron',monospace;font-size:.78rem;color:var(--text2);margin-bottom:12px;letter-spacing:1px">🏆 RANKING</div>
-    ${ranking.map((k,i) => {
-      const murid = cariMurid(k.muridId||k.nama);
-      const av = murid?.avatar || k.avatar || '👤';
-      return `<div class="ranking-item ${['r1-item','r2-item','r3-item',''][i]||''}">
-        <div class="rank-no" style="color:${['var(--gold)','#9ca3af','#b45309','var(--text2)'][i]||'var(--text2)'}">${['🥇','🥈','🥉',''][i]||i+1}</div>
-        <div class="rank-avatar">${renderAvatarChip(av, 40)}</div>
-        <div class="rank-nama">${k.nama}</div>
-        <div class="rank-markah">${k.markah} ⭐</div>
-      </div>`;
-    }).join('')}
-
-    ${s.ulasan?.length ? `
-      <div style="margin-top:18px">
-        <div style="font-family:'Orbitron',monospace;font-size:.78rem;color:var(--text2);margin-bottom:12px;letter-spacing:1px">💬 ULASAN GURU</div>
-        ${s.ulasan.map(u=>`
-          <div class="ulasan-box" style="margin-bottom:8px">
-            <div class="ulasan-label">${u.nama} — <span style="font-size:.65rem">${new Date(u.tarikhKomen).toLocaleDateString('ms-MY')}</span></div>
-            <div class="ulasan-teks">${u.komen}</div>
-          </div>`).join('')}
-      </div>` : ''}`;
-
+    ${ranking.map((k,i)=>{const murid=cariMurid(k.muridId||k.nama);const av=murid?.avatar||k.avatar||'👤';return`<div class="ranking-item ${['r1-item','r2-item','r3-item',''][i]||''}"><div class="rank-no" style="color:${['var(--gold)','#9ca3af','#b45309','var(--text2)'][i]||'var(--text2)'}">${['🥇','🥈','🥉',''][i]||i+1}</div><div class="rank-avatar">${renderAvatarChip(av,40)}</div><div class="rank-nama">${k.nama}</div><div class="rank-markah">${k.markah} ⭐</div></div>`;}).join('')}
+    ${s.ulasan?.length?`<div style="margin-top:18px"><div style="font-family:'Orbitron',monospace;font-size:.78rem;color:var(--text2);margin-bottom:12px;letter-spacing:1px">💬 ULASAN GURU</div>${s.ulasan.map(u=>`<div class="ulasan-box" style="margin-bottom:8px"><div class="ulasan-label">${u.nama} — <span style="font-size:.65rem">${new Date(u.tarikhKomen).toLocaleDateString('ms-MY')}</span></div><div class="ulasan-teks">${u.komen}</div></div>`).join('')}</div>`:''}`;
   document.getElementById('overlayDetail').classList.add('buka');
 }
 
-// ============================================================
-// KEHADIRAN
-// ============================================================
-function kemaskiniKelasList() {
-  const kelas = [...new Set(semuaMurid.map(m=>m.kelas||'').filter(k=>k))].sort();
-  const el = document.getElementById('filterKehadiranKelas');
-  if (!el) return;
-  const val = el.value;
-  el.innerHTML = '<option value="">Semua Kelas</option>' + kelas.map(k=>`<option value="${k}">${k}</option>`).join('');
-  if (val) el.value = val;
-
-  // Kemaskini filter latihan juga
-  const elL = document.getElementById('latihanFilterKelasM');
-  if (elL) {
-    const valL = elL.value;
-    elL.innerHTML = '<option value="">Semua Kelas</option>' + kelas.map(k=>`<option value="${k}">${k}</option>`).join('');
-    if (valL) elL.value = valL;
-  }
+function kemaskiniKelasList(){
+  const kelas=[...new Set(semuaMurid.map(m=>m.kelas||'').filter(k=>k))].sort();
+  ['filterKehadiranKelas','latihanFilterKelasM'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const val=el.value;el.innerHTML='<option value="">Semua Kelas</option>'+kelas.map(k=>`<option value="${k}">${k}</option>`).join('');if(val)el.value=val;});
 }
-
-async function muatKehadiran() {
-  const kelas = document.getElementById('filterKehadiranKelas').value;
-  const tarikh = document.getElementById('filterKehadiranTarikh').value;
-  
-  try {
-    let url = `${API}/api/kehadiran`;
-    const params = [];
-    if (kelas) params.push(`kelas=${encodeURIComponent(kelas)}`);
-    if (tarikh) params.push(`tarikh=${tarikh}`);
-    if (params.length) url += '?' + params.join('&');
-    
-    const res = await fetch(url);
-    semuaKehadiran = await res.json();
-    renderKehadiran();
-  } catch(e) {
-    renderKehadiran();
-  }
+async function muatKehadiran(){
+  const kelas=document.getElementById('filterKehadiranKelas').value;const tarikh=document.getElementById('filterKehadiranTarikh').value;
+  try{let url=`${API}/api/kehadiran`;const params=[];if(kelas)params.push(`kelas=${encodeURIComponent(kelas)}`);if(tarikh)params.push(`tarikh=${tarikh}`);if(params.length)url+='?'+params.join('&');const res=await fetch(url);semuaKehadiran=await res.json();renderKehadiran();}catch(e){renderKehadiran();}
 }
-
-function renderKehadiran() {
-  const el = document.getElementById('kehadiranRekodList');
-  
-  if (!semuaKehadiran.length) {
-    el.innerHTML = '<div class="kosong"><div class="kosong-ikon">📋</div><div class="kosong-teks">Tiada rekod kehadiran untuk pilihan ini</div></div>';
-    return;
-  }
-
-  el.innerHTML = semuaKehadiran.map(r => {
-    const hadir = r.senarai.filter(m=>m.hadir);
-    const tidakHadir = r.senarai.filter(m=>!m.hadir);
-    const peratus = r.senarai.length ? Math.round((hadir.length/r.senarai.length)*100) : 0;
-    const warna = peratus>=80?'var(--green)':peratus>=60?'var(--gold)':'var(--red)';
-    
-    return `<div class="kehadiran-rekod-kad">
-      <div class="kehadiran-rekod-header">
-        <div>
-          <div class="kehadiran-rekod-tarikh">📅 ${new Date(r.tarikh).toLocaleDateString('ms-MY',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>
-          <div class="kehadiran-rekod-kelas">🏫 Kelas: <strong>${r.kelas}</strong></div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-family:'Orbitron',monospace;font-size:1.6rem;font-weight:900;color:${warna}">${peratus}%</div>
-          <div style="font-size:.7rem;color:var(--text2)">kehadiran</div>
-        </div>
-      </div>
-
-      <div class="kehadiran-stat-row">
-        <span class="kehadiran-stat-badge" style="background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.3)">✅ Hadir: ${hadir.length}</span>
-        <span class="kehadiran-stat-badge" style="background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.3)">❌ Tidak Hadir: ${tidakHadir.length}</span>
-        <span class="kehadiran-stat-badge" style="background:rgba(79,142,247,.1);color:var(--accent);border:1px solid rgba(79,142,247,.3)">👥 Jumlah: ${r.senarai.length}</span>
-      </div>
-
+function renderKehadiran(){
+  const el=document.getElementById('kehadiranRekodList');
+  if(!semuaKehadiran.length){el.innerHTML='<div class="kosong"><div class="kosong-ikon">📋</div><div class="kosong-teks">Tiada rekod kehadiran untuk pilihan ini</div></div>';return;}
+  el.innerHTML=semuaKehadiran.map(r=>{
+    const hadir=r.senarai.filter(m=>m.hadir);const tidakHadir=r.senarai.filter(m=>!m.hadir);const peratus=r.senarai.length?Math.round((hadir.length/r.senarai.length)*100):0;const warna=peratus>=80?'var(--green)':peratus>=60?'var(--gold)':'var(--red)';
+    return`<div class="kehadiran-rekod-kad">
+      <div class="kehadiran-rekod-header"><div><div class="kehadiran-rekod-tarikh">📅 ${new Date(r.tarikh).toLocaleDateString('ms-MY',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div><div class="kehadiran-rekod-kelas">🏫 Kelas: <strong>${r.kelas}</strong></div></div><div style="text-align:right"><div style="font-family:'Orbitron',monospace;font-size:1.6rem;font-weight:900;color:${warna}">${peratus}%</div><div style="font-size:.7rem;color:var(--text2)">kehadiran</div></div></div>
+      <div class="kehadiran-stat-row"><span class="kehadiran-stat-badge" style="background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.3)">✅ Hadir: ${hadir.length}</span><span class="kehadiran-stat-badge" style="background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.3)">❌ Tidak Hadir: ${tidakHadir.length}</span><span class="kehadiran-stat-badge" style="background:rgba(79,142,247,.1);color:var(--accent);border:1px solid rgba(79,142,247,.3)">👥 Jumlah: ${r.senarai.length}</span></div>
       <div class="kehadiran-murid-chips">
-        ${hadir.map(m => {
-          const murid = cariMurid(m.id||m.nama);
-          const av = murid?.avatar || '👤';
-          return `<span class="chip-hadir">
-            <span class="chip-mini-avatar">${av&&av.startsWith('data:')?`<img src="${av}">`:`<span style="font-size:.7rem">${av}</span>`}</span>
-            ${m.nama}
-          </span>`;
-        }).join('')}
-        ${tidakHadir.map(m => {
-          const murid = cariMurid(m.id||m.nama);
-          const av = murid?.avatar || '👤';
-          return `<span class="chip-tidak-hadir">
-            <span class="chip-mini-avatar">${av&&av.startsWith('data:')?`<img src="${av}">`:`<span style="font-size:.7rem">${av}</span>`}</span>
-            ${m.nama}
-          </span>`;
-        }).join('')}
+        ${hadir.map(m=>{const murid=cariMurid(m.id||m.nama);const av=murid?.avatar||'👤';return`<span class="chip-hadir"><span class="chip-mini-avatar">${av&&av.startsWith('data:')?`<img src="${av}">`:`<span style="font-size:.7rem">${av}</span>`}</span>${m.nama}</span>`;}).join('')}
+        ${tidakHadir.map(m=>{const murid=cariMurid(m.id||m.nama);const av=murid?.avatar||'👤';return`<span class="chip-tidak-hadir"><span class="chip-mini-avatar">${av&&av.startsWith('data:')?`<img src="${av}">`:`<span style="font-size:.7rem">${av}</span>`}</span>${m.nama}</span>`;}).join('')}
       </div>
     </div>`;
   }).join('');
 }
-
-// ============================================================
-// SIARAN
-// ============================================================
-async function muatSiaran() {
-  try {
-    const res = await fetch(`${API}/api/siaran`);
-    const siaran = await res.json();
-    const el = document.getElementById('siaranGrid');
-    el.innerHTML = siaran.length ? siaran.map(s => `
-      <div class="siaran-kad">
-        <div class="siaran-header">
-          <div class="siaran-tajuk">${s.tajuk}</div>
-          <div class="siaran-tarikh">📅 ${new Date(s.tarikhDihantar).toLocaleDateString('ms-MY')}</div>
-        </div>
-        ${s.embedLink ? `<iframe class="siaran-embed" src="${s.embedLink}" allowfullscreen loading="lazy"></iframe>
-          <a class="siaran-link" href="${s.embedLink}" target="_blank">🔗 Buka Pautan Penuh →</a>` : ''}
-        ${s.komen ? `<div class="siaran-komen">📝 ${s.komen}</div>` : ''}
-      </div>`).join('') : '<div class="kosong"><div class="kosong-ikon">📢</div><div class="kosong-teks">Tiada siaran lagi</div></div>';
-  } catch(e) {}
+async function muatSiaran(){
+  try{const res=await fetch(`${API}/api/siaran`);const siaran=await res.json();const el=document.getElementById('siaranGrid');el.innerHTML=siaran.length?siaran.map(s=>`<div class="siaran-kad"><div class="siaran-header"><div class="siaran-tajuk">${s.tajuk}</div><div class="siaran-tarikh">📅 ${new Date(s.tarikhDihantar).toLocaleDateString('ms-MY')}</div></div>${s.embedLink?`<iframe class="siaran-embed" src="${s.embedLink}" allowfullscreen loading="lazy"></iframe><a class="siaran-link" href="${s.embedLink}" target="_blank">🔗 Buka Pautan Penuh →</a>`:''} ${s.komen?`<div class="siaran-komen">📝 ${s.komen}</div>`:''}</div>`).join(''):'<div class="kosong"><div class="kosong-ikon">📢</div><div class="kosong-teks">Tiada siaran lagi</div></div>';}catch(e){}
 }
 
-// ============================================================
-// LATIHAN — MURID VIEW
-// ============================================================
-async function muatLatihanMurid() {
-  try {
-    const kelas = document.getElementById('latihanFilterKelasM').value;
-    let url = `${API}/api/latihan`;
-    if (kelas) url += `?kelas=${encodeURIComponent(kelas)}`;
-    const res = await fetch(url);
-    semuaLatihan = await res.json();
-    renderLatihanMurid();
-  } catch(e) {
-    document.getElementById('latihanMuridGrid').innerHTML = '<div class="kosong"><div class="kosong-ikon">⚠️</div><div class="kosong-teks">Gagal memuatkan latihan</div></div>';
-  }
+// ── LATIHAN MURID (dengan markah display) ──
+async function muatLatihanMurid(){
+  try{const kelas=document.getElementById('latihanFilterKelasM').value;let url=`${API}/api/latihan`;if(kelas)url+=`?kelas=${encodeURIComponent(kelas)}`;const res=await fetch(url);semuaLatihan=await res.json();renderLatihanMurid();}
+  catch(e){document.getElementById('latihanMuridGrid').innerHTML='<div class="kosong"><div class="kosong-ikon">⚠️</div><div class="kosong-teks">Gagal memuatkan latihan</div></div>';}
 }
 
-function renderLatihanMurid() {
-  const el = document.getElementById('latihanMuridGrid');
-  if (!semuaLatihan.length) {
-    el.innerHTML = '<div class="kosong"><div class="kosong-ikon">📚</div><div class="kosong-teks">Tiada latihan lagi</div></div>';
-    return;
-  }
+function renderStatusMuridLatihan(l){
+  if(!muridDipilih)return'';
+  const jwp=(l.jawapan||[]).find(j=>j.muridId===muridDipilih._id||j.muridNama===muridDipilih.nama);
+  if(!jwp)return'<span class="status-hantar belum">⏳ Belum Hantar</span>';
+  if(jwp.markah!==undefined&&jwp.markah!==null&&jwp.markah!=='')return`<span class="status-hantar ada-markah">📊 Markah: ${jwp.markah}/100</span>`;
+  return'<span class="status-hantar dah-hantar">📤 Dah Hantar — Menunggu Semakan</span>';
+}
 
-  el.innerHTML = semuaLatihan.map(l => {
-    const tamat = l.tarikhTutup && new Date(l.tarikhTutup) < new Date();
-    const aktif = l.aktif && !tamat;
+function renderMarkahBoxMurid(l){
+  if(!muridDipilih)return'';
+  const jwp=(l.jawapan||[]).find(j=>j.muridId===muridDipilih._id||j.muridNama===muridDipilih.nama);
+  if(!jwp||jwp.markah===undefined||jwp.markah===null||jwp.markah==='')return'';
+  return`<div class="markah-display-box"><div><div style="font-size:.72rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">📊 Markah Anda</div><div style="display:flex;align-items:baseline;gap:6px"><span class="markah-num">${jwp.markah}</span><span style="font-size:.9rem;color:var(--text2)">/100</span></div></div><div style="flex:1"><div style="height:8px;background:rgba(245,158,11,.15);border-radius:4px;overflow:hidden;margin-top:8px"><div style="height:100%;width:${jwp.markah}%;background:linear-gradient(90deg,var(--gold),var(--orange));border-radius:4px;transition:.5s"></div></div><div style="font-size:.72rem;color:var(--text2);margin-top:4px">${jwp.markah>=80?'Cemerlang! 🌟':jwp.markah>=60?'Baik! 👍':jwp.markah>=40?'Sederhana':'Perlu peningkatan'}</div></div></div>`;
+}
 
-    // Semak status jawapan murid yg dipilih
-    let statusMurid = null;
-    if (muridDipilih) {
-      const jwp = (l.jawapan||[]).find(j => j.muridId === muridDipilih._id || j.muridNama === muridDipilih.nama);
-      if (jwp) statusMurid = jwp.statusSemak || 'belum';
-    }
+function renderKomenMuridLatihan(l){
+  if(!muridDipilih)return'';
+  const jwp=(l.jawapan||[]).find(j=>j.muridId===muridDipilih._id||j.muridNama===muridDipilih.nama);
+  const komen=(jwp?.komen||[]);
+  if(!komen.length)return'';
+  return`<div style="margin-bottom:14px"><div style="font-size:.72rem;font-weight:700;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">💬 MAKLUM BALAS GURU</div><div class="komen-list">${komen.map(k=>`<div class="komen-item ${k.peranan==='guru'?'komen-guru':'komen-murid'}"><div class="komen-nama">${k.peranan==='guru'?'👨‍🏫':'🎒'} ${k.nama} · ${new Date(k.tarikhKomen).toLocaleDateString('ms-MY')}</div>${k.teks}</div>`).join('')}</div></div>`;
+}
 
-    // Komen latihan
-    const komenList = (l.komen||[]);
-
-    return `<div class="latihan-kad">
+function renderLatihanMurid(){
+  const el=document.getElementById('latihanMuridGrid');
+  if(!semuaLatihan.length){el.innerHTML='<div class="kosong"><div class="kosong-ikon">📚</div><div class="kosong-teks">Tiada latihan lagi</div></div>';return;}
+  el.innerHTML=semuaLatihan.map(l=>{
+    const tamat=l.tarikhTutup&&new Date(l.tarikhTutup)<new Date();const aktif=l.aktif&&!tamat;
+    const jwp=muridDipilih?(l.jawapan||[]).find(j=>j.muridId===muridDipilih._id||j.muridNama===muridDipilih.nama):null;
+    const sudahHantar=!!jwp;
+    return`<div class="latihan-kad">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px">
         <div class="latihan-tajuk">${l.tajuk}</div>
         <span class="${aktif?'tag-hijau':tamat?'tag-merah':'tag-gold'}">${aktif?'🟢 Aktif':tamat?'🔴 Tutup':'⚫ Ditutup'}</span>
       </div>
-
       <div class="latihan-meta">
         ${l.kelas?`<span class="tag-biru">🏫 ${l.kelas}</span>`:'<span class="tag-biru">🏫 Semua Kelas</span>'}
         <span style="font-size:.72rem;color:var(--text2)">📅 ${new Date(l.tarikhHantar).toLocaleDateString('ms-MY')}</span>
         ${l.tarikhTutup?`<span style="font-size:.72rem;color:${tamat?'var(--red)':'var(--gold)'}">⏰ Tutup: ${new Date(l.tarikhTutup).toLocaleDateString('ms-MY',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</span>`:''}
-        ${statusMurid !== null ? `<span class="status-hantar ${statusMurid==='approved'?'approved':'dah-hantar'}">${statusMurid==='approved'?'✅ Diluluskan':'📤 Dah Hantar'}</span>` : muridDipilih ? `<span class="status-hantar belum">⏳ Belum Hantar</span>` : ''}
+        ${renderStatusMuridLatihan(l)}
       </div>
-
       ${l.arahan?`<div class="latihan-arahan">📋 ${l.arahan}</div>`:''}
-
-      ${l.failNama?`<div style="margin-bottom:14px">
-        <a class="latihan-fail-btn" href="${API}/api/latihan/${l._id}/fail" target="_blank" download="${l.failNama}">
-          📎 Muat Turun Soalan: ${l.failNama}
-        </a>
-      </div>`:''}
-
-      ${komenList.length?`<div style="margin-bottom:14px">
-        <div style="font-size:.72rem;font-weight:700;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">💬 KOMEN GURU</div>
-        <div class="komen-list">
-          ${komenList.map(k=>`<div class="komen-item ${k.peranan==='guru'?'komen-guru':'komen-murid'}">
-            <div class="komen-nama">${k.nama} ${k.peranan==='guru'?'(Guru)':'(Murid)'} · ${new Date(k.tarikhKomen).toLocaleDateString('ms-MY')}</div>
-            ${k.teks}
-          </div>`).join('')}
-        </div>
-      </div>`:''}
-
-      ${aktif && muridDipilih ? `
+      ${l.failNama?`<div style="margin-bottom:14px"><a class="latihan-fail-btn" href="${API}/api/latihan/${l._id}/fail" target="_blank" download="${l.failNama}">📎 Muat Turun Soalan: ${l.failNama}</a></div>`:''}
+      ${renderMarkahBoxMurid(l)}
+      ${renderKomenMuridLatihan(l)}
+      ${(l.komen||[]).length?`<div style="margin-bottom:14px"><div style="font-size:.72rem;font-weight:700;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">💬 KOMEN AM</div><div class="komen-list">${(l.komen||[]).map(k=>`<div class="komen-item ${k.peranan==='guru'?'komen-guru':'komen-murid'}"><div class="komen-nama">${k.peranan==='guru'?'👨‍🏫':'🎒'} ${k.nama} · ${new Date(k.tarikhKomen).toLocaleDateString('ms-MY')}</div>${k.teks}</div>`).join('')}</div></div>`:''}
+      ${aktif&&muridDipilih&&!sudahHantar?`
         <div class="hantar-jawapan-section" id="hantarSeksyen_${l._id}">
           <div class="hantar-jawapan-tajuk">📤 HANTAR JAWAPAN — ${muridDipilih.nama}</div>
           <div class="upload-drop-zone" onclick="document.getElementById('inputFailMurid_${l._id}').click()">
@@ -930,98 +515,44 @@ function renderLatihanMurid() {
           </div>
           <div id="previewFailMurid_${l._id}" style="display:none" class="fail-preview">
             <div class="fail-ikon" id="ikonFailMurid_${l._id}">📄</div>
-            <div style="flex:1;min-width:0">
-              <div class="fail-nama" id="namaFailMurid_${l._id}"></div>
-              <div class="fail-saiz" id="saizFailMurid_${l._id}"></div>
-            </div>
+            <div style="flex:1;min-width:0"><div class="fail-nama" id="namaFailMurid_${l._id}"></div><div class="fail-saiz" id="saizFailMurid_${l._id}"></div></div>
             <button onclick="clearFailMurid('${l._id}')" style="background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.3);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:.78rem">✕</button>
           </div>
           <input type="file" id="inputFailMurid_${l._id}" style="display:none" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.txt,.ppt,.pptx,.xls,.xlsx" onchange="handleFailMurid('${l._id}',this)">
-          <button onclick="hantarJawapanMurid('${l._id}')" style="margin-top:12px;padding:10px 24px;background:linear-gradient(135deg,var(--green),var(--teal));color:#fff;border:none;border-radius:8px;font-family:'Exo 2',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;box-shadow:0 3px 12px rgba(16,185,129,.3)">
-            📤 Hantar Jawapan
-          </button>
-        </div>` : !muridDipilih && aktif ? `
-        <div style="padding:10px 14px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:8px;font-size:.84rem;color:var(--gold)">
-          ⚠️ Pilih nama anda di atas untuk menghantar jawapan
-        </div>` : ''}
+          <button onclick="hantarJawapanMurid('${l._id}')" style="margin-top:12px;padding:10px 24px;background:linear-gradient(135deg,var(--green),var(--teal));color:#fff;border:none;border-radius:8px;font-family:'Exo 2',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;box-shadow:0 3px 12px rgba(16,185,129,.3)">📤 Hantar Jawapan</button>
+        </div>`
+      :aktif&&muridDipilih&&sudahHantar?`<div style="padding:10px 14px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);border-radius:8px;font-size:.84rem;color:var(--green)">✅ Jawapan telah dihantar. Tunggu semakan cikgu.</div>`
+      :!muridDipilih&&aktif?`<div style="padding:10px 14px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:8px;font-size:.84rem;color:var(--gold)">⚠️ Pilih nama anda di atas untuk menghantar jawapan</div>`:''}
     </div>`;
   }).join('');
 }
 
-function handleFailMurid(latihanId, input) {
-  const file = input.files[0];
-  if (!file) return;
-  if (file.size > 10 * 1024 * 1024) { tunjukNotif('⚠️ Fail terlalu besar! Maksimum 10MB'); input.value=''; return; }
-
-  const ikon = file.type.includes('pdf') ? '📄' : file.type.includes('image') ? '🖼️' : file.type.includes('word') ? '📝' : '📎';
-  const saiz = file.size < 1024*1024 ? `${(file.size/1024).toFixed(1)} KB` : `${(file.size/1024/1024).toFixed(1)} MB`;
-
-  document.getElementById(`ikonFailMurid_${latihanId}`).textContent = ikon;
-  document.getElementById(`namaFailMurid_${latihanId}`).textContent = file.name;
-  document.getElementById(`saizFailMurid_${latihanId}`).textContent = saiz;
-  document.getElementById(`previewFailMurid_${latihanId}`).style.display = 'flex';
-
-  // Baca fail sebagai base64
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    failMuridMap[latihanId] = { file, nama: file.name, saiz, data: e.target.result, jenis: file.type };
-  };
-  reader.readAsDataURL(file);
+function handleFailMurid(latihanId,input){
+  const file=input.files[0];if(!file)return;
+  if(file.size>10*1024*1024){tunjukNotif('⚠️ Fail terlalu besar! Maksimum 10MB');input.value='';return;}
+  const ikon=file.type.includes('pdf')?'📄':file.type.includes('image')?'🖼️':file.type.includes('word')?'📝':'📎';
+  const saiz=file.size<1024*1024?`${(file.size/1024).toFixed(1)} KB`:`${(file.size/1024/1024).toFixed(1)} MB`;
+  document.getElementById(`ikonFailMurid_${latihanId}`).textContent=ikon;
+  document.getElementById(`namaFailMurid_${latihanId}`).textContent=file.name;
+  document.getElementById(`saizFailMurid_${latihanId}`).textContent=saiz;
+  document.getElementById(`previewFailMurid_${latihanId}`).style.display='flex';
+  const reader=new FileReader();reader.onload=(e)=>{failMuridMap[latihanId]={file,nama:file.name,saiz,data:e.target.result,jenis:file.type};};reader.readAsDataURL(file);
 }
-
-function clearFailMurid(latihanId) {
-  delete failMuridMap[latihanId];
-  document.getElementById(`previewFailMurid_${latihanId}`).style.display = 'none';
-  document.getElementById(`inputFailMurid_${latihanId}`).value = '';
+function clearFailMurid(latihanId){delete failMuridMap[latihanId];document.getElementById(`previewFailMurid_${latihanId}`).style.display='none';document.getElementById(`inputFailMurid_${latihanId}`).value='';}
+async function hantarJawapanMurid(latihanId){
+  if(!muridDipilih){tunjukNotif('⚠️ Pilih nama anda dahulu!');return;}
+  const failInfo=failMuridMap[latihanId];if(!failInfo){tunjukNotif('⚠️ Sila pilih fail jawapan dahulu!');return;}
+  const btn=document.querySelector(`#hantarSeksyen_${latihanId} button[onclick*="hantarJawapanMurid"]`);
+  if(btn){btn.textContent='⏳ Menghantar...';btn.disabled=true;}
+  try{
+    const res=await fetch(`${API}/api/latihan/${latihanId}/jawapan`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({muridId:muridDipilih._id,muridNama:muridDipilih.nama,kelas:muridDipilih.kelas||'',failNama:failInfo.nama,failData:failInfo.data,failJenis:failInfo.jenis})});
+    const hasil=await res.json();
+    if(hasil.ok||hasil.mesej){tunjukNotif('✅ Jawapan berjaya dihantar!');clearFailMurid(latihanId);await muatLatihanMurid();}
+    else tunjukNotif('❌ Gagal menghantar. Cuba lagi.');
+  }catch(e){tunjukNotif('❌ Ralat rangkaian. Cuba lagi.');}
+  finally{if(btn){btn.textContent='📤 Hantar Jawapan';btn.disabled=false;}}
 }
-
-async function hantarJawapanMurid(latihanId) {
-  if (!muridDipilih) { tunjukNotif('⚠️ Pilih nama anda dahulu!'); return; }
-  const failInfo = failMuridMap[latihanId];
-  if (!failInfo) { tunjukNotif('⚠️ Sila pilih fail jawapan dahulu!'); return; }
-
-  const btn = document.querySelector(`#hantarSeksyen_${latihanId} button[onclick*="hantarJawapanMurid"]`);
-  if (btn) { btn.textContent = '⏳ Menghantar...'; btn.disabled = true; }
-
-  try {
-    const res = await fetch(`${API}/api/latihan/${latihanId}/jawapan`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        muridId: muridDipilih._id,
-        muridNama: muridDipilih.nama,
-        kelas: muridDipilih.kelas || '',
-        failNama: failInfo.nama,
-        failData: failInfo.data,
-        failJenis: failInfo.jenis
-      })
-    });
-    const hasil = await res.json();
-    if (hasil.ok || hasil.mesej) {
-      tunjukNotif('✅ Jawapan berjaya dihantar!');
-      clearFailMurid(latihanId);
-      await muatLatihanMurid();
-    } else {
-      tunjukNotif('❌ Gagal menghantar. Cuba lagi.');
-    }
-  } catch(e) {
-    tunjukNotif('❌ Ralat rangkaian. Cuba lagi.');
-  } finally {
-    if (btn) { btn.textContent = '📤 Hantar Jawapan'; btn.disabled = false; }
-  }
-}
-
-// ============================================================
-// NOTIF
-// ============================================================
-function tunjukNotif(msg) {
-  const el = document.getElementById('notifBar');
-  el.textContent = msg; el.style.display = 'block';
-  clearTimeout(el._t);
-  el._t = setTimeout(() => el.style.display = 'none', 4000);
-}
+function tunjukNotif(msg){const el=document.getElementById('notifBar');el.textContent=msg;el.style.display='block';clearTimeout(el._t);el._t=setTimeout(()=>el.style.display='none',4000);}
 </script>
 </body>
 </html>
-ENDOFFILE
-echo "Done"
