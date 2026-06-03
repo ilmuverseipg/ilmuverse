@@ -1801,14 +1801,21 @@ async function mulaTeachableMachine() {
   if (tmLoadStatus === 'loading') return;
   tmLoadStatus = 'loading';
   const labelEl = document.getElementById('camLabel');
-  if (labelEl) labelEl.textContent = 'Memuatkan model AI...';
+
+  // Tunggu tmImage ready (max 10 saat)
+  let tunggu = 0;
+  while (!window.tmImage && tunggu < 100) {
+    await new Promise(r => setTimeout(r, 100));
+    tunggu++;
+  }
 
   try {
-    if (!window.tmImage) throw new Error('Library tmImage tidak dijumpai');
-    
-    const modelURL = TM_MODEL_URL + 'model.json';
-    const metadataURL = TM_MODEL_URL + 'metadata.json';
-    tmModel = await window.tmImage.load(modelURL, metadataURL);
+    if (!window.tmImage) throw new Error('Library tmImage tidak dijumpai selepas 10s');
+    if (labelEl) labelEl.textContent = 'Memuatkan model...';
+    tmModel = await window.tmImage.load(
+      TM_MODEL_URL + 'model.json',
+      TM_MODEL_URL + 'metadata.json'
+    );
     tmMaxPred = tmModel.getTotalClasses();
     tmLoadStatus = 'ready';
     if (labelEl) labelEl.textContent = 'Model AI bersedia ✓';
