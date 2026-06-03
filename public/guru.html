@@ -1833,69 +1833,45 @@ async function jalanInferenceTM() {
   const img = document.getElementById('camFeed');
   if (!img || !img.src || img.src === '' || img.naturalWidth === 0) return;
 
-  // Dalam jalanInferenceTM(), tambah selepas dapat 'best'
-if (best.className.toLowerCase() === 'background' || 
-    best.className.toLowerCase() === 'tiada') return;
-  
   try {
     const predictions = await tmModel.predict(img);
-    // Cari prediction tertinggi
     let best = predictions.reduce((a,b) => b.probability > a.probability ? b : a);
     const conf = best.probability;
-    const label = best.className.toLowerCase();
+    const labelLower = best.className.toLowerCase();
 
-    // Ignore background/tiada — tunjuk label tapi jangan proses
-const labelLower = best.className.toLowerCase();
-const isBackground = labelLower === 'background' || 
-                     labelLower === 'tiada' || 
-                     labelLower === 'kosong';
+    const isBackground = labelLower === 'background' || labelLower === 'tiada' || labelLower === 'kosong';
 
-// Sentiasa update label supaya guru nampak apa yang kamera tengok
-document.getElementById('camLabel').textContent = isBackground 
-  ? `🔍 Mencari... (${Math.round(conf*100)}%)` 
-  : `${best.className} (${Math.round(conf*100)}%)`;
+    document.getElementById('camLabel').textContent = isBackground
+      ? `🔍 Mencari... (${Math.round(conf*100)}%)`
+      : `${best.className} (${Math.round(conf*100)}%)`;
 
-// Kalau background, reset dan tunggu
-if (isBackground) {
-  tmStableLabel = null; tmStableStart = 0;
-  return;
-}
+    if (isBackground || conf < TM_CONF_MIN) {
+      tmStableLabel = null; tmStableStart = 0;
+      return;
+    }
 
-// Filter confidence
-if (conf < TM_CONF_MIN) {
-  tmStableLabel = null; tmStableStart = 0;
-  return;
-}
-
-    // Check stability — label mesti sama selama 2 saat
     const now = Date.now();
-    if (label !== tmStableLabel) {
-      tmStableLabel = label;
+    if (labelLower !== tmStableLabel) {
+      tmStableLabel = labelLower;
       tmStableStart = now;
       return;
     }
     if (now - tmStableStart < TM_STABLE_MS) return;
 
-    // Stable 2 saat pada 98%+ — hantar sebagai result
-    tmStableLabel = null; tmStableStart = 0; // Reset lepas trigger
+    tmStableLabel = null; tmStableStart = 0;
 
-    // Hantar ke server (simulate cam_result via WS)
     hantarWS({ jenis: 'cam_result_browser', label: best.className, confidence: conf });
 
-    // Juga proses UI terus
-    const d = { label: best.className, confidence: conf };
-    // Tentukan betul/salah ikut fasa
     const fasa = sesiSemasa?.mod4Fasa || 'sihat';
-    const lbl = best.className.toLowerCase();
     const SIHAT = ['pisang','tembikai','epal'];
     const TAKSHAT = ['air manis','sosej'];
     let betul = false;
-    if (fasa === 'sihat') betul = SIHAT.includes(lbl) && !mod4SihatUI.includes(lbl);
-    else betul = TAKSHAT.includes(lbl) && !mod4TakSihatUI.includes(lbl);
-    prosesCAMKeputusanUI({...d, betul, kategori: fasa});
-  } catch(e) { /* ignore frame errors */ }
-}
+    if (fasa === 'sihat') betul = SIHAT.includes(labelLower) && !mod4SihatUI.includes(labelLower);
+    else betul = TAKSHAT.includes(labelLower) && !mod4TakSihatUI.includes(labelLower);
+    prosesCAMKeputusanUI({ label: best.className, confidence: conf, betul, kategori: fasa });
 
+  } catch(e) { /* ignore */ }
+}
 function renderMod4UI(){mod4FasaUI='sihat';mod4SihatUI=[];mod4TakSihatUI=[];document.getElementById('mod4Fasa1Panel').style.display='block';document.getElementById('mod4Fasa2Panel').style.display='none';renderMakananList();}
 function renderMakananList(){document.getElementById('listMakananSihat').innerHTML=MAKANAN_SIHAT_UI.map(m=>`<div class="makanan-item-reveal ${mod4SihatUI.includes(m.nama.toLowerCase())?'dikesan':''}" id="mk_s_${m.nama}"><div class="makanan-ikon-big">${m.ikon}</div><div class="makanan-nama">${m.nama}</div>${mod4SihatUI.includes(m.nama.toLowerCase())?'<div class="makanan-dikesan-tag">✓ DIKESAN</div>':''}</div>`).join('');document.getElementById('listMakananTakSihat').innerHTML=MAKANAN_TAK_SIHAT_UI.map(m=>`<div class="makanan-item-reveal ${mod4TakSihatUI.includes(m.nama.toLowerCase())?'dikesan':''}" id="mk_ts_${m.nama}"><div class="makanan-ikon-big">${m.ikon}</div><div class="makanan-nama">${m.nama}</div>${mod4TakSihatUI.includes(m.nama.toLowerCase())?'<div class="makanan-dikesan-tag">✓ DIKESAN</div>':''}</div>`).join('');}
 function tukarFasaMod4(fasa){mod4FasaUI=fasa;document.getElementById('mod4Fasa1Panel').style.display=fasa==='sihat'?'block':'none';document.getElementById('mod4Fasa2Panel').style.display=fasa!=='sihat'?'block':'none';tunjukNotif('✅ Semua makanan sihat dikesan! Kini fasa makanan tidak sihat.');}
@@ -2417,5 +2393,13 @@ window.addEventListener('load', function() {
 });
 </script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+<script>
+window.addEventListener('load', function() {
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js';
+  s.onload = function() { console.log('✅ tmImage ready'); };
+  document.body.appendChild(s);
+});
+</script>
 </body>
 </html>
