@@ -1767,8 +1767,8 @@ let tmModel = null, tmMaxPred = null;
 let tmLoadStatus = 'idle'; // 'idle','loading','ready','error'
 // Filter: label mesti stable 98%+ selama 2 saat
 let tmStableLabel = null, tmStableStart = 0;
-const TM_CONF_MIN = 0.98;
-const TM_STABLE_MS = 2000;
+const TM_CONF_MIN = 0.90;
+const TM_STABLE_MS = 1200;
 let tmScanInterval = null;
 
 const TM_CDNS = [
@@ -1844,15 +1844,28 @@ if (best.className.toLowerCase() === 'background' ||
     const conf = best.probability;
     const label = best.className.toLowerCase();
 
-    // Update label display
-    document.getElementById('camLabel').textContent = `${best.className} (${Math.round(conf*100)}%)`;
+    // Ignore background/tiada — tunjuk label tapi jangan proses
+const labelLower = best.className.toLowerCase();
+const isBackground = labelLower === 'background' || 
+                     labelLower === 'tiada' || 
+                     labelLower === 'kosong';
 
-    // Filter: hanya proses jika confidence 98%+
-    if (conf < TM_CONF_MIN) {
-      // Ragu-ragu / noisy — reset stable counter
-      tmStableLabel = null; tmStableStart = 0;
-      return;
-    }
+// Sentiasa update label supaya guru nampak apa yang kamera tengok
+document.getElementById('camLabel').textContent = isBackground 
+  ? `🔍 Mencari... (${Math.round(conf*100)}%)` 
+  : `${best.className} (${Math.round(conf*100)}%)`;
+
+// Kalau background, reset dan tunggu
+if (isBackground) {
+  tmStableLabel = null; tmStableStart = 0;
+  return;
+}
+
+// Filter confidence
+if (conf < TM_CONF_MIN) {
+  tmStableLabel = null; tmStableStart = 0;
+  return;
+}
 
     // Check stability — label mesti sama selama 2 saat
     const now = Date.now();
