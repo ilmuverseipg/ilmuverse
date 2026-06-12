@@ -449,8 +449,58 @@ function renderKehadiran(){
     </div>`;
   }).join('');
 }
+function tukarUrlEmbedSlides(url){
+  const match=url.match(/presentation\/d\/([a-zA-Z0-9_-]+)/);
+  if(match)return`https://docs.google.com/presentation/d/${match[1]}/embed?rm=minimal&start=false&loop=false&delayms=99999`;
+  return url;
+}
+
+function bukaSiaranFullscreen(embedUrl, tajuk){
+  const overlay=document.getElementById('overlaySiaranFS');
+  const iframe=document.getElementById('iframeSiaranFS');
+  const tajukEl=document.getElementById('tajukSiaranFS');
+  iframe.src=tukarUrlEmbedSlides(embedUrl);
+  tajukEl.textContent=tajuk;
+  overlay.style.display='flex';  // ← guna style terus
+}
+function tutupSiaranFS(){
+  document.getElementById('overlaySiaranFS').style.display='none';  // ← guna style terus
+  document.getElementById('iframeSiaranFS').src='';
+}
+function slideNav(arah){
+  const iframe=document.getElementById('iframeSiaranFS');
+  // Hantar keyboard event ke iframe (Google Slides terima ArrowRight/ArrowLeft)
+  try{
+    iframe.contentWindow.postMessage(arah==='next'?'next':'prev','*');
+  }catch(e){}
+  // Fallback: simulasi klik kanan/kiri pada iframe
+  const key=arah==='next'?'ArrowRight':'ArrowLeft';
+  iframe.contentWindow.dispatchEvent(new KeyboardEvent('keydown',{key,bubbles:true,keyCode:arah==='next'?39:37}));
+}
+
 async function muatSiaran(){
-  try{const res=await fetch(`${API}/api/siaran`);const siaran=await res.json();const el=document.getElementById('siaranGrid');el.innerHTML=siaran.length?siaran.map(s=>`<div class="siaran-kad"><div class="siaran-header"><div class="siaran-tajuk">${s.tajuk}</div><div class="siaran-tarikh">📅 ${new Date(s.tarikhDihantar).toLocaleDateString('ms-MY')}</div></div>${s.embedLink?`<iframe class="siaran-embed" src="${s.embedLink}" allowfullscreen loading="lazy"></iframe><a class="siaran-link" href="${s.embedLink}" target="_blank">🔗 Buka Pautan Penuh →</a>`:''} ${s.komen?`<div class="siaran-komen">📝 ${s.komen}</div>`:''}</div>`).join(''):'<div class="kosong"><div class="kosong-ikon">📢</div><div class="kosong-teks">Tiada siaran lagi</div></div>';}catch(e){}
+  try{
+    const res=await fetch(`${API}/api/siaran`);
+    const siaran=await res.json();
+    const el=document.getElementById('siaranGrid');
+    el.innerHTML=siaran.length?siaran.map(s=>`
+      <div class="siaran-kad">
+        <div class="siaran-header">
+          <div class="siaran-tajuk">${s.tajuk}</div>
+          <div class="siaran-tarikh">📅 ${new Date(s.tarikhDihantar).toLocaleDateString('ms-MY')}</div>
+        </div>
+        ${s.embedLink?`
+          <div style="position:relative;background:#000;overflow:hidden;aspect-ratio:16/9;cursor:pointer" onclick="bukaSiaranFullscreen('${s.embedLink.replace(/'/g,"\\'")}','${s.tajuk.replace(/'/g,"\\'")}')">
+            <iframe src="${tukarUrlEmbedSlides(s.embedLink)}" style="width:100%;height:100%;border:none;pointer-events:none" allowfullscreen loading="lazy"></iframe>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);transition:.2s" onmouseenter="this.style.background='rgba(0,0,0,.5)'" onmouseleave="this.style.background='rgba(0,0,0,.35)'">
+              <div style="background:rgba(255,255,255,.95);border-radius:50px;padding:12px 28px;display:flex;align-items:center;gap:10px;font-family:'Exo 2',sans-serif;font-weight:700;font-size:.95rem;color:var(--accent);box-shadow:0 4px 20px rgba(0,0,0,.3)">
+                ⛶ Buka Skrin Penuh
+              </div>
+            </div>
+          </div>`:''}
+        ${s.komen?`<div class="siaran-komen">📝 ${s.komen}</div>`:''}
+      </div>`).join(''):'<div class="kosong"><div class="kosong-ikon">📢</div><div class="kosong-teks">Tiada siaran lagi</div></div>';
+  }catch(e){}
 }
 
 // ── LATIHAN MURID (dengan markah display) ──
@@ -554,5 +604,17 @@ async function hantarJawapanMurid(latihanId){
 }
 function tunjukNotif(msg){const el=document.getElementById('notifBar');el.textContent=msg;el.style.display='block';clearTimeout(el._t);el._t=setTimeout(()=>el.style.display='none',4000);}
 </script>
+  <!-- OVERLAY FULLSCREEN SIARAN -->
+<div id="overlaySiaranFS" class="overlay" style="display:none;position:fixed;inset:0;z-index:9000;background:#000;flex-direction:column">
+  <div style="height:52px;background:rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.12);display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0">
+    <button onclick="tutupSiaranFS()" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:#f87171;border-radius:8px;padding:6px 16px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700;font-size:.85rem">✕ Tutup</button>
+    <div id="tajukSiaranFS" style="font-family:'Orbitron',monospace;font-size:.9rem;color:#fff;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+    <div style="display:flex;gap:8px">
+      <button onclick="slideNav('prev')" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:8px 20px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700;font-size:.95rem;transition:.2s" onmouseenter="this.style.background='rgba(255,255,255,.2)'" onmouseleave="this.style.background='rgba(255,255,255,.1)'">◀ Sebelum</button>
+      <button onclick="slideNav('next')" style="background:rgba(79,142,247,.2);border:1px solid rgba(79,142,247,.5);color:#7dd3fc;border-radius:8px;padding:8px 20px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700;font-size:.95rem;transition:.2s" onmouseenter="this.style.background='rgba(79,142,247,.35)'" onmouseleave="this.style.background='rgba(79,142,247,.2)'">Seterusnya ▶</button>
+    </div>
+  </div>
+  <iframe id="iframeSiaranFS" src="" style="flex:1;width:100%;border:none;background:#000" allowfullscreen></iframe>
+</div>
 </body>
 </html>
