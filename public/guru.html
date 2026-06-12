@@ -479,25 +479,25 @@ textarea{resize:vertical;min-height:80px}
       <div class="mod-kad m1" onclick="bunyiKlik();bukaMod(1)">
         <div class="mod-ikon">👥</div>
         <div class="mod-num">01</div>
-        <div class="mod-tajuk">Kuiz Ramai-ramai</div>
+        <div class="mod-tajuk">Arena Cendekia</div>
         <div class="mod-desc">Sehingga 10 murid menjawab secara bergilir menggunakan kad NFC. Pemenang teratas menerima ganjaran!</div>
       </div>
       <div class="mod-kad m2" onclick="bunyiKlik();bukaMod(2)">
         <div class="mod-ikon">⚡</div>
         <div class="mod-num">02</div>
-        <div class="mod-tajuk">Dwi-Padu (2 Orang)</div>
+        <div class="mod-tajuk">Siapa Cepat Dia Dapat!</div>
         <div class="mod-desc">Pertandingan 1 lawan 1. Guru pilih murid menjawab. Ada peluang kedua untuk pesaing!</div>
       </div>
       <div class="mod-kad m3" onclick="bunyiKlik();bukaMod(3)">
         <div class="mod-ikon">📖</div>
         <div class="mod-num">03</div>
-        <div class="mod-tajuk">Susunan Hafalan</div>
+        <div class="mod-tajuk">Susun & Ingat</div>
         <div class="mod-desc">Murid susun kad NFC mengikut urutan betul — pantun, doa, atau mana-mana urutan.</div>
       </div>
       <div class="mod-kad m4" onclick="bunyiKlik();bukaMod(4)">
         <div class="mod-ikon">🤖</div>
         <div class="mod-num">04</div>
-        <div class="mod-tajuk">Imbas AI Kesihatan</div>
+        <div class="mod-tajuk">Detektif Nutrisi</div>
         <div class="mod-desc">Kamera AI kenal pasti makanan secara automatik. Murid teka sendiri kategori makanan!</div>
       </div>
     </div>
@@ -1913,7 +1913,7 @@ async function muatDashboard() {
 }
 function renderDashboard(sesi) {
   const el=document.getElementById('sesiGrid');
-  const modNama=['','Kuiz Ramai-ramai','Dwi-Padu','Susunan Hafalan','Imbas AI'];
+const modNama=['','Arena Cendekia','Siapa Cepat Dia Dapat!','Susun & Ingat','Detektif Nutrisi'];
   const modWarna=['','var(--accent)','var(--purple)','var(--gold)','var(--green)'];
   el.innerHTML=sesi.length?sesi.map(s=>`<div class="sesi-kad"><div class="sesi-kad-header"><div><div class="sesi-tajuk">${s.tajuk}${s.kelas?` <span class="tag-purple">${s.kelas}</span>`:''}</div><div class="sesi-tarikh">📅 ${new Date(s.tarikh).toLocaleDateString('ms-MY',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div></div><span class="sesi-mod-badge" style="background:${modWarna[s.mod]||'var(--accent)'}1a;color:${modWarna[s.mod]||'var(--accent)'};border:1px solid ${modWarna[s.mod]||'var(--accent)'}33">Mod ${s.mod} — ${modNama[s.mod]||''}</span></div><div class="sesi-murid-row">${(s.keputusan||[]).map(k=>`<div class="sesi-murid-chip"><div class="chip-avatar">${k.avatar&&k.avatar.startsWith('data:')?`<img src="${k.avatar}">`:`<span>${k.avatar||'👤'}</span>`}</div><span>${k.nama}</span><span class="chip-markah">${k.markah}★</span></div>`).join('')}</div>${s.ulasan?.length?`<div style="font-size:.72rem;color:var(--text2);margin-bottom:8px">💬 ${s.ulasan.length} ulasan guru</div>`:''}<div class="sesi-aksi"><button class="btn btn-kecil btn-outline" onclick="bukaSesiDetail('${s._id}')">Detail & Ulasan</button><button class="btn btn-kecil btn-merah" onclick="padamSesi('${s._id}',event)">🗑 Padam</button></div></div>`).join(''):'<div style="color:var(--text2);padding:40px;text-align:center">Tiada rekod untuk tarikh ini.</div>';
 }
