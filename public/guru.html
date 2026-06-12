@@ -1554,7 +1554,7 @@ async function padamSet(id){if(!confirm('Padam set soalan ini?'))return;await fe
 // MOD SETUP MODAL — KELAS DROPDOWN + TAPIS MURID
 // ============================================================
 function bukaMod(mod) {
-  const tajukMod=['','KUIZ RAMAI-RAMAI','DWI-PADU (2 ORANG)','SUSUNAN HAFALAN','IMBAS AI KESIHATAN'];
+  const tajukMod=['','ARENA CENDEKIA','SIAPA CEPAT DIA DAPAT!','SUSUN & INGAT','DETEKTIF NUTRISI'];
   document.getElementById('modalModTajuk').textContent=`MOD ${mod} — ${tajukMod[mod]}`;
   const soalanMod=senaraiSoalan.filter(s=>s.mod===mod);
   const kelasOpt='<option value="">Semua Kelas</option>'+senaraiKelas.map(k=>`<option value="${k}">${k}</option>`).join('');
@@ -1639,7 +1639,7 @@ function papanPermainanMula(state) {
   sesiSemasa=state;
   clearInterval(_clientTimerInterval);
   document.getElementById('papanPermainan').classList.add('buka');
-  const tajukMod=['','KUIZ RAMAI-RAMAI','DWI-PADU','SUSUNAN HAFALAN','IMBAS AI'];
+  const tajukMod=['','ARENA CENDEKIA','SIAPA CEPAT DIA DAPAT!','SUSUN & INGAT','DETEKTIF NUTRISI'];
   document.getElementById('papanTajuk').textContent=`MOD ${state.mod} — ${tajukMod[state.mod]}`;
   document.getElementById('soalanJumlah').textContent=state.jumlahSoalan||'—';
   document.getElementById('soalanIdx').textContent=(state.soalanSemasa||0)+1;
