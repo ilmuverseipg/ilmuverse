@@ -31,11 +31,20 @@ const NFC_KAD_A = '5A B2 F3 B1';
 const NFC_KAD_B = '47 84 21 25';
 const NFC_KAD_C = '45 E7 A5 AB';
 
+// Normalisasi UID — buang semua bukan hex, uppercase, format semula dengan spasi
+function normalizeUID(uid) {
+  if (!uid) return '';
+  return uid.replace(/[^0-9A-Fa-f]/g, '').toUpperCase().match(/.{1,2}/g)?.join(' ') || uid.toUpperCase().trim();
+}
+
 function uidKeJawapan(uid) {
-  const u = uid.toUpperCase().trim();
-  if (NFC_KAD_A && u === NFC_KAD_A.toUpperCase()) return 'A';
-  if (NFC_KAD_B && u === NFC_KAD_B.toUpperCase()) return 'B';
-  if (NFC_KAD_C && u === NFC_KAD_C.toUpperCase()) return 'C';
+  const u = normalizeUID(uid);
+  const a = normalizeUID(NFC_KAD_A);
+  const b = normalizeUID(NFC_KAD_B);
+  const c = normalizeUID(NFC_KAD_C);
+  if (a && u === a) return 'A';
+  if (b && u === b) return 'B';
+  if (c && u === c) return 'C';
   return null;
 }
 
@@ -276,7 +285,10 @@ async function mulaMod(data) {
   });
   await sesi.save();
 
+  // [FIX] Henti timer lama sebelum mulakan mod baharu
+  if (gameState.timer) { clearInterval(gameState.timer); gameState.timer = null; }
   if (gameState.mod4?.autoScanTimer) clearTimeout(gameState.mod4.autoScanTimer);
+  gameState.aktif = false; // Tandakan sesi lama tidak aktif dulu
 
   gameState = {
     mod, aktif: true,
@@ -290,7 +302,8 @@ async function mulaMod(data) {
     mod4: { fasa: 'sihat', sihatDikesan: [], takSihatDikesan: [], autoScanTimer: null }
   };
 
-  if (murid) murid.forEach(m => { gameState.skor[m._id || m.nama] = 0; });
+  // [FIX] Guna String() supaya key skor konsisten (elak ObjectId vs String mismatch)
+  if (murid) murid.forEach(m => { gameState.skor[String(m._id || m.nama)] = 0; });
 
   hantarKeESP32({ jenis: 'set_mod', mod });
 
@@ -319,35 +332,41 @@ function mulaTimerMod1() {
     sisa--;
     gameState.masa = sisa;
     hantarKeGuru({ jenis: 'timer_update', sisa });
-    if (sisa <= 0) { clearInterval(gameState.timer); tamatMod1(); }
+    if (sisa <= 0) { 
+      clearInterval(gameState.timer); 
+      gameState.timer = null;
+      if (gameState.aktif) tamatMod1(); // [FIX] Jangan panggil tamatMod1 kalau dah tamat
+    }
   }, 1000);
 }
 
 async function tamatMod1() {
-  if (gameState.timer) clearInterval(gameState.timer);
+  if (gameState.timer) { clearInterval(gameState.timer); gameState.timer = null; } // [FIX] null lepas clear
   gameState.aktif = false;
 
   const ranking = gameState.muridSenarai.map(m => ({
     nama: m.nama, avatar: m.avatar,
-    markah: gameState.skor[m._id || m.nama] || 0
+    markah: gameState.skor[String(m._id || m.nama)] || 0 // [FIX] String() key
   })).sort((a, b) => b.markah - a.markah);
 
   await Sesi.findByIdAndUpdate(gameState.sesiId, {
     keputusan: ranking.map((r, i) => ({ nama: r.nama, markah: r.markah, avatar: r.avatar, tempat: i + 1 }))
   });
 
-  hantarKeGuru({ jenis: 'mod1_tamat', ranking });
+  semuaHantar({ jenis: 'mod1_tamat', ranking }); // [FIX] Hantar ke murid juga supaya sync
   if (ranking.length > 0) setTimeout(() => hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 }), 2000);
 }
 
 async function prosesNFC(uid) {
-  if (!gameState.aktif) {
-    hantarKeGuru({ jenis: 'nfc_scan', uid });
-    return;
-  }
-  hantarKeGuru({ jenis: 'nfc_scan', uid });
+  const uidNormal = normalizeUID(uid); // [FIX] Normalize dulu
+  console.log(`[NFC] Diterima: "${uid}" => normalize: "${uidNormal}" | Mod: ${gameState.mod} | Aktif: ${gameState.aktif}`);
+  
+  hantarKeGuru({ jenis: 'nfc_scan', uid: uidNormal }); // [FIX] Hantar UID yang sudah dinormalize
+  
+  if (!gameState.aktif) return;
+  
   const mod = gameState.mod;
-  uid = uid.toUpperCase().trim();
+  uid = uidNormal; // [FIX] Guna UID yang sudah dinormalize
   if (mod === 1) prosesNFCMod1(uid);
   else if (mod === 2) prosesNFCMod2(uid);
   else if (mod === 3) prosesNFCMod3(uid);
@@ -365,7 +384,7 @@ function prosesNFCMod1(uid) {
   if (!jawapanDiberi) return;
 
   const betul = jawapanDiberi === soalan.betul;
-  const key = murid._id || murid.nama;
+  const key = String(murid._id || murid.nama); // [FIX] String() untuk key konsisten
 
   if (betul) {
     gameState.skor[key] = (gameState.skor[key] || 0) + 1;
@@ -381,8 +400,8 @@ function prosesNFCMod1(uid) {
     gameState.muridSemasa = 0;
     gameState.soalanSemasa++;
     if (gameState.soalanSemasa >= gameState.soalan.length) {
-      clearInterval(gameState.timer);
-      tamatMod1();
+      if (gameState.timer) { clearInterval(gameState.timer); gameState.timer = null; } // [FIX]
+      if (gameState.aktif) tamatMod1(); // [FIX] Guard supaya tidak panggil dua kali
       return;
     }
   }
@@ -397,16 +416,23 @@ function prosesNFCMod2(uid) {
 
   const soalan = gameState.soalan[soalanIdx];
   const jawapanDiberi = uidKeJawapan(uid);
-  if (!jawapanDiberi) return;
+  if (!jawapanDiberi) {
+    console.log('[MOD2] UID tidak dikenali:', uid, '— semak NFC_KAD_A/B/C');
+    return;
+  }
 
   const betul = jawapanDiberi === soalan.betul;
-  const muridSemasa = gameState.giliran;
+  // [FIX] String() untuk elak ObjectId vs String mismatch
+  const muridSemasa = String(gameState.giliran);
 
   if (betul) {
     gameState.skor[muridSemasa] = (gameState.skor[muridSemasa] || 0) + 1;
+    // Dapatkan nama murid untuk paparan
+    const muridObj = gameState.muridSenarai.find(m => String(m._id || m.nama) === muridSemasa);
+    const namaPapar = muridObj ? muridObj.nama : muridSemasa;
     hantarKeESP32({ jenis: 'betul' });
     hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 });
-    hantarKeGuru({ jenis: 'mod2_betul', murid: muridSemasa, jawapan: jawapanDiberi, markah: gameState.skor[muridSemasa] });
+    hantarKeGuru({ jenis: 'mod2_betul', murid: namaPapar, jawapan: jawapanDiberi, markah: gameState.skor[muridSemasa] });
     gameState.giliran = null;
     gameState.peluangKedua = false;
     gameState.soalanSemasa++;
@@ -414,11 +440,14 @@ function prosesNFCMod2(uid) {
   } else {
     hantarKeESP32({ jenis: 'salah' });
     if (!gameState.peluangKedua) {
-      const muridLain = gameState.muridSenarai.find(m => (m._id || m.nama) !== muridSemasa);
+      // [FIX] Guna String() untuk perbandingan ID yang konsisten
+      const muridLain = gameState.muridSenarai.find(m => String(m._id || m.nama) !== muridSemasa);
       if (muridLain) {
-        gameState.giliran = muridLain._id || muridLain.nama;
+        gameState.giliran = String(muridLain._id || muridLain.nama); // [FIX] Simpan sebagai string
         gameState.peluangKedua = true;
         hantarKeGuru({ jenis: 'mod2_peluang_kedua', murid: muridLain.nama });
+        // [FIX] Beritahu ESP32 supaya sedia terima scan seterusnya
+        hantarKeESP32({ jenis: 'sedia_jawab' });
       }
     } else {
       gameState.giliran = null;
@@ -432,9 +461,10 @@ function prosesNFCMod2(uid) {
 }
 
 function prosesMode2PilihMurid(data) {
-  gameState.giliran = data.muridId;
+  gameState.giliran = String(data.muridId); // [FIX] Pastikan string, bukan ObjectId
   gameState.peluangKedua = false;
   hantarKeGuru({ jenis: 'mod2_giliran', murid: data.muridNama });
+  hantarKeMurid({ jenis: 'mod2_giliran', murid: data.muridNama }); // [FIX] Sync murid juga
   hantarKeESP32({ jenis: 'sedia_jawab' });
 }
 
@@ -442,10 +472,10 @@ async function tamatMod2() {
   gameState.aktif = false;
   const ranking = gameState.muridSenarai.map(m => ({
     nama: m.nama, avatar: m.avatar,
-    markah: gameState.skor[m._id || m.nama] || 0
+    markah: gameState.skor[String(m._id || m.nama)] || 0 // [FIX] String() key
   })).sort((a, b) => b.markah - a.markah);
   await Sesi.findByIdAndUpdate(gameState.sesiId, { keputusan: ranking });
-  hantarKeGuru({ jenis: 'mod2_tamat', ranking });
+  semuaHantar({ jenis: 'mod2_tamat', ranking }); // [FIX] Hantar ke semua klien
   setTimeout(() => hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 }), 1500);
 }
 
@@ -454,7 +484,8 @@ function prosesNFCMod3(uid) {
   const soalan = gameState.soalan;
   if (!soalan || idx >= soalan.length) return;
 
-  const betul = soalan[idx].uidBetul === uid;
+  // [FIX] Normalize kedua-dua UID sebelum bandingkan
+  const betul = normalizeUID(soalan[idx].uidBetul) === normalizeUID(uid);
   if (betul) {
     gameState.mod3Seq = idx + 1;
     hantarKeESP32({ jenis: 'betul' });
@@ -535,10 +566,10 @@ function soalanSeterusnya() {
 }
 
 async function tamatMod(data) {
-  if (gameState.timer) clearInterval(gameState.timer);
+  if (gameState.timer) { clearInterval(gameState.timer); gameState.timer = null; } // [FIX]
   if (gameState.mod4?.autoScanTimer) clearTimeout(gameState.mod4.autoScanTimer);
   gameState.aktif = false;
-  hantarKeGuru({ jenis: 'mod_tamat' });
+  semuaHantar({ jenis: 'mod_tamat' }); // [FIX] Hantar ke semua supaya murid screen pun keluar
 }
 
 async function tambahUlasan(data) {
