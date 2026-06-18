@@ -1,5 +1,5 @@
 // ============================================================
-// ILMUVERSE - SERVER UTAMA v2.0 (DIKEMASKINI)
+// ILMUVERSE - SERVER UTAMA v2.1 (SYNC FIX)
 // Node.js + Express + WebSocket + MongoDB
 // ============================================================
 require('dotenv').config();
@@ -26,12 +26,10 @@ app.use(express.static(path.join(__dirname, '../public')));
 const TELEGRAM_BOT_TOKEN = '8849507122:AAECl_Ms6z6xYcAfO6kBFAyBfjYoIhL6KrI';
 const TELEGRAM_CHAT_ID = '707286960';
 
-// ID Kad NFC Tetap — Ganti dengan ID sebenar kad anda
 const NFC_KAD_A = '5A B2 F3 B1';
 const NFC_KAD_B = '47 84 21 25';
 const NFC_KAD_C = '45 E7 A5 AB';
 
-// Normalisasi UID — buang semua bukan hex, uppercase, format semula dengan spasi
 function normalizeUID(uid) {
   if (!uid) return '';
   return uid.replace(/[^0-9A-Fa-f]/g, '').toUpperCase().match(/.{1,2}/g)?.join(' ') || uid.toUpperCase().trim();
@@ -100,7 +98,6 @@ const SiaranSchema = new mongoose.Schema({
   tarikhDihantar: { type: Date, default: Date.now }
 });
 
-// === SKEMA LATIHAN === (PATCH 1: tambah field 'markah' dalam jawapan)
 const LatihanSchema = new mongoose.Schema({
   tajuk: String,
   arahan: String,
@@ -131,8 +128,8 @@ const LatihanSchema = new mongoose.Schema({
       teks: String,
       tarikhKomen: { type: Date, default: Date.now }
     }],
-    statusSemak: { type: String, default: 'belum' }, // 'belum', 'disemak', 'approved'
-    markah: { type: Number, default: null }           // PATCH 1: field markah baharu
+    statusSemak: { type: String, default: 'belum' },
+    markah: { type: Number, default: null }
   }]
 });
 
@@ -220,6 +217,8 @@ wss.on('connection', (ws, req) => {
   } else if (url === '/murid') {
     clients.murid.push(ws);
     console.log('[WS] Aplikasi Murid disambung');
+    // [SYNC FIX] Murid yang baru sambung dapat state semasa supaya sync
+    ws.send(JSON.stringify({ jenis: 'game_state', data: sanitizeGameState() }));
   }
 
   ws.on('message', async (raw) => {
@@ -249,7 +248,6 @@ wss.on('connection', (ws, req) => {
         case 'flash_cam': hantarKeCAM({ jenis: 'flash', nyala: data.nyala }); break;
         case 'tambah_ulasan': await tambahUlasan(data); break;
         case 'push_telegram': await hantarTelegram(data); break;
-        // PATCH 2: handler cam_result dari browser (bukan ESP32-CAM)
         case 'cam_result_browser': await prosesCAMResult(data); break;
       }
     }
@@ -285,10 +283,10 @@ async function mulaMod(data) {
   });
   await sesi.save();
 
-  // [FIX] Henti timer lama sebelum mulakan mod baharu
+  // Henti timer lama sebelum mulakan mod baharu
   if (gameState.timer) { clearInterval(gameState.timer); gameState.timer = null; }
   if (gameState.mod4?.autoScanTimer) clearTimeout(gameState.mod4.autoScanTimer);
-  gameState.aktif = false; // Tandakan sesi lama tidak aktif dulu
+  gameState.aktif = false;
 
   gameState = {
     mod, aktif: true,
@@ -302,7 +300,6 @@ async function mulaMod(data) {
     mod4: { fasa: 'sihat', sihatDikesan: [], takSihatDikesan: [], autoScanTimer: null }
   };
 
-  // [FIX] Guna String() supaya key skor konsisten (elak ObjectId vs String mismatch)
   if (murid) murid.forEach(m => { gameState.skor[String(m._id || m.nama)] = 0; });
 
   hantarKeESP32({ jenis: 'set_mod', mod });
@@ -312,6 +309,9 @@ async function mulaMod(data) {
     setTimeout(() => autoScanMod4(), 1500);
   }
 
+  // [SYNC FIX] Hantar 'mod_reset' dulu supaya semua klien reset UI mereka,
+  // kemudian hantar 'mod_bermula' dengan state penuh
+  semuaHantar({ jenis: 'mod_reset' });
   semuaHantar({ jenis: 'mod_bermula', gameState: sanitizeGameState() });
   console.log(`[GAME] Mod ${mod} bermula — ${tajukFinal}`);
 }
@@ -332,44 +332,54 @@ function mulaTimerMod1() {
     sisa--;
     gameState.masa = sisa;
     hantarKeGuru({ jenis: 'timer_update', sisa });
-    if (sisa <= 0) { 
-      clearInterval(gameState.timer); 
+    if (sisa <= 0) {
+      clearInterval(gameState.timer);
       gameState.timer = null;
-      if (gameState.aktif) tamatMod1(); // [FIX] Jangan panggil tamatMod1 kalau dah tamat
+      if (gameState.aktif) tamatMod1();
     }
   }, 1000);
 }
 
 async function tamatMod1() {
-  if (gameState.timer) { clearInterval(gameState.timer); gameState.timer = null; } // [FIX] null lepas clear
+  if (gameState.timer) { clearInterval(gameState.timer); gameState.timer = null; }
   gameState.aktif = false;
 
   const ranking = gameState.muridSenarai.map(m => ({
     nama: m.nama, avatar: m.avatar,
-    markah: gameState.skor[String(m._id || m.nama)] || 0 // [FIX] String() key
+    markah: gameState.skor[String(m._id || m.nama)] || 0
   })).sort((a, b) => b.markah - a.markah);
 
   await Sesi.findByIdAndUpdate(gameState.sesiId, {
     keputusan: ranking.map((r, i) => ({ nama: r.nama, markah: r.markah, avatar: r.avatar, tempat: i + 1 }))
   });
 
-  semuaHantar({ jenis: 'mod1_tamat', ranking }); // [FIX] Hantar ke murid juga supaya sync
+  // [SYNC FIX] Hantar mod1_tamat DAN mod_tamat supaya semua klien tahu mod sudah habis
+  semuaHantar({ jenis: 'mod1_tamat', ranking });
+  semuaHantar({ jenis: 'mod_tamat', mod: 1, ranking });
+
   if (ranking.length > 0) setTimeout(() => hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 }), 2000);
 }
 
 async function prosesNFC(uid) {
-  const uidNormal = normalizeUID(uid); // [FIX] Normalize dulu
-  console.log(`[NFC] Diterima: "${uid}" => normalize: "${uidNormal}" | Mod: ${gameState.mod} | Aktif: ${gameState.aktif}`);
-  
-  hantarKeGuru({ jenis: 'nfc_scan', uid: uidNormal }); // [FIX] Hantar UID yang sudah dinormalize
-  
+  const uidNormal = normalizeUID(uid);
+  // [SYNC FIX] Resolve jawapan (A/B/C) dan hantar sekali dengan nfc_scan
+  // supaya skrin klien tahu kad yang diimbas mewakili jawapan apa
+  const jawapanDiberi = uidKeJawapan(uidNormal);
+  console.log(`[NFC] Diterima: "${uid}" => normalize: "${uidNormal}" => jawapan: "${jawapanDiberi}" | Mod: ${gameState.mod} | Aktif: ${gameState.aktif}`);
+
+  hantarKeGuru({
+    jenis: 'nfc_scan',
+    uid: uidNormal,
+    jawapan: jawapanDiberi,    // [SYNC FIX] A/B/C atau null jika tidak dikenali
+    dikenali: !!jawapanDiberi  // [SYNC FIX] flag mudah untuk klien
+  });
+
   if (!gameState.aktif) return;
-  
+
   const mod = gameState.mod;
-  uid = uidNormal; // [FIX] Guna UID yang sudah dinormalize
-  if (mod === 1) prosesNFCMod1(uid);
-  else if (mod === 2) prosesNFCMod2(uid);
-  else if (mod === 3) prosesNFCMod3(uid);
+  if (mod === 1) prosesNFCMod1(uidNormal);
+  else if (mod === 2) prosesNFCMod2(uidNormal);
+  else if (mod === 3) prosesNFCMod3(uidNormal);
 }
 
 function prosesNFCMod1(uid) {
@@ -384,15 +394,17 @@ function prosesNFCMod1(uid) {
   if (!jawapanDiberi) return;
 
   const betul = jawapanDiberi === soalan.betul;
-  const key = String(murid._id || murid.nama); // [FIX] String() untuk key konsisten
+  const key = String(murid._id || murid.nama);
 
   if (betul) {
     gameState.skor[key] = (gameState.skor[key] || 0) + 1;
     hantarKeESP32({ jenis: 'betul' });
-    hantarKeGuru({ jenis: 'jawapan', betul: true, murid: murid.nama, jawapan: jawapanDiberi, markah: gameState.skor[key] });
+    // [SYNC FIX] Hantar ke semua klien (guru + murid)
+    semuaHantar({ jenis: 'jawapan', betul: true, murid: murid.nama, jawapan: jawapanDiberi, markah: gameState.skor[key] });
   } else {
     hantarKeESP32({ jenis: 'salah' });
-    hantarKeGuru({ jenis: 'jawapan', betul: false, murid: murid.nama, jawapan: jawapanDiberi });
+    // [SYNC FIX] Hantar ke semua klien
+    semuaHantar({ jenis: 'jawapan', betul: false, murid: murid.nama, jawapan: jawapanDiberi });
   }
 
   gameState.muridSemasa++;
@@ -400,12 +412,13 @@ function prosesNFCMod1(uid) {
     gameState.muridSemasa = 0;
     gameState.soalanSemasa++;
     if (gameState.soalanSemasa >= gameState.soalan.length) {
-      if (gameState.timer) { clearInterval(gameState.timer); gameState.timer = null; } // [FIX]
-      if (gameState.aktif) tamatMod1(); // [FIX] Guard supaya tidak panggil dua kali
+      if (gameState.timer) { clearInterval(gameState.timer); gameState.timer = null; }
+      if (gameState.aktif) tamatMod1();
       return;
     }
   }
-  hantarKeGuru({ jenis: 'state_update', gameState: sanitizeGameState() });
+  // [SYNC FIX] state_update ke semua klien
+  semuaHantar({ jenis: 'state_update', gameState: sanitizeGameState() });
 }
 
 function prosesNFCMod2(uid) {
@@ -422,17 +435,16 @@ function prosesNFCMod2(uid) {
   }
 
   const betul = jawapanDiberi === soalan.betul;
-  // [FIX] String() untuk elak ObjectId vs String mismatch
   const muridSemasa = String(gameState.giliran);
 
   if (betul) {
     gameState.skor[muridSemasa] = (gameState.skor[muridSemasa] || 0) + 1;
-    // Dapatkan nama murid untuk paparan
     const muridObj = gameState.muridSenarai.find(m => String(m._id || m.nama) === muridSemasa);
     const namaPapar = muridObj ? muridObj.nama : muridSemasa;
     hantarKeESP32({ jenis: 'betul' });
     hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 });
-    hantarKeGuru({ jenis: 'mod2_betul', murid: namaPapar, jawapan: jawapanDiberi, markah: gameState.skor[muridSemasa] });
+    // [SYNC FIX] Hantar ke semua klien
+    semuaHantar({ jenis: 'mod2_betul', murid: namaPapar, jawapan: jawapanDiberi, markah: gameState.skor[muridSemasa] });
     gameState.giliran = null;
     gameState.peluangKedua = false;
     gameState.soalanSemasa++;
@@ -440,31 +452,32 @@ function prosesNFCMod2(uid) {
   } else {
     hantarKeESP32({ jenis: 'salah' });
     if (!gameState.peluangKedua) {
-      // [FIX] Guna String() untuk perbandingan ID yang konsisten
       const muridLain = gameState.muridSenarai.find(m => String(m._id || m.nama) !== muridSemasa);
       if (muridLain) {
-        gameState.giliran = String(muridLain._id || muridLain.nama); // [FIX] Simpan sebagai string
+        gameState.giliran = String(muridLain._id || muridLain.nama);
         gameState.peluangKedua = true;
-        hantarKeGuru({ jenis: 'mod2_peluang_kedua', murid: muridLain.nama });
-        // [FIX] Beritahu ESP32 supaya sedia terima scan seterusnya
+        // [SYNC FIX] Hantar ke semua klien (guru + murid) supaya skrin murid update giliran
+        semuaHantar({ jenis: 'mod2_peluang_kedua', murid: muridLain.nama });
         hantarKeESP32({ jenis: 'sedia_jawab' });
       }
     } else {
       gameState.giliran = null;
       gameState.peluangKedua = false;
       gameState.soalanSemasa++;
-      hantarKeGuru({ jenis: 'mod2_kedua_salah' });
+      // [SYNC FIX] Hantar ke semua klien
+      semuaHantar({ jenis: 'mod2_kedua_salah' });
       if (gameState.soalanSemasa >= gameState.soalan.length) { tamatMod2(); return; }
     }
   }
-  hantarKeGuru({ jenis: 'state_update', gameState: sanitizeGameState() });
+  // [SYNC FIX] state_update ke semua klien
+  semuaHantar({ jenis: 'state_update', gameState: sanitizeGameState() });
 }
 
 function prosesMode2PilihMurid(data) {
-  gameState.giliran = String(data.muridId); // [FIX] Pastikan string, bukan ObjectId
+  gameState.giliran = String(data.muridId);
   gameState.peluangKedua = false;
-  hantarKeGuru({ jenis: 'mod2_giliran', murid: data.muridNama });
-  hantarKeMurid({ jenis: 'mod2_giliran', murid: data.muridNama }); // [FIX] Sync murid juga
+  // [SYNC FIX] Hantar ke semua klien supaya skrin murid tahu siapa giliran
+  semuaHantar({ jenis: 'mod2_giliran', murid: data.muridNama });
   hantarKeESP32({ jenis: 'sedia_jawab' });
 }
 
@@ -472,10 +485,12 @@ async function tamatMod2() {
   gameState.aktif = false;
   const ranking = gameState.muridSenarai.map(m => ({
     nama: m.nama, avatar: m.avatar,
-    markah: gameState.skor[String(m._id || m.nama)] || 0 // [FIX] String() key
+    markah: gameState.skor[String(m._id || m.nama)] || 0
   })).sort((a, b) => b.markah - a.markah);
   await Sesi.findByIdAndUpdate(gameState.sesiId, { keputusan: ranking });
-  semuaHantar({ jenis: 'mod2_tamat', ranking }); // [FIX] Hantar ke semua klien
+  // [SYNC FIX] Hantar mod2_tamat DAN mod_tamat
+  semuaHantar({ jenis: 'mod2_tamat', ranking });
+  semuaHantar({ jenis: 'mod_tamat', mod: 2, ranking });
   setTimeout(() => hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 }), 1500);
 }
 
@@ -484,20 +499,23 @@ function prosesNFCMod3(uid) {
   const soalan = gameState.soalan;
   if (!soalan || idx >= soalan.length) return;
 
-  // [FIX] Normalize kedua-dua UID sebelum bandingkan
   const betul = normalizeUID(soalan[idx].uidBetul) === normalizeUID(uid);
   if (betul) {
     gameState.mod3Seq = idx + 1;
     hantarKeESP32({ jenis: 'betul' });
-    hantarKeGuru({ jenis: 'mod3_betul', susunan: idx + 1, jumlah: soalan.length });
+    // [SYNC FIX] Hantar ke semua klien
+    semuaHantar({ jenis: 'mod3_betul', susunan: idx + 1, jumlah: soalan.length });
     if (gameState.mod3Seq >= soalan.length) {
       hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 });
-      hantarKeGuru({ jenis: 'mod3_tamat' });
       gameState.aktif = false;
+      // [SYNC FIX] Hantar mod3_tamat DAN mod_tamat
+      semuaHantar({ jenis: 'mod3_tamat' });
+      semuaHantar({ jenis: 'mod_tamat', mod: 3 });
     }
   } else {
     hantarKeESP32({ jenis: 'salah' });
-    hantarKeGuru({ jenis: 'mod3_salah', susunan: idx + 1 });
+    // [SYNC FIX] Hantar ke semua klien
+    semuaHantar({ jenis: 'mod3_salah', susunan: idx + 1 });
   }
 }
 
@@ -516,7 +534,8 @@ async function prosesCAMResult(data) {
     betul = MAKANAN_TAK_SIHAT_LIST.includes(labelLower) && !m4.takSihatDikesan.includes(labelLower);
   }
 
-  hantarKeGuru({ jenis: 'cam_keputusan', label, confidence, betul, kategori: fasa });
+  // [SYNC FIX] Hantar ke semua klien
+  semuaHantar({ jenis: 'cam_keputusan', label, confidence, betul, kategori: fasa });
 
   if (betul) {
     hantarKeESP32({ jenis: 'betul' });
@@ -524,7 +543,7 @@ async function prosesCAMResult(data) {
       m4.sihatDikesan.push(labelLower);
       if (m4.sihatDikesan.length >= MAKANAN_SIHAT_LIST.length) {
         m4.fasa = 'tidak_sihat';
-        hantarKeGuru({ jenis: 'mod4_tukar_fasa', fasa: 'tidak_sihat' });
+        semuaHantar({ jenis: 'mod4_tukar_fasa', fasa: 'tidak_sihat' });
         setTimeout(() => autoScanMod4(), 2000);
         return;
       }
@@ -549,7 +568,9 @@ async function tamatMod4() {
   const murid = gameState.muridSenarai[0];
   const ranking = murid ? [{ nama: murid.nama, avatar: murid.avatar, markah: gameState.mod4.sihatDikesan.length + gameState.mod4.takSihatDikesan.length }] : [];
   await Sesi.findByIdAndUpdate(gameState.sesiId, { keputusan: ranking });
-  hantarKeGuru({ jenis: 'mod4_tamat', ranking });
+  // [SYNC FIX] Hantar mod4_tamat DAN mod_tamat ke semua klien
+  semuaHantar({ jenis: 'mod4_tamat', ranking });
+  semuaHantar({ jenis: 'mod_tamat', mod: 4, ranking });
   setTimeout(() => hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 }), 1000);
 }
 
@@ -561,15 +582,17 @@ function soalanSeterusnya() {
     if (gameState.mod === 1) tamatMod1();
     else if (gameState.mod === 2) tamatMod2();
   } else {
-    hantarKeGuru({ jenis: 'state_update', gameState: sanitizeGameState() });
+    // [SYNC FIX] Hantar ke semua klien
+    semuaHantar({ jenis: 'state_update', gameState: sanitizeGameState() });
   }
 }
 
 async function tamatMod(data) {
-  if (gameState.timer) { clearInterval(gameState.timer); gameState.timer = null; } // [FIX]
+  if (gameState.timer) { clearInterval(gameState.timer); gameState.timer = null; }
   if (gameState.mod4?.autoScanTimer) clearTimeout(gameState.mod4.autoScanTimer);
   gameState.aktif = false;
-  semuaHantar({ jenis: 'mod_tamat' }); // [FIX] Hantar ke semua supaya murid screen pun keluar
+  // [SYNC FIX] Hantar ke semua klien (sebelum ini pun dah betul)
+  semuaHantar({ jenis: 'mod_tamat', mod: gameState.mod });
 }
 
 async function tambahUlasan(data) {
@@ -580,7 +603,6 @@ async function tambahUlasan(data) {
   semuaHantar({ jenis: 'ulasan_baharu', sesiId, muridId, muridNama, komen });
 }
 
-// PATCH 3: hantarTelegram dikemaskini — terima namaCikgu
 async function hantarTelegram(data) {
   const { sesiId, namaCikgu } = data;
   const sesi = await Sesi.findById(sesiId);
@@ -601,7 +623,6 @@ async function hantarTelegram(data) {
     mesej += `\n💬 *ULASAN GURU:*\n`;
     sesi.ulasan.forEach(u => { mesej += `• ${u.nama}: _${u.komen}_\n`; });
   }
-  // Nama guru dari data, jika tiada guna 'Cikgu'
   const namaGuru = namaCikgu || 'Cikgu';
   mesej += `\n✨ _Dihantar oleh ${namaGuru} menggunakan sistem ILMUVERSE_`;
 
@@ -618,7 +639,10 @@ async function hantarTelegram(data) {
   }
 }
 
+// [SYNC FIX] sanitizeGameState dikemaskini — kini include soalan semasa
+// supaya klien boleh papar soalan tanpa fetch berasingan
 function sanitizeGameState() {
+  const soalanSemasa = gameState.soalan?.[gameState.soalanSemasa] || null;
   return {
     mod: gameState.mod,
     aktif: gameState.aktif,
@@ -629,8 +653,17 @@ function sanitizeGameState() {
     masa: gameState.masa,
     sesiId: gameState.sesiId,
     giliran: gameState.giliran,
+    peluangKedua: gameState.peluangKedua,
     jumlahSoalan: gameState.soalan ? gameState.soalan.length : 0,
-    mod4Fasa: gameState.mod4?.fasa
+    mod4Fasa: gameState.mod4?.fasa,
+    // [SYNC FIX] Data soalan semasa untuk paparan klien
+    soalanData: soalanSemasa ? {
+      teks: soalanSemasa.teks,
+      jawapanA: soalanSemasa.jawapanA,
+      jawapanB: soalanSemasa.jawapanB,
+      jawapanC: soalanSemasa.jawapanC,
+      // Nota: 'betul' sengaja tidak dihantar ke murid (keselamatan)
+    } : null
   };
 }
 
@@ -750,7 +783,6 @@ app.post('/api/nfc', async (req, res) => {
 // REST API — LATIHAN
 // ============================================================
 
-// Dapatkan semua latihan (boleh tapis ikut kelas)
 app.get('/api/latihan', async (req, res) => {
   const query = {};
   if (req.query.kelas) query.$or = [{ kelas: req.query.kelas }, { kelas: '' }, { kelas: null }];
@@ -760,7 +792,6 @@ app.get('/api/latihan', async (req, res) => {
   res.json(data);
 });
 
-// Dapatkan detail satu latihan (dengan fail guru tapi tanpa fail jawapan murid)
 app.get('/api/latihan/:id', async (req, res) => {
   try {
     const l = await Latihan.findById(req.params.id).select('-jawapan.failData');
@@ -768,7 +799,6 @@ app.get('/api/latihan/:id', async (req, res) => {
   } catch(e) { res.status(404).json({ error: 'Tidak dijumpai' }); }
 });
 
-// Muat turun fail latihan guru
 app.get('/api/latihan/:id/fail', async (req, res) => {
   try {
     const l = await Latihan.findById(req.params.id).select('failData failJenis failNama');
@@ -780,7 +810,6 @@ app.get('/api/latihan/:id/fail', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// Cipta latihan baru (guru)
 app.post('/api/latihan', async (req, res) => {
   try {
     const { tajuk, arahan, kelas, failNama, failData, failJenis, tarikhTutup } = req.body;
@@ -791,7 +820,6 @@ app.post('/api/latihan', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// Kemaskini latihan (guru)
 app.put('/api/latihan/:id', async (req, res) => {
   try {
     const { tajuk, arahan, kelas, tarikhTutup, aktif } = req.body;
@@ -802,13 +830,11 @@ app.put('/api/latihan/:id', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// Padam latihan
 app.delete('/api/latihan/:id', async (req, res) => {
   await Latihan.findByIdAndDelete(req.params.id);
   res.json({ ok: true });
 });
 
-// Tambah komen pada latihan (guru atau murid)
 app.post('/api/latihan/:id/komen', async (req, res) => {
   try {
     const { nama, peranan, teks } = req.body;
@@ -820,7 +846,6 @@ app.post('/api/latihan/:id/komen', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// Hantar jawapan murid (dengan fail)
 app.post('/api/latihan/:id/jawapan', async (req, res) => {
   try {
     const { muridId, muridNama, kelas, failNama, failData, failJenis } = req.body;
@@ -834,7 +859,7 @@ app.post('/api/latihan/:id/jawapan', async (req, res) => {
       latihan.jawapan[idx].failJenis = failJenis;
       latihan.jawapan[idx].tarikhHantar = new Date();
       latihan.jawapan[idx].statusSemak = 'belum';
-      latihan.jawapan[idx].markah = null; // Reset markah bila hantar semula
+      latihan.jawapan[idx].markah = null;
     } else {
       latihan.jawapan.push({ muridId, muridNama, kelas, failNama, failData, failJenis, tarikhHantar: new Date() });
     }
@@ -844,7 +869,6 @@ app.post('/api/latihan/:id/jawapan', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// Muat turun fail jawapan murid
 app.get('/api/latihan/:id/jawapan/:jawapanId/fail', async (req, res) => {
   try {
     const l = await Latihan.findById(req.params.id);
@@ -857,7 +881,6 @@ app.get('/api/latihan/:id/jawapan/:jawapanId/fail', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// Tambah komen pada jawapan murid
 app.post('/api/latihan/:id/jawapan/:jawapanId/komen', async (req, res) => {
   try {
     const { nama, peranan, teks } = req.body;
@@ -871,10 +894,9 @@ app.post('/api/latihan/:id/jawapan/:jawapanId/komen', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// PATCH 4: Kemaskini status semak jawapan (guru) — kini sokong field markah
 app.put('/api/latihan/:id/jawapan/:jawapanId/status', async (req, res) => {
   try {
-    const { status, markah } = req.body; // 'belum', 'disemak', 'approved' + markah (nombor)
+    const { status, markah } = req.body;
     const l = await Latihan.findById(req.params.id);
     const j = l?.jawapan?.id(req.params.jawapanId);
     if (!j) return res.status(404).json({ error: 'Jawapan tidak dijumpai' });
@@ -882,12 +904,11 @@ app.put('/api/latihan/:id/jawapan/:jawapanId/status', async (req, res) => {
     if (status) j.statusSemak = status;
     if (markah !== undefined && markah !== null) {
       j.markah = markah;
-      j.statusSemak = 'disemak'; // auto set disemak bila ada markah
+      j.statusSemak = 'disemak';
     }
 
     await l.save();
 
-    // Broadcast ke semua klien supaya murid nampak markahnya
     semuaHantar({
       jenis: 'markah_dikemaskini',
       latihanId: req.params.id,
@@ -901,7 +922,6 @@ app.put('/api/latihan/:id/jawapan/:jawapanId/status', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// Dapatkan semua jawapan untuk latihan tertentu (guru sahaja)
 app.get('/api/latihan/:id/jawapan', async (req, res) => {
   try {
     const l = await Latihan.findById(req.params.id).select('-jawapan.failData -failData');
@@ -914,5 +934,5 @@ app.get('/api/latihan/:id/jawapan', async (req, res) => {
 // ============================================================
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`[SERVER] ILMUVERSE v2.0 berjalan pada port ${PORT}`);
+  console.log(`[SERVER] ILMUVERSE v2.1 berjalan pada port ${PORT}`);
 });
