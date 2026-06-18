@@ -1,934 +1,1747 @@
-<!DOCTYPE html>
-<html lang="ms">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ILMUVERSE — Guru</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#f0f4ff;--bg2:#e8eeff;--panel:#ffffff;--panel2:#f5f7ff;
-  --accent:#4f8ef7;--accent2:#7c3aed;--purple:#a855f7;
-  --pink:#ec4899;--gold:#f59e0b;--green:#10b981;
-  --teal:#06b6d4;--orange:#f97316;
-  --red:#ef4444;--yellow:#eab308;
-  --text:#1e2d5a;--text2:#6b7db3;
-  --border:rgba(79,142,247,0.2);
-  --shadow:0 4px 24px rgba(79,142,247,0.12);
-  --shadow2:0 8px 40px rgba(79,142,247,0.18);
-  --card-border:1px solid rgba(79,142,247,0.15);
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;color:var(--text);font-family:'Exo 2',sans-serif;overflow-x:hidden;
-  background:linear-gradient(135deg,#dde8ff 0%,#ede0ff 28%,#fce4f4 52%,#d4f0ff 76%,#dcffe8 100%) fixed;
-  background-attachment:fixed;min-height:100vh}
-.logo-by{font-size:.58rem;color:var(--text2);letter-spacing:2px;font-weight:600;text-transform:uppercase;opacity:.75;margin-top:-2px}
+// ============================================================
 
-#splash{position:fixed;inset:0;background:linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;overflow:hidden}
-.splash-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px);background-size:44px 44px;animation:gridScroll 18s linear infinite}
-@keyframes gridScroll{to{transform:translateY(44px)}}
-.splash-orb{position:absolute;border-radius:50%;filter:blur(60px);pointer-events:none}
-.orb1{width:400px;height:400px;background:radial-gradient(circle,rgba(255,255,255,.25),transparent);top:-100px;left:-100px;animation:orbFloat 8s ease-in-out infinite}
-.orb2{width:350px;height:350px;background:radial-gradient(circle,rgba(255,200,255,.2),transparent);bottom:-80px;right:-80px;animation:orbFloat 10s ease-in-out infinite reverse}
-.orb3{width:250px;height:250px;background:radial-gradient(circle,rgba(200,200,255,.2),transparent);top:50%;left:50%;transform:translate(-50%,-50%);animation:orbFloat 6s ease-in-out infinite 2s}
-@keyframes orbFloat{0%,100%{transform:translate(0,0)}50%{transform:translate(20px,-20px)}}
-.splash-logo{font-family:'Orbitron',monospace;font-size:3.5rem;font-weight:900;letter-spacing:10px;color:#fff;text-shadow:0 0 40px rgba(255,255,255,0.6);position:relative;z-index:1;animation:logoAppear 1s ease forwards;opacity:0}
-@keyframes logoAppear{from{opacity:0;transform:scale(.8) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
-.splash-sub{font-family:'Orbitron',monospace;font-size:.9rem;color:rgba(255,255,255,.8);letter-spacing:5px;z-index:1;opacity:0;animation:fadeUp .8s .5s ease forwards}
-.splash-by{font-size:.7rem;color:rgba(255,255,255,.5);letter-spacing:3px;z-index:1;opacity:0;animation:fadeUp .8s .8s ease forwards}
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.conn-bar{display:flex;gap:28px;z-index:1;opacity:0;animation:fadeUp .8s 1s ease forwards}
-.conn-item{display:flex;align-items:center;gap:8px;font-size:.78rem;color:rgba(255,255,255,.7)}
-.conn-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.3);transition:.4s}
-.conn-dot.hidup{background:#4ade80;box-shadow:0 0 12px #4ade80}
-.conn-dot.mati{background:#f87171;box-shadow:0 0 8px #f87171}
-.splash-status{font-size:.88rem;color:rgba(255,255,255,.9);letter-spacing:2px;z-index:1;min-height:22px;opacity:0;animation:fadeUp .8s 1.2s ease forwards}
-.splash-btn{display:none;padding:14px 52px;background:rgba(255,255,255,.95);border:none;border-radius:50px;color:#7c3aed;font-family:'Orbitron',monospace;font-size:1rem;font-weight:700;letter-spacing:3px;cursor:pointer;box-shadow:0 8px 32px rgba(0,0,0,.2);z-index:1;transition:.2s}
-.splash-btn:hover{transform:scale(1.06);box-shadow:0 12px 48px rgba(0,0,0,.3)}
-.splash-progress{width:200px;height:3px;background:rgba(255,255,255,.2);border-radius:2px;overflow:hidden;z-index:1;opacity:0;animation:fadeUp .8s 1.4s ease forwards}
-.splash-progress-bar{height:100%;background:rgba(255,255,255,.8);border-radius:2px;animation:progressFill 2s 1.4s ease forwards;width:0}
-@keyframes progressFill{to{width:100%}}
+// ILMUVERSE - SERVER UTAMA v2.1 (SYNC FIX)
 
-#app{display:none;min-height:100vh;flex-direction:column}
-.topbar{height:64px;background:rgba(255,255,255,.92);border-bottom:2px solid rgba(79,142,247,0.18);display:flex;align-items:center;padding:0 20px;gap:16px;position:sticky;top:0;z-index:100;backdrop-filter:blur(18px);box-shadow:0 2px 20px rgba(79,142,247,0.1)}
-.logo-wrap{display:flex;flex-direction:column;line-height:1.15}
-.logo-kecil{font-family:'Orbitron',monospace;font-size:1.15rem;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.topbar-nav{display:flex;gap:4px;margin-left:auto}
-.nav-btn{padding:8px 16px;background:transparent;border:1px solid transparent;border-radius:8px;color:var(--text2);font-family:'Exo 2',sans-serif;font-size:.83rem;cursor:pointer;transition:.2s;letter-spacing:.5px;font-weight:600}
-.nav-btn.aktif{background:linear-gradient(135deg,rgba(79,142,247,.12),rgba(168,85,247,.08));border-color:rgba(79,142,247,.3);color:var(--accent)}
-.nav-btn:hover:not(.aktif){background:rgba(79,142,247,.06);color:var(--text)}
-.status-bar{display:flex;gap:8px;margin-left:8px}
-.status-chip{display:flex;align-items:center;gap:6px;padding:5px 12px;background:var(--panel2);border-radius:20px;font-size:.72rem;border:var(--card-border);box-shadow:var(--shadow)}
-.s-dot{width:8px;height:8px;border-radius:50%;background:#d1d5db;transition:.3s}
-.s-dot.on{background:var(--green);box-shadow:0 0 8px var(--green)}
-.s-dot.off{background:var(--red);box-shadow:0 0 6px var(--red)}
+// Node.js + Express + WebSocket + MongoDB
 
-.halaman{display:none;padding:24px;animation:fadeIn .3s ease;max-width:1200px;margin:0 auto;width:100%}
-.halaman.aktif{display:block}
-@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.sek-tajuk{font-family:'Orbitron',monospace;font-size:1rem;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px;margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid rgba(79,142,247,.15)}
+// ============================================================
 
-.home-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
-.mod-kad{background:rgba(255,255,255,.88);border:1.5px solid rgba(79,142,247,.22);border-radius:16px;padding:28px;cursor:pointer;transition:.3s;position:relative;overflow:hidden;box-shadow:0 4px 20px rgba(79,142,247,.1)}
-.mod-kad::before{content:'';position:absolute;inset:0;opacity:0;transition:.3s;border-radius:16px}
-.mod-kad.m1{background:linear-gradient(135deg,rgba(255,255,255,.92) 60%,rgba(79,142,247,.1))}
-.mod-kad.m2{background:linear-gradient(135deg,rgba(255,255,255,.92) 60%,rgba(168,85,247,.1))}
-.mod-kad.m3{background:linear-gradient(135deg,rgba(255,255,255,.92) 60%,rgba(245,158,11,.1))}
-.mod-kad.m4{background:linear-gradient(135deg,rgba(255,255,255,.92) 60%,rgba(16,185,129,.1))}
-.mod-kad:hover{transform:translateY(-5px);box-shadow:var(--shadow2)}
-.mod-kad:hover::before{opacity:1}
-.mod-num{font-family:'Orbitron',monospace;font-size:2.4rem;font-weight:900;line-height:1;position:relative;z-index:1}
-.mod-kad.m1 .mod-num{color:var(--accent)}
-.mod-kad.m2 .mod-num{color:var(--purple)}
-.mod-kad.m3 .mod-num{color:var(--gold)}
-.mod-kad.m4 .mod-num{color:var(--green)}
-.mod-tajuk{font-size:1.05rem;font-weight:700;margin:8px 0 4px;color:var(--text);position:relative;z-index:1}
-.mod-desc{font-size:.78rem;color:var(--text2);line-height:1.55;position:relative;z-index:1}
-.mod-ikon{position:absolute;right:20px;top:20px;font-size:3rem;opacity:.12;z-index:0}
+require('dotenv').config();
 
-label{display:block;font-size:.75rem;color:var(--text2);margin-bottom:6px;letter-spacing:.8px;text-transform:uppercase;font-weight:600}
-input,select,textarea{width:100%;background:rgba(255,255,255,.9);border:1.5px solid rgba(79,142,247,.22);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.9rem;outline:none;transition:.2s}
-input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,142,247,.12);background:#fff}
-select option{background:#fff}
-textarea{resize:vertical;min-height:80px}
-.form-row{display:flex;gap:12px;margin-bottom:16px;align-items:flex-end}
-.form-kump{flex:1}
-.form-kump.w2{flex:2}
+const express = require('express');
 
-.btn{padding:10px 22px;border-radius:8px;border:none;font-family:'Exo 2',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;transition:.2s;letter-spacing:.5px;display:inline-flex;align-items:center;gap:6px;justify-content:center}
-.btn-utama{background:linear-gradient(135deg,var(--accent),var(--teal));color:#fff;box-shadow:0 4px 16px rgba(79,142,247,.3)}
-.btn-utama:hover{box-shadow:0 6px 24px rgba(79,142,247,.45);transform:translateY(-1px)}
-.btn-purple{background:linear-gradient(135deg,var(--accent2),var(--purple));color:#fff;box-shadow:0 4px 16px rgba(168,85,247,.3)}
-.btn-merah{background:linear-gradient(135deg,#dc2626,var(--red));color:#fff;box-shadow:0 4px 12px rgba(239,68,68,.25)}
-.btn-hijau{background:linear-gradient(135deg,#059669,var(--green));color:#fff;font-weight:700;box-shadow:0 4px 12px rgba(16,185,129,.25)}
-.btn-kuning{background:linear-gradient(135deg,#d97706,var(--gold));color:#fff;font-weight:700}
-.btn-orange{background:linear-gradient(135deg,var(--orange),#ea580c);color:#fff;font-weight:700}
-.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text2)}
-.btn-outline:hover{border-color:var(--accent);color:var(--accent);background:rgba(79,142,247,.05)}
-.btn-kecil{padding:6px 14px;font-size:.78rem}
+const http = require('http');
 
-.overlay{display:none;position:fixed;inset:0;background:rgba(30,45,90,.45);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(8px)}
-.overlay.buka{display:flex;animation:fadeIn .2s}
-.modal{background:var(--panel);border:var(--card-border);border-radius:20px;padding:30px;width:90%;max-width:620px;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 20px 60px rgba(30,45,90,.2)}
-.modal h2{font-family:'Orbitron',monospace;font-size:1.1rem;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:22px}
-.modal-tutup{position:absolute;top:14px;right:14px;background:var(--bg2);border:1px solid var(--border);color:var(--text2);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:.9rem;transition:.2s;display:flex;align-items:center;justify-content:center}
-.modal-tutup:hover{background:var(--red);border-color:var(--red);color:#fff}
+const WebSocket = require('ws');
 
-#papanSesi{display:none;background:rgba(255,255,255,.9);border-radius:20px;padding:24px;border:1.5px solid rgba(79,142,247,.22);box-shadow:var(--shadow2);margin-bottom:24px}
-.papan-header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid rgba(79,142,247,.12);padding-bottom:14px;margin-bottom:20px}
-#papanTajuk{font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:var(--text)}
-.papan-nav-soalan{display:flex;align-items:center;gap:12px}
-.nombor-soalan{font-family:'Orbitron',monospace;font-size:1rem;font-weight:700;color:var(--accent);background:rgba(79,142,247,.08);padding:6px 14px;border-radius:8px;border:1px solid rgba(79,142,247,.15)}
+const mongoose = require('mongoose');
 
-.kad-soalan-papar{background:var(--panel2);border:var(--card-border);border-radius:14px;padding:20px;margin-bottom:20px}
-.teks-soalan-papar{font-size:1.2rem;font-weight:700;margin-bottom:16px;color:var(--text)}
-.opsi-grid-papar{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.opsi-kad-papar{background:#fff;border:var(--card-border);border-radius:10px;padding:14px;position:relative}
-.opsi-kad-papar.betul{border-color:var(--green);background:rgba(16,185,129,.05)}
-.opsi-label-papar{font-weight:700;color:var(--accent);font-size:.85rem;margin-bottom:4px}
+const cors = require('cors');
 
-.murid-list-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
-.murid-kad-sesi{background:#fff;border:var(--card-border);border-radius:14px;padding:14px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);position:relative;transition:.2s}
-.murid-kad-sesi.siap{border-color:var(--green);background:rgba(16,185,129,.02)}
-.murid-kad-sesi.gilir{border-color:var(--purple);background:rgba(168,85,247,.05);box-shadow:0 0 14px rgba(168,85,247,.2)}
-.m-avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;background:#e2e8f0;border:2px solid var(--accent)}
-.m-info{flex:1;min-width:0}
-.m-nama{font-weight:700;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.m-sub{font-size:.75rem;color:var(--text2)}
-.m-score{font-family:'Orbitron',monospace;font-weight:700;font-size:1.1rem;color:var(--accent2)}
+const path = require('path');
 
-.flex{display:flex}.gap8{gap:8px}.gap12{gap:12px}.align-center{align-items:center}.justify-between{justify-content:space-between}
-.mt16{margin-top:16px}.mb16{margin-bottom:16px}
+const multer = require('multer');
 
-.urus-layout{display:grid;grid-template-columns:280px 1fr;gap:24px}
-.side-box{background:rgba(255,255,255,.8);border:var(--card-border);border-radius:16px;padding:18px;box-shadow:var(--shadow);height:fit-content}
-.list-item-btn{width:100%;padding:12px 14px;background:#fff;border:1px solid rgba(79,142,247,.15);border-radius:10px;text-align:left;font-family:'Exo 2',sans-serif;font-size:.88rem;font-weight:600;color:var(--text);cursor:pointer;margin-bottom:8px;transition:.2s;display:flex;justify-content:between;align-items:center}
-.list-item-btn:hover,.list-item-btn.aktif{border-color:var(--accent);background:rgba(79,142,247,.05);color:var(--accent);transform:translateX(3px)}
 
-.data-table-card{background:#fff;border:var(--card-border);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
-table{width:100%;border-collapse:collapse;text-align:left;font-size:.88rem}
-th{background:var(--panel2);padding:14px;font-weight:700;color:var(--text2);border-bottom:1px solid rgba(79,142,247,.12)}
-td{padding:14px;border-bottom:1px solid rgba(79,142,247,.06);color:var(--text);vertical-align:middle}
-tr:last-child td{border-bottom:none}
-tr:hover td{background:rgba(79,142,247,.02)}
 
-.f-badge{padding:4px 10px;border-radius:6px;font-size:.72rem;font-weight:700;text-transform:uppercase;display:inline-block}
-.fb-biru{background:rgba(79,142,247,.12);color:var(--accent)}
-.fb-hijau{background:rgba(16,185,129,.12);color:var(--green)}
-.fb-merah{background:rgba(239,68,68,.12);color:var(--red)}
+const app = express();
 
-.f-fail-box{background:var(--panel2);border:1.5px dashed rgba(79,142,247,.3);border-radius:12px;padding:20px;text-align:center;cursor:pointer;position:relative;transition:.2s}
-.f-fail-box:hover{border-color:var(--accent);background:#fff}
-.f-fail-preview{display:flex;align-items:center;gap:10px;background:#fff;padding:10px 14px;border:var(--card-border);border-radius:8px;margin-top:10px;text-align:left}
-</style>
-</head>
-<body>
+const server = http.createServer(app);
 
-<div id="splash">
-  <div class="splash-grid"></div>
-  <div class="splash-orb orb1"></div>
-  <div class="splash-orb orb2"></div>
-  <div class="splash-orb orb3"></div>
-  <div class="splash-logo">ILMUVERSE</div>
-  <div class="splash-sub">TEACHER CENTRAL COMMAND</div>
-  <div class="conn-bar">
-    <div class="conn-item"><div class="conn-dot mati" id="dotSrv"></div> Server Hub</div>
-    <div class="conn-item"><div class="conn-dot mati" id="dotEsp"></div> Peranti Perkakasan</div>
-  </div>
-  <div class="splash-status" id="splashStatus">Memulakan konfigurasi websocket...</div>
-  <div class="splash-progress" id="splashProg"><div class="splash-progress-bar"></div></div>
-  <button class="splash-btn" id="splashBtn" onclick="masukApp()">MASUK COMMAND CENTER</button>
-  <div class="splash-by">BY GURU GURU CEMERLANG</div>
-</div>
+const wss = new WebSocket.Server({ server });
 
-<div id="app">
-  <div class="topbar">
-    <div class="logo-wrap">
-      <div class="logo-kecil">ILMUVERSE</div>
-      <div class="logo-by">Teacher Terminal</div>
-    </div>
-    <div class="topbar-nav">
-      <button class="nav-btn aktif" id="nb_home" onclick="tukarHalaman('home')">🏠 Utama Sesi</button>
-      <button class="nav-btn" id="nb_soalan" onclick="tukarHalaman('soalan')">📝 Pengurusan Soalan</button>
-      <button class="nav-btn" id="nb_latihan" onclick="tukarHalaman('latihan')">📁 Tugasan & Latihan</button>
-    </div>
-    <div class="status-bar">
-      <div class="status-chip"><div class="s-dot off" id="chipSrv"></div> Server</div>
-      <div class="status-chip"><div class="s-dot off" id="chipEsp"></div> Hardware</div>
-    </div>
-  </div>
 
-  <div class="halaman aktif" id="hal_home">
-    <h2 class="sek-tajuk">PILIH MOD PERMAINAN DAN AKTIVITI</h2>
-    
-    <div id="papanSesi">
-      <div class="papan-header">
-        <h3 id="papanTajuk">MOD 1 — ARENA CENDEKIA</h3>
-        <div class="papan-nav-soalan">
-          <button class="btn btn-kecil btn-outline" onclick="bunyiKlik();soalanSebelumnya()">⬅️ Kiri</button>
-          <span class="nombor-soalan">Soalan: <span id="soalanIdx">1</span> / <span id="soalanJumlah">0</span></span>
-          <button class="btn btn-kecil btn-outline" onclick="bunyiKlik();soalanSeterusnya()">Kanan ➡️</button>
-        </div>
-      </div>
-      
-      <div class="kad-soalan-papar">
-        <div class="teks-soalan-papar" id="paparTeksSoalan">Memuatkan data soalan semasa...</div>
-        <div class="opsi-grid-papar" id="paparOpsiGrid"></div>
-      </div>
 
-      <div id="papanMod12" style="margin-bottom:20px">
-        <div class="flex gap12 align-center justify-between" style="background:var(--panel2);padding:14px;border-radius:12px;border:var(--card-border)">
-          <div class="flex gap12">
-            <button class="btn btn-orange" id="btnPeluangKedua" onclick="bunyiKlik();beriPeluangKeduaMod2()">🔄 Peluang Kedua</button>
-          </div>
-          <div style="font-weight:700;font-size:.9rem;color:var(--accent)" id="infoBuzzerSesi">Menunggu imbasan/buzzer perkakasan...</div>
-          <button class="btn btn-merah" onclick="bunyiKlik();tamatSesi()">🛑 Tamat Sesi</button>
-        </div>
-      </div>
+app.use(cors());
 
-      <div id="papanMod4" style="display:none;margin-bottom:20px;background:var(--panel2);padding:16px;border-radius:14px;border:var(--card-border)">
-        <div class="flex justify-between align-center mb16">
-          <h4 style="font-family:'Orbitron',monospace;font-size:.9rem">MONITOR KESIHATAN & POSTUR (AI CAM)</h4>
-          <span class="f-badge fb-biru" id="mod4FasaBadge">Fasa: Mengimbas Sihat</span>
-        </div>
-        <div class="flex gap12">
-          <button class="btn btn-utama" onclick="bunyiKlik();setMod4Fasa('sihat')">🍏 Scan Sihat</button>
-          <button class="btn btn-merah" onclick="bunyiKlik();setMod4Fasa('tak_sihat')">🌶️ Scan Tak Sihat</button>
-          <button class="btn btn-purple" onclick="bunyiKlik();triggerMod4Servo()">🔓 Buka Pintu Kuarantin</button>
-        </div>
-      </div>
+app.use(express.json({ limit: '50mb' }));
 
-      <div class="murid-list-grid" id="sesiMuridGrid"></div>
-    </div>
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-    <div class="home-grid" id="menuModSistem">
-      <div class="mod-kad m1" onclick="bunyiKlik();bukaSesiMulakan(1)">
-        <div class="mod-num">01</div>
-        <div class="mod-tajuk">ARENA CENDEKIA</div>
-        <div class="mod-desc">Kuiz jawapan pilihan berbilang secara siri menggunakan imbasan NFC tanpa wayar peranti.</div>
-        <div class="mod-ikon">📝</div>
-      </div>
-      <div class="mod-kad m2" onclick="bunyiKlik();bukaSesiMulakan(2)">
-        <div class="mod-num">02</div>
-        <div class="mod-tajuk">SIAPA CEPAT DIA DAPAT!</div>
-        <div class="mod-desc">Sistem interaktif buzzer pantas murid secara rawak atau pemetaan kad bagi jawapan lisan.</div>
-        <div class="mod-ikon">🚨</div>
-      </div>
-      <div class="mod-kad m3" onclick="bunyiKlik();bukaSesiMulakan(3)">
-        <div class="mod-num">03</div>
-        <div class="mod-tajuk">PINTU ILMU (ABSENSI COGNITIVE)</div>
-        <div class="mod-desc">Pendaftaran kehadiran kelas pintar berintegrasi imbasan pintu masuk servo fizikal.</div>
-        <div class="mod-ikon">🚪</div>
-      </div>
-      <div class="mod-kad m4" onclick="bunyiKlik();bukaSesiMulakan(4)">
-        <div class="mod-num">04</div>
-        <div class="mod-tajuk">AI POSTURE INTEGRATION</div>
-        <div class="mod-desc">Analisis postur pintar dan pengasingan automatik berasaskan klasifikasi kamera AI.</div>
-        <div class="mod-ikon">🤖</div>
-      </div>
-    </div>
-  </div>
+app.use(express.static(path.join(__dirname, '../public')));
 
-  <div class="halaman" id="hal_soalan">
-    <div class="flex justify-between align-center mb16">
-      <h2 class="sek-tajuk" style="margin-bottom:0;padding-bottom:0;border-bottom:none">PENGURUSAN BANK SOALAN KUIZ</h2>
-      <button class="btn btn-utama" onclick="bunyiKlik();bukaModalSoalan()">➕ CIPTA SET SOALAN</button>
-    </div>
-    <div class="urus-layout">
-      <div class="side-box">
-        <h4 style="font-size:.78rem;color:var(--text2);margin-bottom:12px;letter-spacing:1px">SENARAI SET</h4>
-        <div id="sideListSoalan"></div>
-      </div>
-      <div class="data-table-card" style="padding:20px">
-        <div class="flex justify-between align-center mb16">
-          <h3 style="font-size:1.05rem" id="txtSetAktifNama">Pilih mana-mana set soalan di kiri</h3>
-          <div class="flex gap8" id="setAktifTindakan" style="display:none">
-            <button class="btn btn-kecil btn-outline" id="btnEditSet" onclick="bunyiKlik()">Edit</button>
-            <button class="btn btn-kecil btn-merah" id="btnPadamSet" onclick="bunyiKlik()">Padam</button>
-          </div>
-        </div>
-        <table id="tblSoalanItem">
-          <thead>
-            <tr>
-              <th style="width:50px">No</th>
-              <th>Teks Soalan</th>
-              <th>Pilihan A / B / C</th>
-              <th>Jawapan Betul</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td colspan="4" style="text-align:center;color:var(--text2)">Tiada set dipilih</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
 
-  <div class="halaman" id="hal_latihan">
-    <div class="flex justify-between align-center mb16">
-      <h2 class="sek-tajuk" style="margin-bottom:0;padding-bottom:0;border-bottom:none">PENGURUSAN TUGASAN & SEMAKAN HOMEWORK</h2>
-      <button class="btn btn-utama" onclick="bunyiKlik();bukaModalLatihan()">➕ BUAT TUGASAN BARU</button>
-    </div>
-    <div class="data-table-card">
-      <table>
-        <thead>
-          <tr>
-            <th>Tajuk Tugasan</th>
-            <th>Kelas Sasaran</th>
-            <th>Tarikh Dihantar</th>
-            <th>Tarikh Tutup</th>
-            <th>Penghantaran</th>
-            <th>Tindakan</th>
-          </tr>
-        </thead>
-          <tbody id="tbodyLatihan"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
 
-<div class="overlay" id="overlayMulaSesi">
-  <div class="modal">
-    <button class="modal-tutup" onclick="tutupModal('overlayMulaSesi')">✕</button>
-    <h2 id="mulaSesiTajukKepala">MULA SESI PEMBELAJARAN</h2>
-    <div class="form-kump mb16">
-      <label>Pilih Set Soalan/Aktiviti Bank</label>
-      <select id="selSoalanSesi"></select>
-    </div>
-    <div class="form-kump mb16">
-      <label>Kelas Murid</label>
-      <input type="text" id="inpKelasSesi" placeholder="Contoh: 4 SC / 5 AMANAH">
-    </div>
-    <button class="btn btn-utama" style="width:100%" onclick="bunyiKlik();hantarMulaSesiServer()">LANCARKAN SESI SEKARANG</button>
-  </div>
-</div>
+// ============================================================
 
-<div class="overlay" id="overlaySoalan">
-  <div class="modal" style="max-width:680px">
-    <button class="modal-tutup" onclick="tutupModal('overlaySoalan')">✕</button>
-    <h2 id="modalSoalanTajuk">CIPTA SET SOALAN BAHARU</h2>
-    <div class="form-row">
-      <div class="form-kump w2">
-        <label>Tajuk / Topik Set Soalan</label>
-        <input type="text" id="inpSetTajuk" placeholder="Contoh: Bab 1 Keseimbangan Daya">
-      </div>
-      <div class="form-kump">
-        <label>Kelas</label>
-        <input type="text" id="inpSetKelas" placeholder="Contoh: 4 SC">
-      </div>
-    </div>
-    <div style="border-top:1px solid rgba(79,142,247,.15);padding-top:14px;margin-top:14px">
-      <h4 style="font-size:.85rem;color:var(--text2);margin-bottom:12px">STRUKTUR SOALAN (MINIMA 1)</h4>
-      <div id="wrapperSoalanItems" style="max-height:280px;overflow-y:auto;padding-right:4px"></div>
-      <button class="btn btn-outline btn-kecil mt16" onclick="bunyiKlik();tambahBarisSoalanForm()">➕ Tambah Soalan Item</button>
-    </div>
-    <div class="flex gap8 mt16" style="justify-content:flex-end">
-      <button class="btn btn-utama" onclick="bunyiKlik();simpanSetSoalan()">SIMPAN SET DATA</button>
-      <button class="btn btn-outline" onclick="tutupModal('overlaySoalan')">Batal</button>
-    </div>
-  </div>
-</div>
+// TETAPAN TETAP (JANGAN UBAH TANPA KEBENARAN)
 
-<div class="overlay" id="overlayLatihan">
-  <div class="modal">
-    <button class="modal-tutup" onclick="tutupModal('overlayLatihan')">✕</button>
-    <h2 id="modalLatihanTajuk">CIPTA TUGASAN BARU</h2>
-    <div class="form-row">
-      <div class="form-kump w2">
-        <label>Tajuk Tugasan / Aktiviti</label>
-        <input type="text" id="inpLatTajuk" placeholder="Contoh: Latihan Esei Kimia Bab 3">
-      </div>
-      <div class="form-kump">
-        <label>Kelas Sasaran</label>
-        <input type="text" id="inpLatKelas" placeholder="Contoh: 5 SC">
-      </div>
-    </div>
-    <div class="form-kump mb16">
-      <label>Arahan Tambahan</label>
-      <textarea id="inpLatArahan" placeholder="Tulis nota atau arahan tugasan di sini..."></textarea>
-    </div>
-    <div class="form-kump mb16">
-      <label>Tarikh Tutup (Deadline)</label>
-      <input type="datetime-local" id="inpLatTutup">
-    </div>
-    <div class="form-kump mb16">
-      <label>Fail Lampiran / Dokumen Rujukan</label>
-      <div class="f-fail-box" onclick="document.getElementById('inputFailLatihan').click()">
-        <p style="font-size:.85rem;color:var(--text2)">Sila klik untuk muat naik dokumen (PDF, Word, Gambar)</p>
-        <div id="boxPreviewFailGuru" style="display:none" onclick="event.stopPropagation()">
-          <div class="f-fail-preview">
-            <span style="font-size:1.2rem">📄</span>
-            <div style="flex:1;min-width:0">
-              <p style="font-size:.8rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="txtGuruFailNama"></p>
-              <p style="font-size:.7rem;color:var(--text2)" id="txtGuruFailSaiz"></p>
-            </div>
-            <button class="btn btn-kecil btn-merah" onclick="clearGuruFail()">✕</button>
-          </div>
-        </div>
-        <input type="file" id="inputFailLatihan" style="display:none" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.txt,.ppt,.pptx,.xls,.xlsx" onchange="handleGuruFailPilih(this)">
-      </div>
-      <input type="hidden" id="editLatihanId">
-      <div class="flex gap8 mt16">
-        <button class="btn btn-utama" onclick="bunyiKlik();simpanLatihan()">SIMPAN LATIHAN</button>
-        <button class="btn btn-outline" onclick="tutupModal('overlayLatihan')">Batal</button>
-      </div>
-    </div>
-  </div>
-</div>
+// ============================================================
 
-<div class="overlay" id="overlayDetailLatihan">
-  <div class="modal" style="max-width:700px">
-    <button class="modal-tutup" onclick="tutupModal('overlayDetailLatihan')">✕</button>
-    <h2 id="detailLatihanTajuk">DETAIL SUBMISSION TUGASAN</h2>
-    <div id="detailLatihanBadan"></div>
-  </div>
-</div>
+const TELEGRAM_BOT_TOKEN = '8849507122:AAECl_Ms6z6xYcAfO6kBFAyBfjYoIhL6KrI';
 
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
-<script>
-const API = window.location.origin;
-let ws;
-let stateGlobal = null;
-let modMulaId = 0;
-let listSoalanGlobal = [];
-let setSoalanAktifId = null;
+const TELEGRAM_CHAT_ID = '707286960';
 
-let base64GuruFail = "";
-let jenisGuruFail = "";
-let namaGuruFail = "";
 
-// ENGINE BUNYI AUDIO AUDIO CONTEXT UTAMA
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-function bunyiKlik() {
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.connect(gain); gain.connect(audioCtx.destination);
-  osc.type = 'sine'; osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-  gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
-  osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+
+const NFC_KAD_A = '5A B2 F3 B1';
+
+const NFC_KAD_B = '47 84 21 25';
+
+const NFC_KAD_C = '45 E7 A5 AB';
+
+
+
+function normalizeUID(uid) {
+
+  if (!uid) return '';
+
+  return uid.replace(/[^0-9A-Fa-f]/g, '').toUpperCase().match(/.{1,2}/g)?.join(' ') || uid.toUpperCase().trim();
+
 }
 
-function inisialisasiPalingAwal() {
-  const bar = document.querySelector('.splash-progress-bar');
-  if(bar) bar.style.width = '100%';
-  sambungWebSocket();
-  muatSenaraiSoalanDinamik();
-  muatSenaraiLatihanDinamik();
+
+
+function uidKeJawapan(uid) {
+
+  const u = normalizeUID(uid);
+
+  const a = normalizeUID(NFC_KAD_A);
+
+  const b = normalizeUID(NFC_KAD_B);
+
+  const c = normalizeUID(NFC_KAD_C);
+
+  if (a && u === a) return 'A';
+
+  if (b && u === b) return 'B';
+
+  if (c && u === c) return 'C';
+
+  return null;
+
 }
 
-function sambungWebSocket() {
-  const pro = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  ws = new WebSocket(`${pro}//${window.location.host}/guru`);
 
-  ws.onopen = () => {
-    document.getElementById('dotSrv').className = "conn-dot hidup";
-    document.getElementById('chipSrv').className = "s-dot on";
-    document.getElementById('splashStatus').textContent = "Server berjaya dihubungkan! Menunggu modul...";
-    semakButangMasukKunci();
+
+// ============================================================
+
+// SAMBUNGAN MONGODB
+
+// ============================================================
+
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/ilmuverse')
+
+  .then(() => console.log('[DB] MongoDB Disambung'))
+
+  .catch(err => console.error('[DB] Ralat:', err));
+
+
+
+// ============================================================
+
+// SKEMA MONGODB
+
+// ============================================================
+
+const MuridSchema = new mongoose.Schema({
+
+  nama: String,
+
+  avatar: String,
+
+  kelas: String,
+
+  createdAt: { type: Date, default: Date.now }
+
+});
+
+
+
+const KehadiranSchema = new mongoose.Schema({
+
+  kelas: String,
+
+  tarikh: { type: Date, default: Date.now },
+
+  senarai: [{ id: String, nama: String, hadir: Boolean }],
+
+  catatanAt: { type: Date, default: Date.now }
+
+});
+
+
+
+const SoalanSchema = new mongoose.Schema({
+
+  mod: Number,
+
+  tajuk: String,
+
+  kelas: String,
+
+  soalan: [{
+
+    teks: String,
+
+    jawapanA: String, jawapanB: String, jawapanC: String,
+
+    betul: String,
+
+    uidA: String, uidB: String, uidC: String, uidBetul: String
+
+  }]
+
+});
+
+
+
+const SesiSchema = new mongoose.Schema({
+
+  tarikh: { type: Date, default: Date.now },
+
+  tajuk: String,
+
+  kelas: String,
+
+  mod: Number,
+
+  keputusan: [{ muridId: String, nama: String, markah: Number, avatar: String }],
+
+  ulasan: [{ muridId: String, nama: String, komen: String, tarikhKomen: Date }]
+
+});
+
+
+
+const SiaranSchema = new mongoose.Schema({
+
+  tajuk: String,
+
+  embedLink: String,
+
+  komen: String,
+
+  tarikhDihantar: { type: Date, default: Date.now }
+
+});
+
+
+
+const LatihanSchema = new mongoose.Schema({
+
+  tajuk: String,
+
+  arahan: String,
+
+  kelas: String,
+
+  failNama: String,
+
+  failData: String,
+
+  failJenis: String,
+
+  tarikhHantar: { type: Date, default: Date.now },
+
+  tarikhTutup: Date,
+
+  aktif: { type: Boolean, default: true },
+
+  komen: [{
+
+    nama: String,
+
+    peranan: String,
+
+    teks: String,
+
+    tarikhKomen: { type: Date, default: Date.now }
+
+  }],
+
+  jawapan: [{
+
+    muridId: String,
+
+    muridNama: String,
+
+    kelas: String,
+
+    failNama: String,
+
+    failData: String,
+
+    failJenis: String,
+
+    tarikhHantar: { type: Date, default: Date.now },
+
+    komen: [{
+
+      nama: String,
+
+      peranan: String,
+
+      teks: String,
+
+      tarikhKomen: { type: Date, default: Date.now }
+
+    }],
+
+    statusSemak: { type: String, default: 'belum' },
+
+    markah: { type: Number, default: null }
+
+  }]
+
+});
+
+
+
+const Murid = mongoose.model('Murid', MuridSchema);
+
+const Soalan = mongoose.model('Soalan', SoalanSchema);
+
+const Sesi = mongoose.model('Sesi', SesiSchema);
+
+const Siaran = mongoose.model('Siaran', SiaranSchema);
+
+const Kehadiran = mongoose.model('Kehadiran', KehadiranSchema);
+
+const Latihan = mongoose.model('Latihan', LatihanSchema);
+
+
+
+// ============================================================
+
+// PENGURUSAN WEBSOCKET
+
+// ============================================================
+
+let clients = {
+
+  esp32: null,
+
+  cam: null,
+
+  guru: [],
+
+  murid: []
+
+};
+
+
+
+let gameState = {
+
+  mod: null, aktif: false,
+
+  soalanSemasa: 0, muridSemasa: 0,
+
+  muridSenarai: [], skor: {},
+
+  masa: 0, masaAsal: 0,
+
+  timer: null, sesiId: null,
+
+  soalan: [], giliran: null,
+
+  peluangKedua: false,
+
+  mod3Seq: 0,
+
+  mod4: { fasa: 'sihat', sihatDikesan: [], takSihatDikesan: [], autoScanTimer: null }
+
+};
+
+
+
+const MAKANAN_SIHAT_LIST = ['pisang', 'tembikai', 'epal'];
+
+const MAKANAN_TAK_SIHAT_LIST = ['air manis', 'sosej'];
+
+
+
+function hantarKeGuru(data) {
+
+  const msg = JSON.stringify(data);
+
+  clients.guru.forEach(ws => { if (ws.readyState === WebSocket.OPEN) ws.send(msg); });
+
+}
+
+function hantarKeMurid(data) {
+
+  const msg = JSON.stringify(data);
+
+  clients.murid.forEach(ws => { if (ws.readyState === WebSocket.OPEN) ws.send(msg); });
+
+}
+
+function hantarKeESP32(data) {
+
+  if (clients.esp32 && clients.esp32.readyState === WebSocket.OPEN)
+
+    clients.esp32.send(JSON.stringify(data));
+
+}
+
+function hantarKeCAM(data) {
+
+  if (clients.cam && clients.cam.readyState === WebSocket.OPEN)
+
+    clients.cam.send(JSON.stringify(data));
+
+}
+
+function semuaHantar(data) { hantarKeGuru(data); hantarKeMurid(data); }
+
+
+
+function updateStatusPeranti() {
+
+  const status = {
+
+    jenis: 'status_peranti',
+
+    esp32: !!(clients.esp32 && clients.esp32.readyState === WebSocket.OPEN),
+
+    cam: !!(clients.cam && clients.cam.readyState === WebSocket.OPEN)
+
   };
 
-  ws.onmessage = (e) => {
-    const data = JSON.parse(e.data);
-    if(data.jenis === 'state_update') {
-      stateGlobal = data.gameState;
-      pengurusanUIPapanSesi();
-      if(stateGlobal.aktif) {
-        document.getElementById('dotEsp').className = "conn-dot hidup";
-        document.getElementById('chipEsp').className = "s-dot on";
+  hantarKeGuru(status);
+
+}
+
+
+
+// ============================================================
+
+// WEBSOCKET EVENTS
+
+// ============================================================
+
+wss.on('connection', (ws, req) => {
+
+  const url = req.url;
+
+  console.log(`[WS] Sambungan baru: ${url}`);
+
+
+
+  if (url === '/esp32') {
+
+    clients.esp32 = ws;
+
+    console.log('[WS] ESP32 Utama disambung');
+
+    updateStatusPeranti();
+
+    ws.send(JSON.stringify({ jenis: 'sambut', mesej: 'ESP32 Utama bersambung' }));
+
+  } else if (url === '/cam') {
+
+    clients.cam = ws;
+
+    console.log('[WS] ESP32-CAM disambung');
+
+    updateStatusPeranti();
+
+    ws.send(JSON.stringify({ jenis: 'sambut', mesej: 'CAM bersambung' }));
+
+  } else if (url === '/guru') {
+
+    clients.guru.push(ws);
+
+    console.log('[WS] Aplikasi Guru disambung');
+
+    updateStatusPeranti();
+
+    ws.send(JSON.stringify({ jenis: 'game_state', data: gameState }));
+
+  } else if (url === '/murid') {
+
+    clients.murid.push(ws);
+
+    console.log('[WS] Aplikasi Murid disambung');
+
+    // [SYNC FIX] Murid yang baru sambung dapat state semasa supaya sync
+
+    ws.send(JSON.stringify({ jenis: 'game_state', data: sanitizeGameState() }));
+
+  }
+
+
+
+  ws.on('message', async (raw) => {
+
+    let data;
+
+    try { data = JSON.parse(raw); } catch { return; }
+
+
+
+    if (url === '/esp32') {
+
+      if (data.jenis === 'nfc_scan') await prosesNFC(data.uid);
+
+      else if (data.jenis === 'siap') hantarKeGuru({ jenis: 'esp32_siap' });
+
+    }
+
+
+
+    if (url === '/cam') {
+
+      if (data.jenis === 'cam_frame') {
+
+        hantarKeGuru({ jenis: 'cam_frame', data: data.data });
+
+      } else if (data.jenis === 'cam_result') {
+
+        await prosesCAMResult(data);
+
       }
-    }
-  };
 
-  ws.onclose = () => {
-    document.getElementById('dotSrv').className = "conn-dot mati";
-    document.getElementById('chipSrv').className = "s-dot off";
-    document.getElementById('dotEsp').className = "conn-dot mati";
-    document.getElementById('chipEsp').className = "s-dot off";
-    setTimeout(sambungWebSocket, 3000);
-  };
-}
-
-function semakButangMasukKunci() {
-  document.getElementById('splashProg').style.display = 'none';
-  document.getElementById('splashBtn').style.display = 'inline-flex';
-}
-
-function masukApp() {
-  bunyiKlik();
-  document.getElementById('splash').style.opacity = '0';
-  setTimeout(() => {
-    document.getElementById('splash').style.display = 'none';
-    document.getElementById('app').style.display = 'flex';
-  }, 400);
-}
-
-function tukarHalaman(id) {
-  bunyiKlik();
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('aktif'));
-  document.querySelectorAll('.halaman').forEach(h => h.classList.remove('aktif'));
-  document.getElementById(`nb_${id}`).classList.add('aktif');
-  document.getElementById(`hal_${id}`).classList.add('aktif');
-}
-
-function bukaModal(id) { document.getElementById(id).classList.add('buka'); }
-function tutupModal(id) { document.getElementById(id).classList.remove('buka'); }
-
-// ============================================================
-// ENGINE SESI PERMAINAN AKTIF & SYNCHRONIZATION
-// ============================================================
-function bukaSesiMulakan(modId) {
-  modMulaId = modId;
-  if(modId === 3 || modId === 4) {
-    document.getElementById('mulaSesiTajukKepala').textContent = `MULA AKTIVITI MOD ${modId}`;
-    document.getElementById('inpKelasSesi').value = "SEMUA KELAS";
-    hantarMulaSesiServer();
-  } else {
-    document.getElementById('mulaSesiTajukKepala').textContent = `MULA KUIZ MOD ${modId}`;
-    const sel = document.getElementById('selSoalanSesi');
-    sel.innerHTML = '';
-    listSoalanGlobal.forEach(s => {
-      sel.innerHTML += `<option value="${s._id}">${s.tajuk} [${s.kelas}]</option>`;
-    });
-    bukaModal('overlayMulaSesi');
-  }
-}
-
-function hantarMulaSesiServer() {
-  const soalanId = document.getElementById('selSoalanSesi').value || null;
-  const kelas = document.getElementById('inpKelasSesi').value.trim() || "UMUM";
-  
-  if (ws && ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify({
-      jenis: 'mula_sesi',
-      mod: modMulaId,
-      soalanId: soalanId,
-      kelas: kelas
-    }));
-    tutupModal('overlayMulaSesi');
-  }
-}
-
-// [FIX ENGINE] MOD 1 & MOD 2 FREEZE/STUCK PREVENTIVE RESET MECHANISM
-function pengurusanUIPapanSesi() {
-  const papan = document.getElementById('papanSesi');
-  const menu = document.getElementById('menuModSistem');
-  
-  if(stateGlobal && stateGlobal.aktif) {
-    papan.style.display = 'block';
-    menu.style.display = 'none';
-    
-    document.getElementById('papanTajuk').textContent = `MOD ${stateGlobal.mod} — SESI SEDANG BERLANGSUNG`;
-    document.getElementById('soalanIdx').textContent = stateGlobal.soalanSemasa + 1;
-    document.getElementById('soalanJumlah').textContent = stateGlobal.jumlahSoalan;
-    
-    // Papar Soalan Teks
-    if(stateGlobal.soalanData) {
-      document.getElementById('paparTeksSoalan').textContent = stateGlobal.soalanData.teks;
-      const grid = document.getElementById('paparOpsiGrid');
-      grid.innerHTML = `
-        <div class="opsi-kad-papar"><div class="opsi-label-papar">OPSI A</div>${stateGlobal.soalanData.jawapanA}</div>
-        <div class="opsi-kad-papar"><div class="opsi-label-papar">OPSI B</div>${stateGlobal.soalanData.jawapanB}</div>
-        <div class="opsi-kad-papar"><div class="opsi-label-papar">OPSI C</div>${stateGlobal.soalanData.jawapanC}</div>
-      `;
-    } else {
-      document.getElementById('paparTeksSoalan').textContent = "Tiada paparan kuiz teks untuk aktiviti ini.";
-      document.getElementById('paparOpsiGrid').innerHTML = '';
     }
 
-    // Status Info Monitor
-    const info = document.getElementById('infoBuzzerSesi');
-    if (stateGlobal.giliran) {
-      info.textContent = `🎯 RESPONDEN AKTIF: ${dapatkanNamaMuridDariId(stateGlobal.giliran)}`;
-      info.style.color = "var(--purple)";
-    } else if (stateGlobal.buzzerAktif) {
-      info.textContent = `🟢 BUZZER & IMBAHAN AKTIF (SEDIA MENUNGGU) ${stateGlobal.peluangKedua ? '[PELUANG KEDUA]' : ''}`;
-      info.style.color = "var(--green)";
-    } else {
-      info.textContent = `⏸️ Sedia menunggu arahan guru / Tindakan dinilai...`;
-      info.style.color = "var(--text2)";
+
+
+    if (url === '/guru') {
+
+      switch (data.jenis) {
+
+        case 'mula_mod': await mulaMod(data); break;
+
+        case 'pilih_murid_mode2': prosesMode2PilihMurid(data); break;
+
+        case 'soalan_seterusnya': soalanSeterusnya(); break;
+
+        case 'tamat_mod': tamatMod(data); break;
+
+        case 'buka_ganjaran': hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 }); break;
+
+        case 'flash_cam': hantarKeCAM({ jenis: 'flash', nyala: data.nyala }); break;
+
+        case 'tambah_ulasan': await tambahUlasan(data); break;
+
+        case 'push_telegram': await hantarTelegram(data); break;
+
+        case 'cam_result_browser': await prosesCAMResult(data); break;
+
+      }
+
     }
 
-    // Mod 4 Monitor Toggle
-    document.getElementById('papanMod4').style.display = (stateGlobal.mod === 4) ? 'block' : 'none';
-    document.getElementById('papanMod12').style.display = (stateGlobal.mod === 4) ? 'none' : 'flex';
-
-    // Reka Grid Murid
-    binaSesiMuridGrid();
-  } else {
-    papan.style.display = 'none';
-    menu.style.display = 'grid';
-  }
-}
-
-function dapatkanNamaMuridDariId(id) {
-  const m = stateGlobal.muridSenarai.find(x => x.muridId === id);
-  return m ? m.nama : id;
-}
-
-function binaSesiMuridGrid() {
-  const grid = document.getElementById('sesiMuridGrid');
-  grid.innerHTML = '';
-  stateGlobal.muridSenarai.forEach(m => {
-    let statClass = "";
-    if(m.statusMod1 === 'siap') statClass = "siap";
-    if(stateGlobal.giliran === m.muridId) statClass = "gilir";
-    
-    grid.innerHTML += `
-      <div class="murid-kad-sesi ${statClass}">
-        <img class="m-avatar" src="${m.avatar || 'https://via.placeholder.com/150'}">
-        <div class="m-info">
-          <p class="m-nama">${m.nama}</p>
-          <p class="m-sub">${m.jawapanMod1 ? 'Jawapan: '+m.jawapanMod1 : 'Belum Respon'}</p>
-        </div>
-        <div class="m-score">${m.markah}m</div>
-        ${stateGlobal.giliran === m.muridId ? `
-          <div style="position:absolute;right:10px;top:10px;display:flex;gap:4px">
-            <button class="btn btn-kecil btn-hijau" style="padding:2px 6px" onclick="nilaiGuruMod2Lokal('betul')">✓</button>
-            <button class="btn btn-kecil btn-merah" style="padding:2px 6px" onclick="nilaiGuruMod2Lokal('salah')">✕</button>
-          </div>
-        `:''}
-      </div>
-    `;
   });
+
+
+
+  ws.on('close', () => {
+
+    if (url === '/esp32') { clients.esp32 = null; updateStatusPeranti(); }
+
+    else if (url === '/cam') { clients.cam = null; updateStatusPeranti(); }
+
+    else if (url === '/guru') clients.guru = clients.guru.filter(c => c !== ws);
+
+    else if (url === '/murid') clients.murid = clients.murid.filter(c => c !== ws);
+
+    console.log(`[WS] Putus: ${url}`);
+
+  });
+
+});
+
+
+
+// ============================================================
+
+// LOGIK MOD
+
+// ============================================================
+
+async function mulaMod(data) {
+
+  const { mod, murid, soalanId, masa, tajuk: tajukSesi, kelas } = data;
+
+
+
+  const soalan = soalanId ? await Soalan.findById(soalanId) : null;
+
+  if (!soalan && mod !== 4) {
+
+    hantarKeGuru({ jenis: 'ralat', mesej: 'Soalan tidak dijumpai' });
+
+    return;
+
+  }
+
+
+
+  const tajukFinal = tajukSesi || (soalan ? soalan.tajuk : 'Sesi Mod 4');
+
+  const sesi = new Sesi({
+
+    tajuk: tajukFinal,
+
+    kelas: kelas || (soalan ? soalan.kelas : ''),
+
+    mod,
+
+    keputusan: murid ? murid.map(m => ({ muridId: m._id, nama: m.nama, markah: 0, avatar: m.avatar })) : []
+
+  });
+
+  await sesi.save();
+
+
+
+  // Henti timer lama sebelum mulakan mod baharu
+
+  if (gameState.timer) { clearInterval(gameState.timer); gameState.timer = null; }
+
+  if (gameState.mod4?.autoScanTimer) clearTimeout(gameState.mod4.autoScanTimer);
+
+  gameState.aktif = false;
+
+
+
+  gameState = {
+
+    mod, aktif: true,
+
+    soalanSemasa: 0, muridSemasa: 0,
+
+    muridSenarai: murid || [],
+
+    skor: {}, masa: masa || 120, masaAsal: masa || 120,
+
+    soalan: soalan ? soalan.soalan : [],
+
+    sesiId: sesi._id.toString(),
+
+    buzzerAktif: false, giliran: null,
+
+    peluangKedua: false, mod3Seq: 0,
+
+    mod4: { fasa: 'sihat', sihatDikesan: [], takSihatDikesan: [], autoScanTimer: null }
+
+  };
+
+
+
+  if (murid) murid.forEach(m => { gameState.skor[String(m._id || m.nama)] = 0; });
+
+
+
+  hantarKeESP32({ jenis: 'set_mod', mod });
+
+
+
+  if (mod === 1) mulaTimerMod1();
+
+  else if (mod === 4) {
+
+    setTimeout(() => autoScanMod4(), 1500);
+
+  }
+
+
+
+  // [SYNC FIX] Hantar 'mod_reset' dulu supaya semua klien reset UI mereka,
+
+  // kemudian hantar 'mod_bermula' dengan state penuh
+
+  semuaHantar({ jenis: 'mod_reset' });
+
+  semuaHantar({ jenis: 'mod_bermula', gameState: sanitizeGameState() });
+
+  console.log(`[GAME] Mod ${mod} bermula — ${tajukFinal}`);
+
 }
+
+
+
+function autoScanMod4() {
+
+  if (!gameState.aktif || gameState.mod !== 4) return;
+
+  const fasa = gameState.mod4.fasa;
+
+  hantarKeCAM({ jenis: 'mula_scan', kategori: fasa === 'sihat' ? 'sihat' : 'tidak_sihat' });
+
+}
+
+
+
+function mulaTimerMod1() {
+
+  let sisa = gameState.masa;
+
+  if (gameState.timer) clearInterval(gameState.timer);
+
+  hantarKeGuru({ jenis: 'timer_update', sisa });
+
+
+
+  gameState.timer = setInterval(() => {
+
+    if (!gameState.aktif) { clearInterval(gameState.timer); return; }
+
+    sisa--;
+
+    gameState.masa = sisa;
+
+    hantarKeGuru({ jenis: 'timer_update', sisa });
+
+    if (sisa <= 0) {
+
+      clearInterval(gameState.timer);
+
+      gameState.timer = null;
+
+      if (gameState.aktif) tamatMod1();
+
+    }
+
+  }, 1000);
+
+}
+
+
+
+async function tamatMod1() {
+
+  if (gameState.timer) { clearInterval(gameState.timer); gameState.timer = null; }
+
+  gameState.aktif = false;
+
+
+
+  const ranking = gameState.muridSenarai.map(m => ({
+
+    nama: m.nama, avatar: m.avatar,
+
+    markah: gameState.skor[String(m._id || m.nama)] || 0
+
+  })).sort((a, b) => b.markah - a.markah);
+
+
+
+  await Sesi.findByIdAndUpdate(gameState.sesiId, {
+
+    keputusan: ranking.map((r, i) => ({ nama: r.nama, markah: r.markah, avatar: r.avatar, tempat: i + 1 }))
+
+  });
+
+
+
+  // [SYNC FIX] Hantar mod1_tamat DAN mod_tamat supaya semua klien tahu mod sudah habis
+
+  semuaHantar({ jenis: 'mod1_tamat', ranking });
+
+  semuaHantar({ jenis: 'mod_tamat', mod: 1, ranking });
+
+
+
+  if (ranking.length > 0) setTimeout(() => hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 }), 2000);
+
+}
+
+
+
+async function prosesNFC(uid) {
+
+  const uidNormal = normalizeUID(uid);
+
+  // [SYNC FIX] Resolve jawapan (A/B/C) dan hantar sekali dengan nfc_scan
+
+  // supaya skrin klien tahu kad yang diimbas mewakili jawapan apa
+
+  const jawapanDiberi = uidKeJawapan(uidNormal);
+
+  console.log(`[NFC] Diterima: "${uid}" => normalize: "${uidNormal}" => jawapan: "${jawapanDiberi}" | Mod: ${gameState.mod} | Aktif: ${gameState.aktif}`);
+
+
+
+  hantarKeGuru({
+
+    jenis: 'nfc_scan',
+
+    uid: uidNormal,
+
+    jawapan: jawapanDiberi,    // [SYNC FIX] A/B/C atau null jika tidak dikenali
+
+    dikenali: !!jawapanDiberi  // [SYNC FIX] flag mudah untuk klien
+
+  });
+
+
+
+  if (!gameState.aktif) return;
+
+
+
+  const mod = gameState.mod;
+
+  if (mod === 1) prosesNFCMod1(uidNormal);
+
+  else if (mod === 2) prosesNFCMod2(uidNormal);
+
+  else if (mod === 3) prosesNFCMod3(uidNormal);
+
+}
+
+
+
+function prosesNFCMod1(uid) {
+
+  const soalanIdx = gameState.soalanSemasa;
+
+  if (soalanIdx >= gameState.soalan.length) return;
+
+
+
+  const soalan = gameState.soalan[soalanIdx];
+
+  const murid = gameState.muridSenarai[gameState.muridSemasa];
+
+  if (!murid) return;
+
+
+
+  const jawapanDiberi = uidKeJawapan(uid);
+
+  if (!jawapanDiberi) return;
+
+
+
+  const betul = jawapanDiberi === soalan.betul;
+
+  const key = String(murid._id || murid.nama);
+
+
+
+  if (betul) {
+
+    gameState.skor[key] = (gameState.skor[key] || 0) + 1;
+
+    hantarKeESP32({ jenis: 'betul' });
+
+    // [SYNC FIX] Hantar ke semua klien (guru + murid)
+
+    semuaHantar({ jenis: 'jawapan', betul: true, murid: murid.nama, jawapan: jawapanDiberi, markah: gameState.skor[key] });
+
+  } else {
+
+    hantarKeESP32({ jenis: 'salah' });
+
+    // [SYNC FIX] Hantar ke semua klien
+
+    semuaHantar({ jenis: 'jawapan', betul: false, murid: murid.nama, jawapan: jawapanDiberi });
+
+  }
+
+
+
+  gameState.muridSemasa++;
+
+  if (gameState.muridSemasa >= gameState.muridSenarai.length) {
+
+    gameState.muridSemasa = 0;
+
+    gameState.soalanSemasa++;
+
+    if (gameState.soalanSemasa >= gameState.soalan.length) {
+
+      if (gameState.timer) { clearInterval(gameState.timer); gameState.timer = null; }
+
+      if (gameState.aktif) tamatMod1();
+
+      return;
+
+    }
+
+  }
+
+  // [SYNC FIX] state_update ke semua klien
+
+  semuaHantar({ jenis: 'state_update', gameState: sanitizeGameState() });
+
+}
+
+
+
+function prosesNFCMod2(uid) {
+
+  if (!gameState.giliran) return;
+
+
+
+  const soalanIdx = gameState.soalanSemasa;
+
+  if (soalanIdx >= gameState.soalan.length) return;
+
+
+
+  const soalan = gameState.soalan[soalanIdx];
+
+  const jawapanDiberi = uidKeJawapan(uid);
+
+  if (!jawapanDiberi) {
+
+    console.log('[MOD2] UID tidak dikenali:', uid, '— semak NFC_KAD_A/B/C');
+
+    return;
+
+  }
+
+
+
+  const betul = jawapanDiberi === soalan.betul;
+
+  const muridSemasa = String(gameState.giliran);
+
+
+
+  if (betul) {
+
+    gameState.skor[muridSemasa] = (gameState.skor[muridSemasa] || 0) + 1;
+
+    const muridObj = gameState.muridSenarai.find(m => String(m._id || m.nama) === muridSemasa);
+
+    const namaPapar = muridObj ? muridObj.nama : muridSemasa;
+
+    hantarKeESP32({ jenis: 'betul' });
+
+    hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 });
+
+    // [SYNC FIX] Hantar ke semua klien
+
+    semuaHantar({ jenis: 'mod2_betul', murid: namaPapar, jawapan: jawapanDiberi, markah: gameState.skor[muridSemasa] });
+
+    gameState.giliran = null;
+
+    gameState.peluangKedua = false;
+
+    gameState.soalanSemasa++;
+
+    if (gameState.soalanSemasa >= gameState.soalan.length) { tamatMod2(); return; }
+
+  } else {
+
+    hantarKeESP32({ jenis: 'salah' });
+
+    if (!gameState.peluangKedua) {
+
+      const muridLain = gameState.muridSenarai.find(m => String(m._id || m.nama) !== muridSemasa);
+
+      if (muridLain) {
+
+        gameState.giliran = String(muridLain._id || muridLain.nama);
+
+        gameState.peluangKedua = true;
+
+        // [SYNC FIX] Hantar ke semua klien (guru + murid) supaya skrin murid update giliran
+
+        semuaHantar({ jenis: 'mod2_peluang_kedua', murid: muridLain.nama });
+
+        hantarKeESP32({ jenis: 'sedia_jawab' });
+
+      }
+
+    } else {
+
+      gameState.giliran = null;
+
+      gameState.peluangKedua = false;
+
+      gameState.soalanSemasa++;
+
+      // [SYNC FIX] Hantar ke semua klien
+
+      semuaHantar({ jenis: 'mod2_kedua_salah' });
+
+      if (gameState.soalanSemasa >= gameState.soalan.length) { tamatMod2(); return; }
+
+    }
+
+  }
+
+  // [SYNC FIX] state_update ke semua klien
+
+  semuaHantar({ jenis: 'state_update', gameState: sanitizeGameState() });
+
+}
+
+
+
+function prosesMode2PilihMurid(data) {
+
+  gameState.giliran = String(data.muridId);
+
+  gameState.peluangKedua = false;
+
+  // [SYNC FIX] Hantar ke semua klien supaya skrin murid tahu siapa giliran
+
+  semuaHantar({ jenis: 'mod2_giliran', murid: data.muridNama });
+
+  hantarKeESP32({ jenis: 'sedia_jawab' });
+
+}
+
+
+
+async function tamatMod2() {
+
+  gameState.aktif = false;
+
+  const ranking = gameState.muridSenarai.map(m => ({
+
+    nama: m.nama, avatar: m.avatar,
+
+    markah: gameState.skor[String(m._id || m.nama)] || 0
+
+  })).sort((a, b) => b.markah - a.markah);
+
+  await Sesi.findByIdAndUpdate(gameState.sesiId, { keputusan: ranking });
+
+  // [SYNC FIX] Hantar mod2_tamat DAN mod_tamat
+
+  semuaHantar({ jenis: 'mod2_tamat', ranking });
+
+  semuaHantar({ jenis: 'mod_tamat', mod: 2, ranking });
+
+  setTimeout(() => hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 }), 1500);
+
+}
+
+
+
+function prosesNFCMod3(uid) {
+
+  const idx = gameState.mod3Seq || 0;
+
+  const soalan = gameState.soalan;
+
+  if (!soalan || idx >= soalan.length) return;
+
+
+
+  const betul = normalizeUID(soalan[idx].uidBetul) === normalizeUID(uid);
+
+  if (betul) {
+
+    gameState.mod3Seq = idx + 1;
+
+    hantarKeESP32({ jenis: 'betul' });
+
+    // [SYNC FIX] Hantar ke semua klien
+
+    semuaHantar({ jenis: 'mod3_betul', susunan: idx + 1, jumlah: soalan.length });
+
+    if (gameState.mod3Seq >= soalan.length) {
+
+      hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 });
+
+      gameState.aktif = false;
+
+      // [SYNC FIX] Hantar mod3_tamat DAN mod_tamat
+
+      semuaHantar({ jenis: 'mod3_tamat' });
+
+      semuaHantar({ jenis: 'mod_tamat', mod: 3 });
+
+    }
+
+  } else {
+
+    hantarKeESP32({ jenis: 'salah' });
+
+    // [SYNC FIX] Hantar ke semua klien
+
+    semuaHantar({ jenis: 'mod3_salah', susunan: idx + 1 });
+
+  }
+
+}
+
+
+
+async function prosesCAMResult(data) {
+
+  if (!gameState.aktif || gameState.mod !== 4) return;
+
+
+
+  const { label, confidence } = data;
+
+  const m4 = gameState.mod4;
+
+  const fasa = m4.fasa;
+
+  const labelLower = (label || '').toLowerCase();
+
+
+
+  let betul = false;
+
+  if (fasa === 'sihat') {
+
+    betul = MAKANAN_SIHAT_LIST.includes(labelLower) && !m4.sihatDikesan.includes(labelLower);
+
+  } else {
+
+    betul = MAKANAN_TAK_SIHAT_LIST.includes(labelLower) && !m4.takSihatDikesan.includes(labelLower);
+
+  }
+
+
+
+  // [SYNC FIX] Hantar ke semua klien
+
+  semuaHantar({ jenis: 'cam_keputusan', label, confidence, betul, kategori: fasa });
+
+
+
+  if (betul) {
+
+    hantarKeESP32({ jenis: 'betul' });
+
+    if (fasa === 'sihat') {
+
+      m4.sihatDikesan.push(labelLower);
+
+      if (m4.sihatDikesan.length >= MAKANAN_SIHAT_LIST.length) {
+
+        m4.fasa = 'tidak_sihat';
+
+        semuaHantar({ jenis: 'mod4_tukar_fasa', fasa: 'tidak_sihat' });
+
+        setTimeout(() => autoScanMod4(), 2000);
+
+        return;
+
+      }
+
+    } else {
+
+      m4.takSihatDikesan.push(labelLower);
+
+      if (m4.takSihatDikesan.length >= MAKANAN_TAK_SIHAT_LIST.length) {
+
+        await tamatMod4();
+
+        return;
+
+      }
+
+    }
+
+  } else {
+
+    hantarKeESP32({ jenis: 'salah' });
+
+  }
+
+
+
+  if (gameState.aktif && gameState.mod === 4) {
+
+    m4.autoScanTimer = setTimeout(() => autoScanMod4(), 2500);
+
+  }
+
+}
+
+
+
+async function tamatMod4() {
+
+  gameState.aktif = false;
+
+  const murid = gameState.muridSenarai[0];
+
+  const ranking = murid ? [{ nama: murid.nama, avatar: murid.avatar, markah: gameState.mod4.sihatDikesan.length + gameState.mod4.takSihatDikesan.length }] : [];
+
+  await Sesi.findByIdAndUpdate(gameState.sesiId, { keputusan: ranking });
+
+  // [SYNC FIX] Hantar mod4_tamat DAN mod_tamat ke semua klien
+
+  semuaHantar({ jenis: 'mod4_tamat', ranking });
+
+  semuaHantar({ jenis: 'mod_tamat', mod: 4, ranking });
+
+  setTimeout(() => hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 }), 1000);
+
+}
+
+
 
 function soalanSeterusnya() {
-  if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ jenis: 'soalan_seterusnya' }));
-}
-function soalanSebelumnya() {
-  if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ jenis: 'soalan_sebelumnya' }));
-}
-function beriPeluangKeduaMod2() {
-  if (ws && ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify({ jenis: 'peluang_kedua' }));
-    console.log("[FRONTEND] Menghantar isyarat buka kunci peluang kedua.");
-  }
-}
-function nilaiGuruMod2Lokal(hasil) {
-  if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ jenis: 'guru_nilai_mod2', hasil }));
-}
-function tamatSesi() {
-  if (confirm("Pastikan semua markah disimpan sebelum menutup sesi.")) {
-    if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ jenis: 'tamat_sesi' }));
-  }
-}
 
-// MOD 4 EXTENSIONS
-function setMod4Fasa(fasa) {
-  if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ jenis: 'tukar_mod4_fasa', fasa }));
-}
-function triggerMod4Servo() {
-  if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ jenis: 'buka_servo' }));
-}
+  if (!gameState.aktif) return;
 
-// ============================================================
-// BANK DATA MANAGEMENT (SOALAN & CRUD) PRESERVED FULLY
-// ============================================================
-function muatSenaraiSoalanDinamik() {
-  fetch(`${API}/api/soalan`)
-    .then(res => res.json())
-    .then(data => {
-      listSoalanGlobal = data;
-      const wrapper = document.getElementById('sideListSoalan');
-      wrapper.innerHTML = '';
-      data.forEach(s => {
-        wrapper.innerHTML += `<button class="list-item-btn" onclick="paparDetailSetSoalan('${s._id}')">📂 ${s.tajuk} <span class="f-badge fb-biru">${s.kelas}</span></button>`;
-      });
-    });
-}
+  gameState.soalanSemasa++;
 
-function paparDetailSetSoalan(id) {
-  bunyiKlik();
-  setSoalanAktifId = id;
-  const set = listSoalanGlobal.find(x => x._id === id);
-  if(!set) return;
+  gameState.muridSemasa = 0;
 
-  document.getElementById('txtSetAktifNama').textContent = `${set.tajuk} [${set.kelas}]`;
-  document.getElementById('setAktifTindakan').style.display = 'flex';
-  
-  document.getElementById('btnEditSet').onclick = () => bukaModalSoalan(set._id);
-  document.getElementById('btnPadamSet').onclick = () => padamSetSoalan(set._id);
+  if (gameState.soalanSemasa >= gameState.soalan.length) {
 
-  const tbody = document.querySelector('#tblSoalanItem tbody');
-  tbody.innerHTML = '';
-  set.soalan.forEach((q, i) => {
-    tbody.innerHTML += `
-      <tr>
-        <td>${i+1}</td>
-        <td style="font-weight:600">${q.teks}</td>
-        <td>
-          A: ${q.jawapanA}<br>
-          B: ${q.jawapanB}<br>
-          C: ${q.jawapanC}
-        </td>
-        <td><span class="f-badge fb-hijau">Opsi ${q.betul}</span></td>
-      </tr>
-    `;
-  });
-}
+    if (gameState.mod === 1) tamatMod1();
 
-function bukaModalSoalan(id = null) {
-  bukaModal('overlaySoalan');
-  const wrapper = document.getElementById('wrapperSoalanItems');
-  wrapper.innerHTML = '';
-  
-  if(id) {
-    document.getElementById('modalSoalanTajuk').textContent = "EDIT SET SOALAN PRE-EXISTING";
-    const set = listSoalanGlobal.find(x => x._id === id);
-    document.getElementById('inpSetTajuk').value = set.tajuk;
-    document.getElementById('inpSetKelas').value = set.kelas;
-    set.soalan.forEach(q => tambahBarisSoalanForm(q));
+    else if (gameState.mod === 2) tamatMod2();
+
   } else {
-    document.getElementById('modalSoalanTajuk').textContent = "CIPTA SET SOALAN BAHARU";
-    document.getElementById('inpSetTajuk').value = '';
-    document.getElementById('inpSetKelas').value = '';
-    tambahBarisSoalanForm();
+
+    // [SYNC FIX] Hantar ke semua klien
+
+    semuaHantar({ jenis: 'state_update', gameState: sanitizeGameState() });
+
   }
+
 }
 
-function tambahBarisSoalanForm(data = null) {
-  const container = document.getElementById('wrapperSoalanItems');
-  const d = document.createElement('div');
-  d.className = "baris-soalan-form mb16";
-  d.style = "background:var(--panel2);padding:14px;border-radius:10px;border:var(--card-border);position:relative";
-  d.innerHTML = `
-    <button style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--red);cursor:pointer;font-weight:bold" onclick="this.parentElement.remove()">Padam</button>
-    <div class="form-kump mb16">
-      <label>Teks Soalan</label>
-      <input type="text" class="fq-teks" value="${data ? data.teks : ''}" placeholder="Tulis soalan di sini...">
-    </div>
-    <div class="form-row">
-      <div class="form-kump"><label>Opsi A</label><input type="text" class="fq-a" value="${data ? data.jawapanA : ''}"></div>
-      <div class="form-kump"><label>Opsi B</label><input type="text" class="fq-b" value="${data ? data.jawapanB : ''}"></div>
-      <div class="form-kump"><label>Opsi C</label><input type="text" class="fq-c" value="${data ? data.jawapanC : ''}"></div>
-      <div class="form-kump">
-        <label>Betul</label>
-        <select class="fq-betul">
-          <option value="A" ${data && data.betul==='A'?'selected':''}>A</option>
-          <option value="B" ${data && data.betul==='B'?'selected':''}>B</option>
-          <option value="C" ${data && data.betul==='C'?'selected':''}>C</option>
-        </select>
-      </div>
-    </div>
-  `;
-  container.appendChild(d);
+
+
+async function tamatMod(data) {
+
+  if (gameState.timer) { clearInterval(gameState.timer); gameState.timer = null; }
+
+  if (gameState.mod4?.autoScanTimer) clearTimeout(gameState.mod4.autoScanTimer);
+
+  gameState.aktif = false;
+
+  // [SYNC FIX] Hantar ke semua klien (sebelum ini pun dah betul)
+
+  semuaHantar({ jenis: 'mod_tamat', mod: gameState.mod });
+
 }
 
-function simpanSetSoalan() {
-  const tajuk = document.getElementById('inpSetTajuk').value.trim();
-  const kelas = document.getElementById('inpSetKelas').value.trim();
-  if(!tajuk || !kelas) return alert("Sila lengkapkan nama set dan kelas.");
 
-  const baris = document.querySelectorAll('.baris-soalan-form');
-  let soalanArray = [];
-  baris.forEach(b => {
-    soalanArray.push({
-      teks: b.querySelector('.fq-teks').value,
-      jawapanA: b.querySelector('.fq-a').value,
-      jawapanB: b.querySelector('.fq-b').value,
-      jawapanC: b.querySelector('.fq-c').value,
-      betul: b.querySelector('.fq-betul').value
-    });
+
+async function tambahUlasan(data) {
+
+  const { sesiId, muridId, muridNama, komen } = data;
+
+  await Sesi.findByIdAndUpdate(sesiId, {
+
+    $push: { ulasan: { muridId, nama: muridNama, komen, tarikhKomen: new Date() } }
+
   });
 
-  const payload = { mod: 1, tajuk, kelas, soalan: soalanArray };
-  // Check sama ada edit atau cipta baru
-  const isEdit = document.getElementById('modalSoalanTajuk').textContent.includes("EDIT");
-  const url = isEdit ? `${API}/api/soalan/${setSoalanAktifId}` : `${API}/api/soalan`;
-  const method = isEdit ? 'PUT' : 'POST';
+  semuaHantar({ jenis: 'ulasan_baharu', sesiId, muridId, muridNama, komen });
 
-  fetch(url, {
-    method: method,
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  }).then(() => {
-    tutupModal('overlaySoalan');
-    muatSenaraiSoalanDinamik();
+}
+
+
+
+async function hantarTelegram(data) {
+
+  const { sesiId, namaCikgu } = data;
+
+  const sesi = await Sesi.findById(sesiId);
+
+  if (!sesi) return;
+
+
+
+  const ranking = sesi.keputusan.sort((a, b) => b.markah - a.markah);
+
+  let mesej = `🎓 *LAPORAN PENCAPAIAN ILMUVERSE*\n`;
+
+  mesej += `📅 Tarikh: ${new Date(sesi.tarikh).toLocaleDateString('ms-MY')}\n`;
+
+  if (sesi.kelas) mesej += `🏫 Kelas: *${sesi.kelas}*\n`;
+
+  mesej += `📖 Tajuk: *${sesi.tajuk}*\n`;
+
+  mesej += `🎯 Mod: ${['', 'Kuiz Ramai-ramai', 'Dwi-Padu', 'Susunan Hafalan', 'Imbas AI'][sesi.mod]}\n\n`;
+
+  mesej += `🏆 *KEPUTUSAN:*\n`;
+
+  ranking.forEach((r, i) => {
+
+    const emoji = ['🥇', '🥈', '🥉'][i] || '🎖️';
+
+    mesej += `${emoji} ${r.nama}: *${r.markah} markah*\n`;
+
   });
+
+  if (sesi.ulasan?.length) {
+
+    mesej += `\n💬 *ULASAN GURU:*\n`;
+
+    sesi.ulasan.forEach(u => { mesej += `• ${u.nama}: _${u.komen}_\n`; });
+
+  }
+
+  const namaGuru = namaCikgu || 'Cikgu';
+
+  mesej += `\n✨ _Dihantar oleh ${namaGuru} menggunakan sistem ILMUVERSE_`;
+
+
+
+  try {
+
+    const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+
+      method: 'POST',
+
+      headers: { 'Content-Type': 'application/json' },
+
+      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: mesej, parse_mode: 'Markdown' })
+
+    });
+
+    const hasil = await res.json();
+
+    hantarKeGuru({ jenis: 'telegram_status', berjaya: hasil.ok });
+
+  } catch (e) {
+
+    hantarKeGuru({ jenis: 'telegram_status', berjaya: false, ralat: e.message });
+
+  }
+
 }
 
-function padamSetSoalan(id) {
-  if(confirm("Adakah anda pasti untuk memadamkan keseluruhan set soalan ini?")) {
-    fetch(`${API}/api/soalan/${id}`, { method: 'DELETE' }).then(() => {
-      setSoalanAktifId = null;
-      document.getElementById('setAktifTindakan').style.display = 'none';
-      document.getElementById('txtSetAktifNama').textContent = "Pilih mana-mana set soalan di kiri";
-      document.querySelector('#tblSoalanItem tbody').innerHTML = '<tr><td colspan="4" style="text-align:center">Tiada set dipilih</td></tr>';
-      muatSenaraiSoalanDinamik();
-    });
-  }
+
+
+// [SYNC FIX] sanitizeGameState dikemaskini — kini include soalan semasa
+
+// supaya klien boleh papar soalan tanpa fetch berasingan
+
+function sanitizeGameState() {
+
+  const soalanSemasa = gameState.soalan?.[gameState.soalanSemasa] || null;
+
+  return {
+
+    mod: gameState.mod,
+
+    aktif: gameState.aktif,
+
+    soalanSemasa: gameState.soalanSemasa,
+
+    muridSemasa: gameState.muridSemasa,
+
+    muridSenarai: gameState.muridSenarai,
+
+    skor: gameState.skor,
+
+    masa: gameState.masa,
+
+    sesiId: gameState.sesiId,
+
+    giliran: gameState.giliran,
+
+    peluangKedua: gameState.peluangKedua,
+
+    jumlahSoalan: gameState.soalan ? gameState.soalan.length : 0,
+
+    mod4Fasa: gameState.mod4?.fasa,
+
+    // [SYNC FIX] Data soalan semasa untuk paparan klien
+
+    soalanData: soalanSemasa ? {
+
+      teks: soalanSemasa.teks,
+
+      jawapanA: soalanSemasa.jawapanA,
+
+      jawapanB: soalanSemasa.jawapanB,
+
+      jawapanC: soalanSemasa.jawapanC,
+
+      // Nota: 'betul' sengaja tidak dihantar ke murid (keselamatan)
+
+    } : null
+
+  };
+
 }
+
+
 
 // ============================================================
-// MANAGEMENT TUGASAN & HOMEWORK DISK PRESERVED FULLY
+
+// REST API
+
 // ============================================================
-function muatSenaraiLatihanDinamik() {
-  fetch(`${API}/api/latihan`)
-    .then(res => res.json())
-    .then(data => {
-      const tbody = document.getElementById('tbodyLatihan');
-      tbody.innerHTML = '';
-      data.forEach(l => {
-        const hantarCount = l.jawapan ? l.jawapan.length : 0;
-        tbody.innerHTML += `
-          <tr>
-            <td style="font-weight:700;color:var(--text)">${l.tajuk}</td>
-            <td><span class="f-badge fb-biru">${l.kelas}</span></td>
-            <td>${new Date(l.tarikhHantar).toLocaleDateString('ms-MY')}</td>
-            <td>${l.tarikhTutup ? new Date(l.tarikhTutup).toLocaleString('ms-MY') : 'Tiada'}</td>
-            <td><span class="f-badge fb-hijau">${hantarCount} Murid Hantar</span></td>
-            <td>
-              <button class="btn btn-kecil btn-utama" onclick="bukaDetailLatihanKlien('${l._id}')">Semak</button>
-              <button class="btn btn-kecil btn-merah" onclick="padamLatihanLokal('${l._id}')">✕</button>
-            </td>
-          </tr>
-        `;
-      });
-    });
-}
 
-function bukaModalLatihan() {
-  bukaModal('overlayLatihan');
-  document.getElementById('inpLatTajuk').value = '';
-  document.getElementById('inpLatKelas').value = '';
-  document.getElementById('inpLatArahan').value = '';
-  document.getElementById('inpLatTutup').value = '';
-  clearGuruFail();
-}
 
-function handleGuruFailPilih(input) {
-  const file = input.files[0];
-  if(!file) return;
-  namaGuruFail = file.name;
-  jenisGuruFail = file.type;
-  document.getElementById('txtGuruFailNama').textContent = file.name;
-  document.getElementById('txtGuruFailSaiz').textContent = `${(file.size/1024).toFixed(1)} KB`;
-  
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    base64GuruFail = e.target.result;
-    document.getElementById('boxPreviewFailGuru').style.display = 'flex';
-  };
-  reader.readAsDataURL(file);
-}
 
-function clearGuruFail() {
-  base64GuruFail = ""; jenisGuruFail = ""; namaGuruFail = "";
-  document.getElementById('inputFailLatihan').value = "";
-  document.getElementById('boxPreviewFailGuru').style.display = 'none';
-}
+// --- MURID ---
 
-function simpanLatihan() {
-  const tajuk = document.getElementById('inpLatTajuk').value.trim();
-  const kelas = document.getElementById('inpLatKelas').value.trim();
-  const arahan = document.getElementById('inpLatArahan').value.trim();
-  const tarikhTutup = document.getElementById('inpLatTutup').value;
+app.get('/api/murid', async (req, res) => { res.json(await Murid.find()); });
 
-  if(!tajuk || !kelas) return alert("Sila isi sekurang-kurangnya tajuk dan kelas sasaran.");
+app.post('/api/murid', async (req, res) => {
 
-  const payload = {
-    tajuk, arahan, kelas, tarikhTutup,
-    failNama: namaGuruFail, failData: base64GuruFail, failJenis: jenisGuruFail
-  };
+  const murid = new Murid(req.body);
 
-  fetch(`${API}/api/latihan`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  }).then(res => res.json()).then(() => {
-    tutupModal('overlayLatihan');
-    muatSenaraiLatihanDinamik();
-  });
-}
+  await murid.save(); res.json(murid);
 
-function padamLatihanLokal(id) {
-  if(confirm("Adakah anda pasti untuk memadam tugasan ini?")) {
-    fetch(`${API}/api/latihan/${id}`, { method: 'DELETE' }).then(() => muatSenaraiLatihanDinamik());
+});
+
+app.put('/api/murid/:id', async (req, res) => {
+
+  const m = await Murid.findByIdAndUpdate(req.params.id, req.body, { new: true }); res.json(m);
+
+});
+
+app.delete('/api/murid/:id', async (req, res) => {
+
+  await Murid.findByIdAndDelete(req.params.id); res.json({ ok: true });
+
+});
+
+
+
+// --- SOALAN ---
+
+app.get('/api/soalan', async (req, res) => { res.json(await Soalan.find()); });
+
+app.post('/api/soalan', async (req, res) => {
+
+  const s = new Soalan(req.body); await s.save(); res.json(s);
+
+});
+
+app.put('/api/soalan/:id', async (req, res) => {
+
+  const s = await Soalan.findByIdAndUpdate(req.params.id, req.body, { new: true }); res.json(s);
+
+});
+
+app.delete('/api/soalan/:id', async (req, res) => {
+
+  await Soalan.findByIdAndDelete(req.params.id); res.json({ ok: true });
+
+});
+
+
+
+// --- SESI & DASHBOARD ---
+
+app.get('/api/sesi', async (req, res) => {
+
+  res.json(await Sesi.find().sort({ tarikh: -1 }).limit(50));
+
+});
+
+app.get('/api/sesi/:id', async (req, res) => {
+
+  res.json(await Sesi.findById(req.params.id));
+
+});
+
+app.delete('/api/sesi/:id', async (req, res) => {
+
+  await Sesi.findByIdAndDelete(req.params.id); res.json({ ok: true });
+
+});
+
+app.put('/api/sesi/:id/ulasan', async (req, res) => {
+
+  const { muridId, muridNama, komen } = req.body;
+
+  const sesi = await Sesi.findByIdAndUpdate(req.params.id, {
+
+    $push: { ulasan: { muridId, nama: muridNama, komen, tarikhKomen: new Date() } }
+
+  }, { new: true });
+
+  semuaHantar({ jenis: 'ulasan_baharu', sesiId: req.params.id, muridId, muridNama, komen });
+
+  res.json(sesi);
+
+});
+
+
+
+// --- SIARAN ---
+
+app.get('/api/siaran', async (req, res) => {
+
+  res.json(await Siaran.find().sort({ tarikhDihantar: -1 }));
+
+});
+
+app.post('/api/siaran', async (req, res) => {
+
+  const s = new Siaran(req.body); await s.save();
+
+  semuaHantar({ jenis: 'siaran_baharu', data: s }); res.json(s);
+
+});
+
+app.put('/api/siaran/:id', async (req, res) => {
+
+  const s = await Siaran.findByIdAndUpdate(req.params.id, req.body, { new: true }); res.json(s);
+
+});
+
+app.delete('/api/siaran/:id', async (req, res) => {
+
+  await Siaran.findByIdAndDelete(req.params.id); res.json({ ok: true });
+
+});
+
+
+
+// --- KEHADIRAN ---
+
+app.get('/api/kehadiran', async (req, res) => {
+
+  const query = {};
+
+  if (req.query.kelas) query.kelas = req.query.kelas;
+
+  if (req.query.tarikh) {
+
+    const t = new Date(req.query.tarikh);
+
+    const esok = new Date(t); esok.setDate(esok.getDate() + 1);
+
+    query.tarikh = { $gte: t, $lt: esok };
+
   }
-}
 
-function bukaDetailLatihanKlien(id) {
-  fetch(`${API}/api/latihan/${id}`)
-    .then(res => res.json())
-    .then(l => {
-      document.getElementById('detailLatihanTajuk').textContent = `SUBMISSION: ${l.tajuk}`;
-      bukaModal('overlayDetailLatihan');
-      const b = document.getElementById('detailLatihanBadan');
-      b.innerHTML = '';
+  const data = await Kehadiran.find(query).sort({ tarikh: -1 });
 
-      if(!l.jawapan || l.jawapan.length === 0) {
-        b.innerHTML = `<p style="text-align:center;color:var(--text2);padding:20px">Belum ada murid menghantar jawapan untuk tugasan ini.</p>`;
-        return;
-      }
+  res.json(data);
 
-      l.jawapan.forEach(j => {
-        b.innerHTML += `
-          <div style="background:var(--panel2);padding:14px;border-radius:12px;border:var(--card-border);margin-bottom:12px">
-            <div class="flex justify-between align-center mb16">
-              <div>
-                <h4 style="font-size:.95rem">${j.muridNama}</h4>
-                <p style="font-size:.75rem;color:var(--text2)">Dihantar pada: ${new Date(j.tarikhHantar).toLocaleString('ms-MY')}</p>
-              </div>
-              <span class="f-badge ${j.statusSemak==='sudah'?'fb-hijau':'fb-merah'}">${j.statusSemak==='sudah'?'Disemak':'Belum Semak'}</span>
-            </div>
-            ${j.failData ? `
-              <div class="flex gap8 align-center mb16" style="background:#fff;padding:8px 12px;border-radius:8px;border:var(--card-border)">
-                <span style="font-size:1.3rem">📁</span>
-                <div style="flex:1;min-width:0">
-                  <p style="font-size:.8rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${j.failNama}</p>
-                </div>
-                <a class="btn btn-kecil btn-outline" href="${j.failData}" download="${j.failNama}">Download</a>
-              </div>
-            `:''}
-          </div>
-        `;
-      });
+});
+
+app.post('/api/kehadiran', async (req, res) => {
+
+  const { kelas, tarikh, senarai } = req.body;
+
+  const tarikhObj = new Date(tarikh);
+
+  const esok = new Date(tarikhObj); esok.setDate(esok.getDate() + 1);
+
+  const sedia = await Kehadiran.findOne({ kelas, tarikh: { $gte: tarikhObj, $lt: esok } });
+
+  let rekod;
+
+  if (sedia) {
+
+    rekod = await Kehadiran.findByIdAndUpdate(sedia._id, { senarai, catatanAt: new Date() }, { new: true });
+
+  } else {
+
+    rekod = new Kehadiran({ kelas, tarikh: tarikhObj, senarai });
+
+    await rekod.save();
+
+  }
+
+  res.json(rekod);
+
+});
+
+
+
+// --- TELEGRAM KEHADIRAN ---
+
+app.post('/api/telegram-kehadiran', async (req, res) => {
+
+  const { mesej } = req.body;
+
+  if (!mesej) return res.json({ ok: false, error: 'Tiada mesej' });
+
+  try {
+
+    const r = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+
+      method: 'POST',
+
+      headers: { 'Content-Type': 'application/json' },
+
+      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: mesej, parse_mode: 'Markdown' })
+
     });
-}
 
-window.addEventListener('load', inisialisasiPalingAwal);
-</script>
-</body>
-</html>
+    const hasil = await r.json();
+
+    res.json({ ok: hasil.ok });
+
+  } catch(e) {
+
+    res.json({ ok: false, error: e.message });
+
+  }
+
+});
+
+
+
+// --- NFC HTTP fallback ---
+
+app.post('/api/nfc', async (req, res) => {
+
+  await prosesNFC(req.body.uid); res.json({ ok: true });
+
+});
+
+
+
+// ============================================================
+
+// REST API — LATIHAN
+
+// ============================================================
+
+
+
+app.get('/api/latihan', async (req, res) => {
+
+  const query = {};
+
+  if (req.query.kelas) query.$or = [{ kelas: req.query.kelas }, { kelas: '' }, { kelas: null }];
+
+  const data = await Latihan.find(query)
+
+    .sort({ tarikhHantar: -1 })
+
+    .select('-jawapan.failData -failData');
+
+  res.json(data);
+
+});
+
+
+
+app.get('/api/latihan/:id', async (req, res) => {
+
+  try {
+
+    const l = await Latihan.findById(req.params.id).select('-jawapan.failData');
+
+    res.json(l);
+
+  } catch(e) { res.status(404).json({ error: 'Tidak dijumpai' }); }
+
+});
+
+
+
+app.get('/api/latihan/:id/fail', async (req, res) => {
+
+  try {
+
+    const l = await Latihan.findById(req.params.id).select('failData failJenis failNama');
+
+    if (!l || !l.failData) return res.status(404).json({ error: 'Fail tidak ada' });
+
+    const buf = Buffer.from(l.failData.split(',')[1] || l.failData, 'base64');
+
+    res.set('Content-Type', l.failJenis || 'application/octet-stream');
+
+    res.set('Content-Disposition', `attachment; filename="${l.failNama || 'latihan'}"`);
+
+    res.send(buf);
+
+  } catch(e) { res.status(500).json({ error: e.message }); }
+
+});
+
+
+
+app.post('/api/latihan', async (req, res) => {
+
+  try {
+
+    const { tajuk, arahan, kelas, failNama, failData, failJenis, tarikhTutup } = req.body;
+
+    const l = new Latihan({ tajuk, arahan, kelas: kelas||'', failNama, failData, failJenis, tarikhTutup: tarikhTutup ? new Date(tarikhTutup) : null });
+
+    await l.save();
+
+    semuaHantar({ jenis: 'latihan_baharu', data: { _id: l._id, tajuk: l.tajuk, kelas: l.kelas, tarikhHantar: l.tarikhHantar } });
+
+    res.json({ ...l.toObject(), failData: undefined });
+
+  } catch(e) { res.status(500).json({ error: e.message }); }
+
+});
+
+
+
+app.put('/api/latihan/:id', async (req, res) => {
+
+  try {
+
+    const { tajuk, arahan, kelas, tarikhTutup, aktif } = req.body;
+
+    const update = { tajuk, arahan, kelas, aktif };
+
+    if (tarikhTutup !== undefined) update.tarikhTutup = tarikhTutup ? new Date(tarikhTutup) : null;
+
+    const l = await Latihan.findByIdAndUpdate(req.params.id, update, { new: true }).select('-failData -jawapan.failData');
+
+    res.json(l);
+
+  } catch(e) { res.status(500).json({ error: e.message }); }
+
+});
+
+
+
+app.delete('/api/latihan/:id', async (req, res) => {
+
+  await Latihan.findByIdAndDelete(req.params.id);
+
+  res.json({ ok: true });
+
+});
+
+
+
+app.post('/api/latihan/:id/komen', async (req, res) => {
+
+  try {
+
+    const { nama, peranan, teks } = req.body;
+
+    const l = await Latihan.findByIdAndUpdate(req.params.id, {
+
+      $push: { komen: { nama, peranan, teks, tarikhKomen: new Date() } }
+
+    }, { new: true }).select('-failData -jawapan.failData');
+
+    semuaHantar({ jenis: 'latihan_komen_baharu', latihanId: req.params.id, komen: { nama, peranan, teks } });
+
+    res.json(l);
+
+  } catch(e) { res.status(500).json({ error: e.message }); }
+
+});
+
+
+
+app.post('/api/latihan/:id/jawapan', async (req, res) => {
+
+  try {
+
+    const { muridId, muridNama, kelas, failNama, failData, failJenis } = req.body;
+
+    const latihan = await Latihan.findById(req.params.id);
+
+    if (!latihan) return res.status(404).json({ error: 'Latihan tidak dijumpai' });
+
+
+
+    const idx = latihan.jawapan.findIndex(j => j.muridId === muridId || j.muridNama === muridNama);
+
+    if (idx >= 0) {
+
+      latihan.jawapan[idx].failNama = failNama;
+
+      latihan.jawapan[idx].failData = failData;
+
+      latihan.jawapan[idx].failJenis = failJenis;
+
+      latihan.jawapan[idx].tarikhHantar = new Date();
+
+      latihan.jawapan[idx].statusSemak = 'belum';
+
+      latihan.jawapan[idx].markah = null;
+
+    } else {
+
+      latihan.jawapan.push({ muridId, muridNama, kelas, failNama, failData, failJenis, tarikhHantar: new Date() });
+
+    }
+
+    await latihan.save();
+
+    hantarKeGuru({ jenis: 'jawapan_baharu', latihanId: req.params.id, muridNama, kelas });
+
+    res.json({ ok: true, mesej: 'Jawapan berjaya dihantar!' });
+
+  } catch(e) { res.status(500).json({ error: e.message }); }
+
+});
+
+
+
+app.get('/api/latihan/:id/jawapan/:jawapanId/fail', async (req, res) => {
+
+  try {
+
+    const l = await Latihan.findById(req.
