@@ -390,10 +390,24 @@ async function muatSemua(){sambungWS();await muatMurid();await muatDashboard();m
 async function muatDashboard(){try{const res=await fetch(`${API}/api/sesi`);semuaSesi=await res.json();renderDashboard();renderStatCards();renderProgression();}catch(e){}}
 function renderStatCards(){
   if(!semuaSesi.length){document.getElementById('statCards').style.display='none';return;}
-  document.getElementById('statCards').style.display='grid';document.getElementById('statJumlahSesi').textContent=semuaSesi.length;
-  const muridSet=new Set();let maxMarkah=0,juara='—';
-  semuaSesi.forEach(s=>{(s.keputusan||[]).forEach(k=>{muridSet.add(k.nama);if(k.markah>maxMarkah){maxMarkah=k.markah;juara=k.nama;}});});
-  document.getElementById('statJumlahMurid').textContent=muridSet.size;document.getElementById('statMarkahTertinggi').textContent=maxMarkah;document.getElementById('statPemenang').textContent=juara.length>8?juara.substring(0,7)+'..':juara;
+  document.getElementById('statCards').style.display='grid';
+  document.getElementById('statJumlahSesi').textContent=semuaSesi.length;
+
+  // Guna jumlah markah KUMULATIF setiap murid (sama macam leaderboard di atas),
+  // bukan markah tertinggi dalam SATU sesi sahaja
+  const mataMap=kiraMataSetiapMurid();
+  const muridSet=new Set();
+  semuaSesi.forEach(s=>{(s.keputusan||[]).forEach(k=>muridSet.add(k.nama));});
+
+  let maxMarkah=0,juara='—';
+  semuaMurid.forEach(m=>{
+    const total=mataMap[m._id]||0;
+    if(total>maxMarkah){maxMarkah=total;juara=m.nama;}
+  });
+
+  document.getElementById('statJumlahMurid').textContent=muridSet.size;
+  document.getElementById('statMarkahTertinggi').textContent=maxMarkah;
+  document.getElementById('statPemenang').textContent=juara.length>8?juara.substring(0,7)+'..':juara;
 }
 function renderDashboard(){
   const tarikh=document.getElementById('tarikhFilter').value;
