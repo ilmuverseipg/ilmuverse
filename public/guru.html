@@ -1767,7 +1767,10 @@ function renderSoalanMod5(state){
   teks.textContent=state.soalanData?.teks||'—';
 }
 function mod5Fullscreen(){
-  const el=document.getElementById('mod5GambarWrap');
+  // [FIX] Fullscreen seluruh page (bukan setakat gambar sahaja) — supaya
+  // popup Betul/Salah dan overlay Ganjaran (yang di luar kotak gambar dalam
+  // DOM) tetap nampak semasa fullscreen aktif.
+  const el=document.documentElement;
   if(el.requestFullscreen)el.requestFullscreen();
   else if(el.webkitRequestFullscreen)el.webkitRequestFullscreen();
 }
