@@ -23,8 +23,12 @@ app.use(express.static(path.join(__dirname, '../public')));
 // ============================================================
 // TETAPAN TETAP (JANGAN UBAH TANPA KEBENARAN)
 // ============================================================
-const TELEGRAM_BOT_TOKEN = '8849507122:AAECl_Ms6z6xYcAfO6kBFAyBfjYoIhL6KrI';
-const TELEGRAM_CHAT_ID = '707286960';
+// [KESELAMATAN] Baca dari .env dahulu. Fallback lama dikekalkan buat masa ini
+// supaya tidak pecah kalau .env / env var belum disediakan di Render — tapi
+// TUKAR token ini di Telegram (guna /revoke pada BotFather) lepas set env var,
+// sebab ia pernah terdedah dalam kod sumber.
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8849507122:AAECl_Ms6z6xYcAfO6kBFAyBfjYoIhL6KrI';
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '707286960';
 
 const NFC_KAD_A = '5A B2 F3 B1';
 const NFC_KAD_B = '47 84 21 25';
@@ -78,7 +82,8 @@ const SoalanSchema = new mongoose.Schema({
     teks: String,
     jawapanA: String, jawapanB: String, jawapanC: String,
     betul: String,
-    uidA: String, uidB: String, uidC: String, uidBetul: String
+    uidA: String, uidB: String, uidC: String, uidBetul: String,
+    gambar: String // base64 (Mod 5 — Kuiz Bebas), landskap disyorkan
   }]
 });
 
@@ -159,6 +164,7 @@ let gameState = {
   soalan: [], giliran: null,
   peluangKedua: false,
   mod3Seq: 0,
+  gunaGanjaran: false, // Mod 5 — Kuiz Bebas
   mod4: { fasa: 'sihat', sihatDikesan: [], takSihatDikesan: [], autoScanTimer: null }
 };
 
@@ -195,9 +201,36 @@ function updateStatusPeranti() {
 // ============================================================
 // WEBSOCKET EVENTS
 // ============================================================
+// ============================================================
+// [STABILITY FIX] HEARTBEAT — kesan sambungan "zombie"
+// Tanpa ping/pong ni, kalau ESP32/CAM putus secara kasar (WiFi drop, bukan
+// proper close), server masih anggap ia 'OPEN' sehingga TCP timeout lambat
+// berlaku — punca 'detect tapi tak respon'. Ping setiap 15s, terminate kalau
+// tak dapat pong sebelum ping seterusnya.
+// ============================================================
+function heartbeat() { this.isAlive = true; }
+
+const heartbeatInterval = setInterval(() => {
+  wss.clients.forEach(ws => {
+    if (ws.isAlive === false) {
+      if (ws === clients.esp32) { clients.esp32 = null; updateStatusPeranti(); console.log('[WS] ESP32 heartbeat timeout — dianggap putus'); }
+      else if (ws === clients.cam) { clients.cam = null; updateStatusPeranti(); console.log('[WS] CAM heartbeat timeout — dianggap putus'); }
+      else { clients.guru = clients.guru.filter(c => c !== ws); clients.murid = clients.murid.filter(c => c !== ws); }
+      return ws.terminate();
+    }
+    ws.isAlive = false;
+    try { ws.ping(); } catch (e) {}
+  });
+}, 15000);
+
+wss.on('close', () => clearInterval(heartbeatInterval));
+
 wss.on('connection', (ws, req) => {
   const url = req.url;
   console.log(`[WS] Sambungan baru: ${url}`);
+  ws.isAlive = true;
+  ws.on('pong', heartbeat);
+  ws.on('error', (err) => console.log(`[WS] Ralat (${url}):`, err.message));
 
   if (url === '/esp32') {
     clients.esp32 = ws;
@@ -266,7 +299,7 @@ wss.on('connection', (ws, req) => {
 // LOGIK MOD
 // ============================================================
 async function mulaMod(data) {
-  const { mod, murid, soalanId, masa, tajuk: tajukSesi, kelas } = data;
+  const { mod, murid, soalanId, masa, tajuk: tajukSesi, kelas, gunaGanjaran } = data;
 
   const soalan = soalanId ? await Soalan.findById(soalanId) : null;
   if (!soalan && mod !== 4) {
@@ -275,13 +308,20 @@ async function mulaMod(data) {
   }
 
   const tajukFinal = tajukSesi || (soalan ? soalan.tajuk : 'Sesi Mod 4');
-  const sesi = new Sesi({
-    tajuk: tajukFinal,
-    kelas: kelas || (soalan ? soalan.kelas : ''),
-    mod,
-    keputusan: murid ? murid.map(m => ({ muridId: m._id, nama: m.nama, markah: 0, avatar: m.avatar })) : []
-  });
-  await sesi.save();
+
+  // [MOD 5 — KUIZ BEBAS] Data sesi TIDAK disimpan ke dashboard (tiada Sesi
+  // dicipta, tiada sesiId) — ikut spesifikasi: kuiz santai/cepat, bukan untuk rekod.
+  let sesiId = null;
+  if (mod !== 5) {
+    const sesi = new Sesi({
+      tajuk: tajukFinal,
+      kelas: kelas || (soalan ? soalan.kelas : ''),
+      mod,
+      keputusan: murid ? murid.map(m => ({ muridId: m._id, nama: m.nama, markah: 0, avatar: m.avatar })) : []
+    });
+    await sesi.save();
+    sesiId = sesi._id.toString();
+  }
 
   // Henti timer lama sebelum mulakan mod baharu
   if (gameState.timer) { clearInterval(gameState.timer); gameState.timer = null; }
@@ -294,9 +334,10 @@ async function mulaMod(data) {
     muridSenarai: murid || [],
     skor: {}, masa: masa || 120, masaAsal: masa || 120,
     soalan: soalan ? soalan.soalan : [],
-    sesiId: sesi._id.toString(),
+    sesiId,
     buzzerAktif: false, giliran: null,
     peluangKedua: false, mod3Seq: 0,
+    gunaGanjaran: !!gunaGanjaran,
     mod4: { fasa: 'sihat', sihatDikesan: [], takSihatDikesan: [], autoScanTimer: null }
   };
 
@@ -380,6 +421,7 @@ async function prosesNFC(uid) {
   if (mod === 1) prosesNFCMod1(uidNormal);
   else if (mod === 2) prosesNFCMod2(uidNormal);
   else if (mod === 3) prosesNFCMod3(uidNormal);
+  else if (mod === 5) prosesNFCMod5(uidNormal);
 }
 
 function prosesNFCMod1(uid) {
@@ -516,6 +558,53 @@ function prosesNFCMod3(uid) {
     hantarKeESP32({ jenis: 'salah' });
     // [SYNC FIX] Hantar ke semua klien
     semuaHantar({ jenis: 'mod3_salah', susunan: idx + 1 });
+  }
+}
+
+// ============================================================
+// MOD 5 — KUIZ BEBAS
+// Tiada giliran/senarai murid (cikgu panggil murid bila-bila), tiada skor
+// direkod, tiada Sesi disimpan. Setiap soalan ada gambar (opsyenal). Betul =
+// imbas kad NFC yang dipadan uidBetul/betul (A/B/C) soalan semasa; salah tak
+// bergerak ke soalan lain (cuba lagi). Ganjaran (buka servo 6s) ialah
+// tetapan global dipilih sebelum mula — kalau aktif, soalan seterusnya
+// tunggu servo tutup dahulu.
+// ============================================================
+function prosesNFCMod5(uid) {
+  if (!gameState.aktif) return;
+  const idx = gameState.soalanSemasa;
+  const soalan = gameState.soalan[idx];
+  if (!soalan) return;
+
+  const jawapanDiberi = uidKeJawapan(uid);
+  if (!jawapanDiberi) return;
+
+  const betul = jawapanDiberi === soalan.betul;
+  if (betul) {
+    hantarKeESP32({ jenis: 'betul' });
+    semuaHantar({ jenis: 'mod5_betul', jawapan: jawapanDiberi, gunaGanjaran: gameState.gunaGanjaran });
+    if (gameState.gunaGanjaran) {
+      hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 });
+      setTimeout(() => soalanSeterusnyaMod5(), 6500);
+    } else {
+      setTimeout(() => soalanSeterusnyaMod5(), 1600);
+    }
+  } else {
+    hantarKeESP32({ jenis: 'salah' });
+    semuaHantar({ jenis: 'mod5_salah', jawapan: jawapanDiberi });
+  }
+}
+
+function soalanSeterusnyaMod5() {
+  if (!gameState.aktif || gameState.mod !== 5) return;
+  gameState.soalanSemasa++;
+  if (gameState.soalanSemasa >= gameState.soalan.length) {
+    gameState.aktif = false;
+    // Tiada ranking/Sesi — data kuiz bebas sengaja tidak disimpan
+    semuaHantar({ jenis: 'mod5_tamat' });
+    semuaHantar({ jenis: 'mod_tamat', mod: 5 });
+  } else {
+    semuaHantar({ jenis: 'state_update', gameState: sanitizeGameState() });
   }
 }
 
@@ -656,12 +745,14 @@ function sanitizeGameState() {
     peluangKedua: gameState.peluangKedua,
     jumlahSoalan: gameState.soalan ? gameState.soalan.length : 0,
     mod4Fasa: gameState.mod4?.fasa,
+    gunaGanjaran: gameState.gunaGanjaran || false, // Mod 5
     // [SYNC FIX] Data soalan semasa untuk paparan klien
     soalanData: soalanSemasa ? {
       teks: soalanSemasa.teks,
       jawapanA: soalanSemasa.jawapanA,
       jawapanB: soalanSemasa.jawapanB,
       jawapanC: soalanSemasa.jawapanC,
+      gambar: soalanSemasa.gambar || null, // Mod 5 — Kuiz Bebas
       // Nota: 'betul' sengaja tidak dihantar ke murid (keselamatan)
     } : null
   };
