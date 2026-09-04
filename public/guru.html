@@ -80,6 +80,7 @@ html,body{height:100%;color:var(--text);font-family:'Exo 2',sans-serif;overflow-
 .mod-kad.m2{background:linear-gradient(135deg,rgba(255,255,255,.92) 60%,rgba(168,85,247,.1))}
 .mod-kad.m3{background:linear-gradient(135deg,rgba(255,255,255,.92) 60%,rgba(245,158,11,.1))}
 .mod-kad.m4{background:linear-gradient(135deg,rgba(255,255,255,.92) 60%,rgba(16,185,129,.1))}
+.mod-kad.m5{background:linear-gradient(135deg,rgba(255,255,255,.92) 60%,rgba(236,72,153,.1))}
 .mod-kad:hover{transform:translateY(-5px);box-shadow:var(--shadow2)}
 .mod-kad:hover::before{opacity:1}
 .mod-num{font-family:'Orbitron',monospace;font-size:2.4rem;font-weight:900;line-height:1;position:relative;z-index:1}
@@ -87,6 +88,7 @@ html,body{height:100%;color:var(--text);font-family:'Exo 2',sans-serif;overflow-
 .mod-kad.m2 .mod-num{color:var(--purple)}
 .mod-kad.m3 .mod-num{color:var(--gold)}
 .mod-kad.m4 .mod-num{color:var(--green)}
+.mod-kad.m5 .mod-num{color:var(--pink)}
 .mod-tajuk{font-size:1.05rem;font-weight:700;margin:8px 0 4px;color:var(--text);position:relative;z-index:1}
 .mod-desc{font-size:.78rem;color:var(--text2);line-height:1.55;position:relative;z-index:1}
 .mod-ikon{position:absolute;right:20px;top:20px;font-size:3rem;opacity:.12;z-index:0}
@@ -254,6 +256,12 @@ textarea{resize:vertical;min-height:80px}
 .papan-badan{flex:1;display:grid;grid-template-columns:1fr 320px;overflow:hidden;min-height:0}
 .soalan-display{padding:24px;display:flex;flex-direction:column;gap:16px;overflow-y:auto}
 .soalan-box{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:26px;flex-shrink:0;backdrop-filter:blur(10px)}
+.mod5-box{text-align:center}
+.mod5-gambar-wrap{width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:rgba(0,0,0,.25);margin-bottom:18px;border:1px solid rgba(255,255,255,.12)}
+.mod5-gambar{width:100%;height:100%;object-fit:contain;display:block}
+.mod5-teks{font-size:1.4rem;font-weight:700;color:#fff;line-height:1.4}
+.confetti-piece{position:fixed;top:-20px;width:10px;height:10px;pointer-events:none;z-index:950;border-radius:2px;animation:confettiJatuh linear forwards}
+@keyframes confettiJatuh{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(105vh) rotate(720deg);opacity:0}}
 .soalan-no{font-family:'Orbitron',monospace;font-size:.78rem;color:rgba(255,255,255,.5);margin-bottom:10px;letter-spacing:2px}
 .soalan-teks{font-size:1.35rem;font-weight:600;line-height:1.6;color:#fff}
 .pilihan-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
@@ -500,6 +508,12 @@ textarea{resize:vertical;min-height:80px}
         <div class="mod-tajuk">Detektif Nutrisi</div>
         <div class="mod-desc">Kamera AI kenal pasti makanan secara automatik. Murid teka sendiri kategori makanan!</div>
       </div>
+      <div class="mod-kad m5" onclick="bunyiKlik();bukaMod(5)">
+        <div class="mod-ikon">✨</div>
+        <div class="mod-num">05</div>
+        <div class="mod-tajuk">Kuiz Bebas</div>
+        <div class="mod-desc">Soalan bergambar, panggil murid bila-bila masa. Tiada rekod disimpan — untuk aktiviti santai/cepat.</div>
+      </div>
     </div>
   </div>
 
@@ -717,6 +731,16 @@ textarea{resize:vertical;min-height:80px}
           </div>
         </div>
       </div>
+
+      <div id="papanMod5" style="display:none">
+        <div class="soalan-box mod5-box">
+          <div class="mod5-gambar-wrap" id="mod5GambarWrap" style="display:none">
+            <img id="mod5Gambar" class="mod5-gambar" src="" alt="Gambar soalan">
+          </div>
+          <div class="mod5-teks" id="mod5Teks">—</div>
+          <div style="font-size:.82rem;color:rgba(255,255,255,.5);margin-top:14px">📡 Panggil murid untuk imbas kad NFC jawapan</div>
+        </div>
+      </div>
     </div>
 
     <div class="skor-panel">
@@ -830,6 +854,7 @@ textarea{resize:vertical;min-height:80px}
           <option value="1">Mod 1 — Ramai-ramai</option>
           <option value="2">Mod 2 — Dua Orang</option>
           <option value="3">Mod 3 — Susunan</option>
+          <option value="5">Mod 5 — Kuiz Bebas</option>
         </select>
       </div>
     </div>
@@ -1040,6 +1065,9 @@ function prosesMsg(d) {
     case 'cam_frame': if(d.data) document.getElementById('camFeed').src='data:image/jpeg;base64,'+d.data; break;
     case 'cam_keputusan': prosesCAMKeputusanUI(d); break;
     case 'mod4_tukar_fasa': tukarFasaMod4(d.fasa); sesiSemasa && (sesiSemasa.mod4Fasa=d.fasa); break;
+    case 'mod5_betul': letupanKonfeti(); tunjukJawapanPopup(true,null,'Hebat!',d.jawapan); if(d.gunaGanjaran) mulaGanjaranMod5(); break;
+    case 'mod5_salah': tunjukJawapanPopup(false,null,'Cuba lagi!',d.jawapan); break;
+    case 'mod5_tamat': tunjukSesiTamatMod5(); break;
     case 'nfc_scan': tunjukNFCPing(d.uid); break;
     case 'ulasan_baharu': if(sesiDetailSemasa&&sesiDetailSemasa._id===d.sesiId) tambahUlasanUI(d); break;
      case 'jawapan_baharu': tunjukNotif(`📥 Jawapan baharu dari ${d.muridNama} (${d.kelas||'?'})`); if(document.getElementById('halLatihan').classList.contains('aktif'))muatLatihan(); break;
@@ -1501,11 +1529,28 @@ function bukaModalSoalan(soalan=null) {
   renderSoalanBuilder();
   bukaModal('overlaySoalan');
 }
-function soalanKosong(){return{teks:'',jawapanA:'A',jawapanB:'B',jawapanC:'C',betul:'A',uidA:'',uidB:'',uidC:'',uidBetul:''};}
+function soalanKosong(){return{teks:'',jawapanA:'A',jawapanB:'B',jawapanC:'C',betul:'A',uidA:'',uidB:'',uidC:'',uidBetul:'',gambar:''};}
 function renderSoalanBuilder() {
   const mod=parseInt(document.getElementById('inputModSoalan').value);
   const el=document.getElementById('soalanBuilder');
-  if(mod===3) {
+  if(mod===5) {
+    el.innerHTML=`<div class="bil-soalan-ctrl"><button class="btn btn-kecil btn-outline" onclick="bunyiKlik();kurangSoalan()">−</button><div class="bil-num">${soalanBina.length}</div><button class="btn btn-kecil btn-outline" onclick="bunyiKlik();tambahSoalan()">+</button><span style="font-size:.78rem;color:var(--text2)">soalan</span></div>
+    <div style="font-size:.75rem;color:var(--text2);margin-bottom:10px">Taip soalan, muat naik gambar (disyorkan landskap), tekan A/B/C untuk jawapan betul.</div>
+    <div class="soalan-jawapan-list" style="display:flex;flex-direction:column;gap:10px">${soalanBina.map((s,i)=>`
+      <div style="border:1px solid rgba(0,0,0,.08);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="sj-num">SOALAN ${i+1}</div>
+          <button class="btn btn-kecil btn-merah" style="margin-left:auto" onclick="bunyiKlik();padamSoalan(${i})">✕</button>
+        </div>
+        <input value="${s.teks||''}" oninput="soalanBina[${i}].teks=this.value" placeholder="Taip soalan di sini...">
+        <div style="display:flex;align-items:center;gap:10px">
+          <label class="btn btn-kecil btn-outline" style="cursor:pointer">🖼️ Muat naik gambar<input type="file" accept="image/*" style="display:none" onchange="mod5UploadGambar(${i},this)"></label>
+          ${s.gambar?`<img src="${s.gambar}" style="height:44px;border-radius:6px;object-fit:cover;aspect-ratio:16/9" id="mod5PreviewImg_${i}"><button class="btn btn-kecil btn-outline" onclick="bunyiKlik();soalanBina[${i}].gambar='';renderSoalanBuilder()">Buang</button>`:'<span style="font-size:.72rem;color:var(--text2)">Tiada gambar</span>'}
+        </div>
+        <div class="sj-abc"><button class="sj-btn ${s.betul==='A'?'dipilih-a':''}" onclick="bunyiKlik();setBetul(${i},'A')">A</button><button class="sj-btn ${s.betul==='B'?'dipilih-b':''}" onclick="bunyiKlik();setBetul(${i},'B')">B</button><button class="sj-btn ${s.betul==='C'?'dipilih-c':''}" onclick="bunyiKlik();setBetul(${i},'C')">C</button></div>
+        <div class="sj-nfc-hint">📡 Jawapan betul diimbas guna kad NFC ${['','A','B','C'].indexOf(s.betul)>0?s.betul:'A'}</div>
+      </div>`).join('')}</div>`;
+  } else if(mod===3) {
     el.innerHTML=`<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px"><div class="bil-num">${soalanBina.length}</div><div><button class="btn btn-kecil btn-outline" onclick="bunyiKlik();tambahSoalan()">+ Tambah Susunan</button><div style="font-size:.7rem;color:var(--text2);margin-top:4px">Imbas kad NFC atau taip UID untuk daftar susunan</div></div></div>
     <div class="soalan-jawapan-list">${soalanBina.map((s,i)=>`<div class="sj-row"><div class="sj-num">SUSUNAN ${i+1}</div><input value="${s.teks||''}" oninput="soalanBina[${i}].teks=this.value" placeholder="Label..." style="max-width:160px"><div style="font-size:.75rem;color:var(--text2)">UID:</div><input value="${s.uidBetul||''}" oninput="soalanBina[${i}].uidBetul=this.value" placeholder="XX:XX:XX:XX" style="max-width:130px" id="uid_mod3_${i}"><button class="btn btn-kecil btn-outline" onclick="bunyiKlik();imbasNFC(${i},'uidBetul')">📡</button><button class="btn btn-kecil btn-merah" onclick="bunyiKlik();padamSoalan(${i})" style="margin-left:auto">✕</button></div>`).join('')}</div>`;
   } else {
@@ -1518,6 +1563,23 @@ function setBetul(idx,j){soalanBina[idx].betul=j;renderSoalanBuilder();}
 function tambahSoalan(){soalanBina.push(soalanKosong());renderSoalanBuilder();}
 function kurangSoalan(){if(soalanBina.length>1){soalanBina.pop();renderSoalanBuilder();}}
 function padamSoalan(i){soalanBina.splice(i,1);if(!soalanBina.length)soalanBina.push(soalanKosong());renderSoalanBuilder();}
+
+function mod5UploadGambar(idx,inputEl){
+  const file=inputEl.files&&inputEl.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=(e)=>{
+    const dataUrl=e.target.result;
+    const img=new Image();
+    img.onload=()=>{
+      if(img.height>img.width){tunjukNotif('⚠️ Gambar ni potret — landskap lebih sesuai untuk paparan');}
+      soalanBina[idx].gambar=dataUrl;
+      renderSoalanBuilder();
+    };
+    img.src=dataUrl;
+  };
+  reader.readAsDataURL(file);
+}
 
 let nfcImbasBuilderCallback=null;
 function imbasNFC(soalanIdx,field) {
@@ -1553,8 +1615,9 @@ async function padamSet(id){if(!confirm('Padam set soalan ini?'))return;await fe
 // ============================================================
 // MOD SETUP MODAL — KELAS DROPDOWN + TAPIS MURID
 // ============================================================
+let gunaGanjaranMod5=true;
 function bukaMod(mod) {
-  const tajukMod=['','ARENA CENDEKIA','SIAPA CEPAT DIA DAPAT!','SUSUN & INGAT','DETEKTIF NUTRISI'];
+  const tajukMod=['','ARENA CENDEKIA','SIAPA CEPAT DIA DAPAT!','SUSUN & INGAT','DETEKTIF NUTRISI','KUIZ BEBAS'];
   document.getElementById('modalModTajuk').textContent=`MOD ${mod} — ${tajukMod[mod]}`;
   const soalanMod=senaraiSoalan.filter(s=>s.mod===mod);
   const kelasOpt='<option value="">Semua Kelas</option>'+senaraiKelas.map(k=>`<option value="${k}">${k}</option>`).join('');
@@ -1593,6 +1656,18 @@ function bukaMod(mod) {
     </div>
     <div class="form-kump mb16"><label>PILIH MURID</label><div class="murid-grid" id="pilihMuridMod4">${renderMuridPilih(1)}</div></div>
     <button class="btn btn-utama btn-besar penuh" onclick="bunyiKlik();siapMulaPermainan(4)">▶ MULA MOD 4</button>`;
+  }else if(mod===5){
+    gunaGanjaranMod5=true;
+    html=`<div style="background:rgba(236,72,153,.06);border:1px solid rgba(236,72,153,.18);border-radius:12px;padding:16px;margin-bottom:16px"><div style="font-size:.86rem;color:var(--text2);line-height:1.7">✨ Kuiz santai/cepat — soalan bergambar dipaparkan terus, panggil mana-mana murid bila-bila untuk imbas kad NFC jawapan. <strong style="color:var(--text)">Tiada rekod disimpan ke dashboard.</strong></div></div>
+    <div class="form-kump mb16"><label>PILIH SET SOALAN</label><select id="setMod5">${soalanMod.length?soalanMod.map(s=>`<option value="${s._id}">${s.tajuk}${s.kelas?' ('+s.kelas+')':''}</option>`).join(''):'<option value="">Tiada set soalan</option>'}</select></div>
+    <div class="form-kump mb16">
+      <label>BUKA KOTAK GANJARAN SELEPAS SETIAP JAWAPAN BETUL?</label>
+      <div class="flex gap8" style="margin-top:6px">
+        <button class="btn btn-kecil" id="btnGanjaranYa" onclick="bunyiKlik();pilihGanjaranMod5(true)"></button>
+        <button class="btn btn-kecil btn-outline" id="btnGanjaranTak" onclick="bunyiKlik();pilihGanjaranMod5(false)"></button>
+      </div>
+    </div>
+    <button class="btn btn-utama btn-besar penuh" onclick="bunyiKlik();siapMulaPermainan(5)">▶ MULA MOD 5</button>`;
   }
   document.getElementById('modalModBadan').innerHTML=html;
   // Populate murid grid immediately (tunjuk semua kelas dahulu)
@@ -1600,7 +1675,17 @@ function bukaMod(mod) {
   else if(mod===2) tapisMuridMod(2,2,'pilihMuridMod2');
   else if(mod===3) tapisMuridMod(3,1,'pilihMuridMod3');
   else if(mod===4) tapisMuridMod(4,1,'pilihMuridMod4');
+  else if(mod===5) pilihGanjaranMod5(true);
   bukaModal('overlayMod');
+}
+function pilihGanjaranMod5(ya){
+  gunaGanjaranMod5=ya;
+  const btnYa=document.getElementById('btnGanjaranYa'),btnTak=document.getElementById('btnGanjaranTak');
+  if(!btnYa||!btnTak)return;
+  btnYa.textContent='🎁 Ya, buka ganjaran (6 saat)';
+  btnTak.textContent='Tidak';
+  btnYa.className='btn btn-kecil '+(ya?'btn-utama':'btn-outline');
+  btnTak.className='btn btn-kecil '+(!ya?'btn-utama':'btn-outline');
 }
 
 function tapisMuridMod(mod,max,gridId){
@@ -1626,8 +1711,9 @@ function siapMulaPermainan(mod){
   else if(mod===2){soalanId=document.getElementById('setMod2')?.value;murid=getMuridDipilih('pilihMuridMod2');tajuk=document.getElementById('tajukMod2')?.value||'';kelas=document.getElementById('kelasMod2')?.value||'';if(murid.length!==2)return tunjukNotif('Pilih tepat 2 murid');}
   else if(mod===3){soalanId=document.getElementById('setMod3')?.value;murid=getMuridDipilih('pilihMuridMod3');kelas=document.getElementById('kelasMod3')?.value||'';if(!murid.length)return tunjukNotif('Pilih 1 murid');}
   else if(mod===4){tajuk=document.getElementById('tajukMod4')?.value||'Makanan Sihat dan Tidak Sihat';kelas=document.getElementById('kelasMod4')?.value||'';murid=getMuridDipilih('pilihMuridMod4');}
-  if(!soalanId&&mod!==4)return tunjukNotif('Pilih set soalan dahulu');
-  pendingModData={mod,murid,soalanId,masa,tajuk,kelas};
+  else if(mod===5){soalanId=document.getElementById('setMod5')?.value;if(!soalanId)return tunjukNotif('Pilih set soalan dahulu');}
+  if(!soalanId&&mod!==4&&mod!==5)return tunjukNotif('Pilih set soalan dahulu');
+  pendingModData={mod,murid,soalanId,masa,tajuk,kelas,gunaGanjaran:mod===5?gunaGanjaranMod5:undefined};
   tutupModal('overlayMod');
   tunjukCountdown(()=>{hantarWS({jenis:'mula_mod',...pendingModData});pendingModData=null;});
 }
@@ -1639,21 +1725,24 @@ function papanPermainanMula(state) {
   sesiSemasa=state;
   clearInterval(_clientTimerInterval);
   document.getElementById('papanPermainan').classList.add('buka');
-  const tajukMod=['','ARENA CENDEKIA','SIAPA CEPAT DIA DAPAT!','SUSUN & INGAT','DETEKTIF NUTRISI'];
+  const tajukMod=['','ARENA CENDEKIA','SIAPA CEPAT DIA DAPAT!','SUSUN & INGAT','DETEKTIF NUTRISI','KUIZ BEBAS'];
   document.getElementById('papanTajuk').textContent=`MOD ${state.mod} — ${tajukMod[state.mod]}`;
   document.getElementById('soalanJumlah').textContent=state.jumlahSoalan||'—';
   document.getElementById('soalanIdx').textContent=(state.soalanSemasa||0)+1;
   document.getElementById('papanMod12').style.display=(state.mod<=2)?'flex':'none';
   document.getElementById('papanMod3').style.display=state.mod===3?'block':'none';
   document.getElementById('papanMod4').style.display=state.mod===4?'block':'none';
+  document.getElementById('papanMod5').style.display=state.mod===5?'block':'none';
   document.getElementById('mod1Info').style.display=state.mod===1?'flex':'none';
   document.getElementById('mod2Info').style.display=state.mod===2?'flex':'none';
+  document.querySelector('.skor-panel').style.display=state.mod===5?'none':'';
   renderSkorPanel(state.muridSenarai);
   if(state.mod===3)renderSusunanTrack(state.jumlahSoalan);
   if(state.mod===4){renderMod4UI();mulaTeachableMachine();}
   if(state.mod===2)renderBuzzerPanel(state.muridSenarai);
   if(state.mod===1)kemaskiniMuridGiliran(state);
   if(state.mod<=2)renderPilihan(state);
+  if(state.mod===5)renderSoalanMod5(state);
   const timerBox = document.getElementById('timerBox');
 if(state.mod===1 && state.masa>0){
   timerBox.style.display='flex';
@@ -1661,6 +1750,51 @@ if(state.mod===1 && state.masa>0){
 } else {
   timerBox.style.display='none';
 }
+}
+
+// ============================================================
+// MOD 5 — KUIZ BEBAS
+// ============================================================
+function renderSoalanMod5(state){
+  const wrap=document.getElementById('mod5GambarWrap'),img=document.getElementById('mod5Gambar'),teks=document.getElementById('mod5Teks');
+  const gambar=state.soalanData?.gambar;
+  if(gambar){wrap.style.display='block';img.src=gambar;}else{wrap.style.display='none';img.src='';}
+  teks.textContent=state.soalanData?.teks||'—';
+}
+function letupanKonfeti(){
+  const warna=['#4f8ef7','#a855f7','#f59e0b','#10b981','#ec4899','#fbbf24'];
+  for(let i=0;i<60;i++){
+    const p=document.createElement('div');
+    p.className='confetti-piece';
+    p.style.left=Math.random()*100+'vw';
+    p.style.background=warna[Math.floor(Math.random()*warna.length)];
+    p.style.animationDuration=(1.6+Math.random()*1.2)+'s';
+    p.style.animationDelay=(Math.random()*0.3)+'s';
+    p.style.width=p.style.height=(6+Math.random()*8)+'px';
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(),3200);
+  }
+}
+let mod5GanjaranTimer=null;
+function mulaGanjaranMod5(){
+  const overlay=document.getElementById('ganjaranOverlay');
+  document.getElementById('ganjaranTeks').textContent='🎁 GANJARAN DIBUKA!';
+  document.getElementById('rankingList').innerHTML='';
+  overlay.classList.add('buka');
+  let count=6;
+  document.getElementById('ganjaranCount').textContent=count;
+  clearInterval(mod5GanjaranTimer);
+  mod5GanjaranTimer=setInterval(()=>{
+    count--;
+    document.getElementById('ganjaranCount').textContent=count;
+    if(count<=0){clearInterval(mod5GanjaranTimer);overlay.classList.remove('buka');}
+  },1000);
+}
+function tunjukSesiTamatMod5(){
+  document.getElementById('papanPermainan').classList.remove('buka');
+  tunjukNotif('✅ Kuiz Bebas selesai!');
+  muatDashboard();
+  tukarHalaman('dashboard',document.querySelectorAll('.nav-btn')[1]);
 }
 function renderAvatarEl(av){if(av&&av.startsWith('data:'))return`<img src="${av}" style="width:100%;height:100%;object-fit:cover">`;return`<span>${av||'👤'}</span>`;}
 
@@ -1686,6 +1820,7 @@ function kemaskiniStatePermainan(state) {
   if(state.mod===1)kemaskiniMuridGiliran(state);
   if(state.muridSenarai&&state.skor){state.muridSenarai.forEach(m=>{const key=m._id||m.nama;const markah=state.skor[key]||0;const el=document.getElementById('markah_'+key);if(el)el.textContent=markah;});}
   if(state.mod<=2)renderPilihan(state);
+  if(state.mod===5)renderSoalanMod5(state);
 }
 
 function renderPilihan(state) {
