@@ -254,12 +254,15 @@ textarea{resize:vertical;min-height:80px}
 .timer-num.hijau{color:#4ade80}
 @keyframes timerPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.1)}}
 .papan-badan{flex:1;display:grid;grid-template-columns:1fr 320px;overflow:hidden;min-height:0}
+.papan-badan.mod5-full{grid-template-columns:1fr}
 .soalan-display{padding:24px;display:flex;flex-direction:column;gap:16px;overflow-y:auto}
 .soalan-box{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:26px;flex-shrink:0;backdrop-filter:blur(10px)}
-.mod5-box{text-align:center}
-.mod5-gambar-wrap{width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:rgba(0,0,0,.25);margin-bottom:18px;border:1px solid rgba(255,255,255,.12)}
+.mod5-box{text-align:center;flex:1;display:flex;flex-direction:column;min-height:0}
+.mod5-gambar-wrap{position:relative;width:100%;flex:1;min-height:0;border-radius:12px;overflow:hidden;background:rgba(0,0,0,.25);margin-bottom:18px;border:1px solid rgba(255,255,255,.12)}
 .mod5-gambar{width:100%;height:100%;object-fit:contain;display:block}
-.mod5-teks{font-size:1.4rem;font-weight:700;color:#fff;line-height:1.4}
+.mod5-fs-btn{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:8px 12px;font-size:.85rem;cursor:pointer;backdrop-filter:blur(6px)}
+.mod5-fs-btn:hover{background:rgba(0,0,0,.75)}
+.mod5-teks{font-size:1.4rem;font-weight:700;color:#fff;line-height:1.4;flex-shrink:0}
 .confetti-piece{position:fixed;top:-20px;width:10px;height:10px;pointer-events:none;z-index:950;border-radius:2px;animation:confettiJatuh linear forwards}
 @keyframes confettiJatuh{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(105vh) rotate(720deg);opacity:0}}
 .soalan-no{font-family:'Orbitron',monospace;font-size:.78rem;color:rgba(255,255,255,.5);margin-bottom:10px;letter-spacing:2px}
@@ -732,13 +735,14 @@ textarea{resize:vertical;min-height:80px}
         </div>
       </div>
 
-      <div id="papanMod5" style="display:none">
+      <div id="papanMod5" style="display:none;flex:1;flex-direction:column;min-height:0">
         <div class="soalan-box mod5-box">
           <div class="mod5-gambar-wrap" id="mod5GambarWrap" style="display:none">
             <img id="mod5Gambar" class="mod5-gambar" src="" alt="Gambar soalan">
+            <button class="mod5-fs-btn" onclick="mod5Fullscreen()">⛶ Full Screen</button>
           </div>
           <div class="mod5-teks" id="mod5Teks">—</div>
-          <div style="font-size:.82rem;color:rgba(255,255,255,.5);margin-top:14px">📡 Panggil murid untuk imbas kad NFC jawapan</div>
+          <div style="font-size:.82rem;color:rgba(255,255,255,.5);margin-top:14px;flex-shrink:0">📡 Panggil murid untuk imbas kad NFC jawapan</div>
         </div>
       </div>
     </div>
@@ -1732,10 +1736,11 @@ function papanPermainanMula(state) {
   document.getElementById('papanMod12').style.display=(state.mod<=2)?'flex':'none';
   document.getElementById('papanMod3').style.display=state.mod===3?'block':'none';
   document.getElementById('papanMod4').style.display=state.mod===4?'block':'none';
-  document.getElementById('papanMod5').style.display=state.mod===5?'block':'none';
+  document.getElementById('papanMod5').style.display=state.mod===5?'flex':'none';
   document.getElementById('mod1Info').style.display=state.mod===1?'flex':'none';
   document.getElementById('mod2Info').style.display=state.mod===2?'flex':'none';
   document.querySelector('.skor-panel').style.display=state.mod===5?'none':'';
+  document.querySelector('.papan-badan').classList.toggle('mod5-full',state.mod===5);
   renderSkorPanel(state.muridSenarai);
   if(state.mod===3)renderSusunanTrack(state.jumlahSoalan);
   if(state.mod===4){renderMod4UI();mulaTeachableMachine();}
@@ -1760,6 +1765,11 @@ function renderSoalanMod5(state){
   const gambar=state.soalanData?.gambar;
   if(gambar){wrap.style.display='block';img.src=gambar;}else{wrap.style.display='none';img.src='';}
   teks.textContent=state.soalanData?.teks||'—';
+}
+function mod5Fullscreen(){
+  const el=document.getElementById('mod5GambarWrap');
+  if(el.requestFullscreen)el.requestFullscreen();
+  else if(el.webkitRequestFullscreen)el.webkitRequestFullscreen();
 }
 function letupanKonfeti(){
   const warna=['#4f8ef7','#a855f7','#f59e0b','#10b981','#ec4899','#fbbf24'];
