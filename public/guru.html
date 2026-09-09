@@ -1552,7 +1552,13 @@ function renderSoalanBuilder() {
           ${s.gambar?`<img src="${s.gambar}" style="height:44px;border-radius:6px;object-fit:cover;aspect-ratio:16/9" id="mod5PreviewImg_${i}"><button class="btn btn-kecil btn-outline" onclick="bunyiKlik();soalanBina[${i}].gambar='';renderSoalanBuilder()">Buang</button>`:'<span style="font-size:.72rem;color:var(--text2)">Tiada gambar</span>'}
         </div>
         <div class="sj-abc"><button class="sj-btn ${s.betul==='A'?'dipilih-a':''}" onclick="bunyiKlik();setBetul(${i},'A')">A</button><button class="sj-btn ${s.betul==='B'?'dipilih-b':''}" onclick="bunyiKlik();setBetul(${i},'B')">B</button><button class="sj-btn ${s.betul==='C'?'dipilih-c':''}" onclick="bunyiKlik();setBetul(${i},'C')">C</button></div>
-        <div class="sj-nfc-hint">📡 Jawapan betul diimbas guna kad NFC ${['','A','B','C'].indexOf(s.betul)>0?s.betul:'A'}</div>
+        <div style="font-size:.72rem;color:var(--text2);margin-top:4px">Kad khusus (opsyenal) — kosongkan untuk guna kad piawai A/B/C di atas:</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input value="${s.uidBetul||''}" oninput="soalanBina[${i}].uidBetul=this.value" placeholder="UID kad (contoh: A1:B2:C3:D4)" id="uid_mod5_${i}" style="flex:1">
+          <button class="btn btn-kecil btn-outline" onclick="bunyiKlik();imbasNFC(${i},'uidBetul','uid_mod5_${i}')">📡 Imbas</button>
+          ${s.uidBetul?`<button class="btn btn-kecil btn-merah" onclick="bunyiKlik();soalanBina[${i}].uidBetul='';renderSoalanBuilder()">✕</button>`:''}
+        </div>
+        <div class="sj-nfc-hint">${s.uidBetul?`🔐 Jawapan betul: kad KHUSUS (${s.uidBetul})`:`📡 Jawapan betul: kad piawai ${s.betul}`}</div>
       </div>`).join('')}</div>`;
   } else if(mod===3) {
     el.innerHTML=`<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px"><div class="bil-num">${soalanBina.length}</div><div><button class="btn btn-kecil btn-outline" onclick="bunyiKlik();tambahSoalan()">+ Tambah Susunan</button><div style="font-size:.7rem;color:var(--text2);margin-top:4px">Imbas kad NFC atau taip UID untuk daftar susunan</div></div></div>
@@ -1586,11 +1592,11 @@ function mod5UploadGambar(idx,inputEl){
 }
 
 let nfcImbasBuilderCallback=null;
-function imbasNFC(soalanIdx,field) {
+function imbasNFC(soalanIdx,field,elId) {
   tunjukNotif('📡 Sila imbas kad NFC...');
   nfcImbasBuilderCallback=(uid)=>{
     soalanBina[soalanIdx][field]=uid;
-    const el=document.getElementById(`uid_mod3_${soalanIdx}`);
+    const el=document.getElementById(elId||`uid_mod3_${soalanIdx}`);
     if(el)el.value=uid;
     nfcImbasBuilderCallback=null;
     tunjukNotif(`✅ UID berdaftar: ${uid}`);
