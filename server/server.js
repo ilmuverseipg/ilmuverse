@@ -20,6 +20,9 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static(path.join(__dirname, '../public')));
 
+// Root ('/') redirect ke guru.html supaya tak "Cannot GET /"
+app.get('/', (req, res) => res.redirect('/guru.html'));
+
 // ============================================================
 // TETAPAN TETAP (JANGAN UBAH TANPA KEBENARAN)
 // ============================================================
