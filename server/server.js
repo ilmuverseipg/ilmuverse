@@ -576,13 +576,22 @@ function prosesNFCMod5(uid) {
   const soalan = gameState.soalan[idx];
   if (!soalan) return;
 
-  const jawapanDiberi = uidKeJawapan(uid);
-  if (!jawapanDiberi) return;
+  // [MOD 5] Kad khusus per-soalan (uidBetul diisi masa bina set soalan) —
+  // banding terus UID. Kalau uidBetul kosong, fallback ke kad piawai global A/B/C.
+  let betul, jawapanPapar;
+  if (soalan.uidBetul) {
+    betul = (uid === soalan.uidBetul);
+    jawapanPapar = soalan.betul;
+  } else {
+    const jawapanDiberi = uidKeJawapan(uid);
+    if (!jawapanDiberi) return; // kad tak dikenali (bukan A/B/C piawai), abaikan
+    betul = jawapanDiberi === soalan.betul;
+    jawapanPapar = jawapanDiberi;
+  }
 
-  const betul = jawapanDiberi === soalan.betul;
   if (betul) {
     hantarKeESP32({ jenis: 'betul' });
-    semuaHantar({ jenis: 'mod5_betul', jawapan: jawapanDiberi, gunaGanjaran: gameState.gunaGanjaran });
+    semuaHantar({ jenis: 'mod5_betul', jawapan: jawapanPapar, gunaGanjaran: gameState.gunaGanjaran });
     if (gameState.gunaGanjaran) {
       hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 });
       setTimeout(() => soalanSeterusnyaMod5(), 6500);
@@ -591,7 +600,7 @@ function prosesNFCMod5(uid) {
     }
   } else {
     hantarKeESP32({ jenis: 'salah' });
-    semuaHantar({ jenis: 'mod5_salah', jawapan: jawapanDiberi });
+    semuaHantar({ jenis: 'mod5_salah', jawapan: jawapanPapar });
   }
 }
 
