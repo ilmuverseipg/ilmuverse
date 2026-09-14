@@ -263,6 +263,15 @@ textarea{resize:vertical;min-height:80px}
 .mod5-fs-btn{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:8px 12px;font-size:.85rem;cursor:pointer;backdrop-filter:blur(6px)}
 .mod5-fs-btn:hover{background:rgba(0,0,0,.75)}
 .mod5-teks{font-size:1.4rem;font-weight:700;color:#fff;line-height:1.4;flex-shrink:0}
+.mod5-feedback-overlay{position:fixed;inset:0;z-index:960;display:none;align-items:center;justify-content:center;flex-direction:column;backdrop-filter:blur(6px)}
+.mod5-feedback-overlay.buka{display:flex}
+.mod5-feedback-overlay.betul{background:rgba(6,20,16,.85)}
+.mod5-feedback-overlay.salah{background:rgba(30,8,8,.85)}
+.mod5-feedback-text{font-family:'Orbitron',monospace;font-size:4.2rem;font-weight:900;text-align:center;padding:0 24px;animation:mod5Pop .45s cubic-bezier(.34,1.56,.64,1)}
+.mod5-feedback-text.betul{color:#10b981;text-shadow:0 0 40px rgba(16,185,129,.65)}
+.mod5-feedback-text.salah{color:#ef4444;text-shadow:0 0 40px rgba(239,68,68,.65)}
+@keyframes mod5Pop{0%{transform:scale(.3);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+.mod5-feedback-count{margin-top:22px;font-size:1.3rem;color:rgba(255,255,255,.8);font-family:'Orbitron',monospace}
 .confetti-piece{position:fixed;top:-20px;width:10px;height:10px;pointer-events:none;z-index:950;border-radius:2px;animation:confettiJatuh linear forwards}
 @keyframes confettiJatuh{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(105vh) rotate(720deg);opacity:0}}
 .soalan-no{font-family:'Orbitron',monospace;font-size:.78rem;color:rgba(255,255,255,.5);margin-bottom:10px;letter-spacing:2px}
@@ -743,7 +752,13 @@ textarea{resize:vertical;min-height:80px}
           </div>
           <div class="mod5-teks" id="mod5Teks">—</div>
           <div style="font-size:.82rem;color:rgba(255,255,255,.5);margin-top:14px;flex-shrink:0">📡 Panggil murid untuk imbas kad NFC jawapan</div>
+          <button class="btn btn-utama btn-besar" style="margin-top:14px;flex-shrink:0" onclick="bunyiKlik();hantarWS({jenis:'mod5_next'})">➡ SOALAN SETERUSNYA</button>
         </div>
+      </div>
+
+      <div class="mod5-feedback-overlay" id="mod5FeedbackOverlay">
+        <div class="mod5-feedback-text" id="mod5FeedbackText"></div>
+        <div class="mod5-feedback-count" id="mod5FeedbackCount"></div>
       </div>
     </div>
 
@@ -1069,8 +1084,8 @@ function prosesMsg(d) {
     case 'cam_frame': if(d.data) document.getElementById('camFeed').src='data:image/jpeg;base64,'+d.data; break;
     case 'cam_keputusan': prosesCAMKeputusanUI(d); break;
     case 'mod4_tukar_fasa': tukarFasaMod4(d.fasa); sesiSemasa && (sesiSemasa.mod4Fasa=d.fasa); break;
-    case 'mod5_betul': letupanKonfeti(); tunjukJawapanPopup(true,null,'Hebat!',d.jawapan); if(d.gunaGanjaran) mulaGanjaranMod5(); break;
-    case 'mod5_salah': tunjukJawapanPopup(false,null,'Cuba lagi!',d.jawapan); break;
+    case 'mod5_betul': tunjukMod5Feedback(true,d.gunaGanjaran); break;
+    case 'mod5_salah': tunjukMod5Feedback(false,false); break;
     case 'mod5_tamat': tunjukSesiTamatMod5(); break;
     case 'nfc_scan': tunjukNFCPing(d.uid); break;
     case 'ulasan_baharu': if(sesiDetailSemasa&&sesiDetailSemasa._id===d.sesiId) tambahUlasanUI(d); break;
@@ -1794,19 +1809,22 @@ function letupanKonfeti(){
     setTimeout(()=>p.remove(),3200);
   }
 }
-let mod5GanjaranTimer=null;
-function mulaGanjaranMod5(){
-  const overlay=document.getElementById('ganjaranOverlay');
-  document.getElementById('ganjaranTeks').textContent='🎁 GANJARAN DIBUKA!';
-  document.getElementById('rankingList').innerHTML='';
-  overlay.classList.add('buka');
-  let count=6;
-  document.getElementById('ganjaranCount').textContent=count;
-  clearInterval(mod5GanjaranTimer);
-  mod5GanjaranTimer=setInterval(()=>{
-    count--;
-    document.getElementById('ganjaranCount').textContent=count;
-    if(count<=0){clearInterval(mod5GanjaranTimer);overlay.classList.remove('buka');}
+let mod5FeedbackTimer=null;
+function tunjukMod5Feedback(betul,gunaGanjaran){
+  const overlay=document.getElementById('mod5FeedbackOverlay');
+  const teksEl=document.getElementById('mod5FeedbackText');
+  const countEl=document.getElementById('mod5FeedbackCount');
+  overlay.className='mod5-feedback-overlay buka '+(betul?'betul':'salah');
+  teksEl.className='mod5-feedback-text '+(betul?'betul':'salah');
+  teksEl.textContent=betul?'✅ BETUL!':'❌ KURANG TEPAT, CUBA LAGI!';
+  if(betul)letupanKonfeti();
+  let detik=betul?(gunaGanjaran?6:3):2;
+  countEl.textContent=detik;
+  clearInterval(mod5FeedbackTimer);
+  mod5FeedbackTimer=setInterval(()=>{
+    detik--;
+    if(detik<=0){clearInterval(mod5FeedbackTimer);overlay.classList.remove('buka');}
+    else countEl.textContent=detik;
   },1000);
 }
 function tunjukSesiTamatMod5(){
