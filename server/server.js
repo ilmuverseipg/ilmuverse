@@ -279,6 +279,7 @@ wss.on('connection', (ws, req) => {
         case 'mula_mod': await mulaMod(data); break;
         case 'pilih_murid_mode2': prosesMode2PilihMurid(data); break;
         case 'soalan_seterusnya': soalanSeterusnya(); break;
+        case 'mod5_next': soalanSeterusnyaMod5(); break;
         case 'tamat_mod': tamatMod(data); break;
         case 'buka_ganjaran': hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 }); break;
         case 'flash_cam': hantarKeCAM({ jenis: 'flash', nyala: data.nyala }); break;
@@ -595,11 +596,11 @@ function prosesNFCMod5(uid) {
   if (betul) {
     hantarKeESP32({ jenis: 'betul' });
     semuaHantar({ jenis: 'mod5_betul', jawapan: jawapanPapar, gunaGanjaran: gameState.gunaGanjaran });
+    // [KEMASKINI] Servo tetap dibuka (fizikal) kalau ganjaran aktif, TAPI
+    // soalan TIDAK auto-lanjut lagi — cikgu kena tekan "Soalan Seterusnya"
+    // sendiri (untuk bincang jawapan dulu). Lihat case 'mod5_next'.
     if (gameState.gunaGanjaran) {
       hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 });
-      setTimeout(() => soalanSeterusnyaMod5(), 6500);
-    } else {
-      setTimeout(() => soalanSeterusnyaMod5(), 1600);
     }
   } else {
     hantarKeESP32({ jenis: 'salah' });
