@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ilmuverse Gamebox — Panel Guru 🎮</title>
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  .word-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 64px auto;
+    gap: 8px;
+    align-items: center;
+    background: #FFF7EE;
+    border-radius: 12px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+  }
+  .word-row input {
+    width: 100%; padding: 8px 10px; border-radius: 10px; border: 2px solid #eee;
+    font-family: 'Fredoka'; font-size: 14px; outline: none;
+  }
+  .word-row input:focus { border-color: var(--pink); }
+  .word-row input.arab-input { font-family: 'Fredoka', 'Noto Naskh Arabic', serif; }
+  .lesson-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .lesson-head input.lesson-name {
+    font-family: 'Baloo 2', sans-serif; font-size: 19px; font-weight: 700; border: none;
+    background: transparent; padding: 2px 0; width: 100%; outline: none; color: var(--dark);
+  }
+  .lesson-head input.lesson-name:focus { background: #FFF7EE; padding: 2px 8px; border-radius: 8px; }
+  .lesson-head input.lesson-desc {
+    font-size: 14px; border: none; background: transparent; padding: 2px 0; width: 100%;
+    outline: none; opacity: .75;
+  }
+  .lesson-head input.lesson-desc:focus { background: #FFF7EE; padding: 2px 8px; border-radius: 8px; opacity: 1; }
+  .lesson-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .words-panel { margin-top: 14px; border-top: 2px dashed #f0e6da; padding-top: 14px; }
+  .add-word-row { display: grid; grid-template-columns: 1fr 1fr 64px auto; gap: 8px; align-items: center; }
+  .add-word-hint { font-size: 12px; color: #9a8a91; margin: 6px 2px 10px; font-weight: 600; }
+  .word-count-badge {
+    background: var(--purple); color: #fff; font-size: 12px; font-weight: 700;
+    padding: 4px 12px; border-radius: 999px; align-self: center;
+  }
+  .empty-hint { text-align: center; color: #9a8a91; padding: 30px 10px; font-weight: 600; }
+
+  /* ===== Import Excel (.xlsx) pukal - muat turun templat + muat naik ===== */
+  .xlsx-import-bar {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin: 0 2px 12px; padding: 8px 10px; background: #F0F7FF; border-radius: 10px;
+    border: 1.5px dashed #BFDBFE;
+  }
+  .xlsx-import-status { font-size: 12px; font-weight: 700; color: #4b9b6e; }
+
+  /* ===== SOALAN TEMBAK (Mod Tembak A/B/C) - tempat edit BERASINGAN drpd "Perkataan" ===== */
+  .tembak-panel { margin-top: 14px; border-top: 2px dashed #e4d9ff; padding-top: 14px; }
+  .tembak-question-card {
+    background: #F3EEFF; border-radius: 14px; padding: 12px 14px; margin-bottom: 12px;
+    border: 2px solid #E4D9FF;
+  }
+  .tembak-question-card .tq-soalan {
+    width: 100%; padding: 9px 12px; border-radius: 10px; border: 2px solid #eee;
+    font-family: 'Fredoka'; font-size: 15px; font-weight: 700; outline: none; margin-bottom: 10px;
+  }
+  .tembak-question-card .tq-soalan:focus { border-color: var(--purple); }
+  .tq-option-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .tq-option-row input[type="radio"] { width: 19px; height: 19px; flex-shrink: 0; accent-color: #3ECF8E; cursor: pointer; }
+  .tq-option-row .tq-letter {
+    font-family: 'Baloo 2', sans-serif; font-weight: 800; width: 24px; flex-shrink: 0; text-align: center;
+    color: #9a8a91; font-size: 14px;
+  }
+  .tq-option-row input[type="text"] {
+    flex: 1; padding: 7px 10px; border-radius: 8px; border: 2px solid #eee;
+    font-family: 'Fredoka'; font-size: 14px; outline: none;
+  }
+  .tq-option-row input[type="text"]:focus { border-color: var(--pink); }
+  .tq-option-row.is-correct input[type="text"] { border-color: #3ECF8E; background: #F0FFF8; }
+  .tq-option-row.is-correct .tq-letter { color: #3ECF8E; }
+  .tembak-question-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 2px; }
+  .tq-hint-badge {
+    display: inline-block; background: #3ECF8E; color: #fff; font-size: 11px; font-weight: 700;
+    padding: 2px 8px; border-radius: 999px; margin-left: 6px;
+  }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/guru.html" class="brand"><span id="siteBrandEmoji">🌌</span><span id="siteBrandText">Ilmuverse</span></a>
+  <div class="breadcrumbs">
+    <a href="/guru.html">🧑‍🏫 Papan Guru</a>
+    <a href="/murid.html">🧒 Papan Murid</a>
+    <a href="/game-arab.html" class="active">🎮 Ilmuverse Gamebox</a>
+  </div>
+</nav>
+
+<div class="container">
+  <h1 class="page-title">🎮 Ilmuverse Gamebox — Panel Guru</h1>
+  <p class="page-subtitle">Urus topik &amp; kandungan kuiz untuk permainan pengesanan tangan "Ilmuverse Gamebox" — sesuai untuk sebarang subjek (Bahasa Arab, Bahasa Melayu, Pendidikan Islam, dll). Perubahan di sini terus dipaparkan dalam permainan.</p>
+
+  <div class="card" style="background:#FFF3DC; border:2px solid #FFD98E; margin-bottom:18px;">
+    <strong>ℹ️ Setiap topik ada 2 tempat edit berasingan:</strong>
+    <div style="margin-top:8px; display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+      <div>🎯 <strong>Soalan Tembak (A/B/C)</strong><br>Untuk <strong>Mod Tembak</strong> sahaja. Taip soalan sendiri + taip sendiri 3 pilihan jawapan + tandakan yang betul — kawalan penuh di tangan guru.</div>
+      <div>🔗 <strong>Perkataan</strong><br>Untuk <strong>Mod Padan</strong> &amp; <strong>Mod Isyarat Jari</strong> sahaja. Senarai perkataan+maksud — permainan auto padan/jana pilihan sendiri.</div>
+    </div>
+  </div>
+
+  <div style="margin: -10px 0 22px;">
+    <a href="/game-arab.html" class="btn btn-purple">🎮 Buka Permainan</a>
+  </div>
+
+  <div id="dbStatus" class="card" style="display:none; border: 2px solid #FF6B6B;"></div>
+
+  <!-- Cipta topik baharu -->
+  <div class="card">
+    <h2 style="margin-top:0;">➕ Topik Pelajaran Baharu</h2>
+    <div class="grid" style="grid-template-columns: 1fr 1fr;">
+      <div class="form-group" style="margin-bottom:0;">
+        <label>Nama Topik</label>
+        <input id="newLessonName" type="text" placeholder="cth: Haiwan Ternakan">
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label>Penerangan (pilihan)</label>
+        <input id="newLessonDesc" type="text" placeholder="Penerangan ringkas">
+      </div>
+    </div>
+    <button id="createLessonBtn" class="btn btn-primary" style="margin-top:14px;">CIPTA TOPIK</button>
+  </div>
+
+  <div id="lessonsContainer"></div>
+  <div id="emptyState" class="empty-hint" style="display:none;">Tiada topik lagi. Cipta satu di atas untuk mula. 🌱</div>
+</div>
+
+<template id="lessonCardTpl">
+  <div class="card lesson-card">
+    <div class="lesson-head">
+      <div style="flex:1; min-width:200px;">
+        <input class="lesson-name" />
+        <input class="lesson-desc" />
+      </div>
+      <div class="lesson-actions">
+        <span class="word-count-badge"></span>
+        <span class="tembak-count-badge" style="background:#8B5CF6; color:#fff; font-size:12px; font-weight:700; padding:4px 12px; border-radius:999px; align-self:center;"></span>
+        <button class="save-lesson-btn btn btn-secondary btn-sm">💾 Simpan</button>
+        <button class="toggle-words-btn btn btn-outline btn-sm">🔗 Perkataan (Padan/Isyarat)</button>
+        <button class="toggle-tembak-btn btn btn-outline btn-sm">🎯 Soalan Tembak (A/B/C)</button>
+        <button class="delete-lesson-btn btn btn-danger btn-sm">🗑️ Padam</button>
+      </div>
+    </div>
+
+    <div class="words-panel" style="display:none;">
+      <div class="add-word-hint" style="margin:0 2px 10px;">🔗 Tempat edit untuk <strong>Mod Padan</strong> &amp; <strong>Mod Isyarat Jari</strong> sahaja. Permainan auto padan/jana pilihan drpd senarai ini.</div>
+      <div class="xlsx-import-bar">
+        <a href="/templates/templat-perkataan.xlsx" download class="btn btn-outline btn-sm">📥 Muat Turun Templat</a>
+        <button type="button" class="import-words-btn btn btn-secondary btn-sm">📤 Muat Naik Excel (ramai sekali gus)</button>
+        <input type="file" class="import-words-file" accept=".xlsx" style="display:none;">
+        <span class="import-words-status xlsx-import-status"></span>
+      </div>
+      <div class="add-word-row" style="margin-bottom:4px;">
+        <div style="font-size:12px; font-weight:700; color:#9a8a91;">PERKATAAN / ISTILAH</div>
+        <div style="font-size:12px; font-weight:700; color:#9a8a91;">MAKSUD / JAWAPAN</div>
+        <div style="font-size:12px; font-weight:700; color:#9a8a91; text-align:center;">IKON</div>
+        <div></div>
+      </div>
+      <div class="words-list"></div>
+      <div class="add-word-row">
+        <input class="new-word-melayu" placeholder="cth: Kucing" />
+        <input class="new-word-arab arab-input" placeholder="cth: قِطَّة" dir="auto" />
+        <input class="new-word-icon" placeholder="📦" maxlength="4" style="text-align:center;" />
+        <button class="add-word-btn btn btn-success btn-sm">+ Tambah</button>
+      </div>
+      <div class="add-word-hint">💡 Taip Perkataan &amp; Maksud, tekan <strong>Enter</strong> untuk terus tambah — tiada had bilangan, tambah seberapa banyak yang anda perlukan.</div>
+    </div>
+
+    <div class="tembak-panel" style="display:none;">
+      <div class="add-word-hint" style="margin:0 2px 10px;">🎯 Tempat edit untuk <strong>Mod Tembak (A/B/C)</strong> sahaja. Taip soalan sendiri, taip sendiri 3 pilihan jawapan, &amp; tandakan (⚪) yang mana betul.</div>
+      <div class="xlsx-import-bar">
+        <a href="/templates/templat-soalan-tembak.xlsx" download class="btn btn-outline btn-sm">📥 Muat Turun Templat</a>
+        <button type="button" class="import-tembak-btn btn btn-secondary btn-sm">📤 Muat Naik Excel (ramai sekali gus)</button>
+        <input type="file" class="import-tembak-file" accept=".xlsx" style="display:none;">
+        <span class="import-tembak-status xlsx-import-status"></span>
+      </div>
+      <div class="tembak-questions-list"></div>
+
+      <div class="tembak-question-card tembak-new-form">
+        <input class="new-tq-soalan tq-soalan" placeholder="Taip soalan di sini... (cth: Apakah maksud 'قِطَّة'?)" />
+        <div class="new-tq-options"></div>
+        <div class="tembak-question-actions">
+          <button class="add-tq-btn btn btn-success btn-sm">+ Tambah Soalan</button>
+        </div>
+      </div>
+      <div class="add-word-hint">💡 Isi Soalan, isi ketiga-tiga pilihan A/B/C, tandakan satu yang betul, tekan <strong>Tambah Soalan</strong>. Tiada had bilangan soalan.</div>
+    </div>
+  </div>
+</template>
+
+<template id="wordRowTpl">
+  <div class="word-row">
+    <input class="word-melayu" dir="auto" />
+    <input class="word-arab arab-input" dir="auto" />
+    <input class="word-icon" maxlength="4" style="text-align:center;" />
+    <div style="display:flex; gap:4px;">
+      <button class="save-word-btn btn btn-secondary btn-sm" style="padding:6px 10px;">💾</button>
+      <button class="delete-word-btn btn btn-danger btn-sm" style="padding:6px 10px;">✕</button>
+    </div>
+  </div>
+</template>
+
+<script>
+const API = '/api/game-lessons';
+const $ = (sel, root = document) => root.querySelector(sel);
+
+async function api(path, opts) {
+  const res = await fetch(API + path, { headers: { 'Content-Type': 'application/json' }, ...opts });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Ralat tidak diketahui');
+  return data;
+}
+
+async function loadAll() {
+  const container = $('#lessonsContainer');
+  const status = $('#dbStatus');
+  try {
+    const lessons = await api('');
+    status.style.display = 'none';
+    container.innerHTML = '';
+    $('#emptyState').style.display = lessons.length ? 'none' : 'block';
+    lessons.forEach((l) => container.appendChild(renderLessonCard(l)));
+  } catch (err) {
+    status.innerHTML = '<strong>⚠️ Tidak dapat sambung ke MongoDB.</strong><br>Semak MONGODB_URI dalam .env / Render — sepatutnya sudah ada sebab dikongsi dengan Sistem Ganjaran BM.';
+    status.style.display = 'block';
+  }
+}
+
+function renderLessonCard(lessonSummary) {
+  const tpl = $('#lessonCardTpl').content.cloneNode(true);
+  const card = tpl.querySelector('.lesson-card');
+  card.dataset.id = lessonSummary._id;
+  $('.lesson-name', card).value = lessonSummary.name;
+  $('.lesson-desc', card).value = lessonSummary.description || '';
+  $('.word-count-badge', card).textContent = `${lessonSummary.wordCount} perkataan`;
+  $('.tembak-count-badge', card).textContent = `${lessonSummary.tembakQuestionCount || 0} soalan tembak`;
+
+  $('.save-lesson-btn', card).addEventListener('click', async () => {
+    const name = $('.lesson-name', card).value.trim();
+    const description = $('.lesson-desc', card).value.trim();
+    if (!name) return alert('Nama topik tidak boleh kosong.');
+    try { await api(`/${lessonSummary._id}`, { method: 'PUT', body: JSON.stringify({ name, description }) }); flash(card); }
+    catch (err) { alert(err.message); }
+  });
+
+  $('.delete-lesson-btn', card).addEventListener('click', async () => {
+    if (!confirm(`Padam topik "${lessonSummary.name}" beserta semua perkataannya?`)) return;
+    try { await api(`/${lessonSummary._id}`, { method: 'DELETE' }); card.remove(); $('#emptyState').style.display = $('#lessonsContainer').children.length ? 'none' : 'block'; }
+    catch (err) { alert(err.message); }
+  });
+
+  const wordsPanel = $('.words-panel', card);
+  const toggleBtn = $('.toggle-words-btn', card);
+  let loaded = false;
+  toggleBtn.addEventListener('click', async () => {
+    const showing = wordsPanel.style.display !== 'none';
+    wordsPanel.style.display = showing ? 'none' : 'block';
+    toggleBtn.textContent = showing ? '📖 Perkataan' : '📖 Tutup';
+    if (!showing && !loaded) { loaded = true; await refreshWords(lessonSummary._id, wordsPanel, card); }
+  });
+
+  const addWordBtn = $('.add-word-btn', card);
+  const melayuInput = $('.new-word-melayu', card);
+  const arabInput = $('.new-word-arab', card);
+  const iconInput = $('.new-word-icon', card);
+
+  addWordBtn.addEventListener('click', async () => {
+    const melayu = melayuInput.value.trim();
+    const arab = arabInput.value.trim();
+    const icon = iconInput.value.trim() || '📦';
+    if (!melayu || !arab) return alert('Isikan Soalan dan Jawapan.');
+    try {
+      await api(`/${lessonSummary._id}/words`, { method: 'POST', body: JSON.stringify({ melayu, arab, icon }) });
+      melayuInput.value = ''; arabInput.value = ''; iconInput.value = '';
+      await refreshWords(lessonSummary._id, wordsPanel, card);
+      melayuInput.focus(); // terus sedia untuk tambah soalan seterusnya - senang untuk banyak soalan
+    } catch (err) { alert(err.message); }
+  });
+
+  // Tekan Enter dalam medan Soalan/Jawapan terus tambah - tidak perlu klik butang setiap kali.
+  [melayuInput, arabInput, iconInput].forEach((input) => {
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); addWordBtn.click(); }
+    });
+  });
+
+  // ----- Import Excel (.xlsx) pukal - Perkataan (lebih laju drpd taip satu-satu) -----
+  wireXlsxImport({
+    uploadBtn: $('.import-words-btn', card),
+    fileInput: $('.import-words-file', card),
+    statusEl: $('.import-words-status', card),
+    uploadPath: `/${lessonSummary._id}/words/import-xlsx`,
+    itemLabel: 'perkataan',
+    onDone: () => refreshWords(lessonSummary._id, wordsPanel, card),
+  });
+
+  // ----- Panel "Soalan Tembak (A/B/C)" - tempat edit BERASINGAN -----
+  const tembakPanel = $('.tembak-panel', card);
+  const toggleTembakBtn = $('.toggle-tembak-btn', card);
+  let tembakLoaded = false;
+  toggleTembakBtn.addEventListener('click', async () => {
+    const showing = tembakPanel.style.display !== 'none';
+    tembakPanel.style.display = showing ? 'none' : 'block';
+    toggleTembakBtn.textContent = showing ? '🎯 Soalan Tembak (A/B/C)' : '🎯 Tutup';
+    if (!showing && !tembakLoaded) { tembakLoaded = true; await refreshTembakQuestions(lessonSummary._id, tembakPanel, card); }
+  });
+
+  // Borang "+ Tambah Soalan" (sentiasa ada, letak bawah senarai soalan sedia ada)
+  const newTqSoalan = $('.new-tq-soalan', card);
+  const newTqOptionsWrap = $('.new-tq-options', card);
+  const addTqBtn = $('.add-tq-btn', card);
+  const newOptionFields = buildOptionRows(newTqOptionsWrap, `new-tq-correct-${lessonSummary._id}`);
+  // Pilihan A ditanda betul secara lalai supaya guru sentiasa ada 1 jawapan ditanda.
+  newOptionFields[0].radio.checked = true;
+  newOptionFields[0].row.classList.add('is-correct');
+
+  addTqBtn.addEventListener('click', async () => {
+    const soalan = newTqSoalan.value.trim();
+    if (!soalan) return alert('Soalan tidak boleh kosong.');
+    const options = newOptionFields.map((f) => ({ text: f.input.value.trim(), correct: f.radio.checked }));
+    if (options.some((o) => !o.text)) return alert('Isikan ketiga-tiga pilihan A/B/C.');
+    try {
+      await api(`/${lessonSummary._id}/tembak-questions`, { method: 'POST', body: JSON.stringify({ soalan, options }) });
+      newTqSoalan.value = '';
+      newOptionFields.forEach((f, i) => { f.input.value = ''; f.radio.checked = i === 0; f.row.classList.toggle('is-correct', i === 0); });
+      await refreshTembakQuestions(lessonSummary._id, tembakPanel, card);
+      newTqSoalan.focus(); // terus sedia utk tambah soalan seterusnya
+    } catch (err) { alert(err.message); }
+  });
+  // Tekan Enter dalam medan soalan/pilihan terus tambah soalan.
+  [newTqSoalan, ...newOptionFields.map((f) => f.input)].forEach((input) => {
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addTqBtn.click(); } });
+  });
+
+  // ----- Import Excel (.xlsx) pukal - Soalan Tembak (lebih laju drpd taip satu-satu) -----
+  wireXlsxImport({
+    uploadBtn: $('.import-tembak-btn', card),
+    fileInput: $('.import-tembak-file', card),
+    statusEl: $('.import-tembak-status', card),
+    uploadPath: `/${lessonSummary._id}/tembak-questions/import-xlsx`,
+    itemLabel: 'soalan',
+    onDone: () => refreshTembakQuestions(lessonSummary._id, tembakPanel, card),
+  });
+
+  return card;
+}
+
+// Pasang kelakuan "Muat Naik Excel (.xlsx)" pukal - dikongsi oleh Perkataan &
+// Soalan Tembak (bezanya cuma lokasi API & label). Klik butang -> buka
+// pemilih fail -> upload terus (FormData, bukan JSON) -> papar ringkasan
+// hasil (berapa ditambah / baris dilangkau) -> muat semula senarai.
+function wireXlsxImport({ uploadBtn, fileInput, statusEl, uploadPath, itemLabel, onDone }) {
+  uploadBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    statusEl.style.color = '#4b9b6e';
+    statusEl.textContent = '⏳ Memuat naik...';
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch(API + uploadPath, { method: 'POST', body: fd }); // JANGAN set Content-Type - browser perlu tetapkan boundary multipart sendiri
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Ralat muat naik.');
+      let msg = `✅ ${data.added} ${itemLabel} ditambah`;
+      if (data.skipped) msg += `, ${data.skipped} baris kosong dilangkau`;
+      if (data.rowErrors && data.rowErrors.length) msg += `, ⚠️ ${data.rowErrors.length} baris ada ralat`;
+      statusEl.textContent = msg + '.';
+      if (data.rowErrors && data.rowErrors.length) {
+        alert('Sebahagian baris dilangkau sebab ada ralat:\n\n' + data.rowErrors.join('\n') + '\n\nBetulkan baris berkenaan dalam Excel & muat naik semula fail itu sahaja.');
+      }
+      await onDone();
+    } catch (err) {
+      statusEl.style.color = '#FF6B6B';
+      statusEl.textContent = '';
+      alert(err.message);
+    } finally {
+      fileInput.value = ''; // reset supaya boleh pilih fail yg sama semula jika perlu
+    }
+  });
+}
+
+// Bina 3 baris pilihan (radio "betul" + label A/B/C + input teks) di dalam
+// `container`. groupName mesti unik supaya radio button saling eksklusif
+// dalam SATU soalan sahaja (bukan across soalan lain / kad topik lain).
+function buildOptionRows(container, groupName) {
+  const letters = ['A', 'B', 'C'];
+  container.innerHTML = '';
+  return letters.map((letter) => {
+    const row = document.createElement('div');
+    row.className = 'tq-option-row';
+
+    const radio = document.createElement('input');
+    radio.type = 'radio'; radio.name = groupName;
+
+    const letterSpan = document.createElement('span');
+    letterSpan.className = 'tq-letter'; letterSpan.textContent = letter;
+
+    const input = document.createElement('input');
+    input.type = 'text'; input.placeholder = `Pilihan ${letter}`;
+
+    radio.addEventListener('change', () => {
+      container.querySelectorAll('.tq-option-row').forEach((r) => r.classList.remove('is-correct'));
+      row.classList.add('is-correct');
+    });
+
+    row.appendChild(radio); row.appendChild(letterSpan); row.appendChild(input);
+    container.appendChild(row);
+    return { row, radio, input };
+  });
+}
+
+async function refreshWords(lessonId, wordsPanel, card) {
+  const list = $('.words-list', wordsPanel);
+  list.innerHTML = '<div style="opacity:.6; font-size:14px;">Memuatkan...</div>';
+  try {
+    const lesson = await api(`/${lessonId}`);
+    list.innerHTML = '';
+    lesson.words.forEach((w) => list.appendChild(renderWordRow(lessonId, w, wordsPanel, card)));
+    $('.word-count-badge', card).textContent = `${lesson.words.length} perkataan`;
+  } catch (err) {
+    list.innerHTML = `<div style="color:#FF6B6B; font-size:14px;">${err.message}</div>`;
+  }
+}
+
+function renderWordRow(lessonId, word, wordsPanel, card) {
+  const tpl = $('#wordRowTpl').content.cloneNode(true);
+  const row = tpl.querySelector('.word-row');
+  $('.word-melayu', row).value = word.melayu;
+  $('.word-arab', row).value = word.arab;
+  $('.word-icon', row).value = word.icon || '';
+
+  const saveWordBtn = $('.save-word-btn', row);
+  saveWordBtn.addEventListener('click', async () => {
+    const melayu = $('.word-melayu', row).value.trim();
+    const arab = $('.word-arab', row).value.trim();
+    const icon = $('.word-icon', row).value.trim() || '📦';
+    try { await api(`/${lessonId}/words/${word._id}`, { method: 'PUT', body: JSON.stringify({ melayu, arab, icon }) }); flash(row); }
+    catch (err) { alert(err.message); }
+  });
+  // Tekan Enter untuk terus simpan perubahan pada soalan ini.
+  [$('.word-melayu', row), $('.word-arab', row), $('.word-icon', row)].forEach((input) => {
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); saveWordBtn.click(); } });
+  });
+
+  $('.delete-word-btn', row).addEventListener('click', async () => {
+    if (!confirm(`Padam perkataan "${word.melayu}"?`)) return;
+    try { await api(`/${lessonId}/words/${word._id}`, { method: 'DELETE' }); await refreshWords(lessonId, wordsPanel, card); }
+    catch (err) { alert(err.message); }
+  });
+
+  return row;
+}
+
+// ------------------------------------------------------------------
+// SOALAN TEMBAK (Mod Tembak A/B/C) - tempat edit BERASINGAN drpd "words"
+// ------------------------------------------------------------------
+async function refreshTembakQuestions(lessonId, tembakPanel, card) {
+  const list = $('.tembak-questions-list', tembakPanel);
+  list.innerHTML = '<div style="opacity:.6; font-size:14px;">Memuatkan...</div>';
+  try {
+    const lesson = await api(`/${lessonId}`);
+    list.innerHTML = '';
+    if (!lesson.tembakQuestions.length) {
+      list.innerHTML = '<div style="opacity:.6; font-size:14px; padding:4px 2px 14px;">Tiada Soalan Tembak lagi. Tambah satu di bawah. 🎯</div>';
+    } else {
+      lesson.tembakQuestions.forEach((q) => list.appendChild(renderTembakQuestionRow(lessonId, q, tembakPanel, card)));
+    }
+    $('.tembak-count-badge', card).textContent = `${lesson.tembakQuestions.length} soalan tembak`;
+  } catch (err) {
+    list.innerHTML = `<div style="color:#FF6B6B; font-size:14px;">${err.message}</div>`;
+  }
+}
+
+function renderTembakQuestionRow(lessonId, q, tembakPanel, card) {
+  const wrap = document.createElement('div');
+  wrap.className = 'tembak-question-card';
+
+  const soalanInput = document.createElement('input');
+  soalanInput.className = 'tq-soalan';
+  soalanInput.placeholder = 'Taip soalan di sini...';
+  soalanInput.value = q.soalan;
+  wrap.appendChild(soalanInput);
+
+  const optsWrap = document.createElement('div');
+  wrap.appendChild(optsWrap);
+  const optionFields = buildOptionRows(optsWrap, `tq-correct-${q._id}`);
+  q.options.forEach((o, i) => {
+    optionFields[i].input.value = o.text;
+    optionFields[i].radio.checked = !!o.correct;
+    optionFields[i].row.classList.toggle('is-correct', !!o.correct);
+  });
+
+  const actions = document.createElement('div');
+  actions.className = 'tembak-question-actions';
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'save-tq-btn btn btn-secondary btn-sm'; saveBtn.textContent = '💾 Simpan';
+  const delBtn = document.createElement('button');
+  delBtn.className = 'delete-tq-btn btn btn-danger btn-sm'; delBtn.textContent = '🗑️ Padam';
+  actions.appendChild(saveBtn); actions.appendChild(delBtn);
+  wrap.appendChild(actions);
+
+  saveBtn.addEventListener('click', async () => {
+    const soalan = soalanInput.value.trim();
+    if (!soalan) return alert('Soalan tidak boleh kosong.');
+    const options = optionFields.map((f) => ({ text: f.input.value.trim(), correct: f.radio.checked }));
+    if (options.some((o) => !o.text)) return alert('Isikan ketiga-tiga pilihan A/B/C.');
+    if (options.filter((o) => o.correct).length !== 1) return alert('Tandakan SATU sahaja pilihan yang betul.');
+    try {
+      await api(`/${lessonId}/tembak-questions/${q._id}`, { method: 'PUT', body: JSON.stringify({ soalan, options }) });
+      flash(wrap);
+    } catch (err) { alert(err.message); }
+  });
+  // Tekan Enter terus simpan perubahan pada soalan ini.
+  [soalanInput, ...optionFields.map((f) => f.input)].forEach((input) => {
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); saveBtn.click(); } });
+  });
+
+  delBtn.addEventListener('click', async () => {
+    if (!confirm('Padam soalan ini?')) return;
+    try {
+      await api(`/${lessonId}/tembak-questions/${q._id}`, { method: 'DELETE' });
+      await refreshTembakQuestions(lessonId, tembakPanel, card);
+    } catch (err) { alert(err.message); }
+  });
+
+  return wrap;
+}
+
+function flash(el) {
+  el.style.transition = 'background-color .3s';
+  const prev = el.style.backgroundColor;
+  el.style.backgroundColor = '#D8FCE4';
+  setTimeout(() => { el.style.backgroundColor = prev; }, 500);
+}
+
+$('#createLessonBtn').addEventListener('click', async () => {
+  const name = $('#newLessonName').value.trim();
+  const description = $('#newLessonDesc').value.trim();
+  if (!name) return alert('Sila isikan nama topik.');
+  try {
+    await api('', { method: 'POST', body: JSON.stringify({ name, description }) });
+    $('#newLessonName').value = ''; $('#newLessonDesc').value = '';
+    await loadAll();
+  } catch (err) { alert(err.message); }
+});
+
+loadAll();
+</script>
+</body>
+</html>

@@ -11,6 +11,13 @@ const cors = require('cors');
 const path = require('path');
 const multer = require('multer');
 
+// [ILMUVERSE GAMEBOX] Ciri TAMBAHAN - permainan pengesanan tangan (kosa
+// kata/kuiz A/B/C). Router sendiri dlm routes/gameLessons.js, model sendiri
+// dlm models/GameLessonSet.js, guna MongoDB yg sama (MONGODB_URI di bawah)
+// tapi koleksi BERASINGAN ('gamelessonsets') - tidak sentuh/pakai mana-mana
+// skema atau logik Mod 1-5 sedia ada di bawah.
+const gameLessonsRouter = require('../routes/gameLessons');
+
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
@@ -19,6 +26,11 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static(path.join(__dirname, '../public')));
+
+// [ILMUVERSE GAMEBOX] Laluan API ciri tambahan - lihat routes/gameLessons.js.
+// Halaman permainan/panel guru dah dipaparkan terus via static(public/) di
+// atas (public/game-arab.html, public/game-arab-admin.html).
+app.use('/api/game-lessons', gameLessonsRouter);
 
 // Root ('/') redirect ke guru.html supaya tak "Cannot GET /"
 app.get('/', (req, res) => res.redirect('/guru.html'));
