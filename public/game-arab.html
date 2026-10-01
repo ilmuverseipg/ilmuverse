@@ -734,8 +734,12 @@ const LINE_COLORS = { A: '#e0272a', B: '#00a651', C: '#0098d8' };
 let currentTembakQuestion = null; // soalan semasa yg sedang dipaparkan (Mod Tembak)
 
 function pickTembakQuestion() {
+  // Ikut URUTAN yang guru susun di Panel Guru (seret & lepas) - bukan rawak
+  // lagi. remainingPool() kekalkan turutan asal tembakQuestions, cuma buang
+  // yang dah "mastered" (dijawab betul) - jadi soalan seterusnya sentiasa
+  // soalan PERTAMA yang belum dijawab dlm senarai tersusun itu.
   const pool = remainingPool();
-  return pool[Math.floor(Math.random() * pool.length)];
+  return pool[0];
 }
 
 function layoutTembakDrones(question) {
@@ -873,7 +877,11 @@ function updateShootModeLogic() {
 function startPadanRound() {
   const remain = remainingWords();
   const n = Math.min(CONFIG.MATCH.pairsPerRound, remain.length);
-  const chosen = shuffle(remain).slice(0, n);
+  // Perkataan mana yg masuk pusingan ni ikut URUTAN yg guru susun (bkn rawak
+  // lagi) - ambil n perkataan PERTAMA yg belum "mastered". Kedudukan kad
+  // kanan (matchRight) di bawah KEKAL dirawak - itulah mekanik teka-teki
+  // padanannya (elak kiri/kanan sentiasa sejajar), bukan urutan soalan.
+  const chosen = remain.slice(0, n);
   matchRoundTotal = n; matchRoundDone = 0;
   const marginY = H * 0.16, usableH = H * 0.68;
   matchLeft = chosen.map((w, i) => ({ word: w, matched: false, x: W * 0.24, y: marginY + usableH * ((i + 0.5) / n) }));
@@ -991,7 +999,10 @@ function drawMatchingScene() {
 // ------------------------------------------------------------------
 function startIsyaratRound() {
   const remain = remainingWords();
-  const target = remain[Math.floor(Math.random() * remain.length)];
+  // Ikut URUTAN yang guru susun (seret & lepas di Panel Guru) - bukan rawak
+  // lagi. Pilihan jawapan salah (wrongs) di bawah KEKAL dirawak - itu cuma
+  // kedudukan paparan pilihan A/B/C/D, bukan urutan soalan.
+  const target = remain[0];
   quizTargetWord = target;
   const wrongPool = currentLesson.words.filter((w) => w._id !== target._id);
   const wrongs = shuffle(wrongPool).slice(0, Math.min(3, wrongPool.length));
