@@ -8,7 +8,7 @@
 <style>
   .word-row {
     display: grid;
-    grid-template-columns: 1fr 1fr 64px auto;
+    grid-template-columns: 24px 1fr 1fr 64px auto;
     gap: 8px;
     align-items: center;
     background: #FFF7EE;
@@ -35,7 +35,7 @@
   .lesson-head input.lesson-desc:focus { background: #FFF7EE; padding: 2px 8px; border-radius: 8px; opacity: 1; }
   .lesson-actions { display: flex; gap: 6px; flex-wrap: wrap; }
   .words-panel { margin-top: 14px; border-top: 2px dashed #f0e6da; padding-top: 14px; }
-  .add-word-row { display: grid; grid-template-columns: 1fr 1fr 64px auto; gap: 8px; align-items: center; }
+  .add-word-row { display: grid; grid-template-columns: 24px 1fr 1fr 64px auto; gap: 8px; align-items: center; }
   .add-word-hint { font-size: 12px; color: #9a8a91; margin: 6px 2px 10px; font-weight: 600; }
   .word-count-badge {
     background: var(--purple); color: #fff; font-size: 12px; font-weight: 700;
@@ -80,6 +80,19 @@
     display: inline-block; background: #3ECF8E; color: #fff; font-size: 11px; font-weight: 700;
     padding: 2px 8px; border-radius: 999px; margin-left: 6px;
   }
+
+  /* ===== Seret & lepas (drag & drop) untuk susun semula urutan ===== */
+  .drag-handle {
+    cursor: grab; color: #c9b8a8; font-size: 17px; line-height: 1; text-align: center;
+    user-select: none; -webkit-user-select: none; padding: 4px 0; touch-action: none;
+  }
+  .drag-handle:active { cursor: grabbing; }
+  .word-row.dragging { opacity: .35; }
+  .tq-card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .tq-order-badge {
+    font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 12px; color: #8B5CF6;
+  }
+  .tembak-question-card.dragging { opacity: .35; }
 </style>
 </head>
 <body>
@@ -157,6 +170,7 @@
         <span class="import-words-status xlsx-import-status"></span>
       </div>
       <div class="add-word-row" style="margin-bottom:4px;">
+        <div></div>
         <div style="font-size:12px; font-weight:700; color:#9a8a91;">PERKATAAN / ISTILAH</div>
         <div style="font-size:12px; font-weight:700; color:#9a8a91;">MAKSUD / JAWAPAN</div>
         <div style="font-size:12px; font-weight:700; color:#9a8a91; text-align:center;">IKON</div>
@@ -164,6 +178,7 @@
       </div>
       <div class="words-list"></div>
       <div class="add-word-row">
+        <div></div>
         <input class="new-word-melayu" placeholder="cth: Kucing" />
         <input class="new-word-arab arab-input" placeholder="cth: قِطَّة" dir="auto" />
         <input class="new-word-icon" placeholder="📦" maxlength="4" style="text-align:center;" />
@@ -196,6 +211,7 @@
 
 <template id="wordRowTpl">
   <div class="word-row">
+    <span class="drag-handle" title="Seret untuk susun semula urutan">⠿</span>
     <input class="word-melayu" dir="auto" />
     <input class="word-arab arab-input" dir="auto" />
     <input class="word-icon" maxlength="4" style="text-align:center;" />
@@ -424,6 +440,13 @@ async function refreshWords(lessonId, wordsPanel, card) {
     list.innerHTML = '';
     lesson.words.forEach((w) => list.appendChild(renderWordRow(lessonId, w, wordsPanel, card)));
     $('.word-count-badge', card).textContent = `${lesson.words.length} perkataan`;
+    if (!list.dataset.sortableWired) {
+      list.dataset.sortableWired = '1';
+      makeSortable(list, async (order) => {
+        try { await api(`/${lessonId}/words/reorder`, { method: 'PUT', body: JSON.stringify({ order }) }); }
+        catch (err) { alert(err.message); await refreshWords(lessonId, wordsPanel, card); }
+      });
+    }
   } catch (err) {
     list.innerHTML = `<div style="color:#FF6B6B; font-size:14px;">${err.message}</div>`;
   }
@@ -432,6 +455,7 @@ async function refreshWords(lessonId, wordsPanel, card) {
 function renderWordRow(lessonId, word, wordsPanel, card) {
   const tpl = $('#wordRowTpl').content.cloneNode(true);
   const row = tpl.querySelector('.word-row');
+  row.dataset.id = word._id;
   $('.word-melayu', row).value = word.melayu;
   $('.word-arab', row).value = word.arab;
   $('.word-icon', row).value = word.icon || '';
@@ -470,7 +494,16 @@ async function refreshTembakQuestions(lessonId, tembakPanel, card) {
     if (!lesson.tembakQuestions.length) {
       list.innerHTML = '<div style="opacity:.6; font-size:14px; padding:4px 2px 14px;">Tiada Soalan Tembak lagi. Tambah satu di bawah. 🎯</div>';
     } else {
-      lesson.tembakQuestions.forEach((q) => list.appendChild(renderTembakQuestionRow(lessonId, q, tembakPanel, card)));
+      lesson.tembakQuestions.forEach((q, i) => list.appendChild(renderTembakQuestionRow(lessonId, q, tembakPanel, card, i + 1)));
+      if (!list.dataset.sortableWired) {
+        list.dataset.sortableWired = '1';
+        makeSortable(list, async (order) => {
+          try {
+            await api(`/${lessonId}/tembak-questions/reorder`, { method: 'PUT', body: JSON.stringify({ order }) });
+            renumberTembakBadges(list);
+          } catch (err) { alert(err.message); await refreshTembakQuestions(lessonId, tembakPanel, card); }
+        });
+      }
     }
     $('.tembak-count-badge', card).textContent = `${lesson.tembakQuestions.length} soalan tembak`;
   } catch (err) {
@@ -478,9 +511,23 @@ async function refreshTembakQuestions(lessonId, tembakPanel, card) {
   }
 }
 
-function renderTembakQuestionRow(lessonId, q, tembakPanel, card) {
+function renderTembakQuestionRow(lessonId, q, tembakPanel, card, orderNum) {
   const wrap = document.createElement('div');
   wrap.className = 'tembak-question-card';
+  wrap.dataset.id = q._id;
+
+  const head = document.createElement('div');
+  head.className = 'tq-card-head';
+  const dragHandle = document.createElement('span');
+  dragHandle.className = 'drag-handle';
+  dragHandle.title = 'Seret untuk susun semula urutan';
+  dragHandle.textContent = '⠿';
+  const orderBadge = document.createElement('span');
+  orderBadge.className = 'tq-order-badge';
+  orderBadge.textContent = `Soalan #${orderNum}`;
+  head.appendChild(dragHandle);
+  head.appendChild(orderBadge);
+  wrap.appendChild(head);
 
   const soalanInput = document.createElement('input');
   soalanInput.className = 'tq-soalan';
@@ -531,6 +578,75 @@ function renderTembakQuestionRow(lessonId, q, tembakPanel, card) {
   });
 
   return wrap;
+}
+
+// ------------------------------------------------------------------
+// SERET & LEPAS - susun semula urutan perkataan / Soalan Tembak. Guna
+// Pointer Events (pointerdown/move/up) sendiri - BUKAN draggable/dragstart
+// HTML5 asli - supaya kelakuan sama & boleh dipercayai pada tetikus MAHUPUN
+// skrin sentuh (tablet, biasa di bilik darjah). Dipasang SEKALI sahaja pada
+// setiap senarai (.words-list / .tembak-questions-list) sebab elemen senarai
+// itu sendiri kekal sama lepas refresh (cuma kandungan .innerHTML ditukar) -
+// elak listener berganda. Seret hanya bermula drpd pemegang (.drag-handle),
+// bukan mana-mana bahagian baris, supaya tidak mengganggu klik/taip dlm
+// medan input.
+// ------------------------------------------------------------------
+function makeSortable(listEl, onReorder) {
+  let dragEl = null;
+
+  function onPointerMove(e) {
+    if (!dragEl) return;
+    const afterEl = getDragAfterElement(listEl, e.clientY);
+    if (afterEl == null) listEl.appendChild(dragEl);
+    else if (afterEl !== dragEl) listEl.insertBefore(dragEl, afterEl);
+  }
+
+  function onPointerUp() {
+    if (!dragEl) return;
+    dragEl.classList.remove('dragging');
+    document.body.style.userSelect = '';
+    const finishedEl = dragEl;
+    dragEl = null;
+    document.removeEventListener('pointermove', onPointerMove);
+    document.removeEventListener('pointerup', onPointerUp);
+    document.removeEventListener('pointercancel', onPointerUp);
+    const order = Array.from(listEl.children).map((el) => el.dataset.id).filter(Boolean);
+    if (order.length) onReorder(order);
+  }
+
+  listEl.addEventListener('pointerdown', (e) => {
+    const handle = e.target.closest('.drag-handle');
+    if (!handle) return;
+    const row = e.target.closest('[data-id]');
+    if (!row || row.parentElement !== listEl) return;
+    e.preventDefault(); // elak pemilihan teks/scroll sentuh semasa seret
+    dragEl = row;
+    row.classList.add('dragging');
+    document.body.style.userSelect = 'none'; // elak teks terpilih secara tak sengaja semasa gerak pantas
+    document.addEventListener('pointermove', onPointerMove);
+    document.addEventListener('pointerup', onPointerUp);
+    document.addEventListener('pointercancel', onPointerUp);
+  });
+}
+
+function getDragAfterElement(listEl, y) {
+  const items = [...listEl.children].filter((el) => el.dataset && el.dataset.id && !el.classList.contains('dragging'));
+  return items.reduce((closest, child) => {
+    const box = child.getBoundingClientRect();
+    const offset = y - box.top - box.height / 2;
+    if (offset < 0 && offset > closest.offset) return { offset, element: child };
+    return closest;
+  }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
+}
+
+// Lepas drag selesai (urutan dah disimpan di server), kemas kini label
+// "Soalan #N" terus di skrin tanpa perlu muat semula seluruh senarai drpd
+// server (DOM dah betul susunannya hasil drag itu sendiri).
+function renumberTembakBadges(listEl) {
+  Array.from(listEl.children).forEach((cardEl, i) => {
+    const badge = $('.tq-order-badge', cardEl);
+    if (badge) badge.textContent = `Soalan #${i + 1}`;
+  });
 }
 
 function flash(el) {

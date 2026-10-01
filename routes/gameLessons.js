@@ -99,6 +99,29 @@ router.post('/:id/words', async (req, res) => {
   }
 });
 
+// PUT /api/game-lessons/:id/words/reorder - susun semula URUTAN perkataan
+// (ciri seret & lepas / drag di Panel Guru). Body: { order: [wordId, ...] } -
+// mesti ada SEMUA id perkataan sedia ada dalam topik ini (tiada tambah/buang
+// di sini, cuma tukar urutan). Didaftarkan SEBELUM laluan ':wordId' di bawah
+// supaya "reorder" tidak tersilap dipadan sebagai satu ID perkataan.
+router.put('/:id/words/reorder', async (req, res) => {
+  try {
+    const { order } = req.body;
+    if (!Array.isArray(order) || !order.length) return res.status(400).json({ error: 'Senarai urutan diperlukan.' });
+    const lesson = await GameLessonSet.findById(req.params.id);
+    if (!lesson) return res.status(404).json({ error: 'Set pelajaran tidak dijumpai.' });
+    const byId = new Map(lesson.words.map((w) => [String(w._id), w]));
+    if (order.length !== byId.size || order.some((wid) => !byId.has(String(wid)))) {
+      return res.status(400).json({ error: 'Senarai urutan tidak sepadan dengan perkataan sedia ada.' });
+    }
+    lesson.words = order.map((wid) => byId.get(String(wid)));
+    await lesson.save();
+    res.json(lesson);
+  } catch (err) {
+    res.status(400).json({ error: 'Gagal susun semula perkataan.', detail: err.message });
+  }
+});
+
 // PUT /api/game-lessons/:id/words/:wordId - edit satu perkataan
 router.put('/:id/words/:wordId', async (req, res) => {
   try {
@@ -199,6 +222,29 @@ router.post('/:id/tembak-questions', async (req, res) => {
     res.status(201).json(lesson);
   } catch (err) {
     res.status(400).json({ error: 'Gagal tambah Soalan Tembak.', detail: err.message });
+  }
+});
+
+// PUT /api/game-lessons/:id/tembak-questions/reorder - susun semula URUTAN
+// Soalan Tembak (ciri seret & lepas / drag di Panel Guru). Body:
+// { order: [qId, ...] } - mesti ada SEMUA id soalan sedia ada dalam topik
+// ini. Didaftarkan SEBELUM laluan ':qId' di bawah atas sebab yang sama
+// seperti reorder perkataan di atas.
+router.put('/:id/tembak-questions/reorder', async (req, res) => {
+  try {
+    const { order } = req.body;
+    if (!Array.isArray(order) || !order.length) return res.status(400).json({ error: 'Senarai urutan diperlukan.' });
+    const lesson = await GameLessonSet.findById(req.params.id);
+    if (!lesson) return res.status(404).json({ error: 'Set pelajaran tidak dijumpai.' });
+    const byId = new Map(lesson.tembakQuestions.map((q) => [String(q._id), q]));
+    if (order.length !== byId.size || order.some((qid) => !byId.has(String(qid)))) {
+      return res.status(400).json({ error: 'Senarai urutan tidak sepadan dengan soalan sedia ada.' });
+    }
+    lesson.tembakQuestions = order.map((qid) => byId.get(String(qid)));
+    await lesson.save();
+    res.json(lesson);
+  } catch (err) {
+    res.status(400).json({ error: 'Gagal susun semula Soalan Tembak.', detail: err.message });
   }
 });
 
