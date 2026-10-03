@@ -294,6 +294,8 @@ wss.on('connection', (ws, req) => {
         case 'mod5_next': soalanSeterusnyaMod5(); break;
         case 'tamat_mod': tamatMod(data); break;
         case 'buka_ganjaran': hantarKeESP32({ jenis: 'buka_servo', tempoh: 6000 }); break;
+        case 'hw_betul': hantarKeESP32({ jenis: 'betul' }); break; // [GameBox] signal fizikal, tiada kaitan gameState
+        case 'hw_salah': hantarKeESP32({ jenis: 'salah' }); break;
         case 'flash_cam': hantarKeCAM({ jenis: 'flash', nyala: data.nyala }); break;
         case 'tambah_ulasan': await tambahUlasan(data); break;
         case 'push_telegram': await hantarTelegram(data); break;

@@ -318,6 +318,41 @@
     </div>
   </div>
 
+  <!-- ===== MODE GANJARAN MODAL (biasa / kotak ganjaran) ===== -->
+  <div id="ganjaranModal" class="modal-overlay hidden">
+    <div class="glass rounded-2xl p-6 md:p-9 max-w-xl w-full">
+      <div class="tactile-strip mb-4"></div>
+      <div class="text-center mb-5">
+        <div class="font-orbitron text-2xl md:text-3xl font-black glow-cyan">MOD GANJARAN</div>
+        <div class="font-kanit text-base font-semibold text-slate-300 mt-1">Pilih cara sesi ni berjalan</div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <button class="mode-card" id="ganjaranBiasaBtn" data-ganjaran="0">
+          <div class="mode-name">MODE BIASA</div>
+          <div class="mode-desc">Terus ke soalan seterusnya secara automatik lepas jawapan betul. Pantas &amp; tiada gangguan.</div>
+        </button>
+        <button class="mode-card" id="ganjaranKotakBtn" data-ganjaran="1">
+          <div class="mode-name">MODE KOTAK GANJARAN</div>
+          <div class="mode-desc">Kotak ganjaran dibuka 6 saat setiap jawapan betul. Tekan butang "Seterusnya" sendiri untuk sambung — sesuai untuk bincang jawapan dulu.</div>
+        </button>
+      </div>
+      <div class="text-center mt-5">
+        <button id="ganjaranBackBtn" class="text-sm font-kanit font-semibold text-slate-300 hover:text-cyan-300 underline">← Tukar mod permainan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== REWARD OVERLAY (kotak ganjaran + butang seterusnya) ===== -->
+  <div id="rewardOverlay" class="modal-overlay hidden" style="z-index:260">
+    <div class="glass rounded-2xl p-8 max-w-md w-full text-center">
+      <div class="tactile-strip mb-4"></div>
+      <div class="font-orbitron text-2xl md:text-3xl font-black text-emerald-400 mb-3">🎁 GANJARAN DIBUKA!</div>
+      <div class="font-orbitron text-5xl font-black text-white mb-2" id="rewardCountdown">6</div>
+      <div class="font-kanit text-sm text-slate-300 mb-6">saat kotak ganjaran terbuka</div>
+      <button id="rewardNextBtn" class="w-full font-orbitron font-bold text-lg px-8 py-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-900 transition">➡ SOALAN SETERUSNYA</button>
+    </div>
+  </div>
+
   <!-- ===== LOADING MODAL ===== -->
   <div id="loadingModal" class="modal-overlay hidden">
     <div class="glass rounded-2xl p-8 max-w-md w-full text-center">
@@ -423,6 +458,13 @@ const els = {
   modeModal: document.getElementById('modeModal'),
   modeModalLessonName: document.getElementById('modeModalLessonName'),
   modeBackBtn: document.getElementById('modeBackBtn'),
+  ganjaranModal: document.getElementById('ganjaranModal'),
+  ganjaranBiasaBtn: document.getElementById('ganjaranBiasaBtn'),
+  ganjaranKotakBtn: document.getElementById('ganjaranKotakBtn'),
+  ganjaranBackBtn: document.getElementById('ganjaranBackBtn'),
+  rewardOverlay: document.getElementById('rewardOverlay'),
+  rewardCountdown: document.getElementById('rewardCountdown'),
+  rewardNextBtn: document.getElementById('rewardNextBtn'),
   loadingModal: document.getElementById('loadingModal'),
   cameraErrorModal: document.getElementById('cameraErrorModal'),
   victoryModal: document.getElementById('victoryModal'),
@@ -475,6 +517,42 @@ let lostSince = 0;
 let roundBusy = false;         // true while resolving a shot / showing feedback
 let shakeFrames = 0;
 let beamFx = null;             // {from:{x,y}, to:{x,y}, life}
+let gunaGanjaranGameBox = false; // [MOD 6] dipilih kat ganjaranModal sebelum main
+let rewardCountdownTimer = null;
+
+// [MOD 6] Titik tunggal untuk layan kesan jawapan betul/salah merentasi
+// ketiga-tiga sub-mod (Tembak/Padan/Isyarat): bunyi + isyarat fizikal ke
+// ilmuverse maujud, dan (bila betul & mode ganjaran dipilih) buka kotak
+// ganjaran 6 saat + tunggu cikgu tekan "Soalan Seterusnya" sebelum sambung.
+// `advanceFn` ialah fungsi yang akan dipanggil untuk terus ke soalan lain -
+// pada mode biasa ia terus dipanggil lepas feedbackDelayMs (caller yang
+// uruskan, sama macam sebelum ni); pada mode ganjaran, `handleJawapanResult`
+// sendiri yang simpan & panggil bila butang ditekan.
+function handleJawapanResult(betul, advanceFn) {
+  if (betul) { SFX.betul(); gbHantar('hw_betul'); } else { SFX.salah(); gbHantar('hw_salah'); }
+  if (betul && gunaGanjaranGameBox && advanceFn) {
+    gbHantar('buka_ganjaran');
+    tunjukRewardOverlay(advanceFn);
+    return true; // caller jangan auto-advance - overlay/butang yang uruskan
+  }
+  return false; // caller teruskan flow biasa (auto-advance lepas feedbackDelayMs)
+}
+function tunjukRewardOverlay(advanceFn) {
+  showModal(els.rewardOverlay);
+  let detik = 6;
+  els.rewardCountdown.textContent = detik;
+  clearInterval(rewardCountdownTimer);
+  rewardCountdownTimer = setInterval(() => {
+    detik--;
+    if (detik <= 0) { clearInterval(rewardCountdownTimer); els.rewardCountdown.textContent = '0'; }
+    else els.rewardCountdown.textContent = detik;
+  }, 1000);
+  els.rewardNextBtn.onclick = () => {
+    clearInterval(rewardCountdownTimer);
+    hideModal(els.rewardOverlay);
+    advanceFn();
+  };
+}
 let mpCamera = null;
 let handsModel = null;
 let videoMetrics = { vw: 1, vh: 1, scale: 1, sw: 1, sh: 1, sx: 0, sy: 0 };
@@ -530,7 +608,47 @@ const SFX = {
   explosion: () => { noiseBurst(0.35, 500, 0.4); tone(120, 0.3, 'sine', 0.2, 40); },
   deflect: () => { tone(160, 0.2, 'sawtooth', 0.2, 90); },
   missionComplete: () => { [392, 523, 659, 784, 1046, 1318].forEach((f, i) => setTimeout(() => tone(f, 0.3, 'triangle', 0.14), i * 110)); },
+  // [MOD 6] Bunyi khusus jawapan betul/salah (berasingan dari explosion/deflect
+  // di atas — explosion/deflect ialah kesan tembakan/pukulan, ni pula penanda
+  // jawapan yang jelas & konsisten merentasi ketiga-tiga sub-mod).
+  betul: () => { [523, 659, 784].forEach((f, i) => setTimeout(() => tone(f, 0.22, 'triangle', 0.17), i * 90)); },
+  salah: () => { tone(220, 0.28, 'sawtooth', 0.18, 140); },
 };
+
+// ------------------------------------------------------------------
+// MUSIC LATAR PERMAINAN — gelung ringkas 4-nota (Web Audio API, procedural)
+// ------------------------------------------------------------------
+let musicTimer = null, musicStep = 0;
+const MUSIC_NOTES = [196, 220, 247, 220]; // G3-A3-B3-A3, gelung lembut
+function mulaMusicLatar() {
+  if (musicTimer) return;
+  musicStep = 0;
+  musicTimer = setInterval(() => {
+    tone(MUSIC_NOTES[musicStep % MUSIC_NOTES.length], 0.5, 'sine', 0.045);
+    musicStep++;
+  }, 650);
+}
+function hentiMusicLatar() { clearInterval(musicTimer); musicTimer = null; }
+
+// ------------------------------------------------------------------
+// [MOD 6] SAMBUNGAN WEBSOCKET KE SERVER ILMUVERSE — hantar isyarat fizikal
+// (bunyi/LED pada "ilmuverse maujud") bila betul/salah/ganjaran. GameBox
+// tak perlu terima gameState, cuma hantar arahan sehala (fire-and-forget).
+// ------------------------------------------------------------------
+const GB_SERVER_URL = window.location.hostname === 'localhost' ? 'ws://localhost:3000' : `wss://${window.location.hostname}`;
+let gbWs = null, gbWsRetry = null;
+function gbSambungWS() {
+  try {
+    gbWs = new WebSocket(`${GB_SERVER_URL}/guru`);
+    gbWs.onopen = () => { clearTimeout(gbWsRetry); };
+    gbWs.onclose = () => { gbWsRetry = setTimeout(gbSambungWS, 3000); };
+    gbWs.onerror = () => {};
+  } catch (e) { gbWsRetry = setTimeout(gbSambungWS, 3000); }
+}
+function gbHantar(jenis) {
+  if (gbWs && gbWs.readyState === WebSocket.OPEN) gbWs.send(JSON.stringify({ jenis }));
+}
+gbSambungWS();
 
 // ------------------------------------------------------------------
 // UTIL
@@ -830,11 +948,15 @@ function resolveShot(hitDrone) {
   drones.forEach((d) => { if (d !== hitDrone) d.fading = true; d.revealed = true; });
   hitDrone.hit = true;
 
-  setTimeout(() => {
+  const lanjutTembak = () => {
     drones = [];
     if (!hitDrone.correct) { retryTembakRound(); return; } // soalan sama diulang
     if (remainingPool().length === 0) showVictory(); else nextRound();
-  }, CONFIG.GAME.feedbackDelayMs);
+  };
+  // [MOD 6] bunyi/isyarat fizikal + (bila betul & mode ganjaran) overlay
+  // kotak ganjaran yang tunggu butang ditekan sebelum lanjutTembak() dipanggil.
+  const diuruskanGanjaran = handleJawapanResult(hitDrone.correct, hitDrone.correct ? lanjutTembak : null);
+  if (!diuruskanGanjaran) setTimeout(lanjutTembak, CONFIG.GAME.feedbackDelayMs);
 }
 
 function fireAtDrone(drone) {
@@ -919,15 +1041,22 @@ function updateMatchingLogic() {
         SFX.explosion(); spawnExplosion(best.x, best.y, '#00e68a');
         setNova(`Bagus! ${matchHeld.word.melayu} = ${matchHeld.word.arab}`);
         updateHUD();
-        if (matchRoundDone >= matchRoundTotal) {
-          setTimeout(() => { remainingWords().length === 0 ? showVictory() : startPadanRound(); }, 900);
-        }
+        // [MOD 6] bunyi/isyarat fizikal tiap pasangan betul; bila mode
+        // ganjaran dipilih, overlay kotak ganjaran muncul & tunggu butang
+        // sebelum round seterusnya diteruskan (hanya relevan bila pasangan
+        // ni jugak yang menamatkan round semasa).
+        const lanjutPadan = () => {
+          if (matchRoundDone >= matchRoundTotal) { remainingWords().length === 0 ? showVictory() : startPadanRound(); }
+        };
+        const diuruskanGanjaran = handleJawapanResult(true, lanjutPadan);
+        if (!diuruskanGanjaran && matchRoundDone >= matchRoundTotal) setTimeout(lanjutPadan, 900);
       } else {
         combo = 1; missedShots++;
         SFX.deflect(); shakeFrames = 10;
         spawnShield(best.x, best.y);
         setNova('Belum tepat, cuba lagi.');
         updateHUD();
+        handleJawapanResult(false, null);
       }
     }
     matchHeld = null;
@@ -1073,10 +1202,12 @@ function resolveQuizAnswer(idx) {
     setNova(`Cuba lagi. Jawapan betul ialah "${quizTargetWord.melayu}".`);
   }
   updateHUD();
-  setTimeout(() => {
+  const lanjutIsyarat = () => {
     roundBusy = false;
     if (remainingWords().length === 0) showVictory(); else startIsyaratRound();
-  }, CONFIG.GAME.feedbackDelayMs);
+  };
+  const diuruskanGanjaran = handleJawapanResult(opt.correct, opt.correct ? lanjutIsyarat : null);
+  if (!diuruskanGanjaran) setTimeout(lanjutIsyarat, CONFIG.GAME.feedbackDelayMs);
 }
 
 // ------------------------------------------------------------------
@@ -1404,9 +1535,10 @@ function hideModal(el) { el.classList.add('hidden'); }
 async function goToStartMenu() {
   gameActive = false;
   stopCamera();
+  hentiMusicLatar(); // [MOD 6]
   els.hud.classList.add('hidden');
   els.quizPanel.classList.add('hidden');
-  hideModal(els.victoryModal); hideModal(els.reviewModal); hideModal(els.modeModal);
+  hideModal(els.victoryModal); hideModal(els.reviewModal); hideModal(els.modeModal); hideModal(els.ganjaranModal); hideModal(els.rewardOverlay);
   drones = []; matchLeft = []; matchRight = []; matchHeld = null;
   showModal(els.startModal);
   loadLessonList();
@@ -1452,6 +1584,14 @@ async function selectModeAndStart(mode) {
   }
   currentMode = mode;
   hideModal(els.modeModal);
+  // [MOD 6] Tanya mode biasa/ganjaran dulu sebelum kamera dibuka -
+  // proceedAfterGanjaranChoice() yang sambung baki flow (camera init, dsb).
+  showModal(els.ganjaranModal);
+}
+
+async function proceedAfterGanjaranChoice(useGanjaran) {
+  gunaGanjaranGameBox = useGanjaran;
+  hideModal(els.ganjaranModal);
   showModal(els.loadingModal);
   els.loadingMsg.textContent = 'Mengaktifkan sistem pengesanan tangan...';
   els.loadingBar.style.width = '50%';
@@ -1465,7 +1605,7 @@ async function selectModeAndStart(mode) {
     setTimeout(() => {
       hideModal(els.loadingModal);
       els.hud.classList.remove('hidden');
-      els.quizPanel.classList.toggle('hidden', mode !== 'isyarat');
+      els.quizPanel.classList.toggle('hidden', currentMode !== 'isyarat');
       gameActive = true;
       startGameSession();
     }, 300);
@@ -1479,6 +1619,7 @@ async function selectModeAndStart(mode) {
 function startGameSession() {
   score = 0; combo = 1; maxComboReached = 1; missedShots = 0; correctHits = 0;
   masteredIds = new Set();
+  mulaMusicLatar(); // [MOD 6] music latar permainan
   if (currentMode === 'padan') startPadanRound();
   else if (currentMode === 'isyarat') startIsyaratRound();
   else nextRound(); // tembak (A/B/C)
@@ -1486,6 +1627,7 @@ function startGameSession() {
 
 function showVictoryModalCommon(wordsLabelText) {
   gameActive = false;
+  hentiMusicLatar(); // [MOD 6]
   SFX.missionComplete();
   const attempts = correctHits + missedShots;
   const acc = attempts ? correctHits / attempts : 1;
@@ -1539,12 +1681,16 @@ els.startBtn.addEventListener('click', () => {
   if (id) chooseLesson(id);
 });
 els.modeBackBtn.addEventListener('click', () => { hideModal(els.modeModal); showModal(els.startModal); });
-document.querySelectorAll('.mode-card').forEach((btn) => {
+document.querySelectorAll('#modeModal .mode-card').forEach((btn) => {
   btn.addEventListener('click', () => selectModeAndStart(btn.dataset.mode));
 });
+// [MOD 6] Butang modal pilih mode biasa/kotak ganjaran
+els.ganjaranBiasaBtn.addEventListener('click', () => proceedAfterGanjaranChoice(false));
+els.ganjaranKotakBtn.addEventListener('click', () => proceedAfterGanjaranChoice(true));
+els.ganjaranBackBtn.addEventListener('click', () => { hideModal(els.ganjaranModal); showModal(els.modeModal); });
 els.retryCameraBtn.addEventListener('click', () => {
   hideModal(els.cameraErrorModal);
-  if (currentLesson) selectModeAndStart(currentMode); else goToStartMenu();
+  if (currentLesson) proceedAfterGanjaranChoice(gunaGanjaranGameBox); else goToStartMenu();
 });
 els.replayBtn.addEventListener('click', () => {
   hideModal(els.victoryModal);
