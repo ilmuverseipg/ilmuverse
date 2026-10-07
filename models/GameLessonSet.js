@@ -43,6 +43,49 @@ const TembakQuestionSchema = new mongoose.Schema(
   { _id: true, timestamps: false }
 );
 
+// Satu pilihan imbuhan (awalan ATAU akhiran) bagi satu Soalan Imbuhan Apitan
+// - "rumi" ialah label yang dipaparkan sebelum disuaikan (cth: "Me-", "-kan"),
+// "jawi" ialah serpihan ejaan Jawi bagi imbuhan itu sahaja (cth: "م", "كن"),
+// digabung dgn dasarJawi bila murid padan betul utk bina ejaan lengkap.
+const ApitanOptionSchema = new mongoose.Schema(
+  {
+    rumi: { type: String, required: true, trim: true },
+    jawi: { type: String, required: true, trim: true },
+    correct: { type: Boolean, default: false },
+  },
+  { _id: false }
+);
+
+// Satu Soalan Imbuhan Apitan (Mod Imbuhan Apitan - Jawi) - murid cubit &
+// tarik SATU pilihan awalan (kanan) + SATU pilihan akhiran (kiri) ke kata
+// dasar (tengah) sehingga kedua-duanya betul, barulah perkataan Jawi lengkap
+// terbentuk. Ejaan Jawi semua bahagian (dasar, setiap pilihan, & jawapan
+// lengkap) ditaip SENDIRI oleh guru - sistem TIDAK cuba auto-tukar Rumi ke
+// Jawi (ejaan Jawi kata terbitan tak selalu ikut bunyi terus).
+const ApitanQuestionSchema = new mongoose.Schema(
+  {
+    soalanRumi: { type: String, required: true, trim: true }, // cth: "Kehidupan" - dipaparkan di atas skrin
+    dasarRumi: { type: String, default: '', trim: true }, // cth: "hidup" - label kecil (pilihan)
+    dasarJawi: { type: String, required: true, trim: true }, // cth: "هيدوڤ" - dipaparkan tetap di tengah
+    awalanOptions: {
+      type: [ApitanOptionSchema],
+      validate: {
+        validator: (v) => Array.isArray(v) && v.length === 3 && v.filter((o) => o.correct).length === 1,
+        message: 'Imbuhan Awalan perlukan tepat 3 pilihan dengan SATU sahaja ditanda betul.',
+      },
+    },
+    akhiranOptions: {
+      type: [ApitanOptionSchema],
+      validate: {
+        validator: (v) => Array.isArray(v) && v.length === 3 && v.filter((o) => o.correct).length === 1,
+        message: 'Imbuhan Akhiran perlukan tepat 3 pilihan dengan SATU sahaja ditanda betul.',
+      },
+    },
+    jawiLengkap: { type: String, required: true, trim: true }, // cth: "كهيدوڤن" - dipaparkan bila kedua2 betul
+  },
+  { _id: true, timestamps: false }
+);
+
 // Satu set/topik pelajaran (cth: "Alatan Bilik Darjah", "Haiwan", "Warna")
 const GameLessonSetSchema = new mongoose.Schema(
   {
@@ -59,6 +102,12 @@ const GameLessonSetSchema = new mongoose.Schema(
     // edit BERASINGAN drpd "words" di Panel Guru.
     tembakQuestions: {
       type: [TembakQuestionSchema],
+      default: [],
+    },
+    // "apitanQuestions" - dipakai oleh Mod Imbuhan Apitan (Jawi) sahaja,
+    // tempat edit BERASINGAN drpd "words"/"tembakQuestions".
+    apitanQuestions: {
+      type: [ApitanQuestionSchema],
       default: [],
     },
   },

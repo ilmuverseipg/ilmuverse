@@ -41,6 +41,39 @@ wsTembak['!cols'] = [{ wch: 40 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 
 XLSX.utils.book_append_sheet(wbTembak, wsTembak, 'Soalan Tembak');
 XLSX.writeFile(wbTembak, path.join(outDir, 'templat-soalan-tembak.xlsx'));
 
+// ------------------------------------------------------------------
+// Templat 3: Soalan Imbuhan Apitan (Mod Imbuhan Apitan - Jawi)
+// NOTA: baris contoh di bawah SEKADAR ILUSTRASI format lajur - sila SEMAK
+// & GANTIKAN ejaan Jawi dgn ejaan yang disahkan sendiri oleh guru sebelum
+// guna sebenar dgn murid (ejaan Jawi kata terbitan tak selalu ikut bunyi
+// terus, jadi sistem ni sengaja TIDAK auto-tukar Rumi->Jawi).
+// ------------------------------------------------------------------
+const apitanRows = [
+  [
+    'Soalan (Rumi)', 'Kata Dasar (Rumi)', 'Kata Dasar (Jawi)',
+    'Awalan A (Rumi)', 'Awalan A (Jawi)', 'Awalan B (Rumi)', 'Awalan B (Jawi)', 'Awalan C (Rumi)', 'Awalan C (Jawi)', 'Awalan Betul (A/B/C)',
+    'Akhiran A (Rumi)', 'Akhiran A (Jawi)', 'Akhiran B (Rumi)', 'Akhiran B (Jawi)', 'Akhiran C (Rumi)', 'Akhiran C (Jawi)', 'Akhiran Betul (A/B/C)',
+    'Jawapan Jawi Lengkap',
+  ],
+  [
+    'Kehidupan', 'hidup', 'هيدوڤ',
+    'Ke-', 'ک', 'Ber-', 'بر', 'Pe-', 'ڤ', 'A',
+    '-an', 'ن', '-kan', 'كن', '-i', 'ي', 'A',
+    'كهيدوڤن',
+  ],
+];
+const wbApitan = XLSX.utils.book_new();
+const wsApitan = XLSX.utils.aoa_to_sheet(apitanRows);
+wsApitan['!cols'] = [
+  { wch: 20 }, { wch: 16 }, { wch: 16 },
+  { wch: 14 }, { wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 16 },
+  { wch: 14 }, { wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 16 },
+  { wch: 22 },
+];
+XLSX.utils.book_append_sheet(wbApitan, wsApitan, 'Imbuhan Apitan');
+XLSX.writeFile(wbApitan, path.join(outDir, 'templat-imbuhan-apitan.xlsx'));
+
 console.log('Templat dijana:');
 console.log(' -', path.join(outDir, 'templat-perkataan.xlsx'));
 console.log(' -', path.join(outDir, 'templat-soalan-tembak.xlsx'));
+console.log(' -', path.join(outDir, 'templat-imbuhan-apitan.xlsx'));

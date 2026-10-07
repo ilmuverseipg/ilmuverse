@@ -21,13 +21,14 @@ function handleXlsxUpload(req, res, next) {
 // GET /api/game-lessons - senarai ringkas semua set pelajaran (skrin pilih misi)
 router.get('/', async (req, res) => {
   try {
-    const lessons = await GameLessonSet.find({}, 'name description words tembakQuestions').sort({ createdAt: 1 });
+    const lessons = await GameLessonSet.find({}, 'name description words tembakQuestions apitanQuestions').sort({ createdAt: 1 });
     const summary = lessons.map((l) => ({
       _id: l._id,
       name: l.name,
       description: l.description,
       wordCount: l.words.length,
       tembakQuestionCount: l.tembakQuestions.length,
+      apitanQuestionCount: l.apitanQuestions.length,
     }));
     res.json(summary);
   } catch (err) {
@@ -326,6 +327,202 @@ router.post('/:id/tembak-questions/import-xlsx', handleXlsxUpload, async (req, r
       if (optErr) { rowErrors.push(`Baris ${excelRowNum}: ${optErr}`); return; }
 
       lesson.tembakQuestions.push({ soalan, options });
+      added++;
+    });
+
+    if (added === 0) {
+      return res.status(400).json({ error: 'Tiada baris sah dijumpai.', rowErrors });
+    }
+    await lesson.save();
+    res.status(201).json({ added, rowErrors, lesson });
+  } catch (err) {
+    res.status(400).json({ error: 'Gagal import fail Excel.', detail: err.message });
+  }
+});
+
+// ------------------------------------------------------------------
+// SOALAN IMBUHAN APITAN (Mod Imbuhan Apitan - Jawi) - tempat edit BERASINGAN
+// drpd "words"/"tembakQuestions". Setiap soalan ada kata dasar (Rumi+Jawi
+// tetap), 3 pilihan Imbuhan Awalan (Rumi+Jawi) dengan SATU betul, 3 pilihan
+// Imbuhan Akhiran (Rumi+Jawi) dengan SATU betul, & ejaan Jawi lengkap.
+// ------------------------------------------------------------------
+
+function validateApitanOptions(options, labelMalay) {
+  if (!Array.isArray(options) || options.length !== 3) return `${labelMalay} perlukan tepat 3 pilihan.`;
+  if (options.some((o) => !o || !String(o.rumi || '').trim() || !String(o.jawi || '').trim())) {
+    return `Semua 3 pilihan ${labelMalay} mesti diisi (Rumi & Jawi).`;
+  }
+  if (options.filter((o) => o.correct).length !== 1) return `Tandakan SATU sahaja pilihan ${labelMalay} yang betul.`;
+  return null;
+}
+
+function cleanApitanOptions(options) {
+  return options.map((o) => ({ rumi: String(o.rumi).trim(), jawi: String(o.jawi).trim(), correct: !!o.correct }));
+}
+
+// POST /api/game-lessons/:id/apitan-questions - tambah satu Soalan Apitan
+router.post('/:id/apitan-questions', async (req, res) => {
+  try {
+    const { soalanRumi, dasarRumi, dasarJawi, awalanOptions, akhiranOptions, jawiLengkap } = req.body;
+    if (!soalanRumi || !soalanRumi.trim()) return res.status(400).json({ error: 'Soalan (Rumi) diperlukan.' });
+    if (!dasarJawi || !dasarJawi.trim()) return res.status(400).json({ error: 'Kata Dasar (Jawi) diperlukan.' });
+    if (!jawiLengkap || !jawiLengkap.trim()) return res.status(400).json({ error: 'Jawapan Jawi Lengkap diperlukan.' });
+    const awalanErr = validateApitanOptions(awalanOptions, 'Imbuhan Awalan');
+    if (awalanErr) return res.status(400).json({ error: awalanErr });
+    const akhiranErr = validateApitanOptions(akhiranOptions, 'Imbuhan Akhiran');
+    if (akhiranErr) return res.status(400).json({ error: akhiranErr });
+    const lesson = await GameLessonSet.findById(req.params.id);
+    if (!lesson) return res.status(404).json({ error: 'Set pelajaran tidak dijumpai.' });
+    lesson.apitanQuestions.push({
+      soalanRumi: soalanRumi.trim(),
+      dasarRumi: (dasarRumi || '').trim(),
+      dasarJawi: dasarJawi.trim(),
+      awalanOptions: cleanApitanOptions(awalanOptions),
+      akhiranOptions: cleanApitanOptions(akhiranOptions),
+      jawiLengkap: jawiLengkap.trim(),
+    });
+    await lesson.save();
+    res.status(201).json(lesson);
+  } catch (err) {
+    res.status(400).json({ error: 'Gagal tambah Soalan Apitan.', detail: err.message });
+  }
+});
+
+// PUT /api/game-lessons/:id/apitan-questions/reorder - susun semula URUTAN
+// Soalan Apitan (ciri seret & lepas / drag di Panel Guru). Sama corak dgn
+// reorder tembakQuestions di atas.
+router.put('/:id/apitan-questions/reorder', async (req, res) => {
+  try {
+    const { order } = req.body;
+    if (!Array.isArray(order) || !order.length) return res.status(400).json({ error: 'Senarai urutan diperlukan.' });
+    const lesson = await GameLessonSet.findById(req.params.id);
+    if (!lesson) return res.status(404).json({ error: 'Set pelajaran tidak dijumpai.' });
+    const byId = new Map(lesson.apitanQuestions.map((q) => [String(q._id), q]));
+    if (order.length !== byId.size || order.some((qid) => !byId.has(String(qid)))) {
+      return res.status(400).json({ error: 'Senarai urutan tidak sepadan dengan soalan sedia ada.' });
+    }
+    lesson.apitanQuestions = order.map((qid) => byId.get(String(qid)));
+    await lesson.save();
+    res.json(lesson);
+  } catch (err) {
+    res.status(400).json({ error: 'Gagal susun semula Soalan Apitan.', detail: err.message });
+  }
+});
+
+// PUT /api/game-lessons/:id/apitan-questions/:qId - edit satu Soalan Apitan
+router.put('/:id/apitan-questions/:qId', async (req, res) => {
+  try {
+    const { soalanRumi, dasarRumi, dasarJawi, awalanOptions, akhiranOptions, jawiLengkap } = req.body;
+    const lesson = await GameLessonSet.findById(req.params.id);
+    if (!lesson) return res.status(404).json({ error: 'Set pelajaran tidak dijumpai.' });
+    const q = lesson.apitanQuestions.id(req.params.qId);
+    if (!q) return res.status(404).json({ error: 'Soalan Apitan tidak dijumpai.' });
+
+    if (awalanOptions !== undefined) {
+      const err = validateApitanOptions(awalanOptions, 'Imbuhan Awalan');
+      if (err) return res.status(400).json({ error: err });
+      q.awalanOptions = cleanApitanOptions(awalanOptions);
+    }
+    if (akhiranOptions !== undefined) {
+      const err = validateApitanOptions(akhiranOptions, 'Imbuhan Akhiran');
+      if (err) return res.status(400).json({ error: err });
+      q.akhiranOptions = cleanApitanOptions(akhiranOptions);
+    }
+    if (soalanRumi !== undefined) {
+      if (!soalanRumi.trim()) return res.status(400).json({ error: 'Soalan (Rumi) diperlukan.' });
+      q.soalanRumi = soalanRumi.trim();
+    }
+    if (dasarRumi !== undefined) q.dasarRumi = dasarRumi.trim();
+    if (dasarJawi !== undefined) {
+      if (!dasarJawi.trim()) return res.status(400).json({ error: 'Kata Dasar (Jawi) diperlukan.' });
+      q.dasarJawi = dasarJawi.trim();
+    }
+    if (jawiLengkap !== undefined) {
+      if (!jawiLengkap.trim()) return res.status(400).json({ error: 'Jawapan Jawi Lengkap diperlukan.' });
+      q.jawiLengkap = jawiLengkap.trim();
+    }
+    await lesson.save();
+    res.json(lesson);
+  } catch (err) {
+    res.status(400).json({ error: 'Gagal kemaskini Soalan Apitan.', detail: err.message });
+  }
+});
+
+// DELETE /api/game-lessons/:id/apitan-questions/:qId - padam satu Soalan Apitan
+router.delete('/:id/apitan-questions/:qId', async (req, res) => {
+  try {
+    const lesson = await GameLessonSet.findById(req.params.id);
+    if (!lesson) return res.status(404).json({ error: 'Set pelajaran tidak dijumpai.' });
+    lesson.apitanQuestions.id(req.params.qId).deleteOne();
+    await lesson.save();
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(400).json({ error: 'Gagal padam Soalan Apitan.', detail: err.message });
+  }
+});
+
+// POST /api/game-lessons/:id/apitan-questions/import-xlsx - import pukal drpd
+// fail Excel (.xlsx) templat "templat-imbuhan-apitan.xlsx". Lajur (18):
+// Soalan(Rumi), Dasar(Rumi), Dasar(Jawi),
+// Awalan A(Rumi), Awalan A(Jawi), Awalan B(Rumi), Awalan B(Jawi),
+// Awalan C(Rumi), Awalan C(Jawi), Awalan Betul(A/B/C),
+// Akhiran A(Rumi), Akhiran A(Jawi), Akhiran B(Rumi), Akhiran B(Jawi),
+// Akhiran C(Rumi), Akhiran C(Jawi), Akhiran Betul(A/B/C), Jawapan Jawi Lengkap.
+// Baris 1 = header, dilangkau. Baris tak lengkap/jawapan tak sah dilangkau &
+// disenaraikan dlm ralat supaya guru tahu baris mana perlu dibetulkan.
+router.post('/:id/apitan-questions/import-xlsx', handleXlsxUpload, async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'Sila pilih fail Excel (.xlsx).' });
+    const lesson = await GameLessonSet.findById(req.params.id);
+    if (!lesson) return res.status(404).json({ error: 'Set pelajaran tidak dijumpai.' });
+
+    let rows;
+    try {
+      const wb = XLSX.read(req.file.buffer, { type: 'buffer' });
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      rows = XLSX.utils.sheet_to_json(sheet, { header: 1, blankrows: false, defval: '' });
+    } catch (parseErr) {
+      return res.status(400).json({ error: 'Fail Excel tidak sah/rosak. Sila guna templat yang disediakan.' });
+    }
+
+    const letters = ['A', 'B', 'C'];
+    let added = 0;
+    const rowErrors = [];
+
+    rows.slice(1).forEach((row, idx) => {
+      const excelRowNum = idx + 2; // +2 sebab baris 1 = header (1-based utk guru)
+      const soalanRumi = String(row[0] || '').trim();
+      const dasarRumi = String(row[1] || '').trim();
+      const dasarJawi = String(row[2] || '').trim();
+      const awalanTexts = [
+        { rumi: String(row[3] || '').trim(), jawi: String(row[4] || '').trim() },
+        { rumi: String(row[5] || '').trim(), jawi: String(row[6] || '').trim() },
+        { rumi: String(row[7] || '').trim(), jawi: String(row[8] || '').trim() },
+      ];
+      const awalanJawapan = String(row[9] || '').trim().toUpperCase();
+      const akhiranTexts = [
+        { rumi: String(row[10] || '').trim(), jawi: String(row[11] || '').trim() },
+        { rumi: String(row[12] || '').trim(), jawi: String(row[13] || '').trim() },
+        { rumi: String(row[14] || '').trim(), jawi: String(row[15] || '').trim() },
+      ];
+      const akhiranJawapan = String(row[16] || '').trim().toUpperCase();
+      const jawiLengkap = String(row[17] || '').trim();
+
+      const isRowBlank = !soalanRumi && !dasarJawi && !jawiLengkap && awalanTexts.every((o) => !o.rumi && !o.jawi) && akhiranTexts.every((o) => !o.rumi && !o.jawi);
+      if (isRowBlank) return; // baris kosong - senyap langkau
+
+      if (!soalanRumi) { rowErrors.push(`Baris ${excelRowNum}: Soalan (Rumi) kosong.`); return; }
+      if (!dasarJawi) { rowErrors.push(`Baris ${excelRowNum}: Kata Dasar (Jawi) kosong.`); return; }
+      if (!jawiLengkap) { rowErrors.push(`Baris ${excelRowNum}: Jawapan Jawi Lengkap kosong.`); return; }
+      if (awalanTexts.some((o) => !o.rumi || !o.jawi)) { rowErrors.push(`Baris ${excelRowNum}: Semua 3 pilihan Awalan (Rumi & Jawi) mesti diisi.`); return; }
+      if (!letters.includes(awalanJawapan)) { rowErrors.push(`Baris ${excelRowNum}: Awalan Betul mesti A, B atau C (dapat "${row[9] || ''}").`); return; }
+      if (akhiranTexts.some((o) => !o.rumi || !o.jawi)) { rowErrors.push(`Baris ${excelRowNum}: Semua 3 pilihan Akhiran (Rumi & Jawi) mesti diisi.`); return; }
+      if (!letters.includes(akhiranJawapan)) { rowErrors.push(`Baris ${excelRowNum}: Akhiran Betul mesti A, B atau C (dapat "${row[16] || ''}").`); return; }
+
+      const awalanOptions = letters.map((letter, i) => ({ ...awalanTexts[i], correct: letter === awalanJawapan }));
+      const akhiranOptions = letters.map((letter, i) => ({ ...akhiranTexts[i], correct: letter === akhiranJawapan }));
+
+      lesson.apitanQuestions.push({ soalanRumi, dasarRumi, dasarJawi, awalanOptions, akhiranOptions, jawiLengkap });
       added++;
     });
 

@@ -186,6 +186,17 @@
   .icon-signal-box .lamp.amber{ background:var(--line-d); box-shadow:0 0 9px rgba(247,168,27,1); animation: lampPulse 1.1s ease-in-out infinite; }
   @keyframes lampPulse{ 0%,100%{ opacity:1; transform:scale(1);} 50%{ opacity:.45; transform:scale(.82);} }
 
+  /* Mod Imbuhan Apitan: 3 gerabak disambung (akhiran-dasar-awalan) - macam
+     kereta sambungan/kopling, lambangkan imbuhan apitan membalut kata dasar */
+  .mode-card[data-mode="apitan"]{ border-left-color: var(--line-c); }
+  .mode-card[data-mode="apitan"]:hover{ border-left-color: var(--line-c); box-shadow: 0 0 20px rgba(0,152,216,.3); }
+  .icon-apitan{ position:relative; width:84px; height:56px; display:flex; align-items:center; justify-content:center; gap:3px; }
+  .icon-apitan .seg{ height:34px; border-radius:7px; border:2px solid rgba(255,255,255,.22); }
+  .icon-apitan .seg.left{ width:20px; background:linear-gradient(165deg, var(--line-c), #054a63); }
+  .icon-apitan .seg.mid{ width:30px; height:44px; background:linear-gradient(165deg, #cbd5e1, #64748b); }
+  .icon-apitan .seg.right{ width:20px; background:linear-gradient(165deg, var(--line-b), #0a5c2e); }
+  .icon-apitan .coupler{ width:5px; height:4px; background:#ffcc00; border-radius:1px; }
+
   /* ===== FINGER QUIZ PANEL - gaya papan berlepas (departure board) stesen ===== */
   #quizPanel{ z-index: 20; }
   .quiz-option{
@@ -303,13 +314,20 @@
           <div class="mode-name">MOD PADAN</div>
           <div class="mode-desc">Cubit (ibu jari + telunjuk) untuk tukar laluan &amp; sambung pasangan soalan-jawapan yang betul, macam suis landasan.</div>
         </button>
-        <button class="mode-card sm:col-span-2" data-mode="isyarat">
+        <button class="mode-card" data-mode="isyarat">
           <div class="mode-icon"><div class="icon-signal">
             <div class="icon-signal-pole"></div>
             <div class="icon-signal-box"><span class="lamp red"></span><span class="lamp amber"></span><span class="lamp green"></span></div>
           </div></div>
           <div class="mode-name">MOD ISYARAT JARI</div>
           <div class="mode-desc">Jawab kuiz 4 pilihan dengan tunjuk bilangan jari (1-4) — macam beri isyarat di tiang lampu isyarat stesen. Sesuai kuiz seluruh kelas!</div>
+        </button>
+        <button class="mode-card" data-mode="apitan">
+          <div class="mode-icon"><div class="icon-apitan">
+            <div class="seg left"></div><div class="coupler"></div><div class="seg mid"></div><div class="coupler"></div><div class="seg right"></div>
+          </div></div>
+          <div class="mode-name">MOD IMBUHAN APITAN</div>
+          <div class="mode-desc">Cubit &amp; tarik imbuhan awalan (kanan) dan imbuhan akhiran (kiri) ke kata dasar (tengah) untuk bina perkataan Jawi yang lengkap.</div>
         </button>
       </div>
       <div class="text-center mt-5">
@@ -570,6 +588,18 @@ let quizTargetWord = null;
 let quizHoldCount = -1;
 let quizHoldStart = 0;
 
+// Mod Imbuhan Apitan (Jawi) - cubit & tarik imbuhan awalan (kanan)/akhiran
+// (kiri) ke kata dasar (tengah, tetap). "side" pada apitanHeld ialah
+// 'awalan' atau 'akhiran' - tentukan slot sasaran mana yg disemak semasa lepas.
+let apitanAwalanOptions = [], apitanAkhiranOptions = [];
+let apitanHeld = null;          // { side: 'awalan' | 'akhiran', card }
+let apitanHeldPos = { x: 0, y: 0 };
+let apitanAwalanLocked = false, apitanAkhiranLocked = false;
+let apitanDasarPos = { x: 0, y: 0 };
+let apitanAwalanSlotPos = { x: 0, y: 0 };  // slot kanan drpd dasar - utk imbuhan awalan
+let apitanAkhiranSlotPos = { x: 0, y: 0 }; // slot kiri drpd dasar - utk imbuhan akhiran
+let currentApitanQuestion = null;
+
 // ------------------------------------------------------------------
 // AUDIO — Procedural Sound Synthesizer (Web Audio API, tiada fail .mp3/.wav)
 // ------------------------------------------------------------------
@@ -703,8 +733,9 @@ async function loadLessonList() {
       const parts = [];
       if (l.wordCount > 0) parts.push(`${l.wordCount} perkataan`);
       if (l.tembakQuestionCount > 0) parts.push(`${l.tembakQuestionCount} soalan tembak`);
+      if (l.apitanQuestionCount > 0) parts.push(`${l.apitanQuestionCount} soalan apitan`);
       opt.textContent = `${l.name} (${parts.length ? parts.join(', ') : 'kosong'})`;
-      if (l.wordCount === 0 && l.tembakQuestionCount === 0) opt.disabled = true;
+      if (l.wordCount === 0 && l.tembakQuestionCount === 0 && l.apitanQuestionCount === 0) opt.disabled = true;
       els.lessonSelect.appendChild(opt);
     });
     els.lessonStatus.textContent = 'Pilih topik dan tekan SETERUSNYA.';
@@ -807,9 +838,9 @@ function stopCamera() {
 // (lihat nota berasingan di Panel Guru). activePool() pulangkan senarai yg
 // betul ikut currentMode supaya progress/HUD sentiasa tepat utk mod semasa.
 function activePool() {
-  return currentMode === 'tembak'
-    ? (currentLesson.tembakQuestions || [])
-    : (currentLesson.words || []);
+  if (currentMode === 'tembak') return currentLesson.tembakQuestions || [];
+  if (currentMode === 'apitan') return currentLesson.apitanQuestions || [];
+  return currentLesson.words || [];
 }
 
 function remainingWords() {
@@ -1211,6 +1242,233 @@ function resolveQuizAnswer(idx) {
 }
 
 // ------------------------------------------------------------------
+// MOD: IMBUHAN APITAN (Jawi) - cubit & tarik SATU imbuhan awalan (pool
+// kanan) & SATU imbuhan akhiran (pool kiri) ke kata dasar (tetap, tengah).
+// Guna "apitanQuestions" (tempat edit berasingan di Panel Guru) - BUKAN
+// "words"/"tembakQuestions". Lihat ApitanOptionSchema/ApitanQuestionSchema
+// (models/GameLessonSet.js) - ejaan Jawi semua bahagian ditaip SENDIRI oleh
+// guru, sistem tidak cuba auto-tukar Rumi->Jawi.
+// ------------------------------------------------------------------
+function layoutApitanRound(q) {
+  const dasarY = H * 0.52;
+  apitanDasarPos = { x: W / 2, y: dasarY };
+  // Slot awalan di KANAN dasar, slot akhiran di KIRI dasar - padan dgn
+  // susunan bacaan Jawi (kanan->kiri): awalan dibaca dahulu (kanan sekali),
+  // diikuti dasar (tengah), diikuti akhiran (kiri sekali).
+  apitanAwalanSlotPos = { x: W / 2 + 185, y: dasarY };
+  apitanAkhiranSlotPos = { x: W / 2 - 185, y: dasarY };
+
+  const poolXAwalan = W * 0.87, poolXAkhiran = W * 0.13;
+  const marginY = H * 0.28, usableH = H * 0.42, n = 3;
+  apitanAwalanOptions = shuffle(q.awalanOptions).map((opt, i) => ({
+    opt, matched: false, x: poolXAwalan, y: marginY + usableH * ((i + 0.5) / n),
+  }));
+  apitanAkhiranOptions = shuffle(q.akhiranOptions).map((opt, i) => ({
+    opt, matched: false, x: poolXAkhiran, y: marginY + usableH * ((i + 0.5) / n),
+  }));
+
+  els.bannerLabel.textContent = `SOALAN ${currentQuestionNumber()}`;
+  els.bannerTarget.textContent = q.soalanRumi;
+  els.bannerTarget.classList.remove('font-arabic'); els.bannerTarget.setAttribute('dir', 'auto');
+  setNova('Cubit (ibu jari + telunjuk rapat) SATU imbuhan awalan (kanan) & SATU imbuhan akhiran (kiri), tarik ke kata dasar di tengah.');
+}
+
+function startApitanRound() {
+  const pool = remainingPool();
+  currentApitanQuestion = pool[0];
+  apitanAwalanLocked = false;
+  apitanAkhiranLocked = false;
+  apitanHeld = null;
+  roundBusy = false;
+  layoutApitanRound(currentApitanQuestion);
+  updateHUD();
+}
+
+// Jawapan SALAH pada mana2 sisi -> kad melantun balik ke pool (tak dibuang),
+// maklum balas "SALAH" besar dipaparkan macam mod lain. Jawapan BETUL pada
+// SATU sisi -> kunci sisi itu sahaja dgn maklum balas RINGAN (bukan overlay
+// ganjaran penuh) - overlay/isyarat fizikal penuh cuma dicetuskan SEKALI bila
+// KEDUA-DUA sisi (awalan & akhiran) sudah betul (lihat finishApitanQuestion()).
+function resolveApitanDrop(side, card) {
+  if (card.opt.correct) {
+    card.matched = true;
+    if (side === 'awalan') apitanAwalanLocked = true; else apitanAkhiranLocked = true;
+    score += 40 * combo;
+    SFX.targetLock();
+    spawnExplosion(card.x, card.y, side === 'awalan' ? '#00a651' : '#0098d8');
+    setNova(`Bagus! Imbuhan ${side === 'awalan' ? 'awalan' : 'akhiran'} "${card.opt.rumi}" tepat!`);
+    updateHUD();
+    if (apitanAwalanLocked && apitanAkhiranLocked) finishApitanQuestion();
+  } else {
+    combo = 1; missedShots++;
+    SFX.deflect(); shakeFrames = 10;
+    spawnShield(card.x, card.y);
+    showFeedback(false);
+    setNova('Belum tepat, cuba lagi.');
+    updateHUD();
+    handleJawapanResult(false, null);
+  }
+}
+
+function finishApitanQuestion() {
+  roundBusy = true;
+  showFeedback(true);
+  correctHits++;
+  score += 100 * combo; combo = Math.min(CONFIG.GAME.maxCombo, combo + 1); maxComboReached = Math.max(maxComboReached, combo);
+  masteredIds.add(currentApitanQuestion._id);
+  setNova(`Hebat! Perkataan lengkap: ${currentApitanQuestion.jawiLengkap}`);
+  updateHUD();
+  const lanjutApitan = () => {
+    roundBusy = false;
+    if (remainingPool().length === 0) showVictory(); else startApitanRound();
+  };
+  const diuruskanGanjaran = handleJawapanResult(true, lanjutApitan);
+  if (!diuruskanGanjaran) setTimeout(lanjutApitan, CONFIG.GAME.feedbackDelayMs);
+}
+
+function updateApitanLogic() {
+  const p = pinchPoint || rawPalm;
+  if (!p) { apitanHeld = null; return; }
+  apitanHeldPos.x = apitanHeldPos.x ? lerp(apitanHeldPos.x, p.x, 0.45) : p.x;
+  apitanHeldPos.y = apitanHeldPos.y ? lerp(apitanHeldPos.y, p.y, 0.45) : p.y;
+
+  if (isPinching) {
+    if (!apitanHeld && !roundBusy) {
+      let best = null, bestD = 90, bestSide = null;
+      if (!apitanAwalanLocked) {
+        apitanAwalanOptions.forEach((c) => { if (c.matched) return; const dd = dist(p.x, p.y, c.x, c.y); if (dd < bestD) { bestD = dd; best = c; bestSide = 'awalan'; } });
+      }
+      if (!apitanAkhiranLocked) {
+        apitanAkhiranOptions.forEach((c) => { if (c.matched) return; const dd = dist(p.x, p.y, c.x, c.y); if (dd < bestD) { bestD = dd; best = c; bestSide = 'akhiran'; } });
+      }
+      if (best) apitanHeld = { side: bestSide, card: best };
+    }
+  } else if (apitanHeld) {
+    const target = apitanHeld.side === 'awalan' ? apitanAwalanSlotPos : apitanAkhiranSlotPos;
+    const dd = dist(apitanHeldPos.x, apitanHeldPos.y, target.x, target.y);
+    const held = apitanHeld;
+    apitanHeld = null;
+    if (dd < 90) resolveApitanDrop(held.side, held.card);
+  }
+}
+
+function drawApitanOptionCard(c, color) {
+  if (c.matched) return;
+  const isHeld = apitanHeld && apitanHeld.card === c;
+  const cx = isHeld ? apitanHeldPos.x : c.x;
+  const cy = isHeld ? apitanHeldPos.y : c.y;
+  const w = 150, h = 64;
+  ctx.save();
+  if (isHeld) { ctx.shadowColor = color; ctx.shadowBlur = 26; }
+  const grad = ctx.createLinearGradient(cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2);
+  grad.addColorStop(0, isHeld ? 'rgba(255,255,255,0.18)' : 'rgba(20,24,34,0.72)');
+  grad.addColorStop(1, 'rgba(10,13,20,0.8)');
+  ctx.fillStyle = grad;
+  roundRect(cx - w / 2, cy - h / 2, w, h, 12);
+  ctx.fill();
+  ctx.strokeStyle = isHeld ? color : 'rgba(138,148,166,0.6)'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = color;
+  roundRect(cx - w / 2, cy - h / 2, 6, h, 3);
+  ctx.fill();
+
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.direction = 'rtl'; ctx.font = '700 22px "Noto Naskh Arabic", serif'; ctx.fillStyle = '#f5f7fa';
+  ctx.fillText(c.opt.jawi, cx, cy - 9);
+  ctx.direction = 'ltr'; ctx.font = '700 14px Kanit, sans-serif'; ctx.fillStyle = '#cbd5e1';
+  ctx.fillText(c.opt.rumi, cx, cy + 15);
+  ctx.restore();
+}
+
+function drawApitanSlot(pos, locked, lockedOpt, lineColor, placeholderLabel) {
+  const w = 130, h = 64;
+  ctx.save();
+  if (locked) {
+    ctx.shadowColor = '#00e68a'; ctx.shadowBlur = 16;
+    const grad = ctx.createLinearGradient(pos.x - w / 2, pos.y - h / 2, pos.x + w / 2, pos.y + h / 2);
+    grad.addColorStop(0, 'rgba(0,230,138,0.22)'); grad.addColorStop(1, 'rgba(10,13,20,0.8)');
+    ctx.fillStyle = grad;
+    roundRect(pos.x - w / 2, pos.y - h / 2, w, h, 12); ctx.fill();
+    ctx.strokeStyle = '#00e68a'; ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.direction = 'rtl';
+    ctx.font = '700 24px "Noto Naskh Arabic", serif'; ctx.fillStyle = '#eafff5';
+    ctx.fillText(lockedOpt.jawi, pos.x, pos.y);
+  } else {
+    ctx.setLineDash([6, 5]);
+    ctx.strokeStyle = 'rgba(203,213,225,0.55)'; ctx.lineWidth = 2;
+    roundRect(pos.x - w / 2, pos.y - h / 2, w, h, 12); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = lineColor; ctx.globalAlpha = 0.9;
+    roundRect(pos.x - w / 2, pos.y - h / 2, 6, h, 3); ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.direction = 'ltr';
+    ctx.font = '700 13px Kanit, sans-serif'; ctx.fillStyle = 'rgba(203,213,225,0.75)';
+    ctx.fillText(placeholderLabel, pos.x, pos.y);
+  }
+  ctx.restore();
+}
+
+function drawApitanScene(t) {
+  const q = currentApitanQuestion;
+  if (!q) return;
+  const bothLocked = apitanAwalanLocked && apitanAkhiranLocked;
+
+  if (bothLocked) {
+    // Kedua-dua sisi betul -> gantikan paparan 3-kepingan dgn SATU kad besar
+    // memaparkan perkataan Jawi lengkap (jawiLengkap ditaip sendiri oleh guru).
+    ctx.save();
+    const w = 440, h = 120;
+    ctx.shadowColor = '#00e68a'; ctx.shadowBlur = 30;
+    const grad = ctx.createLinearGradient(apitanDasarPos.x - w / 2, apitanDasarPos.y - h / 2, apitanDasarPos.x + w / 2, apitanDasarPos.y + h / 2);
+    grad.addColorStop(0, 'rgba(0,230,138,0.28)'); grad.addColorStop(1, 'rgba(10,13,20,0.85)');
+    ctx.fillStyle = grad;
+    roundRect(apitanDasarPos.x - w / 2, apitanDasarPos.y - h / 2, w, h, 20); ctx.fill();
+    ctx.strokeStyle = '#00e68a'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.direction = 'rtl';
+    ctx.font = '800 44px "Noto Naskh Arabic", serif'; ctx.fillStyle = '#eafff5';
+    ctx.fillText(q.jawiLengkap, apitanDasarPos.x, apitanDasarPos.y);
+    ctx.restore();
+    return;
+  }
+
+  // Kad kata dasar (tetap, tengah)
+  ctx.save();
+  const dw = 170, dh = 74;
+  const dgrad = ctx.createLinearGradient(apitanDasarPos.x - dw / 2, apitanDasarPos.y - dh / 2, apitanDasarPos.x + dw / 2, apitanDasarPos.y + dh / 2);
+  dgrad.addColorStop(0, 'rgba(203,213,225,0.22)'); dgrad.addColorStop(1, 'rgba(10,13,20,0.82)');
+  ctx.fillStyle = dgrad;
+  roundRect(apitanDasarPos.x - dw / 2, apitanDasarPos.y - dh / 2, dw, dh, 14); ctx.fill();
+  ctx.strokeStyle = 'rgba(245,247,250,0.75)'; ctx.lineWidth = 2.5; ctx.stroke();
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.direction = 'rtl';
+  ctx.font = '800 28px "Noto Naskh Arabic", serif'; ctx.fillStyle = '#f5f7fa';
+  ctx.fillText(q.dasarJawi, apitanDasarPos.x, apitanDasarPos.y);
+  ctx.restore();
+
+  // Slot imbuhan awalan (kanan drpd dasar) & akhiran (kiri drpd dasar)
+  const awalanCorrectOpt = apitanAwalanLocked ? q.awalanOptions.find((o) => o.correct) : null;
+  const akhiranCorrectOpt = apitanAkhiranLocked ? q.akhiranOptions.find((o) => o.correct) : null;
+  drawApitanSlot(apitanAwalanSlotPos, apitanAwalanLocked, awalanCorrectOpt, '#00a651', 'AWALAN');
+  drawApitanSlot(apitanAkhiranSlotPos, apitanAkhiranLocked, akhiranCorrectOpt, '#0098d8', 'AKHIRAN');
+
+  // Garis "rel" penyambung semasa cubit & tarik (gaya sama dgn Mod Padan)
+  if (apitanHeld) {
+    ctx.save();
+    const x1 = apitanHeld.card.x, y1 = apitanHeld.card.y, x2 = apitanHeldPos.x, y2 = apitanHeldPos.y;
+    const ang = Math.atan2(y2 - y1, x2 - x1);
+    const perpX = Math.cos(ang + Math.PI / 2), perpY = Math.sin(ang + Math.PI / 2);
+    const railGap = 4;
+    ctx.strokeStyle = 'rgba(0,152,216,0.55)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(x1 + perpX * railGap, y1 + perpY * railGap); ctx.lineTo(x2 + perpX * railGap, y2 + perpY * railGap); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x1 - perpX * railGap, y1 - perpY * railGap); ctx.lineTo(x2 - perpX * railGap, y2 - perpY * railGap); ctx.stroke();
+    ctx.restore();
+  }
+
+  // Pool pilihan (kad yg sudah "matched" tak dilukis semula - lihat
+  // drawApitanOptionCard()'s early-return)
+  if (!apitanAwalanLocked) apitanAwalanOptions.forEach((c) => drawApitanOptionCard(c, '#00a651'));
+  if (!apitanAkhiranLocked) apitanAkhiranOptions.forEach((c) => drawApitanOptionCard(c, '#0098d8'));
+}
+
+// ------------------------------------------------------------------
 // PARTIKEL & KESAN VISUAL
 // ------------------------------------------------------------------
 function spawnExplosion(x, y, color) {
@@ -1510,6 +1768,10 @@ function loop(t) {
     } else if (currentMode === 'isyarat') {
       updateFingerQuizLogic();
       drawFingerCursor(t);
+    } else if (currentMode === 'apitan') {
+      updateApitanLogic();
+      drawApitanScene(t);
+      drawPinchCursor(t);
     } else {
       // tembak (pilihan A/B/C) - sasar & tembak drone yang betul
       updateShootModeLogic();
@@ -1540,6 +1802,8 @@ async function goToStartMenu() {
   els.quizPanel.classList.add('hidden');
   hideModal(els.victoryModal); hideModal(els.reviewModal); hideModal(els.modeModal); hideModal(els.ganjaranModal); hideModal(els.rewardOverlay);
   drones = []; matchLeft = []; matchRight = []; matchHeld = null;
+  apitanAwalanOptions = []; apitanAkhiranOptions = []; apitanHeld = null;
+  apitanAwalanLocked = false; apitanAkhiranLocked = false; currentApitanQuestion = null;
   showModal(els.startModal);
   loadLessonList();
 }
@@ -1553,9 +1817,10 @@ async function chooseLesson(lessonId) {
     currentLesson = await loadLessonDetail(lessonId);
     const hasWords = currentLesson.words && currentLesson.words.length >= 2;
     const hasTembak = currentLesson.tembakQuestions && currentLesson.tembakQuestions.length >= 1;
-    if (!hasWords && !hasTembak) {
+    const hasApitan = currentLesson.apitanQuestions && currentLesson.apitanQuestions.length >= 1;
+    if (!hasWords && !hasTembak && !hasApitan) {
       hideModal(els.loadingModal);
-      els.lessonStatus.textContent = 'Set pelajaran ini belum ada kandungan. Sila tambah Perkataan atau Soalan Tembak di /game-arab-admin.html.';
+      els.lessonStatus.textContent = 'Set pelajaran ini belum ada kandungan. Sila tambah Perkataan, Soalan Tembak atau Soalan Imbuhan Apitan di /game-arab-admin.html.';
       showModal(els.startModal);
       return;
     }
@@ -1580,6 +1845,10 @@ async function selectModeAndStart(mode) {
   }
   if ((mode === 'padan' || mode === 'isyarat') && (!currentLesson.words || currentLesson.words.length < 2)) {
     alert('Tiada cukup Perkataan untuk topik ini (perlu sekurang-kurangnya 2).\nSila tambah di Panel Guru - seksyen "🔗 Perkataan (Padan/Isyarat)" dahulu.');
+    return;
+  }
+  if (mode === 'apitan' && (!currentLesson.apitanQuestions || currentLesson.apitanQuestions.length < 1)) {
+    alert('Tiada Soalan Imbuhan Apitan untuk topik ini lagi.\nSila tambah di Panel Guru - seksyen "🔤 Imbuhan Apitan (Jawi)" dahulu.');
     return;
   }
   currentMode = mode;
@@ -1622,6 +1891,7 @@ function startGameSession() {
   mulaMusicLatar(); // [MOD 6] music latar permainan
   if (currentMode === 'padan') startPadanRound();
   else if (currentMode === 'isyarat') startIsyaratRound();
+  else if (currentMode === 'apitan') startApitanRound();
   else nextRound(); // tembak (A/B/C)
 }
 
@@ -1658,6 +1928,15 @@ function buildReviewList() {
       row.innerHTML = `
         <div class="font-kanit text-base font-bold text-slate-100 mb-1" dir="auto">${q.soalan}</div>
         <div class="font-kanit text-sm font-semibold" style="color:#00e68a;" dir="auto">✓ ${correctOpt ? correctOpt.text : '—'}</div>`;
+      els.reviewList.appendChild(row);
+    });
+  } else if (currentMode === 'apitan') {
+    currentLesson.apitanQuestions.forEach((q) => {
+      const row = document.createElement('div');
+      row.className = 'glass rounded-lg px-4 py-3';
+      row.innerHTML = `
+        <div class="font-kanit text-base font-bold text-slate-100 mb-1" dir="auto">${q.soalanRumi}</div>
+        <div class="font-arabic text-2xl font-bold" style="color:#00e68a;" dir="auto">${q.jawiLengkap}</div>`;
       els.reviewList.appendChild(row);
     });
   } else {

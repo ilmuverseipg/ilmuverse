@@ -76,6 +76,45 @@
   .tq-option-row.is-correct input[type="text"] { border-color: #3ECF8E; background: #F0FFF8; }
   .tq-option-row.is-correct .tq-letter { color: #3ECF8E; }
   .tembak-question-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 2px; }
+
+  /* ===== SOALAN IMBUHAN APITAN (Mod Imbuhan Apitan - Jawi) ===== */
+  .apitan-panel { margin-top: 14px; border-top: 2px dashed #CDE7FF; padding-top: 14px; }
+  .apitan-question-card {
+    background: #EAF6FF; border-radius: 14px; padding: 12px 14px; margin-bottom: 12px;
+    border: 2px solid #CDE7FF;
+  }
+  .apitan-question-card .aq-soalan {
+    width: 100%; padding: 9px 12px; border-radius: 10px; border: 2px solid #eee;
+    font-family: 'Fredoka'; font-size: 15px; font-weight: 700; outline: none; margin-bottom: 10px;
+  }
+  .apitan-question-card .aq-soalan:focus { border-color: var(--purple); }
+  .aq-dasar-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+  .aq-dasar-row input {
+    padding: 9px 12px; border-radius: 10px; border: 2px solid #eee;
+    font-family: 'Fredoka'; font-size: 14px; outline: none;
+  }
+  .aq-dasar-row input:focus { border-color: var(--pink); }
+  .aq-group-label { font-size: 12px; font-weight: 700; color: #9a8a91; margin: 10px 0 4px; }
+  .aq-option-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .aq-option-row input[type="radio"] { width: 19px; height: 19px; flex-shrink: 0; accent-color: #3ECF8E; cursor: pointer; }
+  .aq-option-row .aq-letter {
+    font-family: 'Baloo 2', sans-serif; font-weight: 800; width: 24px; flex-shrink: 0; text-align: center;
+    color: #9a8a91; font-size: 14px;
+  }
+  .aq-option-row input[type="text"] {
+    flex: 1; padding: 7px 10px; border-radius: 8px; border: 2px solid #eee;
+    font-family: 'Fredoka'; font-size: 14px; outline: none; min-width: 0;
+  }
+  .aq-option-row input.aq-jawi-field { font-family: 'Fredoka', 'Noto Naskh Arabic', serif; }
+  .aq-option-row input[type="text"]:focus { border-color: var(--pink); }
+  .aq-option-row.is-correct input[type="text"] { border-color: #3ECF8E; background: #F0FFF8; }
+  .aq-option-row.is-correct .aq-letter { color: #3ECF8E; }
+  .aq-jawi-lengkap {
+    width: 100%; padding: 9px 12px; border-radius: 10px; border: 2px solid #eee;
+    font-family: 'Fredoka', 'Noto Naskh Arabic', serif; font-size: 15px; outline: none; margin-top: 10px;
+  }
+  .aq-jawi-lengkap:focus { border-color: var(--pink); }
+  .apitan-question-card.dragging { opacity: .35; }
   .tq-hint-badge {
     display: inline-block; background: #3ECF8E; color: #fff; font-size: 11px; font-weight: 700;
     padding: 2px 8px; border-radius: 999px; margin-left: 6px;
@@ -154,9 +193,11 @@
       <div class="lesson-actions">
         <span class="word-count-badge"></span>
         <span class="tembak-count-badge" style="background:#8B5CF6; color:#fff; font-size:12px; font-weight:700; padding:4px 12px; border-radius:999px; align-self:center;"></span>
+        <span class="apitan-count-badge" style="background:#0098D8; color:#fff; font-size:12px; font-weight:700; padding:4px 12px; border-radius:999px; align-self:center;"></span>
         <button class="save-lesson-btn btn btn-secondary btn-sm">💾 Simpan</button>
         <button class="toggle-words-btn btn btn-outline btn-sm">🔗 Perkataan (Padan/Isyarat)</button>
         <button class="toggle-tembak-btn btn btn-outline btn-sm">🎯 Soalan Tembak (A/B/C)</button>
+        <button class="toggle-apitan-btn btn btn-outline btn-sm">🔤 Imbuhan Apitan (Jawi)</button>
         <button class="delete-lesson-btn btn btn-danger btn-sm">🗑️ Padam</button>
       </div>
     </div>
@@ -205,6 +246,34 @@
         </div>
       </div>
       <div class="add-word-hint">💡 Isi Soalan, isi ketiga-tiga pilihan A/B/C, tandakan satu yang betul, tekan <strong>Tambah Soalan</strong>. Tiada had bilangan soalan.</div>
+    </div>
+
+    <div class="apitan-panel" style="display:none;">
+      <div class="add-word-hint" style="margin:0 2px 10px;">🔤 Tempat edit untuk <strong>Mod Imbuhan Apitan (Jawi)</strong> sahaja. Soalan (Rumi) dipaparkan atas skrin; murid cubit &amp; tarik SATU pilihan Awalan (kanan) + SATU pilihan Akhiran (kiri) ke Kata Dasar (tengah) sehingga kedua-dua betul. <strong>Taip sendiri semua ejaan Jawi</strong> (sistem tidak auto-tukar Rumi→Jawi).</div>
+      <div class="xlsx-import-bar">
+        <a href="/templates/templat-imbuhan-apitan.xlsx" download class="btn btn-outline btn-sm">📥 Muat Turun Templat</a>
+        <button type="button" class="import-apitan-btn btn btn-secondary btn-sm">📤 Muat Naik Excel (ramai sekali gus)</button>
+        <input type="file" class="import-apitan-file" accept=".xlsx" style="display:none;">
+        <span class="import-apitan-status xlsx-import-status"></span>
+      </div>
+      <div class="apitan-questions-list"></div>
+
+      <div class="apitan-question-card apitan-new-form">
+        <input class="new-aq-soalan aq-soalan" placeholder="Soalan (Rumi) - cth: Kehidupan" />
+        <div class="aq-dasar-row">
+          <input class="new-aq-dasar-rumi" placeholder="Kata Dasar (Rumi) - cth: hidup" />
+          <input class="new-aq-dasar-jawi arab-input" placeholder="Kata Dasar (Jawi)" dir="auto" />
+        </div>
+        <div class="aq-group-label">IMBUHAN AWALAN (tandakan 1 betul)</div>
+        <div class="new-aq-awalan"></div>
+        <div class="aq-group-label">IMBUHAN AKHIRAN (tandakan 1 betul)</div>
+        <div class="new-aq-akhiran"></div>
+        <input class="new-aq-jawi-lengkap aq-jawi-lengkap" placeholder="Jawapan Jawi Lengkap (ejaan penuh)" dir="auto" />
+        <div class="tembak-question-actions">
+          <button class="add-aq-btn btn btn-success btn-sm">+ Tambah Soalan Apitan</button>
+        </div>
+      </div>
+      <div class="add-word-hint">💡 Setiap pilihan Awalan/Akhiran perlu Rumi + Jawi diisi. Tiada had bilangan soalan.</div>
     </div>
   </div>
 </template>
@@ -256,6 +325,7 @@ function renderLessonCard(lessonSummary) {
   $('.lesson-desc', card).value = lessonSummary.description || '';
   $('.word-count-badge', card).textContent = `${lessonSummary.wordCount} perkataan`;
   $('.tembak-count-badge', card).textContent = `${lessonSummary.tembakQuestionCount || 0} soalan tembak`;
+  $('.apitan-count-badge', card).textContent = `${lessonSummary.apitanQuestionCount || 0} soalan apitan`;
 
   $('.save-lesson-btn', card).addEventListener('click', async () => {
     const name = $('.lesson-name', card).value.trim();
@@ -364,6 +434,66 @@ function renderLessonCard(lessonSummary) {
     onDone: () => refreshTembakQuestions(lessonSummary._id, tembakPanel, card),
   });
 
+  // ----- Panel "Imbuhan Apitan (Jawi)" - tempat edit BERASINGAN -----
+  const apitanPanel = $('.apitan-panel', card);
+  const toggleApitanBtn = $('.toggle-apitan-btn', card);
+  let apitanLoaded = false;
+  toggleApitanBtn.addEventListener('click', async () => {
+    const showing = apitanPanel.style.display !== 'none';
+    apitanPanel.style.display = showing ? 'none' : 'block';
+    toggleApitanBtn.textContent = showing ? '🔤 Imbuhan Apitan (Jawi)' : '🔤 Tutup';
+    if (!showing && !apitanLoaded) { apitanLoaded = true; await refreshApitanQuestions(lessonSummary._id, apitanPanel, card); }
+  });
+
+  // Borang "+ Tambah Soalan Apitan" (sentiasa ada, letak bawah senarai sedia ada)
+  const newAqSoalan = $('.new-aq-soalan', card);
+  const newAqDasarRumi = $('.new-aq-dasar-rumi', card);
+  const newAqDasarJawi = $('.new-aq-dasar-jawi', card);
+  const newAqAwalanWrap = $('.new-aq-awalan', card);
+  const newAqAkhiranWrap = $('.new-aq-akhiran', card);
+  const newAqJawiLengkap = $('.new-aq-jawi-lengkap', card);
+  const addAqBtn = $('.add-aq-btn', card);
+  const newAwalanFields = buildApitanOptionRows(newAqAwalanWrap, `new-aq-awalan-${lessonSummary._id}`);
+  const newAkhiranFields = buildApitanOptionRows(newAqAkhiranWrap, `new-aq-akhiran-${lessonSummary._id}`);
+  // Pilihan A ditanda betul secara lalai bagi kedua-dua kumpulan.
+  newAwalanFields[0].radio.checked = true; newAwalanFields[0].row.classList.add('is-correct');
+  newAkhiranFields[0].radio.checked = true; newAkhiranFields[0].row.classList.add('is-correct');
+
+  addAqBtn.addEventListener('click', async () => {
+    const soalanRumi = newAqSoalan.value.trim();
+    const dasarJawi = newAqDasarJawi.value.trim();
+    const jawiLengkap = newAqJawiLengkap.value.trim();
+    if (!soalanRumi) return alert('Soalan (Rumi) tidak boleh kosong.');
+    if (!dasarJawi) return alert('Kata Dasar (Jawi) tidak boleh kosong.');
+    if (!jawiLengkap) return alert('Jawapan Jawi Lengkap tidak boleh kosong.');
+    const awalanOptions = newAwalanFields.map((f) => ({ rumi: f.rumiInput.value.trim(), jawi: f.jawiInput.value.trim(), correct: f.radio.checked }));
+    const akhiranOptions = newAkhiranFields.map((f) => ({ rumi: f.rumiInput.value.trim(), jawi: f.jawiInput.value.trim(), correct: f.radio.checked }));
+    if (awalanOptions.some((o) => !o.rumi || !o.jawi)) return alert('Isikan ketiga-tiga pilihan Awalan (Rumi & Jawi).');
+    if (akhiranOptions.some((o) => !o.rumi || !o.jawi)) return alert('Isikan ketiga-tiga pilihan Akhiran (Rumi & Jawi).');
+    try {
+      await api(`/${lessonSummary._id}/apitan-questions`, {
+        method: 'POST',
+        body: JSON.stringify({ soalanRumi, dasarRumi: newAqDasarRumi.value.trim(), dasarJawi, awalanOptions, akhiranOptions, jawiLengkap }),
+      });
+      newAqSoalan.value = ''; newAqDasarRumi.value = ''; newAqDasarJawi.value = ''; newAqJawiLengkap.value = '';
+      [...newAwalanFields, ...newAkhiranFields].forEach((f) => { f.rumiInput.value = ''; f.jawiInput.value = ''; });
+      newAwalanFields.forEach((f, i) => { f.radio.checked = i === 0; f.row.classList.toggle('is-correct', i === 0); });
+      newAkhiranFields.forEach((f, i) => { f.radio.checked = i === 0; f.row.classList.toggle('is-correct', i === 0); });
+      await refreshApitanQuestions(lessonSummary._id, apitanPanel, card);
+      newAqSoalan.focus();
+    } catch (err) { alert(err.message); }
+  });
+
+  // ----- Import Excel (.xlsx) pukal - Imbuhan Apitan (lebih laju drpd taip satu-satu) -----
+  wireXlsxImport({
+    uploadBtn: $('.import-apitan-btn', card),
+    fileInput: $('.import-apitan-file', card),
+    statusEl: $('.import-apitan-status', card),
+    uploadPath: `/${lessonSummary._id}/apitan-questions/import-xlsx`,
+    itemLabel: 'soalan',
+    onDone: () => refreshApitanQuestions(lessonSummary._id, apitanPanel, card),
+  });
+
   return card;
 }
 
@@ -429,6 +559,40 @@ function buildOptionRows(container, groupName) {
     row.appendChild(radio); row.appendChild(letterSpan); row.appendChild(input);
     container.appendChild(row);
     return { row, radio, input };
+  });
+}
+
+// Sama konsep dgn buildOptionRows() di atas, tapi setiap pilihan perlukan
+// DUA medan teks (Rumi + Jawi) - dipakai oleh Soalan Imbuhan Apitan (Awalan
+// & Akhiran, dipanggil berasingan dgn groupName berlainan utk setiap satu).
+function buildApitanOptionRows(container, groupName) {
+  const letters = ['A', 'B', 'C'];
+  container.innerHTML = '';
+  return letters.map((letter) => {
+    const row = document.createElement('div');
+    row.className = 'aq-option-row';
+
+    const radio = document.createElement('input');
+    radio.type = 'radio'; radio.name = groupName;
+
+    const letterSpan = document.createElement('span');
+    letterSpan.className = 'aq-letter'; letterSpan.textContent = letter;
+
+    const rumiInput = document.createElement('input');
+    rumiInput.type = 'text'; rumiInput.placeholder = `${letter} (Rumi)`;
+
+    const jawiInput = document.createElement('input');
+    jawiInput.type = 'text'; jawiInput.className = 'aq-jawi-field'; jawiInput.dir = 'auto';
+    jawiInput.placeholder = `${letter} (Jawi)`;
+
+    radio.addEventListener('change', () => {
+      container.querySelectorAll('.aq-option-row').forEach((r) => r.classList.remove('is-correct'));
+      row.classList.add('is-correct');
+    });
+
+    row.appendChild(radio); row.appendChild(letterSpan); row.appendChild(rumiInput); row.appendChild(jawiInput);
+    container.appendChild(row);
+    return { row, radio, rumiInput, jawiInput };
   });
 }
 
@@ -578,6 +742,149 @@ function renderTembakQuestionRow(lessonId, q, tembakPanel, card, orderNum) {
   });
 
   return wrap;
+}
+
+// ------------------------------------------------------------------
+// SOALAN IMBUHAN APITAN (Mod Imbuhan Apitan - Jawi) - tempat edit BERASINGAN
+// drpd "words"/"tembakQuestions". Sama corak dgn Soalan Tembak di atas, tapi
+// setiap soalan ada Kata Dasar (tetap) + 2 kumpulan 3-pilihan (Awalan &
+// Akhiran), setiap pilihan perlukan Rumi + Jawi.
+// ------------------------------------------------------------------
+async function refreshApitanQuestions(lessonId, apitanPanel, card) {
+  const list = $('.apitan-questions-list', apitanPanel);
+  list.innerHTML = '<div style="opacity:.6; font-size:14px;">Memuatkan...</div>';
+  try {
+    const lesson = await api(`/${lessonId}`);
+    list.innerHTML = '';
+    if (!lesson.apitanQuestions.length) {
+      list.innerHTML = '<div style="opacity:.6; font-size:14px; padding:4px 2px 14px;">Tiada Soalan Imbuhan Apitan lagi. Tambah satu di bawah. 🔤</div>';
+    } else {
+      lesson.apitanQuestions.forEach((q, i) => list.appendChild(renderApitanQuestionRow(lessonId, q, apitanPanel, card, i + 1)));
+      if (!list.dataset.sortableWired) {
+        list.dataset.sortableWired = '1';
+        makeSortable(list, async (order) => {
+          try {
+            await api(`/${lessonId}/apitan-questions/reorder`, { method: 'PUT', body: JSON.stringify({ order }) });
+            renumberApitanBadges(list);
+          } catch (err) { alert(err.message); await refreshApitanQuestions(lessonId, apitanPanel, card); }
+        });
+      }
+    }
+    $('.apitan-count-badge', card).textContent = `${lesson.apitanQuestions.length} soalan apitan`;
+  } catch (err) {
+    list.innerHTML = `<div style="color:#FF6B6B; font-size:14px;">${err.message}</div>`;
+  }
+}
+
+function renderApitanQuestionRow(lessonId, q, apitanPanel, card, orderNum) {
+  const wrap = document.createElement('div');
+  wrap.className = 'apitan-question-card';
+  wrap.dataset.id = q._id;
+
+  const head = document.createElement('div');
+  head.className = 'tq-card-head';
+  const dragHandle = document.createElement('span');
+  dragHandle.className = 'drag-handle';
+  dragHandle.title = 'Seret untuk susun semula urutan';
+  dragHandle.textContent = '⠿';
+  const orderBadge = document.createElement('span');
+  orderBadge.className = 'tq-order-badge';
+  orderBadge.textContent = `Soalan #${orderNum}`;
+  head.appendChild(dragHandle);
+  head.appendChild(orderBadge);
+  wrap.appendChild(head);
+
+  const soalanInput = document.createElement('input');
+  soalanInput.className = 'aq-soalan';
+  soalanInput.placeholder = 'Soalan (Rumi)';
+  soalanInput.value = q.soalanRumi;
+  wrap.appendChild(soalanInput);
+
+  const dasarRow = document.createElement('div');
+  dasarRow.className = 'aq-dasar-row';
+  const dasarRumiInput = document.createElement('input');
+  dasarRumiInput.placeholder = 'Kata Dasar (Rumi)';
+  dasarRumiInput.value = q.dasarRumi || '';
+  const dasarJawiInput = document.createElement('input');
+  dasarJawiInput.className = 'arab-input'; dasarJawiInput.dir = 'auto';
+  dasarJawiInput.placeholder = 'Kata Dasar (Jawi)';
+  dasarJawiInput.value = q.dasarJawi;
+  dasarRow.appendChild(dasarRumiInput); dasarRow.appendChild(dasarJawiInput);
+  wrap.appendChild(dasarRow);
+
+  const awalanLabel = document.createElement('div');
+  awalanLabel.className = 'aq-group-label'; awalanLabel.textContent = 'IMBUHAN AWALAN (tandakan 1 betul)';
+  wrap.appendChild(awalanLabel);
+  const awalanWrap = document.createElement('div');
+  wrap.appendChild(awalanWrap);
+  const awalanFields = buildApitanOptionRows(awalanWrap, `aq-awalan-${q._id}`);
+  q.awalanOptions.forEach((o, i) => {
+    awalanFields[i].rumiInput.value = o.rumi; awalanFields[i].jawiInput.value = o.jawi;
+    awalanFields[i].radio.checked = !!o.correct; awalanFields[i].row.classList.toggle('is-correct', !!o.correct);
+  });
+
+  const akhiranLabel = document.createElement('div');
+  akhiranLabel.className = 'aq-group-label'; akhiranLabel.textContent = 'IMBUHAN AKHIRAN (tandakan 1 betul)';
+  wrap.appendChild(akhiranLabel);
+  const akhiranWrap = document.createElement('div');
+  wrap.appendChild(akhiranWrap);
+  const akhiranFields = buildApitanOptionRows(akhiranWrap, `aq-akhiran-${q._id}`);
+  q.akhiranOptions.forEach((o, i) => {
+    akhiranFields[i].rumiInput.value = o.rumi; akhiranFields[i].jawiInput.value = o.jawi;
+    akhiranFields[i].radio.checked = !!o.correct; akhiranFields[i].row.classList.toggle('is-correct', !!o.correct);
+  });
+
+  const jawiLengkapInput = document.createElement('input');
+  jawiLengkapInput.className = 'aq-jawi-lengkap'; jawiLengkapInput.dir = 'auto';
+  jawiLengkapInput.placeholder = 'Jawapan Jawi Lengkap';
+  jawiLengkapInput.value = q.jawiLengkap;
+  wrap.appendChild(jawiLengkapInput);
+
+  const actions = document.createElement('div');
+  actions.className = 'tembak-question-actions';
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'save-aq-btn btn btn-secondary btn-sm'; saveBtn.textContent = '💾 Simpan';
+  const delBtn = document.createElement('button');
+  delBtn.className = 'delete-aq-btn btn btn-danger btn-sm'; delBtn.textContent = '🗑️ Padam';
+  actions.appendChild(saveBtn); actions.appendChild(delBtn);
+  wrap.appendChild(actions);
+
+  saveBtn.addEventListener('click', async () => {
+    const soalanRumi = soalanInput.value.trim();
+    const dasarJawi = dasarJawiInput.value.trim();
+    const jawiLengkap = jawiLengkapInput.value.trim();
+    if (!soalanRumi) return alert('Soalan (Rumi) tidak boleh kosong.');
+    if (!dasarJawi) return alert('Kata Dasar (Jawi) tidak boleh kosong.');
+    if (!jawiLengkap) return alert('Jawapan Jawi Lengkap tidak boleh kosong.');
+    const awalanOptions = awalanFields.map((f) => ({ rumi: f.rumiInput.value.trim(), jawi: f.jawiInput.value.trim(), correct: f.radio.checked }));
+    const akhiranOptions = akhiranFields.map((f) => ({ rumi: f.rumiInput.value.trim(), jawi: f.jawiInput.value.trim(), correct: f.radio.checked }));
+    if (awalanOptions.some((o) => !o.rumi || !o.jawi)) return alert('Isikan ketiga-tiga pilihan Awalan (Rumi & Jawi).');
+    if (akhiranOptions.some((o) => !o.rumi || !o.jawi)) return alert('Isikan ketiga-tiga pilihan Akhiran (Rumi & Jawi).');
+    try {
+      await api(`/${lessonId}/apitan-questions/${q._id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ soalanRumi, dasarRumi: dasarRumiInput.value.trim(), dasarJawi, awalanOptions, akhiranOptions, jawiLengkap }),
+      });
+      flash(wrap);
+    } catch (err) { alert(err.message); }
+  });
+
+  delBtn.addEventListener('click', async () => {
+    if (!confirm('Padam soalan ini?')) return;
+    try {
+      await api(`/${lessonId}/apitan-questions/${q._id}`, { method: 'DELETE' });
+      await refreshApitanQuestions(lessonId, apitanPanel, card);
+    } catch (err) { alert(err.message); }
+  });
+
+  return wrap;
+}
+
+function renumberApitanBadges(listEl) {
+  Array.from(listEl.children).forEach((cardEl, i) => {
+    const badge = $('.tq-order-badge', cardEl);
+    if (badge) badge.textContent = `Soalan #${i + 1}`;
+  });
 }
 
 // ------------------------------------------------------------------
