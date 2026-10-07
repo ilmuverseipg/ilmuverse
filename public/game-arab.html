@@ -458,6 +458,7 @@ const CONFIG = {
     maxCombo: 5,
     droneRadius: 92,
     fingerHoldMs: 800,             // Mod Isyarat Jari - tempoh perlu stabil sebelum jawapan dikunci
+    apitanRevealMs: 2600,          // Mod Imbuhan Apitan - tempoh perkataan Jawi lengkap (hijau) terpapar sebelum soalan seterusnya
   },
   MATCH: {
     pairsPerRound: 5,              // Mod Padan - bilangan pasangan setiap pusingan
@@ -1255,8 +1256,8 @@ function layoutApitanRound(q) {
   // Slot awalan di KANAN dasar, slot akhiran di KIRI dasar - padan dgn
   // susunan bacaan Jawi (kanan->kiri): awalan dibaca dahulu (kanan sekali),
   // diikuti dasar (tengah), diikuti akhiran (kiri sekali).
-  apitanAwalanSlotPos = { x: W / 2 + 185, y: dasarY };
-  apitanAkhiranSlotPos = { x: W / 2 - 185, y: dasarY };
+  apitanAwalanSlotPos = { x: W / 2 + 205, y: dasarY };
+  apitanAkhiranSlotPos = { x: W / 2 - 205, y: dasarY };
 
   const poolXAwalan = W * 0.87, poolXAkhiran = W * 0.13;
   const marginY = H * 0.28, usableH = H * 0.42, n = 3;
@@ -1312,7 +1313,10 @@ function resolveApitanDrop(side, card) {
 
 function finishApitanQuestion() {
   roundBusy = true;
-  showFeedback(true);
+  // TIDAK papar overlay teks besar "BETUL! ✅" (showFeedback) utk mod ni -
+  // perkataan Jawi lengkap sendiri (dilukis hijau oleh drawApitanScene()'s
+  // cabang bothLocked) sudah cukup sbg maklum balas betul, tanpa teks
+  // bertindih di atasnya.
   correctHits++;
   score += 100 * combo; combo = Math.min(CONFIG.GAME.maxCombo, combo + 1); maxComboReached = Math.max(maxComboReached, combo);
   masteredIds.add(currentApitanQuestion._id);
@@ -1323,7 +1327,10 @@ function finishApitanQuestion() {
     if (remainingPool().length === 0) showVictory(); else startApitanRound();
   };
   const diuruskanGanjaran = handleJawapanResult(true, lanjutApitan);
-  if (!diuruskanGanjaran) setTimeout(lanjutApitan, CONFIG.GAME.feedbackDelayMs);
+  // Perkataan Jawi lengkap kekal terpapar (hijau) ~2.5 saat sebelum sambung -
+  // guna tempoh sendiri (bukan CONFIG.GAME.feedbackDelayMs yg 2 saat sahaja,
+  // supaya tak jejas tempoh maklum balas mod Tembak/Isyarat yang lain).
+  if (!diuruskanGanjaran) setTimeout(lanjutApitan, CONFIG.GAME.apitanRevealMs);
 }
 
 function updateApitanLogic() {
@@ -1357,51 +1364,51 @@ function drawApitanOptionCard(c, color) {
   const isHeld = apitanHeld && apitanHeld.card === c;
   const cx = isHeld ? apitanHeldPos.x : c.x;
   const cy = isHeld ? apitanHeldPos.y : c.y;
-  const w = 150, h = 64;
+  const w = 178, h = 76;
   ctx.save();
   if (isHeld) { ctx.shadowColor = color; ctx.shadowBlur = 26; }
   const grad = ctx.createLinearGradient(cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2);
   grad.addColorStop(0, isHeld ? 'rgba(255,255,255,0.18)' : 'rgba(20,24,34,0.72)');
   grad.addColorStop(1, 'rgba(10,13,20,0.8)');
   ctx.fillStyle = grad;
-  roundRect(cx - w / 2, cy - h / 2, w, h, 12);
+  roundRect(cx - w / 2, cy - h / 2, w, h, 14);
   ctx.fill();
   ctx.strokeStyle = isHeld ? color : 'rgba(138,148,166,0.6)'; ctx.lineWidth = 2; ctx.stroke();
   ctx.fillStyle = color;
-  roundRect(cx - w / 2, cy - h / 2, 6, h, 3);
+  roundRect(cx - w / 2, cy - h / 2, 7, h, 3);
   ctx.fill();
 
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.direction = 'rtl'; ctx.font = '700 22px "Noto Naskh Arabic", serif'; ctx.fillStyle = '#f5f7fa';
-  ctx.fillText(c.opt.jawi, cx, cy - 9);
-  ctx.direction = 'ltr'; ctx.font = '700 14px Kanit, sans-serif'; ctx.fillStyle = '#cbd5e1';
-  ctx.fillText(c.opt.rumi, cx, cy + 15);
+  ctx.direction = 'rtl'; ctx.font = '700 27px "Noto Naskh Arabic", serif'; ctx.fillStyle = '#f5f7fa';
+  ctx.fillText(c.opt.jawi, cx, cy - 11);
+  ctx.direction = 'ltr'; ctx.font = '700 16px Kanit, sans-serif'; ctx.fillStyle = '#cbd5e1';
+  ctx.fillText(c.opt.rumi, cx, cy + 18);
   ctx.restore();
 }
 
 function drawApitanSlot(pos, locked, lockedOpt, lineColor, placeholderLabel) {
-  const w = 130, h = 64;
+  const w = 155, h = 76;
   ctx.save();
   if (locked) {
     ctx.shadowColor = '#00e68a'; ctx.shadowBlur = 16;
     const grad = ctx.createLinearGradient(pos.x - w / 2, pos.y - h / 2, pos.x + w / 2, pos.y + h / 2);
     grad.addColorStop(0, 'rgba(0,230,138,0.22)'); grad.addColorStop(1, 'rgba(10,13,20,0.8)');
     ctx.fillStyle = grad;
-    roundRect(pos.x - w / 2, pos.y - h / 2, w, h, 12); ctx.fill();
+    roundRect(pos.x - w / 2, pos.y - h / 2, w, h, 14); ctx.fill();
     ctx.strokeStyle = '#00e68a'; ctx.lineWidth = 2.5; ctx.stroke();
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.direction = 'rtl';
-    ctx.font = '700 24px "Noto Naskh Arabic", serif'; ctx.fillStyle = '#eafff5';
+    ctx.font = '700 29px "Noto Naskh Arabic", serif'; ctx.fillStyle = '#eafff5';
     ctx.fillText(lockedOpt.jawi, pos.x, pos.y);
   } else {
     ctx.setLineDash([6, 5]);
     ctx.strokeStyle = 'rgba(203,213,225,0.55)'; ctx.lineWidth = 2;
-    roundRect(pos.x - w / 2, pos.y - h / 2, w, h, 12); ctx.stroke();
+    roundRect(pos.x - w / 2, pos.y - h / 2, w, h, 14); ctx.stroke();
     ctx.setLineDash([]);
     ctx.fillStyle = lineColor; ctx.globalAlpha = 0.9;
     roundRect(pos.x - w / 2, pos.y - h / 2, 6, h, 3); ctx.fill();
     ctx.globalAlpha = 1;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.direction = 'ltr';
-    ctx.font = '700 13px Kanit, sans-serif'; ctx.fillStyle = 'rgba(203,213,225,0.75)';
+    ctx.font = '700 15px Kanit, sans-serif'; ctx.fillStyle = 'rgba(203,213,225,0.75)';
     ctx.fillText(placeholderLabel, pos.x, pos.y);
   }
   ctx.restore();
@@ -1416,7 +1423,7 @@ function drawApitanScene(t) {
     // Kedua-dua sisi betul -> gantikan paparan 3-kepingan dgn SATU kad besar
     // memaparkan perkataan Jawi lengkap (jawiLengkap ditaip sendiri oleh guru).
     ctx.save();
-    const w = 440, h = 120;
+    const w = 480, h = 130;
     ctx.shadowColor = '#00e68a'; ctx.shadowBlur = 30;
     const grad = ctx.createLinearGradient(apitanDasarPos.x - w / 2, apitanDasarPos.y - h / 2, apitanDasarPos.x + w / 2, apitanDasarPos.y + h / 2);
     grad.addColorStop(0, 'rgba(0,230,138,0.28)'); grad.addColorStop(1, 'rgba(10,13,20,0.85)');
@@ -1424,7 +1431,7 @@ function drawApitanScene(t) {
     roundRect(apitanDasarPos.x - w / 2, apitanDasarPos.y - h / 2, w, h, 20); ctx.fill();
     ctx.strokeStyle = '#00e68a'; ctx.lineWidth = 3; ctx.stroke();
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.direction = 'rtl';
-    ctx.font = '800 44px "Noto Naskh Arabic", serif'; ctx.fillStyle = '#eafff5';
+    ctx.font = '800 48px "Noto Naskh Arabic", serif'; ctx.fillStyle = '#eafff5';
     ctx.fillText(q.jawiLengkap, apitanDasarPos.x, apitanDasarPos.y);
     ctx.restore();
     return;
@@ -1432,14 +1439,14 @@ function drawApitanScene(t) {
 
   // Kad kata dasar (tetap, tengah)
   ctx.save();
-  const dw = 170, dh = 74;
+  const dw = 195, dh = 86;
   const dgrad = ctx.createLinearGradient(apitanDasarPos.x - dw / 2, apitanDasarPos.y - dh / 2, apitanDasarPos.x + dw / 2, apitanDasarPos.y + dh / 2);
   dgrad.addColorStop(0, 'rgba(203,213,225,0.22)'); dgrad.addColorStop(1, 'rgba(10,13,20,0.82)');
   ctx.fillStyle = dgrad;
-  roundRect(apitanDasarPos.x - dw / 2, apitanDasarPos.y - dh / 2, dw, dh, 14); ctx.fill();
+  roundRect(apitanDasarPos.x - dw / 2, apitanDasarPos.y - dh / 2, dw, dh, 16); ctx.fill();
   ctx.strokeStyle = 'rgba(245,247,250,0.75)'; ctx.lineWidth = 2.5; ctx.stroke();
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.direction = 'rtl';
-  ctx.font = '800 28px "Noto Naskh Arabic", serif'; ctx.fillStyle = '#f5f7fa';
+  ctx.font = '800 32px "Noto Naskh Arabic", serif'; ctx.fillStyle = '#f5f7fa';
   ctx.fillText(q.dasarJawi, apitanDasarPos.x, apitanDasarPos.y);
   ctx.restore();
 
