@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Timer Volcano — Ilmuverse</title>
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  html, body { height: 100%; }
+  body {
+    overflow: hidden;
+    background: #0a0e27;
+    background-image: none;
+    animation: none;
+    color: #fff;
+  }
+  #shaker {
+    display: flex; flex-direction: column;
+    height: 100vh; height: 100dvh;
+    will-change: transform;
+  }
+  html.fs .navbar { display: none; }
+
+  /* ===== PENTAS ===== */
+  #stage { position: relative; flex: 1; min-height: 0; overflow: hidden; background: #0a0e27; }
+  #cv { position: absolute; inset: 0; display: block; }
+  #vig {
+    position: absolute; inset: 0; pointer-events: none; opacity: 0;
+    box-shadow: inset 0 0 180px 50px rgba(255, 50, 10, .95);
+  }
+
+  /* ===== HUD ===== */
+  #hud {
+    position: absolute; left: 0; right: 0; top: 2.5%;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    pointer-events: none; text-align: center; padding: 0 12px;
+  }
+  #lbl {
+    font-family: 'Baloo 2', sans-serif; font-weight: 700;
+    font-size: clamp(18px, 3.2vmin, 34px); letter-spacing: 1px;
+    color: #ffd9a8; text-shadow: 0 2px 10px rgba(0,0,0,.7); min-height: 1.2em;
+  }
+  #time {
+    font-family: 'Baloo 2', sans-serif; font-weight: 800;
+    font-size: clamp(64px, 17vmin, 210px); line-height: 1;
+    font-variant-numeric: tabular-nums; letter-spacing: 2px;
+    color: #fff; text-shadow: 0 0 24px rgba(255,255,255,.35), 0 6px 18px rgba(0,0,0,.65);
+    transform-origin: center;
+  }
+  #msg {
+    font-family: 'Fredoka', sans-serif; font-weight: 600;
+    font-size: clamp(16px, 3vmin, 30px); color: #ffe7c8;
+    text-shadow: 0 2px 8px rgba(0,0,0,.8); min-height: 1.3em;
+  }
+  #msg.boom {
+    font-family: 'Chewy', 'Baloo 2', sans-serif; font-weight: 400;
+    font-size: clamp(34px, 8vmin, 96px); color: #ffe27a;
+    text-shadow: 0 0 22px #ff5a1f, 0 0 50px #ff2d00, 0 6px 14px rgba(0,0,0,.8);
+    animation: boomPop .7s cubic-bezier(.2, 1.6, .4, 1) both;
+  }
+  @keyframes boomPop { 0% { transform: scale(.2) rotate(-6deg); opacity: 0; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+
+  /* ===== KAWALAN ===== */
+  .ctrl {
+    background: #150f2b; border-top: 2px solid rgba(255,255,255,.08);
+    padding: 12px 16px; display: flex; flex-wrap: wrap; gap: 12px 18px;
+    align-items: center; justify-content: center;
+  }
+  .grp { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .chip, .btn2 {
+    font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 15px;
+    border: 2px solid rgba(255,255,255,.18); background: rgba(255,255,255,.08);
+    color: #fff; padding: 8px 16px; border-radius: 999px; cursor: pointer;
+    transition: transform .15s, background .15s;
+  }
+  .chip:hover, .btn2:hover { background: rgba(255,255,255,.18); transform: translateY(-1px); }
+  .chip.on { background: #ffa45c; border-color: #ffa45c; color: #2a1200; }
+  .chip:disabled, .btn2:disabled, .ctrl input:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+  #btnStart {
+    font-size: 19px; padding: 11px 28px; border: none;
+    background: linear-gradient(135deg, #ff7a2f, #ff3d5a); box-shadow: 0 6px 20px rgba(255,80,40,.45);
+  }
+  #btnStart:hover { background: linear-gradient(135deg, #ff9448, #ff5470); }
+  .ctrl label { font-size: 14px; color: #cdbfe8; display: flex; align-items: center; gap: 6px; }
+  .ctrl input {
+    font-family: 'Fredoka', sans-serif; font-size: 16px; color: #fff;
+    background: rgba(255,255,255,.09); border: 2px solid rgba(255,255,255,.18);
+    border-radius: 12px; padding: 7px 10px;
+  }
+  .ctrl input[type=number] { width: 70px; text-align: center; }
+  #inLabel { width: 220px; }
+  .hint { width: 100%; text-align: center; font-size: 13px; color: #8f82ad; }
+  @media (max-width: 640px) { #inLabel { width: 100%; } .chip, .btn2 { font-size: 14px; padding: 7px 12px; } }
+</style>
+</head>
+<body>
+<div id="shaker">
+
+<nav class="navbar">
+  <a href="/guru.html" class="brand"><span>🌌</span><span>Ilmuverse</span></a>
+  <div class="breadcrumbs">
+    <a href="/guru.html">🧑‍🏫 Papan Guru</a>
+    <a href="/murid.html">🧒 Papan Murid</a>
+    <a href="/game-arab.html">🎮 Ilmuverse Gamebox</a>
+    <a href="/timer-volcano.html" class="active">🌋 Timer Volcano</a>
+  </div>
+</nav>
+
+<main id="stage">
+  <canvas id="cv" aria-hidden="true"></canvas>
+  <div id="vig" aria-hidden="true"></div>
+  <div id="hud">
+    <div id="lbl"></div>
+    <div id="time" role="timer" aria-live="off">01:00</div>
+    <div id="msg" aria-live="polite"></div>
+  </div>
+</main>
+
+<section class="ctrl" aria-label="Kawalan pemasa">
+  <div class="grp" id="presets">
+    <button class="chip" data-s="60">1 min</button>
+    <button class="chip" data-s="120">2 min</button>
+    <button class="chip" data-s="180">3 min</button>
+    <button class="chip" data-s="300">5 min</button>
+    <button class="chip" data-s="600">10 min</button>
+  </div>
+  <div class="grp">
+    <label>Min <input id="inMin" type="number" min="0" max="180" value="1"></label>
+    <label>Saat <input id="inSec" type="number" min="0" max="59" value="0"></label>
+    <input id="inLabel" type="text" maxlength="40" placeholder="Nama aktiviti (pilihan)">
+  </div>
+  <div class="grp">
+    <button class="btn2" id="btnStart">▶ MULA</button>
+    <button class="btn2" id="btnReset">↺ Set semula</button>
+    <button class="btn2" id="btnMute" title="Bunyi (M)">🔊 Bunyi</button>
+    <button class="btn2" id="btnShake" title="Gegaran skrin">📳 Gegaran: Hidup</button>
+    <button class="btn2" id="btnFull" title="Skrin penuh (F)">⛶ Skrin penuh</button>
+  </div>
+  <div class="hint">Pintasan: Space = Mula/Jeda · R = Set semula · M = Bunyi · F = Skrin penuh</div>
+</section>
+
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const shaker = $('shaker'), stage = $('stage'), cv = $('cv'), ctx = cv.getContext('2d');
+const timeEl = $('time'), msgEl = $('msg'), lblEl = $('lbl'), vig = $('vig');
+const inMin = $('inMin'), inSec = $('inSec'), inLabel = $('inLabel');
+const btnStart = $('btnStart'), btnReset = $('btnReset'), btnMute = $('btnMute'), btnShake = $('btnShake'), btnFull = $('btnFull');
+
+const rand = (a, b) => a + Math.random() * (b - a);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const mix = (c1, c2, t) => `rgb(${Math.round(lerp(c1[0], c2[0], t))},${Math.round(lerp(c1[1], c2[1], t))},${Math.round(lerp(c1[2], c2[2], t))})`;
+function mulberry(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+};
+
+// ===== KEADAAN =====
+let state = 'idle';            // idle | running | paused | boom
+let totalMs = 60000, remaining = 60000, endAt = 0;
+let intensity = 0, bt = 0, time = 0, lastSec = -1, smokeAcc = 0, lavaAcc = 0, emberAcc = 0, boomSpawned = false;
+let muted = store.get('volcanoMute', '0') === '1';
+let shakeOn = store.get('volcanoShake', window.matchMedia('(prefers-reduced-motion: reduce)').matches ? '0' : '1') === '1';
+const P = [];                  // zarah
+let G = {}, W = 0, H = 0, dpr = 1;
+
+// ===== GEOMETRI =====
+function layout() {
+  const r = stage.getBoundingClientRect();
+  dpr = Math.min(2, window.devicePixelRatio || 1);
+  W = Math.max(300, Math.floor(r.width)); H = Math.max(260, Math.floor(r.height));
+  cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + 'px'; cv.style.height = H + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const gy = H * 0.9, bh = Math.min(W * 0.40, H * 0.75), h = Math.min(H * 0.48, bh * 1.0), cw = bh * 0.15;
+  G = { cx: W / 2, gy, bh, h, cw, apexY: gy - h, sc: H / 800 };
+  // profil cerun (kiri) - lengkung Bezier cekung
+  const P0 = [G.cx - bh, gy], P1 = [G.cx - bh * 0.30, gy - h * 0.10], P2 = [G.cx - cw, G.apexY];
+  G.prof = [];
+  for (let i = 0; i <= 60; i++) {
+    const u = i / 60, a = (1 - u) * (1 - u), b = 2 * (1 - u) * u, c = u * u;
+    G.prof.push({ y: a * P0[1] + b * P1[1] + c * P2[1], hw: G.cx - (a * P0[0] + b * P1[0] + c * P2[0]) });
+  }
+  const rnd = mulberry(7);
+  G.stars = Array.from({ length: 110 }, () => ({ x: rnd() * W, y: rnd() * gy * 0.75, r: rnd() * 1.4 + 0.3, p: rnd() * 6.28 }));
+  G.cracks = Array.from({ length: 9 }, () => {
+    const pts = []; let x = G.cx + (rnd() - .5) * cw * 1.4, y = G.apexY + cw * 0.3;
+    const dir = rnd() < .5 ? -1 : 1;
+    for (let k = 0; k < 6; k++) {
+      pts.push([x, y]);
+      y += h * (0.07 + rnd() * 0.06);
+      x += dir * bh * 0.03 + (rnd() - .5) * bh * 0.07;
+      const hw = hwAt(y) * 0.92; x = clamp(x, G.cx - hw, G.cx + hw);
+    }
+    return pts;
+  });
+  G.streams = [[-1, .30], [-1, .72], [1, .38], [1, .80], [1, .04]].map((s, i) => ({ side: s[0], f: s[1], seed: i * 1.7 }));
+}
+function hwAt(y) {
+  if (y <= G.apexY) return G.cw;
+  if (y >= G.gy) return G.bh;
+  for (let i = 0; i < G.prof.length - 1; i++) {
+    const a = G.prof[i], b = G.prof[i + 1];
+    if (y <= a.y && y >= b.y) return lerp(a.hw, b.hw, (a.y - y) / (a.y - b.y || 1));
+  }
+  return G.bh;
+}
+function surfaceY(dx) { // y permukaan gunung pada jarak mendatar dx dari tengah
+  dx = Math.abs(dx);
+  if (dx >= G.bh) return G.gy;
+  if (dx <= G.cw) return G.apexY;
+  for (let i = 0; i < G.prof.length - 1; i++) {
+    const a = G.prof[i], b = G.prof[i + 1];
+    if (dx >= a.hw && dx <= b.hw || dx <= a.hw && dx >= b.hw) return lerp(a.y, b.y, (dx - a.hw) / ((b.hw - a.hw) || 1));
+  }
+  return G.gy;
+}
+function mountainPath(c) {
+  const { cx, gy, bh, h, cw, apexY } = G;
+  c.beginPath(); c.moveTo(cx - bh, gy);
+  c.quadraticCurveTo(cx - bh * 0.30, gy - h * 0.10, cx - cw, apexY);
+  c.quadraticCurveTo(cx, apexY + cw * 0.35, cx + cw, apexY);
+  c.quadraticCurveTo(cx + bh * 0.30, gy - h * 0.10, cx + bh, gy);
+  c.closePath();
+}
+
+// ===== AUDIO =====
+let actx = null, master = null, noiseBuf = null, rumble = null;
+function initAudio() {
+  if (actx) { if (actx.state === 'suspended') actx.resume(); return; }
+  const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+  actx = new AC();
+  const comp = actx.createDynamicsCompressor();
+  master = actx.createGain(); master.gain.value = muted ? 0 : 0.9;
+  master.connect(comp); comp.connect(actx.destination);
+  const len = actx.sampleRate * 2; noiseBuf = actx.createBuffer(1, len, actx.sampleRate);
+  const d = noiseBuf.getChannelData(0); let last = 0;
+  for (let i = 0; i < len; i++) { last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02; d[i] = clamp(last * 3.5, -1, 1); }
+}
+function startRumble() {
+  if (!actx || rumble) return;
+  const src = actx.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
+  const lp = actx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 140;
+  const g = actx.createGain(); g.gain.value = 0;
+  src.connect(lp); lp.connect(g); g.connect(master);
+  const osc = actx.createOscillator(); osc.type = 'sine'; osc.frequency.value = 38;
+  const og = actx.createGain(); og.gain.value = 0; osc.connect(og); og.connect(master);
+  src.start(); osc.start(); rumble = { src, osc, g, og, lp };
+}
+function setRumble(i) {
+  if (!rumble) return; const t = actx.currentTime;
+  rumble.g.gain.setTargetAtTime(0.04 + 0.9 * i * i, t, 0.12);
+  rumble.og.gain.setTargetAtTime(0.02 + 0.28 * i, t, 0.12);
+  rumble.osc.frequency.setTargetAtTime(34 + i * 18, t, 0.25);
+  rumble.lp.frequency.setTargetAtTime(110 + i * 230, t, 0.25);
+}
+function stopRumble() {
+  if (!rumble) return; const r = rumble; rumble = null; const t = actx.currentTime;
+  r.g.gain.setTargetAtTime(0, t, 0.05); r.og.gain.setTargetAtTime(0, t, 0.05);
+  setTimeout(() => { try { r.src.stop(); r.osc.stop(); } catch (e) {} }, 500);
+}
+function beep(freq, dur, vol) {
+  if (!actx) return; const t = actx.currentTime;
+  const o = actx.createOscillator(), g = actx.createGain(); o.type = 'sine'; o.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.02);
+}
+function boomSound() {
+  if (!actx) return; const t = actx.currentTime;
+  const src = actx.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
+  const lp = actx.createBiquadFilter(); lp.type = 'lowpass';
+  lp.frequency.setValueAtTime(2200, t); lp.frequency.exponentialRampToValueAtTime(70, t + 2.4);
+  const g = actx.createGain(); g.gain.setValueAtTime(1.5, t); g.gain.exponentialRampToValueAtTime(0.001, t + 3.2);
+  src.connect(lp); lp.connect(g); g.connect(master); src.start(t); src.stop(t + 3.3);
+  const o = actx.createOscillator(); o.type = 'sine';
+  o.frequency.setValueAtTime(95, t); o.frequency.exponentialRampToValueAtTime(24, t + 0.8);
+  const og = actx.createGain(); og.gain.setValueAtTime(1.3, t); og.gain.exponentialRampToValueAtTime(0.001, t + 1.4);
+  o.connect(og); og.connect(master); o.start(t); o.stop(t + 1.5);
+  for (let k = 0; k < 26; k++) { // percikan lava
+    const tt = t + 0.25 + Math.random() * 3;
+    const s = actx.createBufferSource(); s.buffer = noiseBuf;
+    const hp = actx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 900 + Math.random() * 2500;
+    const cg = actx.createGain();
+    cg.gain.setValueAtTime(0.0001, tt); cg.gain.exponentialRampToValueAtTime(Math.max(0.01, 0.12 * (1 - (tt - t) / 3.4)), tt + 0.005); cg.gain.exponentialRampToValueAtTime(0.0001, tt + 0.07);
+    s.connect(hp); hp.connect(cg); cg.connect(master); s.start(tt, Math.random()); s.stop(tt + 0.09);
+  }
+}
+
+// ===== ZARAH =====
+function addLava(x, y, ang, sp, size) {
+  if (P.length > 1300) return;
+  P.push({ k: 'lava', x, y, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp, l: 0, m: rand(1.6, 3.2), s: size });
+}
+function addRock(x, y, ang, sp, size) {
+  if (P.length > 1300) return;
+  P.push({ k: 'rock', x, y, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp, l: 0, m: 6, s: size, rot: rand(0, 6.28), vr: rand(-8, 8) });
+}
+function addSmoke(dark, big) {
+  if (P.length > 1300) return; const sc = G.sc;
+  P.push({ k: 'smoke', x: G.cx + rand(-G.cw * .7, G.cw * .7), y: G.apexY, vx: rand(-14, 14) * sc + 8 * sc, vy: -rand(40, 95) * sc * (1 + intensity * .8 + (big ? 1.4 : 0)),
+    l: 0, m: rand(3.5, 6.5), s: rand(G.cw * .25, G.cw * .5) * (big ? 1.6 : 1), grow: rand(18, 34) * sc * (big ? 1.8 : 1), d: dark });
+}
+function addEmber(x, y, vx, vy) {
+  if (P.length > 1300) return;
+  P.push({ k: 'ember', x, y, vx, vy, l: 0, m: rand(1.2, 3), s: rand(1.2, 2.8) * G.sc });
+}
+
+function explode() {
+  state = 'boom'; bt = 0; boomSpawned = false; remaining = 0;
+  stopRumble(); boomSound(); releaseWake();
+  const { cx, apexY, sc } = G;
+  for (let i = 0; i < 280; i++) addLava(cx + rand(-G.cw * .6, G.cw * .6), apexY, -Math.PI / 2 + rand(-.62, .62), rand(450, 1150) * sc, rand(4, 11) * sc);
+  for (let i = 0; i < 75; i++) addRock(cx + rand(-G.cw * .5, G.cw * .5), apexY, -Math.PI / 2 + rand(-.9, .9), rand(300, 850) * sc, rand(7, 16) * sc);
+  for (let i = 0; i < 70; i++) addSmoke(.95, true);
+  for (let i = 0; i < 140; i++) addEmber(cx + rand(-G.cw, G.cw), apexY, rand(-380, 380) * sc, -rand(200, 900) * sc);
+  setStatus('boom'); updateButtons();
+}
+
+// ===== KEADAAN & HUD =====
+function fmt(ms) { const s = Math.max(0, Math.ceil(ms / 1000)), m = Math.floor(s / 60); return String(m).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); }
+let lastMsgKey = '';
+function setStatus(key) {
+  if (key === lastMsgKey) return; lastMsgKey = key;
+  msgEl.className = '';
+  const t = { idle: 'Tekan MULA untuk menghidupkan gunung berapi', calm: 'Gunung berapi masih tenang…', warn: '⚠️ Gunung berapi mula bergegar!',
+    hot: '🔥 HAMPIR MELETUP!', paused: '⏸ Dijeda', boom: '💥 MASA TAMAT!' }[key];
+  msgEl.textContent = t;
+  if (key === 'boom') { void msgEl.offsetWidth; msgEl.className = 'boom'; }
+}
+function updateButtons() {
+  btnStart.textContent = { idle: '▶ MULA', running: '⏸ JEDA', paused: '▶ SAMBUNG', boom: '🔄 MULA SEMULA' }[state];
+  const lock = state === 'running' || state === 'paused';
+  document.querySelectorAll('#presets .chip').forEach(b => b.disabled = lock);
+  inMin.disabled = inSec.disabled = lock;
+  btnMute.textContent = muted ? '🔇 Senyap' : '🔊 Bunyi';
+  btnShake.textContent = shakeOn ? '📳 Gegaran: Hidup' : '📳 Gegaran: Mati';
+}
+function markPreset() {
+  const s = totalMs / 1000;
+  document.querySelectorAll('#presets .chip').forEach(b => b.classList.toggle('on', +b.dataset.s === s));
+}
+function applyInputs() {
+  const m = clamp(parseInt(inMin.value, 10) || 0, 0, 180), s = clamp(parseInt(inSec.value, 10) || 0, 0, 59);
+  totalMs = Math.max(1, m * 60 + s) * 1000;
+  if (m * 60 + s < 1) { inSec.value = 1; }
+  store.set('volcanoSecs', String(totalMs / 1000));
+  if (state === 'idle' || state === 'boom') { resetAll(); }
+  markPreset();
+}
+function setInputsFromSecs(sec) { inMin.value = Math.floor(sec / 60); inSec.value = sec % 60; }
+function resetAll() {
+  state = 'idle'; remaining = totalMs; bt = 0; intensity = 0; P.length = 0; lastMsgKey = ''; lastSec = -1;
+  stopRumble(); releaseWake(); setStatus('idle'); updateButtons();
+}
+function startTimer() {
+  if (state === 'boom') resetAll();
+  initAudio(); startRumble();
+  endAt = performance.now() + remaining; lastSec = Math.ceil(remaining / 1000);
+  state = 'running'; lastMsgKey = ''; requestWake(); updateButtons();
+}
+function pauseTimer() {
+  remaining = Math.max(0, endAt - performance.now()); state = 'paused'; stopRumble(); releaseWake();
+  lastMsgKey = ''; setStatus('paused'); updateButtons();
+}
+let wake = null;
+async function requestWake() { try { if (navigator.wakeLock && !wake) { wake = await navigator.wakeLock.request('screen'); wake.addEventListener('release', () => { wake = null; }); } } catch (e) {} }
+function releaseWake() { try { if (wake) { wake.release(); wake = null; } } catch (e) {} }
+
+// ===== KEMAS KINI =====
+function update(now, dt) {
+  time += dt;
+  if (state === 'running') {
+    remaining = Math.max(0, endAt - now);
+    if (remaining <= 0) explode();
+  }
+  const warnMs = totalMs < 10000 ? totalMs : Math.min(60000, Math.max(10000, totalMs * 0.25));
+  intensity = (state === 'running' || state === 'paused') ? clamp(1 - remaining / warnMs, 0, 1) : 0;
+  if (state === 'boom') bt += dt;
+
+  if (state === 'running') {
+    setRumble(intensity);
+    const sl = Math.ceil(remaining / 1000);
+    if (sl !== lastSec) { lastSec = sl; if (sl <= 10 && sl > 0) beep(sl <= 3 ? 1320 : 880, 0.09, 0.28); }
+    setStatus(intensity > 0.75 || remaining <= 10000 ? 'hot' : intensity > 0 ? 'warn' : 'calm');
+  }
+
+  // HUD
+  timeEl.textContent = fmt(state === 'boom' ? 0 : remaining);
+  const heat = state === 'boom' ? 1 : intensity;
+  timeEl.style.color = heat < .5 ? mix([255, 255, 255], [255, 170, 60], heat * 2) : mix([255, 170, 60], [255, 70, 50], (heat - .5) * 2);
+  let sc = 1;
+  if (state === 'running' && remaining <= 10000) { const fr = (remaining % 1000) / 1000; sc = 1 + 0.09 * clamp((fr - .7) / .3, 0, 1); }
+  timeEl.style.transform = sc > 1 ? `scale(${sc.toFixed(3)})` : '';
+  vig.style.opacity = state === 'boom' ? Math.max(0, .6 - bt * .15) : (intensity > .3 ? (clamp((intensity - .3) / .7, 0, 1) * (0.45 + 0.35 * Math.sin(time * (4 + intensity * 8)))).toFixed(3) : 0);
+
+  // gegaran antaramuka
+  let amp = 0; const k = Math.max(.6, Math.min(W, H) / 800);
+  if (shakeOn) {
+    if (state === 'running') amp = Math.pow(intensity, 1.6) * 8 * k;
+    if (state === 'boom') amp = Math.pow(1 - clamp(bt / 3.4, 0, 1), 2) * 32 * k;
+  }
+  shaker.style.transform = amp > .05 ? `translate(${rand(-amp, amp).toFixed(1)}px,${rand(-amp, amp).toFixed(1)}px) rotate(${(rand(-amp, amp) * .05).toFixed(2)}deg)` : '';
+
+  // jana zarah
+  const { cx, apexY, cw } = G, scl = G.sc;
+  const smokeRate = 2.5 + 11 * intensity + (state === 'boom' ? (bt < 8 ? 18 : 6) : 0);
+  smokeAcc += dt * smokeRate; while (smokeAcc >= 1) { smokeAcc -= 1; addSmoke(state === 'boom' ? .9 : intensity * .6, false); }
+  if (state === 'running' || state === 'paused') {
+    if (state === 'running') {
+      lavaAcc += dt * intensity * 38; while (lavaAcc >= 1) { lavaAcc -= 1;
+        addLava(cx + rand(-cw * .5, cw * .5), apexY, -Math.PI / 2 + rand(-1, 1) * lerp(.15, .65, intensity), rand(.5, 1) * lerp(170, 580, intensity) * scl, rand(3, 7) * scl); }
+      emberAcc += dt * (3 + intensity * 30); while (emberAcc >= 1) { emberAcc -= 1; addEmber(cx + rand(-cw, cw), apexY, rand(-40, 40) * scl, -rand(60, 200) * scl); }
+    }
+  }
+  if (state === 'boom') {
+    if (bt < 4.5) { lavaAcc += dt * 420 * Math.pow(1 - bt / 4.5, 1.2); while (lavaAcc >= 1) { lavaAcc -= 1;
+      addLava(cx + rand(-cw * .6, cw * .6), apexY, -Math.PI / 2 + rand(-.6, .6), rand(350, 1000) * scl, rand(4, 10) * scl); } }
+    if (bt < 12) { emberAcc += dt * 40 * (1 - bt / 12); while (emberAcc >= 1) { emberAcc -= 1; addEmber(cx + rand(-cw * 2, cw * 2), apexY, rand(-300, 300) * scl, -rand(150, 700) * scl); } }
+  }
+
+  const g = H * 1.6;
+  for (let i = P.length - 1; i >= 0; i--) {
+    const p = P[i]; p.l += dt;
+    if (p.l >= p.m) { P.splice(i, 1); continue; }
+    if (p.k === 'lava' || p.k === 'rock') {
+      p.vy += g * dt * (p.k === 'rock' ? 1.15 : 1); p.x += p.vx * dt; p.y += p.vy * dt;
+      if (p.k === 'rock') p.rot += p.vr * dt;
+      if (p.vy > 0 && p.y > surfaceY(p.x - cx) - 2) { P.splice(i, 1); }
+    } else if (p.k === 'smoke') {
+      p.x += p.vx * dt; p.y += p.vy * dt; p.s += p.grow * dt;
+    } else { // ember
+      p.vx += rand(-90, 90) * dt; p.vy += g * 0.12 * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+      if (p.y > G.gy) P.splice(i, 1);
+    }
+  }
+}
+
+// ===== LUKIS =====
+function draw() {
+  const { cx, gy, bh, h, cw, apexY, sc } = G;
+  const glow = state === 'boom' ? lerp(1, 0.4, clamp(bt / 10, 0, 1)) : intensity;
+  const flick = 0.85 + 0.15 * Math.sin(time * 9) * Math.sin(time * 5.3);
+
+  // langit
+  const sky = ctx.createLinearGradient(0, 0, 0, gy);
+  sky.addColorStop(0, mix([8, 10, 32], [40, 6, 10], glow));
+  sky.addColorStop(.6, mix([27, 19, 64], [110, 24, 16], glow));
+  sky.addColorStop(1, mix([58, 28, 63], [200, 70, 20], glow));
+  ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+  for (const s of G.stars) {
+    const a = (0.4 + 0.6 * Math.abs(Math.sin(time * 1.5 + s.p))) * (1 - glow * 0.85);
+    if (a > .02) { ctx.fillStyle = `rgba(255,255,255,${a.toFixed(3)})`; ctx.fillRect(s.x, s.y, s.r, s.r); }
+  }
+  const rg = ctx.createRadialGradient(cx, apexY, 0, cx, apexY, H * 0.9);
+  rg.addColorStop(0, `rgba(255,130,40,${(0.10 + 0.5 * glow).toFixed(3)})`); rg.addColorStop(1, 'rgba(255,60,0,0)');
+  ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H);
+
+  // asap (belakang gunung)
+  for (const p of P) {
+    if (p.k !== 'smoke') continue;
+    const f = p.l / p.m, a = Math.sin(Math.min(1, f * 3) * Math.PI / 2) * (1 - f) * 0.55;
+    const sh = Math.round(lerp(150, 45, p.d));
+    ctx.fillStyle = `rgba(${sh},${sh - 5},${sh + 5},${a.toFixed(3)})`;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, 6.2832); ctx.fill();
+  }
+
+  // gunung
+  const mg = ctx.createLinearGradient(0, apexY, 0, gy);
+  mg.addColorStop(0, '#5b3d36'); mg.addColorStop(.5, '#3a2724'); mg.addColorStop(1, '#1e1416');
+  mountainPath(ctx); ctx.fillStyle = mg; ctx.fill();
+  ctx.save(); mountainPath(ctx); ctx.clip();
+  const shade = ctx.createLinearGradient(cx - bh * 0.25, 0, cx + bh, 0);
+  shade.addColorStop(0, 'rgba(0,0,0,0)'); shade.addColorStop(1, 'rgba(0,0,0,.38)');
+  ctx.fillStyle = shade; ctx.fillRect(cx - bh, apexY, bh * 2, h + 4);
+  const hg = ctx.createRadialGradient(cx, apexY, 0, cx, apexY, h * 0.65);
+  hg.addColorStop(0, `rgba(255,100,20,${(glow * 0.55).toFixed(3)})`); hg.addColorStop(1, 'rgba(255,60,0,0)');
+  ctx.fillStyle = hg; ctx.fillRect(cx - bh, apexY, bh * 2, h + 4);
+  ctx.restore();
+
+  // tanah
+  const gg = ctx.createLinearGradient(0, gy, 0, H);
+  gg.addColorStop(0, '#1a1114'); gg.addColorStop(1, '#0b0709');
+  ctx.fillStyle = gg; ctx.fillRect(0, gy, W, H - gy);
+
+  // rekahan bercahaya
+  ctx.save(); mountainPath(ctx); ctx.clip();
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  G.cracks.forEach((pts, i) => {
+    const a = 0.10 + 0.9 * glow * (0.75 + 0.25 * Math.sin(time * 6 + i));
+    ctx.strokeStyle = `rgba(255,${Math.round(lerp(90, 170, glow))},30,${clamp(a, 0, 1).toFixed(3)})`;
+    ctx.lineWidth = lerp(1.5, 4.2, glow) * sc; ctx.shadowColor = 'rgba(255,120,30,.9)'; ctx.shadowBlur = lerp(0, 18, glow);
+    ctx.beginPath(); pts.forEach((q, j) => j ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.stroke();
+  });
+  ctx.restore(); ctx.shadowBlur = 0;
+
+  // aliran lava selepas letusan
+  if (state === 'boom') {
+    const pr = clamp(bt / 4, 0, 1), e = 1 - Math.pow(1 - pr, 2.2);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    for (const s of G.streams) {
+      const N = 26, upto = Math.floor(N * e), pts = [];
+      for (let i = 0; i <= N; i++) {
+        const y = lerp(apexY + cw * .2, gy - 2, i / N), hw = hwAt(y);
+        pts.push([cx + s.side * hw * s.f + Math.sin(i * .7 + s.seed) * bh * .012, y]);
+      }
+      if (upto < 1) continue;
+      ctx.shadowColor = 'rgba(255,110,20,1)'; ctx.shadowBlur = 16 * sc;
+      for (const [w, col] of [[lerp(7, 12, glow) * sc, 'rgba(255,70,10,.55)'], [lerp(3, 6, glow) * sc, `rgba(255,${Math.round(190 * flick)},80,.95)`]]) {
+        ctx.lineWidth = w; ctx.strokeStyle = col; ctx.beginPath();
+        for (let i = 0; i <= upto; i++) i ? ctx.lineTo(pts[i][0], pts[i][1]) : ctx.moveTo(pts[i][0], pts[i][1]);
+        ctx.stroke();
+      }
+    }
+    ctx.restore(); ctx.shadowBlur = 0;
+  }
+
+  // kawah berapi
+  const cg = ctx.createRadialGradient(cx, apexY, 0, cx, apexY, cw * 3.2);
+  cg.addColorStop(0, `rgba(255,170,60,${(0.25 + 0.65 * glow * flick).toFixed(3)})`); cg.addColorStop(1, 'rgba(255,80,0,0)');
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(cx, apexY, cw * 3.2, 0, 6.2832); ctx.fill(); ctx.restore();
+  const pool = ctx.createLinearGradient(cx - cw, apexY, cx + cw, apexY);
+  pool.addColorStop(0, mix([150, 30, 10], [255, 120, 20], glow)); pool.addColorStop(.5, mix([220, 80, 20], [255, 225, 120], glow * flick)); pool.addColorStop(1, mix([150, 30, 10], [255, 120, 20], glow));
+  ctx.fillStyle = pool; ctx.beginPath(); ctx.ellipse(cx, apexY + cw * .08, cw * .95, cw * .2, 0, 0, 6.2832); ctx.fill();
+
+  // lava / batu / bara
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  for (const p of P) {
+    const f = p.l / p.m;
+    if (p.k === 'lava') {
+      const a = 1 - f * f;
+      ctx.fillStyle = `rgba(255,90,20,${(a * .35).toFixed(3)})`; ctx.beginPath(); ctx.arc(p.x, p.y, p.s * 2.2, 0, 6.2832); ctx.fill();
+      ctx.fillStyle = `rgba(255,${Math.round(lerp(230, 90, f))},${Math.round(lerp(140, 20, f))},${a.toFixed(3)})`; ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, 6.2832); ctx.fill();
+    } else if (p.k === 'ember') {
+      const a = (1 - f) * (0.6 + 0.4 * Math.sin(time * 30 + p.x));
+      ctx.fillStyle = `rgba(255,${Math.round(lerp(220, 100, f))},60,${clamp(a, 0, 1).toFixed(3)})`; ctx.fillRect(p.x, p.y, p.s, p.s);
+    }
+  }
+  ctx.restore();
+  for (const p of P) {
+    if (p.k !== 'rock') continue;
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+    ctx.fillStyle = '#2b2220'; ctx.strokeStyle = `rgba(255,140,40,${clamp(1 - p.l / 1.5, 0, 1).toFixed(3)})`; ctx.lineWidth = 2;
+    ctx.fillRect(-p.s / 2, -p.s / 2, p.s, p.s * .8); ctx.strokeRect(-p.s / 2, -p.s / 2, p.s, p.s * .8);
+    ctx.restore();
+  }
+
+  // gelombang kejutan & kilat (sekali, pudar - bukan berkelip)
+  if (state === 'boom') {
+    const t = bt / 0.9;
+    if (t < 1) {
+      ctx.save(); ctx.globalCompositeOperation = 'lighter';
+      ctx.strokeStyle = `rgba(255,205,130,${(1 - t).toFixed(3)})`; ctx.lineWidth = lerp(16, 2, t);
+      ctx.beginPath(); ctx.arc(cx, apexY, (1 - Math.pow(1 - t, 3)) * Math.max(W, H) * .95, 0, 6.2832); ctx.stroke(); ctx.restore();
+    }
+    const fl = Math.pow(Math.max(0, 1 - bt / 0.7), 2) * 0.9;
+    if (fl > .01) { ctx.fillStyle = `rgba(255,240,210,${fl.toFixed(3)})`; ctx.fillRect(0, 0, W, H); }
+  }
+}
+
+// ===== GELUNG UTAMA =====
+let lastT = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - lastT) / 1000); lastT = now;
+  update(now, dt); draw();
+  requestAnimationFrame(frame);
+}
+
+// ===== KAWALAN =====
+btnStart.addEventListener('click', () => { if (state === 'running') pauseTimer(); else startTimer(); });
+btnReset.addEventListener('click', resetAll);
+btnMute.addEventListener('click', () => { muted = !muted; store.set('volcanoMute', muted ? '1' : '0'); if (master) master.gain.value = muted ? 0 : 0.9; updateButtons(); });
+btnShake.addEventListener('click', () => { shakeOn = !shakeOn; store.set('volcanoShake', shakeOn ? '1' : '0'); updateButtons(); });
+btnFull.addEventListener('click', toggleFull);
+function toggleFull() {
+  if (document.fullscreenElement) document.exitFullscreen(); else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+}
+document.addEventListener('fullscreenchange', () => { document.documentElement.classList.toggle('fs', !!document.fullscreenElement); setTimeout(layout, 60); });
+document.querySelectorAll('#presets .chip').forEach(b => b.addEventListener('click', () => { setInputsFromSecs(+b.dataset.s); applyInputs(); }));
+inMin.addEventListener('change', applyInputs); inSec.addEventListener('change', applyInputs);
+inLabel.addEventListener('input', () => { lblEl.textContent = inLabel.value; store.set('volcanoLabel', inLabel.value); });
+document.addEventListener('keydown', e => {
+  const tag = (e.target.tagName || '').toUpperCase(); if (tag === 'INPUT') return;
+  if (e.code === 'Space' && tag !== 'BUTTON') { e.preventDefault(); btnStart.click(); }
+  else if (e.key === 'r' || e.key === 'R') btnReset.click();
+  else if (e.key === 'm' || e.key === 'M') btnMute.click();
+  else if (e.key === 'f' || e.key === 'F') toggleFull();
+});
+document.addEventListener('visibilitychange', () => { if (!document.hidden && state === 'running') requestWake(); });
+window.addEventListener('resize', layout);
+if (window.ResizeObserver) new ResizeObserver(layout).observe(stage);
+
+// ===== MULA =====
+const savedSecs = parseInt(store.get('volcanoSecs', '60'), 10);
+if (savedSecs >= 1 && savedSecs <= 180 * 60 + 59) setInputsFromSecs(savedSecs);
+inLabel.value = store.get('volcanoLabel', ''); lblEl.textContent = inLabel.value;
+layout(); applyInputs(); updateButtons();
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
