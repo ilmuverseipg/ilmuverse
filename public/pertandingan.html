@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pertandingan Kumpulan — Ilmuverse</title>
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&display=swap">
+<style>
+  :root {
+    --bg: #0d1026; --panel: #161a3a; --panel2: #1d2250; --line: rgba(255,255,255,.10);
+    --txt: #f3f1ff; --muted: #a9a6c9; --win: #22c55e; --lose: #ef4444; --gold: #ffcc33; --turn: #5cc8ff;
+  }
+  body { background: var(--bg); background-image: radial-gradient(circle at 20% 0%, rgba(177,140,255,.18), transparent 40%), radial-gradient(circle at 90% 100%, rgba(92,200,255,.14), transparent 45%); animation: none; color: var(--txt); }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 18px 16px 40px; }
+  .digits { font-family: 'Chakra Petch', 'Baloo 2', monospace; font-variant-numeric: tabular-nums; }
+
+  /* ===== PANEL UTAMA (pusingan aktif) ===== */
+  .stage-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .stage-head h1 { font-family: 'Chewy', 'Baloo 2', sans-serif; font-weight: 400; font-size: clamp(26px, 4vw, 40px); margin: 0; letter-spacing: 1px; }
+  .stage-head .round-tag { font-family: 'Baloo 2'; font-weight: 800; color: var(--gold); font-size: 18px; letter-spacing: 1px; }
+  .stage {
+    display: grid; grid-template-columns: 1fr auto 1fr; gap: 18px; align-items: stretch;
+    background: var(--panel); border: 2px solid var(--line); border-radius: 26px; padding: 18px;
+    box-shadow: 0 20px 50px rgba(0,0,0,.35);
+  }
+  .team {
+    position: relative; border-radius: 20px; padding: 16px; background: var(--panel2);
+    border: 3px solid transparent; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;
+    transition: border-color .2s, box-shadow .2s, background .3s;
+  }
+  .team .emoji { font-size: clamp(44px, 6vw, 70px); line-height: 1; }
+  .team .name { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(24px, 3.2vw, 38px); line-height: 1; }
+  .team .name small { display: block; font-size: 14px; color: var(--muted); font-weight: 600; margin-top: 4px; letter-spacing: 1px; }
+  .team .ttime { font-size: clamp(30px, 4.2vw, 50px); font-weight: 700; color: var(--txt); }
+  .team .ttime.empty { color: var(--muted); font-size: clamp(20px, 2.4vw, 28px); }
+  .team.turn { border-color: var(--turn); box-shadow: 0 0 0 6px rgba(92,200,255,.18), 0 0 40px rgba(92,200,255,.35); }
+  .team.turn::before {
+    content: 'GILIRAN'; position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+    background: var(--turn); color: #06223a; font-family: 'Baloo 2'; font-weight: 800; font-size: 13px; letter-spacing: 2px;
+    padding: 3px 14px; border-radius: 999px;
+  }
+  .team.win { background: linear-gradient(160deg, rgba(34,197,94,.42), rgba(20,83,45,.85)); border-color: var(--win); }
+  .team.lose { background: linear-gradient(160deg, rgba(239,68,68,.40), rgba(127,29,29,.85)); border-color: var(--lose); }
+  .badge-res { font-family: 'Baloo 2'; font-weight: 800; font-size: 20px; letter-spacing: 2px; padding: 4px 16px; border-radius: 999px; }
+  .win .badge-res { background: var(--win); color: #052e16; }
+  .lose .badge-res { background: var(--lose); color: #fff; }
+
+  .marks { display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; }
+  .mk {
+    font-family: 'Baloo 2'; font-weight: 800; font-size: 20px; border: none; cursor: pointer; border-radius: 14px;
+    padding: 6px 14px; display: flex; align-items: center; gap: 8px; color: #fff; transition: transform .12s;
+  }
+  .mk:hover { transform: translateY(-2px); } .mk:active { transform: scale(.95); }
+  .mk.tick { background: #16a34a; } .mk.cross { background: #dc2626; }
+  .mk .n { background: rgba(0,0,0,.25); border-radius: 8px; padding: 0 8px; min-width: 30px; }
+  .mk-undo { background: transparent; border: 1.5px solid var(--line); color: var(--muted); border-radius: 10px; padding: 4px 8px; cursor: pointer; font-size: 13px; }
+  .mk-undo:hover { color: #fff; border-color: #fff; }
+  .redo { background: transparent; border: none; color: var(--muted); font-size: 13px; text-decoration: underline; cursor: pointer; font-family: 'Fredoka'; }
+  .redo:hover { color: #fff; }
+
+  /* ===== JAM RANDIK ===== */
+  .watch { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-width: 300px; }
+  .dial { position: relative; width: clamp(220px, 24vw, 300px); aspect-ratio: 1; cursor: pointer; user-select: none; }
+  .dial svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .dial .track { stroke: rgba(255,255,255,.10); }
+  .dial .prog { stroke: var(--turn); transition: stroke .3s; stroke-linecap: round; }
+  .dial.warn .prog { stroke: #f59e0b; } .dial.danger .prog { stroke: var(--lose); }
+  .dial .center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .dial .big { font-size: clamp(54px, 6.4vw, 84px); font-weight: 700; line-height: 1; }
+  .dial .unit { color: var(--muted); font-family: 'Baloo 2'; font-weight: 700; font-size: 15px; letter-spacing: 2px; margin-top: 6px; }
+  .dial .hint { color: var(--muted); font-size: 13px; margin-top: 6px; }
+  .dial.running .big { color: #fff; text-shadow: 0 0 18px rgba(92,200,255,.6); }
+  .go {
+    font-family: 'Baloo 2'; font-weight: 800; font-size: 22px; letter-spacing: 1px; border: none; cursor: pointer;
+    padding: 12px 34px; border-radius: 16px; color: #fff; background: linear-gradient(135deg, #22c55e, #15803d);
+    box-shadow: 0 8px 22px rgba(34,197,94,.35); transition: transform .12s, filter .12s; min-width: 230px;
+  }
+  .go:hover { transform: translateY(-2px); filter: brightness(1.08); }
+  .go.stop { background: linear-gradient(135deg, #ef4444, #b91c1c); box-shadow: 0 8px 22px rgba(239,68,68,.4); }
+  .go:disabled { filter: grayscale(.7); opacity: .6; cursor: not-allowed; transform: none; }
+  .maxnote { color: var(--muted); font-size: 13px; }
+
+  /* ===== 3 PUSINGAN (papan tanda) ===== */
+  .board-title { font-family: 'Baloo 2'; font-weight: 800; letter-spacing: 2px; color: var(--muted); margin: 24px 4px 10px; font-size: 15px; }
+  .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .match {
+    background: var(--panel); border: 2px solid var(--line); border-radius: 20px; padding: 12px; cursor: pointer;
+    transition: border-color .2s, transform .15s;
+  }
+  .match:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.3); }
+  .match.active { border-color: var(--gold); box-shadow: 0 0 0 4px rgba(255,204,51,.15); }
+  .match .mhead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .match .mhead b { font-family: 'Baloo 2'; font-weight: 800; color: var(--gold); letter-spacing: 1px; }
+  .match .mstat { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .row { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 12px; background: var(--panel2); margin-bottom: 6px; }
+  .row .e { font-size: 24px; text-align: center; }
+  .row .n { font-family: 'Baloo 2'; font-weight: 800; font-size: 19px; }
+  .row .n small { color: var(--muted); font-weight: 600; font-size: 12px; margin-left: 4px; }
+  .row .t { font-size: 20px; font-weight: 700; }
+  .row .tk { font-size: 12px; color: var(--muted); grid-column: 2 / 4; margin-top: -4px; }
+  .row.win { background: rgba(34,197,94,.30); outline: 2px solid var(--win); }
+  .row.lose { background: rgba(239,68,68,.25); outline: 2px solid var(--lose); }
+  .vs { text-align: center; font-family: 'Baloo 2'; font-weight: 800; color: var(--muted); font-size: 13px; margin: -2px 0 4px; }
+
+  .tools { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; margin-top: 18px; }
+  .tool { font-family: 'Fredoka'; font-weight: 600; font-size: 14px; background: rgba(255,255,255,.08); color: #fff; border: 1.5px solid var(--line); border-radius: 999px; padding: 8px 16px; cursor: pointer; }
+  .tool:hover { background: rgba(255,255,255,.16); }
+  .shortcut { color: var(--muted); font-size: 12px; margin-top: 8px; text-align: right; }
+
+  /* ===== KEPUTUSAN ===== */
+  #result { position: fixed; inset: 0; z-index: 200; display: none; align-items: center; justify-content: center; background: rgba(5,6,20,.78); padding: 16px; }
+  #result.show { display: flex; }
+  #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 201; }
+  .rcard { position: relative; z-index: 202; background: var(--panel); border: 3px solid var(--gold); border-radius: 28px; padding: 26px 30px; text-align: center; max-width: 640px; width: 100%; animation: pop .55s cubic-bezier(.2,1.5,.4,1); }
+  @keyframes pop { from { transform: scale(.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .rcard .rr { font-family: 'Baloo 2'; font-weight: 800; color: var(--gold); letter-spacing: 3px; font-size: 18px; }
+  .rcard .rw { font-family: 'Chewy', 'Baloo 2'; font-size: clamp(36px, 6vw, 62px); margin: 6px 0 14px; line-height: 1.05; }
+  .rcard .rw .em { display: block; font-size: 1.3em; }
+  .rgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+  .rgrid div { border-radius: 16px; padding: 10px; font-family: 'Baloo 2'; font-weight: 800; font-size: 18px; }
+  .rgrid .w { background: rgba(34,197,94,.3); border: 2px solid var(--win); }
+  .rgrid .l { background: rgba(239,68,68,.25); border: 2px solid var(--lose); }
+  .rgrid .s { background: rgba(255,204,51,.18); border: 2px solid var(--gold); }
+  .rgrid .digits { display: block; font-size: 28px; }
+  .rnote { color: var(--muted); font-size: 14px; margin: -8px 0 14px; }
+
+  @media (max-width: 900px) {
+    .stage { grid-template-columns: 1fr 1fr; }
+    .watch { grid-column: 1 / -1; order: -1; min-width: 0; }
+    .board { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/guru.html" class="brand"><span>🌌</span><span>Ilmuverse</span></a>
+  <div class="breadcrumbs">
+    <a href="/guru.html">🧑‍🏫 Papan Guru</a>
+    <a href="/murid.html">🧒 Papan Murid</a>
+    <a href="/game-arab.html">🎮 Ilmuverse Gamebox</a>
+    <a href="/timer-volcano.html">🌋 Timer Volcano</a>
+    <a href="/pertandingan.html" class="active">🏁 Pertandingan</a>
+  </div>
+</nav>
+
+<main class="wrap">
+  <div class="stage-head">
+    <h1>🏁 Pertandingan Kumpulan</h1>
+    <span class="round-tag" id="roundTag">PUSINGAN 1</span>
+  </div>
+
+  <section class="stage" aria-label="Pusingan aktif">
+    <div class="team" id="teamA"></div>
+    <div class="watch">
+      <div class="dial" id="dial" role="button" tabindex="0" aria-label="Jam randik - klik untuk mula atau henti">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="track" cx="60" cy="60" r="52" fill="none" stroke-width="10"/>
+          <circle class="prog" id="prog" cx="60" cy="60" r="52" fill="none" stroke-width="10" stroke-dasharray="326.73" stroke-dashoffset="326.73"/>
+        </svg>
+        <div class="center">
+          <div class="big digits" id="watchTime">0.00</div>
+          <div class="unit">SAAT</div>
+          <div class="hint" id="watchHint">Klik untuk mula</div>
+        </div>
+      </div>
+      <button class="go" id="goBtn">▶ MULA</button>
+      <div class="maxnote">Masa maksimum 60 saat · masa paling singkat menang</div>
+    </div>
+    <div class="team" id="teamB"></div>
+  </section>
+
+  <div class="board-title">PAPAN PUSINGAN</div>
+  <section class="board" id="board"></section>
+
+  <div class="tools">
+    <button class="tool" id="renameBtn">✏️ Tukar nama kumpulan</button>
+    <button class="tool" id="resetRoundBtn">↺ Ulang pusingan ini</button>
+    <button class="tool" id="resetAllBtn">🗑️ Set semula semua</button>
+  </div>
+  <div class="shortcut">Pintasan: Space = Mula / Stop</div>
+</main>
+
+<div id="result" role="dialog" aria-modal="true" aria-labelledby="resultWinner">
+  <div class="rcard">
+    <div class="rr" id="resultRound">PUSINGAN 1</div>
+    <div class="rw" id="resultWinner"></div>
+    <div class="rnote" id="resultNote"></div>
+    <div class="rgrid" id="resultGrid"></div>
+    <button class="go" id="resultNext">Pusingan seterusnya →</button>
+  </div>
+</div>
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<script>
+(() => {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const MAX_MS = 60000;
+const STORE_KEY = 'ilmuversePertandingan.v1';
+
+const DEFAULT_TEAMS = [
+  { name: 'Garuda', emoji: '🔥' }, { name: 'Merak', emoji: '🦚' },
+  { name: 'Gagak', emoji: '🐦‍⬛' }, { name: 'Enggang', emoji: '🐦' },
+  { name: 'Helang', emoji: '🦅' }, { name: 'Nuri', emoji: '🦜' },
+];
+const MATCHES = [[0, 1], [2, 3], [4, 5]]; // Kumpulan 1 lawan 2, 3 lawan 4, 5 lawan 6
+
+function freshState() {
+  return { teams: DEFAULT_TEAMS.map((t) => ({ ...t, time: null, tick: 0, cross: 0 })), match: 0, side: 0 };
+}
+let S = load();
+function load() {
+  try { const raw = localStorage.getItem(STORE_KEY); if (raw) { const s = JSON.parse(raw); if (s && s.teams && s.teams.length === 6) return s; } } catch (e) {}
+  return freshState();
+}
+function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) {} }
+
+let running = false, startAt = 0, elapsed = 0, raf = 0;
+
+// ===== BUNYI (Web Audio, tiada fail) =====
+let actx = null;
+function tone(f, d, type = 'sine', v = 0.2, delay = 0) {
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const t = actx.currentTime + delay, o = actx.createOscillator(), g = actx.createGain();
+    o.type = type; o.frequency.value = f; g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(v, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + d + 0.05);
+  } catch (e) {}
+}
+const SFX = {
+  start: () => { tone(660, .12, 'triangle'); tone(990, .18, 'triangle', .2, .12); },
+  stop: () => tone(440, .25, 'square', .15),
+  tick: () => tone(1200, .05, 'sine', .12),
+  buzzer: () => tone(160, .7, 'sawtooth', .22),
+  win: () => [523, 659, 784, 1047].forEach((f, i) => tone(f, .28, 'triangle', .2, i * .12)),
+  mark: (ok) => ok ? tone(880, .12, 'triangle', .18) : tone(220, .18, 'square', .14),
+};
+
+// ===== BANTU =====
+const fmt = (ms) => (ms / 1000).toFixed(2);
+const label = (i) => `Kumpulan ${i + 1}`;
+function decide(m) {
+  const [a, b] = MATCHES[m].map((i) => S.teams[i]);
+  if (a.time == null || b.time == null) return null;
+  if (Math.abs(a.time - b.time) >= 10) return a.time < b.time ? { w: 0, by: 'time' } : { w: 1, by: 'time' };
+  // masa sama (beza < 0.01 s): kumpulan dengan lebih banyak ✓ menang, kalau sama juga = seri
+  const sa = a.tick - a.cross, sb = b.tick - b.cross;
+  if (sa !== sb) return { w: sa > sb ? 0 : 1, by: 'marks' };
+  return { w: -1, by: 'tie' };
+}
+
+// ===== PAPARAN =====
+function teamCard(el, idx, sideNo) {
+  const t = S.teams[idx], m = S.match, res = decide(m);
+  const isTurn = !res && S.side === sideNo;
+  el.className = 'team' + (isTurn ? ' turn' : '') + (res && res.w === sideNo ? ' win' : '') + (res && res.w !== -1 && res.w !== sideNo ? ' lose' : '');
+  const timeTxt = t.time == null ? (isTurn && (running || elapsed) ? 'Sedang berjalan…' : 'Belum bermula') : `${fmt(t.time)} s`;
+  el.innerHTML = `
+    <div class="emoji">${t.emoji}</div>
+    <div class="name">${esc(t.name)}<small>${label(idx).toUpperCase()}</small></div>
+    <div class="ttime digits ${t.time == null ? 'empty' : ''}">${timeTxt}</div>
+    ${res ? `<div class="badge-res">${res.w === -1 ? 'SERI' : res.w === sideNo ? '🏆 MENANG' : 'KALAH'}</div>` : ''}
+    <div class="marks">
+      <button class="mk tick" data-i="${idx}" data-k="tick" title="Beri tanda betul">✓ <span class="n">${t.tick}</span></button>
+      <button class="mk cross" data-i="${idx}" data-k="cross" title="Beri tanda pangkah">✗ <span class="n">${t.cross}</span></button>
+      <button class="mk-undo" data-i="${idx}" title="Kosongkan tanda kumpulan ini">↺</button>
+    </div>
+    ${t.time != null && !running ? `<button class="redo" data-redo="${sideNo}">Ulang masa ${esc(t.name)}</button>` : ''}`;
+}
+function esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+function renderBoard() {
+  const board = $('board'); board.innerHTML = '';
+  MATCHES.forEach(([a, b], m) => {
+    const res = decide(m);
+    const card = document.createElement('div');
+    card.className = 'match' + (m === S.match ? ' active' : '');
+    card.dataset.m = m;
+    const status = res ? (res.w === -1 ? 'Seri' : `${S.teams[[a, b][res.w]].name} menang`) : (S.teams[a].time != null || S.teams[b].time != null ? 'Sedang berlangsung' : 'Belum bermula');
+    const row = (i, side) => {
+      const t = S.teams[i];
+      const cls = res ? (res.w === side ? ' win' : res.w === -1 ? '' : ' lose') : '';
+      return `<div class="row${cls}"><span class="e">${t.emoji}</span><span class="n">${esc(t.name)}<small>K${i + 1}</small></span>
+        <span class="t digits">${t.time == null ? '—' : fmt(t.time) + ' s'}</span><span class="tk">✓ ${t.tick} &nbsp; ✗ ${t.cross}</span></div>`;
+    };
+    card.innerHTML = `<div class="mhead"><b>PUSINGAN ${m + 1}</b><span class="mstat">${status}</span></div>${row(a, 0)}<div class="vs">LAWAN</div>${row(b, 1)}`;
+    board.appendChild(card);
+  });
+}
+
+function renderWatch() {
+  const ms = running ? Math.min(MAX_MS, performance.now() - startAt) : elapsed;
+  $('watchTime').textContent = fmt(ms);
+  const frac = ms / MAX_MS;
+  $('prog').setAttribute('stroke-dashoffset', (326.73 * (1 - frac)).toFixed(2));
+  const dial = $('dial');
+  dial.classList.toggle('running', running);
+  dial.classList.toggle('warn', frac >= .66 && frac < .85);
+  dial.classList.toggle('danger', frac >= .85);
+  const res = decide(S.match);
+  const team = S.teams[MATCHES[S.match][S.side]];
+  const go = $('goBtn');
+  if (res) { const more = MATCHES.some((_, i) => !decide(i)); go.textContent = more ? 'Pusingan seterusnya →' : '🏁 Semua pusingan selesai'; go.className = 'go'; go.disabled = !more; $('watchHint').textContent = 'Pusingan tamat'; }
+  else if (running) { go.textContent = `■ STOP (${team.name})`; go.className = 'go stop'; go.disabled = false; $('watchHint').textContent = 'Klik untuk stop'; }
+  else { go.textContent = `▶ MULA (${team.name})`; go.className = 'go'; go.disabled = false; $('watchHint').textContent = 'Klik untuk mula'; }
+}
+
+function render() {
+  const [a, b] = MATCHES[S.match];
+  $('roundTag').textContent = `PUSINGAN ${S.match + 1}: ${S.teams[a].name.toUpperCase()} lawan ${S.teams[b].name.toUpperCase()}`;
+  teamCard($('teamA'), a, 0);
+  teamCard($('teamB'), b, 1);
+  renderBoard();
+  renderWatch();
+}
+
+// ===== JAM RANDIK =====
+let lastSec = -1;
+function frame() {
+  if (!running) return;
+  const ms = performance.now() - startAt;
+  const sec = Math.floor(ms / 1000);
+  if (sec !== lastSec) { lastSec = sec; if (sec >= 50 && sec < 60) SFX.tick(); }
+  if (ms >= MAX_MS) { stopWatch(true); return; }
+  renderWatch();
+  raf = requestAnimationFrame(frame);
+}
+function startWatch() {
+  if (running || decide(S.match)) return;
+  const idx = MATCHES[S.match][S.side];
+  S.teams[idx].time = null;
+  running = true; startAt = performance.now(); elapsed = 0; lastSec = -1;
+  SFX.start(); render(); raf = requestAnimationFrame(frame);
+}
+function stopWatch(timeout) {
+  if (!running) return;
+  running = false; cancelAnimationFrame(raf);
+  const ms = timeout ? MAX_MS : Math.min(MAX_MS, performance.now() - startAt);
+  elapsed = ms;
+  const idx = MATCHES[S.match][S.side];
+  S.teams[idx].time = Math.round(ms / 10) * 10; // simpan tepat 0.01 s
+  timeout ? SFX.buzzer() : SFX.stop();
+  // giliran seterusnya: kumpulan lawan yang belum ada masa
+  const [a, b] = MATCHES[S.match];
+  if (S.teams[a].time == null) S.side = 0; else if (S.teams[b].time == null) S.side = 1;
+  save(); render();
+  const res = decide(S.match);
+  if (res) setTimeout(() => showResult(S.match, res, timeout), 450);
+  else setTimeout(() => { if (!running) { elapsed = 0; renderWatch(); } }, 1500);
+}
+function toggle() {
+  if (running) return stopWatch(false);
+  if (decide(S.match)) return nextMatch();
+  startWatch();
+}
+
+function nextMatch() {
+  if (running) return;
+  const next = MATCHES.findIndex((_, m) => !decide(m));
+  if (next === -1) return;
+  S.match = next; pickSide(); elapsed = 0; save(); render();
+}
+function pickSide() {
+  const [a, b] = MATCHES[S.match];
+  S.side = S.teams[a].time == null ? 0 : S.teams[b].time == null ? 1 : 0;
+}
+
+// ===== KEPUTUSAN =====
+function showResult(m, res, timeout) {
+  const [a, b] = MATCHES[m], A = S.teams[a], B = S.teams[b];
+  $('resultRound').textContent = `PUSINGAN ${m + 1}`;
+  if (res.w === -1) {
+    $('resultWinner').innerHTML = `<span class="em">🤝</span>SERI!`;
+    $('resultNote').textContent = 'Masa dan tanda kedua-dua kumpulan sama.';
+  } else {
+    const W = res.w === 0 ? A : B;
+    $('resultWinner').innerHTML = `<span class="em">${W.emoji}</span>KUMPULAN ${esc(W.name.toUpperCase())} MENANG!`;
+    $('resultNote').textContent = res.by === 'marks' ? 'Masa sama — pemenang ditentukan oleh tanda ✓ terbanyak.' : 'Masa paling singkat menang.';
+  }
+  const cls = (side) => res.w === -1 ? 's' : res.w === side ? 'w' : 'l';
+  $('resultGrid').innerHTML = [A, B].map((t, side) =>
+    `<div class="${cls(side)}">${t.emoji} ${esc(t.name)}<span class="digits">${fmt(t.time)} s</span>✓ ${t.tick} · ✗ ${t.cross}</div>`).join('');
+  const more = MATCHES.some((_, i) => !decide(i));
+  $('resultNext').textContent = more ? 'Pusingan seterusnya →' : '🏁 Tamat — lihat papan';
+  $('result').classList.add('show');
+  SFX.win(); confetti();
+  $('resultNext').focus();
+}
+$('resultNext').addEventListener('click', () => {
+  $('result').classList.remove('show'); stopConfetti();
+  nextMatch(); render();
+});
+
+// ===== CONFETTI =====
+const cv = $('confetti'), cx = cv.getContext('2d'); let parts = [], craf = 0;
+function confetti() {
+  cv.width = innerWidth; cv.height = innerHeight; parts = [];
+  const cols = ['#ff4d6d', '#ffcc33', '#22c55e', '#5cc8ff', '#b18cff', '#ff8a3d', '#ffffff'];
+  for (let i = 0; i < 260; i++) {
+    const left = i % 2 === 0;
+    parts.push({ x: left ? 0 : cv.width, y: cv.height * .9, vx: (left ? 1 : -1) * (4 + Math.random() * 9), vy: -(10 + Math.random() * 12),
+      r: Math.random() * 6.3, vr: (Math.random() - .5) * .4, w: 7 + Math.random() * 8, h: 4 + Math.random() * 5, c: cols[i % cols.length], life: 260 + Math.random() * 80 });
+  }
+  cancelAnimationFrame(craf);
+  (function step() {
+    cx.clearRect(0, 0, cv.width, cv.height);
+    parts.forEach((p) => {
+      p.vy = Math.min(p.vy + .35, 5); p.vx *= .985; p.x += p.vx + Math.sin(p.life / 9); p.y += p.vy; p.r += p.vr; p.life--;
+      cx.save(); cx.globalAlpha = Math.min(1, p.life / 60); cx.translate(p.x, p.y); cx.rotate(p.r); cx.scale(1, Math.abs(Math.cos(p.life / 7)) * .8 + .2);
+      cx.fillStyle = p.c; cx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); cx.restore();
+    });
+    parts = parts.filter((p) => p.life > 0 && p.y < cv.height + 40);
+    if (parts.length) craf = requestAnimationFrame(step); else cx.clearRect(0, 0, cv.width, cv.height);
+  })();
+}
+function stopConfetti() { cancelAnimationFrame(craf); parts = []; cx.clearRect(0, 0, cv.width, cv.height); }
+
+// ===== INTERAKSI =====
+$('goBtn').addEventListener('click', toggle);
+$('dial').addEventListener('click', toggle);
+$('dial').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); toggle(); } });
+document.addEventListener('keydown', (e) => {
+  if (e.code !== 'Space' || /INPUT|TEXTAREA|BUTTON/.test(e.target.tagName)) return;
+  e.preventDefault();
+  if ($('result').classList.contains('show')) $('resultNext').click(); else toggle();
+});
+document.querySelector('.stage').addEventListener('click', (e) => {
+  const mk = e.target.closest('.mk'); const undo = e.target.closest('.mk-undo'); const redo = e.target.closest('.redo');
+  if (mk) { const t = S.teams[+mk.dataset.i]; t[mk.dataset.k]++; SFX.mark(mk.dataset.k === 'tick'); save(); render(); }
+  else if (undo) { const t = S.teams[+undo.dataset.i]; if (t.tick || t.cross) { if (confirm(`Kosongkan tanda ✓ dan ✗ untuk ${t.name}?`)) { t.tick = 0; t.cross = 0; save(); render(); } } }
+  else if (redo && !running) { S.teams[MATCHES[S.match][+redo.dataset.redo]].time = null; S.side = +redo.dataset.redo; elapsed = 0; save(); render(); }
+});
+$('board').addEventListener('click', (e) => {
+  const card = e.target.closest('.match'); if (!card || running) return;
+  S.match = +card.dataset.m; pickSide(); elapsed = 0; save(); render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+$('resetRoundBtn').addEventListener('click', () => {
+  if (running) return;
+  const [a, b] = MATCHES[S.match];
+  if (!confirm(`Ulang Pusingan ${S.match + 1}? Masa dan tanda ${S.teams[a].name} dan ${S.teams[b].name} akan dikosongkan.`)) return;
+  [a, b].forEach((i) => Object.assign(S.teams[i], { time: null, tick: 0, cross: 0 }));
+  S.side = 0; elapsed = 0; save(); render();
+});
+$('resetAllBtn').addEventListener('click', () => {
+  if (running) return;
+  if (!confirm('Set semula SEMUA pusingan? Semua masa dan tanda akan dipadam (nama kumpulan dikekalkan).')) return;
+  const names = S.teams.map((t) => ({ name: t.name, emoji: t.emoji }));
+  S = freshState(); names.forEach((n, i) => Object.assign(S.teams[i], n));
+  elapsed = 0; save(); render();
+});
+$('renameBtn').addEventListener('click', () => {
+  if (running) return;
+  for (let i = 0; i < 6; i++) {
+    const v = prompt(`Nama ${label(i)} (kosongkan untuk kekal "${S.teams[i].name}"):`, S.teams[i].name);
+    if (v === null) break;
+    if (v.trim()) S.teams[i].name = v.trim().slice(0, 20);
+  }
+  save(); render();
+});
+window.addEventListener('beforeunload', (e) => { if (running) { e.preventDefault(); e.returnValue = ''; } });
+
+render();
+})();
+</script>
+</body>
+</html>
