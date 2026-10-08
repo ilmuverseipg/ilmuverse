@@ -197,6 +197,37 @@
   .icon-apitan .seg.right{ width:20px; background:linear-gradient(165deg, var(--line-b), #0a5c2e); }
   .icon-apitan .coupler{ width:5px; height:4px; background:#ffcc00; border-radius:1px; }
 
+  /* Mod Kata Majmuk: [gambar] + [gambar] = [?] */
+  .mode-card[data-mode="majmuk"]{ border-left-color: #ff8a3d; }
+  .mode-card[data-mode="majmuk"]:hover{ border-left-color: #ff8a3d; box-shadow: 0 0 20px rgba(255,138,61,.35); }
+  .icon-majmuk{ display:flex; align-items:center; gap:3px; font-family:'Orbitron',sans-serif; font-weight:900; color:#ffcc00; font-size:15px; }
+  .icon-majmuk .pic{ width:22px; height:22px; border-radius:5px; border:2px solid rgba(255,255,255,.35); }
+  .icon-majmuk .pic.a{ background:linear-gradient(160deg,#ff8a3d,#b4471a); }
+  .icon-majmuk .pic.b{ background:linear-gradient(160deg,#00a651,#0a5c2e); }
+  .icon-majmuk .ans{ width:24px; height:22px; border-radius:5px; border:2px dashed #ffcc00; display:flex; align-items:center; justify-content:center; font-size:12px; }
+
+  /* Pilih bilangan soalan (Mod Kata Majmuk) */
+  .count-btn{ font-family:'Orbitron',sans-serif; font-weight:800; font-size:1.25rem; padding:16px 10px; border-radius:14px;
+    background:rgba(15,23,42,.7); border:2px solid rgba(255,138,61,.55); color:#fff; transition:transform .15s, background .15s; }
+  .count-btn:hover{ transform:translateY(-2px); background:rgba(255,138,61,.25); }
+  .count-btn small{ display:block; font-family:'Kanit',sans-serif; font-weight:600; font-size:.8rem; color:#cbd5e1; letter-spacing:0; }
+
+  /* Tajuk pembuka Mod Kata Majmuk (3 saat + confetti) */
+  #majmukIntro{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; z-index:70; }
+  #majmukIntro .intro-card{ text-align:center; padding:.4em .8em; animation: introPop 3s cubic-bezier(.2,1.4,.4,1) forwards; }
+  #majmukIntroTitle{ font-family:'Kanit',sans-serif; font-weight:800; line-height:1.05; font-size:clamp(3rem, 10vw, 8.5rem);
+    background:linear-gradient(180deg,#fff7c2 0%,#ffcc00 45%,#ff8a3d 100%); -webkit-background-clip:text; background-clip:text; color:transparent;
+    filter: drop-shadow(0 6px 0 rgba(120,40,0,.55)) drop-shadow(0 0 30px rgba(255,170,60,.55)); }
+  #majmukIntroSub{ font-family:'Orbitron',sans-serif; font-weight:700; letter-spacing:.25em; color:#eaf6ff; font-size:clamp(1rem,2.2vw,1.6rem);
+    text-shadow:0 2px 10px rgba(0,0,0,.8); margin-top:.6em; }
+  @keyframes introPop{
+    0%{ transform:scale(.2) rotate(-8deg); opacity:0; }
+    14%{ transform:scale(1.08) rotate(2deg); opacity:1; }
+    22%{ transform:scale(1) rotate(0); }
+    85%{ transform:scale(1.04); opacity:1; }
+    100%{ transform:scale(1.25); opacity:0; }
+  }
+
   /* ===== FINGER QUIZ PANEL - gaya papan berlepas (departure board) stesen ===== */
   #quizPanel{ z-index: 20; }
   .quiz-option{
@@ -265,6 +296,14 @@
     <div id="feedbackText" class="feedback-text"></div>
   </div>
 
+  <!-- Tajuk pembuka Mod Kata Majmuk (3 saat, dengan confetti dilukis di kanvas) -->
+  <div id="majmukIntro" class="hidden">
+    <div class="intro-card">
+      <div id="majmukIntroTitle">Siasat Kata Majmuk</div>
+      <div id="majmukIntroSub">BERSEDIA...</div>
+    </div>
+  </div>
+
   <!-- ===== FINGER QUIZ PANEL (Mod Isyarat Jari sahaja) ===== -->
   <div id="quizPanel" class="hidden fixed bottom-32 left-1/2 -translate-x-1/2 w-[min(560px,94vw)]"></div>
 
@@ -329,6 +368,13 @@
           <div class="mode-name">MOD IMBUHAN APITAN</div>
           <div class="mode-desc">Cubit &amp; tarik imbuhan awalan (kanan) dan imbuhan akhiran (kiri) ke kata dasar (tengah) untuk bina perkataan Jawi yang lengkap.</div>
         </button>
+        <button class="mode-card" data-mode="majmuk">
+          <div class="mode-icon"><div class="icon-majmuk">
+            <div class="pic a"></div>+<div class="pic b"></div>=<div class="ans">?</div>
+          </div></div>
+          <div class="mode-name">MOD KATA MAJMUK</div>
+          <div class="mode-desc">Gambar 1 + Gambar 2 = ? Cubit jawapan yang betul &amp; seret ke dalam kotak. Guru pilih berapa soalan.</div>
+        </button>
       </div>
       <div class="text-center mt-5">
         <button id="modeBackBtn" class="text-sm font-kanit font-semibold text-slate-300 hover:text-cyan-300 underline">← Tukar topik</button>
@@ -356,6 +402,24 @@
       </div>
       <div class="text-center mt-5">
         <button id="ganjaranBackBtn" class="text-sm font-kanit font-semibold text-slate-300 hover:text-cyan-300 underline">← Tukar mod permainan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MOD KATA MAJMUK: PILIH BILANGAN SOALAN ===== -->
+  <div id="majmukCountModal" class="modal-overlay hidden">
+    <div class="glass rounded-2xl p-6 md:p-9 max-w-xl w-full">
+      <div class="tactile-strip mb-4"></div>
+      <div class="text-center mb-5">
+        <div class="font-orbitron text-2xl md:text-3xl font-black glow-cyan">BERAPA SOALAN?</div>
+        <div class="font-kanit text-base font-semibold text-slate-300 mt-1" id="majmukCountInfo"></div>
+      </div>
+      <div id="majmukCountBtns" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+      <label class="flex items-center justify-center gap-2 mt-5 font-kanit text-base font-semibold text-slate-200 cursor-pointer">
+        <input type="checkbox" id="majmukShuffle" class="w-5 h-5 accent-orange-400"> 🔀 Susun soalan secara rawak
+      </label>
+      <div class="text-center mt-5">
+        <button id="majmukCountBackBtn" class="text-sm font-kanit font-semibold text-slate-300 hover:text-cyan-300 underline">← Tukar mod permainan</button>
       </div>
     </div>
   </div>
@@ -459,6 +523,8 @@ const CONFIG = {
     droneRadius: 92,
     fingerHoldMs: 800,             // Mod Isyarat Jari - tempoh perlu stabil sebelum jawapan dikunci
     apitanRevealMs: 2600,          // Mod Imbuhan Apitan - tempoh perkataan Jawi lengkap (hijau) terpapar sebelum soalan seterusnya
+    majmukIntroMs: 3000,           // Mod Kata Majmuk - tempoh tajuk pembuka (dengan confetti)
+    majmukRevealMs: 2600,          // Mod Kata Majmuk - tempoh jawapan betul (hijau) terpapar sebelum soalan seterusnya
   },
   MATCH: {
     pairsPerRound: 5,              // Mod Padan - bilangan pasangan setiap pusingan
@@ -513,6 +579,13 @@ const els = {
   statCombo: document.getElementById('statCombo'),
   statMiss: document.getElementById('statMiss'),
   statWords: document.getElementById('statWords'),
+  majmukCountModal: document.getElementById('majmukCountModal'),
+  majmukCountInfo: document.getElementById('majmukCountInfo'),
+  majmukCountBtns: document.getElementById('majmukCountBtns'),
+  majmukShuffle: document.getElementById('majmukShuffle'),
+  majmukCountBackBtn: document.getElementById('majmukCountBackBtn'),
+  majmukIntro: document.getElementById('majmukIntro'),
+  majmukIntroTitle: document.getElementById('majmukIntroTitle'),
 };
 
 const ctx = els.canvas.getContext('2d');
@@ -600,6 +673,19 @@ let apitanDasarPos = { x: 0, y: 0 };
 let apitanAwalanSlotPos = { x: 0, y: 0 };  // slot kanan drpd dasar - utk imbuhan awalan
 let apitanAkhiranSlotPos = { x: 0, y: 0 }; // slot kiri drpd dasar - utk imbuhan akhiran
 let currentApitanQuestion = null;
+
+// Mod Kata Majmuk (bergambar) - soalan disimpan dalam koleksi berasingan &
+// dimuat bila mod ini dipilih (majmukAll), kemudian guru pilih bilangan soalan
+// -> majmukPlaylist (yang sebenarnya dimainkan).
+const MAJMUK_SOALAN = 'Apakah Kata Majmuk Ini?';
+let majmukAll = [], majmukAllLessonId = null, majmukPlaylist = [];
+const majmukImgs = new Map();   // _id soalan -> { g1: Image, g2: Image }
+let currentMajmukQuestion = null;
+let majmukOptions = [];         // kad jawapan { opt, x, y, w, h, homeX, homeY }
+let majmukHeld = null;
+let majmukHeldPos = { x: 0, y: 0 };
+let majmukSolved = false, majmukWrongFlash = 0, majmukIntroActive = false, majmukIntroTimer = null;
+let majmukLayout = null;        // kedudukan gambar/kotak jawapan (dikira semula ikut saiz skrin)
 
 // ------------------------------------------------------------------
 // AUDIO — Procedural Sound Synthesizer (Web Audio API, tiada fail .mp3/.wav)
@@ -712,7 +798,15 @@ function resizeCanvas() {
   els.canvas.style.width = W + 'px'; els.canvas.style.height = H + 'px';
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
-window.addEventListener('resize', resizeCanvas);
+window.addEventListener('resize', () => {
+  resizeCanvas();
+  if (currentMode === 'majmuk' && currentMajmukQuestion) {
+    computeMajmukLayout();
+    const L = majmukLayout, gap = 18;
+    const startX = W / 2 - (3 * L.cardW + 2 * gap) / 2 + L.cardW / 2;
+    majmukOptions.forEach((c, i) => { c.homeX = startX + i * (L.cardW + gap); c.homeY = L.optY; c.w = L.cardW; c.h = L.cardH; });
+  }
+});
 
 // ------------------------------------------------------------------
 // API — muat & urus kandungan pelajaran dari MongoDB (boleh edit di /game-arab-admin.html)
@@ -735,8 +829,9 @@ async function loadLessonList() {
       if (l.wordCount > 0) parts.push(`${l.wordCount} perkataan`);
       if (l.tembakQuestionCount > 0) parts.push(`${l.tembakQuestionCount} soalan tembak`);
       if (l.apitanQuestionCount > 0) parts.push(`${l.apitanQuestionCount} soalan apitan`);
+      if (l.majmukQuestionCount > 0) parts.push(`${l.majmukQuestionCount} soalan majmuk`);
       opt.textContent = `${l.name} (${parts.length ? parts.join(', ') : 'kosong'})`;
-      if (l.wordCount === 0 && l.tembakQuestionCount === 0 && l.apitanQuestionCount === 0) opt.disabled = true;
+      if (l.wordCount === 0 && l.tembakQuestionCount === 0 && l.apitanQuestionCount === 0 && !l.majmukQuestionCount) opt.disabled = true;
       els.lessonSelect.appendChild(opt);
     });
     els.lessonStatus.textContent = 'Pilih topik dan tekan SETERUSNYA.';
@@ -841,6 +936,7 @@ function stopCamera() {
 function activePool() {
   if (currentMode === 'tembak') return currentLesson.tembakQuestions || [];
   if (currentMode === 'apitan') return currentLesson.apitanQuestions || [];
+  if (currentMode === 'majmuk') return majmukPlaylist;
   return currentLesson.words || [];
 }
 
@@ -1475,6 +1571,315 @@ function drawApitanScene(t) {
   if (!apitanAkhiranLocked) apitanAkhiranOptions.forEach((c) => drawApitanOptionCard(c, '#0098d8'));
 }
 
+
+// ------------------------------------------------------------------
+// MOD: KATA MAJMUK (bergambar) - "Gambar 1 + Gambar 2 = [kotak]". Murid
+// cubit SATU daripada 3 kad jawapan & seret ke kotak. Soalan sentiasa tetap
+// "Apakah Kata Majmuk Ini?". Gambar 800x800 dimuat naik oleh guru di Panel
+// Guru (models/GameMajmukQuestion.js - koleksi berasingan).
+// ------------------------------------------------------------------
+async function loadMajmukQuestions(lessonId) {
+  if (majmukAllLessonId === lessonId && majmukAll.length) return majmukAll;
+  const res = await fetch(`${CONFIG.API_BASE}/${lessonId}/majmuk-questions`);
+  if (!res.ok) throw new Error('Gagal muat Soalan Kata Majmuk.');
+  majmukAll = await res.json();
+  majmukAllLessonId = lessonId;
+  majmukImgs.clear();
+  return majmukAll;
+}
+
+function loadImg(src) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null); // gambar rosak -> kotak placeholder, permainan tetap jalan
+    img.src = src;
+  });
+}
+
+async function preloadMajmukImages(list) {
+  await Promise.all(list.map(async (q) => {
+    if (majmukImgs.has(q._id)) return;
+    const [g1, g2] = await Promise.all([loadImg(q.gambar1), loadImg(q.gambar2)]);
+    majmukImgs.set(q._id, { g1, g2 });
+  }));
+}
+
+function openMajmukCountModal() {
+  const n = majmukAll.length;
+  els.majmukCountInfo.textContent = `Topik ini ada ${n} soalan Kata Majmuk. Pilih berapa yang mahu dimainkan.`;
+  els.majmukCountBtns.innerHTML = '';
+  const choices = [3, 5, 10, 15, 20].filter((c) => c < n);
+  choices.forEach((c) => {
+    const b = document.createElement('button');
+    b.className = 'count-btn'; b.innerHTML = `${c}<small>soalan</small>`;
+    b.addEventListener('click', () => chooseMajmukCount(c));
+    els.majmukCountBtns.appendChild(b);
+  });
+  const all = document.createElement('button');
+  all.className = 'count-btn'; all.innerHTML = `SEMUA<small>${n} soalan</small>`;
+  all.addEventListener('click', () => chooseMajmukCount(n));
+  els.majmukCountBtns.appendChild(all);
+  showModal(els.majmukCountModal);
+}
+
+async function chooseMajmukCount(count) {
+  const base = els.majmukShuffle.checked ? shuffle(majmukAll) : majmukAll.slice();
+  majmukPlaylist = base.slice(0, count);
+  hideModal(els.majmukCountModal);
+  showModal(els.loadingModal);
+  els.loadingMsg.textContent = 'Memuatkan gambar soalan...';
+  els.loadingBar.style.width = '40%';
+  await preloadMajmukImages(majmukPlaylist);
+  hideModal(els.loadingModal);
+  showModal(els.ganjaranModal);
+}
+
+function startMajmukIntro() {
+  majmukIntroActive = true;
+  roundBusy = true;
+  currentMajmukQuestion = null; majmukOptions = []; majmukHeld = null;
+  const title = (currentLesson.majmukTitle || 'Siasat Kata Majmuk').trim();
+  els.majmukIntroTitle.textContent = title;
+  els.bannerLabel.textContent = 'MOD KATA MAJMUK';
+  els.bannerTarget.textContent = title;
+  els.bannerTarget.classList.remove('font-arabic');
+  setNova('Bersedia! Cubit kad jawapan & seret ke dalam kotak.');
+  updateHUD();
+  // restart animasi CSS tajuk
+  els.majmukIntro.classList.add('hidden'); void els.majmukIntro.offsetWidth; els.majmukIntro.classList.remove('hidden');
+  const card = els.majmukIntro.querySelector('.intro-card');
+  card.style.animation = 'none'; void card.offsetWidth; card.style.animation = '';
+  spawnConfettiShow();
+  SFX.missionComplete();
+  clearTimeout(majmukIntroTimer);
+  majmukIntroTimer = setTimeout(() => {
+    els.majmukIntro.classList.add('hidden');
+    majmukIntroActive = false;
+    if (gameActive && currentMode === 'majmuk') startMajmukRound();
+  }, CONFIG.GAME.majmukIntroMs);
+}
+
+function computeMajmukLayout() {
+  const topSafe = 125, bottomSafe = 175;
+  const S = clamp(Math.min(W * 0.2, (H - topSafe - bottomSafe) * 0.56), 120, 330);
+  const opW = Math.max(56, S * 0.28);
+  const boxW = clamp(S * 1.35, 240, 440), boxH = clamp(S * 0.62, 100, 190);
+  const total = S + opW + S + opW + boxW;
+  const x0 = (W - total) / 2;
+  const eqY = topSafe + 18 + S / 2;
+  const cardH = clamp(H * 0.12, 74, 108);
+  const gap = 18;
+  const cardW = clamp((W - 140) / 3 - gap, 200, 360);
+  const optY = Math.min(eqY + S / 2 + 34 + cardH / 2, H - bottomSafe - cardH / 2);
+  majmukLayout = {
+    S, eqY, opW, boxW, boxH, cardW, cardH, optY,
+    img1: { x: x0 + S / 2, y: eqY },
+    plus: { x: x0 + S + opW / 2, y: eqY },
+    img2: { x: x0 + S + opW + S / 2, y: eqY },
+    eq: { x: x0 + 2 * S + opW * 1.5, y: eqY },
+    box: { x: x0 + 2 * S + 2 * opW + boxW / 2, y: eqY },
+  };
+}
+
+function startMajmukRound() {
+  const pool = remainingPool();
+  if (!pool.length) { showVictory(); return; }
+  currentMajmukQuestion = pool[0];
+  majmukSolved = false; majmukHeld = null; roundBusy = false; majmukWrongFlash = 0;
+  computeMajmukLayout();
+  const L = majmukLayout, gap = 18;
+  const startX = W / 2 - (3 * L.cardW + 2 * gap) / 2 + L.cardW / 2;
+  majmukOptions = shuffle(currentMajmukQuestion.options).map((opt, i) => {
+    const x = startX + i * (L.cardW + gap);
+    return { opt, x, y: L.optY, homeX: x, homeY: L.optY, w: L.cardW, h: L.cardH };
+  });
+  els.bannerLabel.textContent = `SOALAN ${currentQuestionNumber()} / ${activePool().length}`;
+  els.bannerTarget.textContent = MAJMUK_SOALAN;
+  els.bannerTarget.classList.remove('font-arabic');
+  setNova('Cubit (ibu jari + telunjuk rapat) kad jawapan yang betul & seret ke dalam kotak.');
+  updateHUD();
+}
+
+function resolveMajmukDrop(card) {
+  if (card.opt.correct) {
+    majmukSolved = true; roundBusy = true;
+    correctHits++;
+    score += 100 * combo; combo = Math.min(CONFIG.GAME.maxCombo, combo + 1); maxComboReached = Math.max(maxComboReached, combo);
+    masteredIds.add(currentMajmukQuestion._id);
+    const b = majmukLayout.box;
+    spawnExplosion(b.x, b.y, '#00e68a');
+    spawnConfettiBurst(b.x, b.y, 70);
+    setNova(`Hebat! Jawapannya: ${card.opt.text}`);
+    updateHUD();
+    const lanjut = () => {
+      roundBusy = false;
+      if (remainingPool().length === 0) showVictory(); else startMajmukRound();
+    };
+    const diuruskanGanjaran = handleJawapanResult(true, lanjut);
+    if (!diuruskanGanjaran) setTimeout(lanjut, CONFIG.GAME.majmukRevealMs);
+  } else {
+    combo = 1; missedShots++;
+    SFX.deflect(); shakeFrames = 10; majmukWrongFlash = 1;
+    spawnShield(majmukLayout.box.x, majmukLayout.box.y);
+    showFeedback(false);
+    setNova(`"${card.opt.text}" belum tepat. Cuba lagi!`);
+    updateHUD();
+    handleJawapanResult(false, null);
+  }
+}
+
+function majmukCardHit(c, px, py, pad) {
+  return Math.abs(px - c.x) <= c.w / 2 + pad && Math.abs(py - c.y) <= c.h / 2 + pad;
+}
+
+function updateMajmukLogic() {
+  if (majmukIntroActive || !currentMajmukQuestion) return;
+  // kad yang dilepaskan meluncur balik ke tempat asal
+  majmukOptions.forEach((c) => { if (!majmukHeld || majmukHeld !== c) { c.x = lerp(c.x, c.homeX, 0.25); c.y = lerp(c.y, c.homeY, 0.25); } });
+  if (majmukWrongFlash > 0) majmukWrongFlash = Math.max(0, majmukWrongFlash - 0.03);
+  const p = pinchPoint || rawPalm;
+  if (!p) { majmukHeld = null; return; }
+  majmukHeldPos.x = majmukHeldPos.x ? lerp(majmukHeldPos.x, p.x, 0.45) : p.x;
+  majmukHeldPos.y = majmukHeldPos.y ? lerp(majmukHeldPos.y, p.y, 0.45) : p.y;
+  if (isPinching) {
+    if (!majmukHeld && !roundBusy) {
+      let best = null, bestD = Infinity;
+      majmukOptions.forEach((c) => {
+        if (!majmukCardHit(c, p.x, p.y, 28)) return;
+        const dd = dist(p.x, p.y, c.x, c.y);
+        if (dd < bestD) { bestD = dd; best = c; }
+      });
+      if (best) { majmukHeld = best; SFX.targetLock(); }
+    }
+    if (majmukHeld) { majmukHeld.x = majmukHeldPos.x; majmukHeld.y = majmukHeldPos.y; }
+  } else if (majmukHeld) {
+    const held = majmukHeld; majmukHeld = null;
+    const L = majmukLayout, b = L.box;
+    const inBox = Math.abs(held.x - b.x) <= L.boxW / 2 + 50 && Math.abs(held.y - b.y) <= L.boxH / 2 + 50;
+    if (inBox) resolveMajmukDrop(held);
+  }
+}
+
+function fitFont(text, maxW, startPx, minPx, weight, family) {
+  let px = startPx;
+  ctx.font = `${weight} ${px}px ${family}`;
+  while (px > minPx && ctx.measureText(text).width > maxW) { px -= 2; ctx.font = `${weight} ${px}px ${family}`; }
+  return px;
+}
+
+function drawMajmukPicture(img, pos, S, glow) {
+  ctx.save();
+  ctx.shadowColor = glow ? '#00e68a' : 'rgba(0,0,0,.6)'; ctx.shadowBlur = glow ? 34 : 18;
+  ctx.fillStyle = '#ffffff';
+  roundRect(pos.x - S / 2 - 7, pos.y - S / 2 - 7, S + 14, S + 14, 22); ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.beginPath(); roundRect(pos.x - S / 2, pos.y - S / 2, S, S, 16); ctx.clip();
+  if (img) ctx.drawImage(img, pos.x - S / 2, pos.y - S / 2, S, S);
+  else {
+    ctx.fillStyle = '#e2e8f0'; ctx.fillRect(pos.x - S / 2, pos.y - S / 2, S, S);
+    ctx.fillStyle = '#64748b'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = '700 22px Kanit, sans-serif'; ctx.fillText('Tiada gambar', pos.x, pos.y);
+  }
+  ctx.restore();
+  if (glow) {
+    ctx.save(); ctx.strokeStyle = '#00e68a'; ctx.lineWidth = 5;
+    roundRect(pos.x - S / 2 - 7, pos.y - S / 2 - 7, S + 14, S + 14, 22); ctx.stroke(); ctx.restore();
+  }
+}
+
+function drawMajmukOperator(ch, pos, size) {
+  ctx.save();
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = `900 ${size}px Kanit, sans-serif`;
+  ctx.lineWidth = 8; ctx.strokeStyle = 'rgba(5,7,12,.85)'; ctx.strokeText(ch, pos.x, pos.y);
+  ctx.fillStyle = '#ffcc00'; ctx.shadowColor = 'rgba(255,204,0,.6)'; ctx.shadowBlur = 18;
+  ctx.fillText(ch, pos.x, pos.y);
+  ctx.restore();
+}
+
+function drawMajmukScene(t) {
+  const q = currentMajmukQuestion;
+  if (!q || !majmukLayout) return;
+  const L = majmukLayout;
+  const imgs = majmukImgs.get(q._id) || {};
+  drawMajmukPicture(imgs.g1, L.img1, L.S, majmukSolved);
+  drawMajmukPicture(imgs.g2, L.img2, L.S, majmukSolved);
+  const opSize = Math.round(clamp(L.S * 0.38, 54, 110));
+  drawMajmukOperator('+', L.plus, opSize);
+  drawMajmukOperator('=', L.eq, opSize);
+
+  // Kotak jawapan
+  const b = L.box;
+  ctx.save();
+  if (majmukSolved) {
+    const correct = q.options.find((o) => o.correct);
+    ctx.shadowColor = '#00e68a'; ctx.shadowBlur = 36;
+    const g = ctx.createLinearGradient(b.x, b.y - L.boxH / 2, b.x, b.y + L.boxH / 2);
+    g.addColorStop(0, 'rgba(0,230,138,0.45)'); g.addColorStop(1, 'rgba(4,60,36,0.92)');
+    ctx.fillStyle = g; roundRect(b.x - L.boxW / 2, b.y - L.boxH / 2, L.boxW, L.boxH, 22); ctx.fill();
+    ctx.strokeStyle = '#00e68a'; ctx.lineWidth = 5; ctx.stroke();
+    ctx.shadowBlur = 0;
+    const px = fitFont(correct.text, L.boxW - 36, Math.round(L.boxH * 0.42), 22, 800, 'Kanit, sans-serif');
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#eafff5';
+    ctx.font = `800 ${px}px Kanit, sans-serif`; ctx.fillText(correct.text, b.x, b.y);
+  } else {
+    const pulse = 0.55 + 0.45 * Math.sin(t / 260);
+    const nearDrop = majmukHeld && Math.abs(majmukHeld.x - b.x) <= L.boxW / 2 + 50 && Math.abs(majmukHeld.y - b.y) <= L.boxH / 2 + 50;
+    ctx.fillStyle = majmukWrongFlash > 0 ? `rgba(239,68,68,${0.35 * majmukWrongFlash})` : nearDrop ? 'rgba(255,204,0,0.22)' : 'rgba(10,13,20,0.62)';
+    roundRect(b.x - L.boxW / 2, b.y - L.boxH / 2, L.boxW, L.boxH, 22); ctx.fill();
+    ctx.setLineDash([16, 12]); ctx.lineWidth = 5;
+    ctx.strokeStyle = nearDrop ? '#ffcc00' : `rgba(255,204,0,${0.45 + 0.4 * pulse})`;
+    ctx.stroke(); ctx.setLineDash([]);
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = `900 ${Math.round(L.boxH * 0.55)}px Kanit, sans-serif`; ctx.fillStyle = `rgba(255,204,0,${0.5 + 0.4 * pulse})`;
+    ctx.fillText('?', b.x, b.y + 2);
+  }
+  ctx.restore();
+
+  // Kad jawapan (yang dipegang dilukis paling atas)
+  if (!majmukSolved) {
+    const order = majmukOptions.filter((c) => c !== majmukHeld);
+    if (majmukHeld) order.push(majmukHeld);
+    order.forEach((c, i) => drawMajmukCard(c, majmukOptions.indexOf(c)));
+  }
+}
+
+const MAJMUK_CARD_COLORS = ['#e0272a', '#00a651', '#0098d8'];
+function drawMajmukCard(c, idx) {
+  const isHeld = majmukHeld === c;
+  const color = MAJMUK_CARD_COLORS[idx % 3];
+  const w = c.w * (isHeld ? 1.06 : 1), h = c.h * (isHeld ? 1.06 : 1);
+  ctx.save();
+  ctx.shadowColor = isHeld ? color : 'rgba(0,0,0,.55)'; ctx.shadowBlur = isHeld ? 30 : 14;
+  ctx.fillStyle = isHeld ? '#ffffff' : '#f8fafc';
+  roundRect(c.x - w / 2, c.y - h / 2, w, h, 18); ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.lineWidth = isHeld ? 6 : 4; ctx.strokeStyle = color; ctx.stroke();
+  ctx.fillStyle = color; roundRect(c.x - w / 2, c.y - h / 2, 14, h, 7); ctx.fill();
+  const px = fitFont(c.opt.text, w - 44, Math.round(h * 0.46), 20, 800, 'Kanit, sans-serif');
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#0f172a';
+  ctx.font = `800 ${px}px Kanit, sans-serif`;
+  ctx.fillText(c.opt.text, c.x + 6, c.y + 1);
+  ctx.restore();
+}
+
+// ---- Confetti ("habuk hari jadi") - dilukis di kanvas melalui sistem partikel
+const CONFETTI_COLORS = ['#ff4d6d', '#ffcc00', '#00e68a', '#3ab0ff', '#b18cff', '#ff8a3d', '#ffffff'];
+function addConfetti(x, y, vx, vy) {
+  particles.push({ type: 'confetti', x, y, vx, vy, rot: rand(0, Math.PI * 2), vr: rand(-9, 9),
+    w: rand(8, 15), h: rand(5, 9), color: CONFETTI_COLORS[(Math.random() * CONFETTI_COLORS.length) | 0],
+    life: 1, maxLife: rand(2.6, 3.8), wob: rand(0, 6) });
+}
+function spawnConfettiShow() {
+  for (let i = 0; i < 110; i++) addConfetti(rand(0, W * 0.08), H + 10, rand(160, 520), -rand(650, 1050)); // meriam kiri bawah
+  for (let i = 0; i < 110; i++) addConfetti(W - rand(0, W * 0.08), H + 10, -rand(160, 520), -rand(650, 1050)); // meriam kanan bawah
+  for (let i = 0; i < 90; i++) addConfetti(rand(0, W), -rand(10, 260), rand(-60, 60), rand(40, 180)); // hujan dari atas
+}
+function spawnConfettiBurst(x, y, n) {
+  for (let i = 0; i < n; i++) { const a = rand(-Math.PI, 0), sp = rand(250, 650); addConfetti(x, y, Math.cos(a) * sp, Math.sin(a) * sp); }
+}
+
 // ------------------------------------------------------------------
 // PARTIKEL & KESAN VISUAL
 // ------------------------------------------------------------------
@@ -1490,6 +1895,11 @@ function spawnShield(x, y) {
 function updateParticles(dt) {
   particles.forEach((p) => {
     if (p.type === 'spark') { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 220 * dt; p.life -= dt / p.maxLife; }
+    else if (p.type === 'confetti') {
+      p.vy += 520 * dt; p.vx *= 0.985; p.vy = Math.min(p.vy, 260); // rintangan udara - melayang perlahan
+      p.wob += dt * 6; p.x += (p.vx + Math.sin(p.wob) * 40) * dt; p.y += p.vy * dt; p.rot += p.vr * dt;
+      p.life -= dt / p.maxLife;
+    }
     else { p.life -= dt / p.maxLife; }
   });
   particles = particles.filter((p) => p.life > 0);
@@ -1499,6 +1909,10 @@ function drawParticles() {
     ctx.save(); ctx.globalAlpha = clamp(p.life, 0, 1);
     if (p.type === 'spark') {
       ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, 7); ctx.fill();
+    } else if (p.type === 'confetti') {
+      ctx.globalAlpha = clamp(p.life * 2.5, 0, 1);
+      ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.scale(1, Math.abs(Math.cos(p.wob)) * 0.8 + 0.2);
+      ctx.fillStyle = p.color; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
     } else if (p.type === 'shield') {
       ctx.strokeStyle = p.color; ctx.lineWidth = 4; ctx.shadowColor = p.color; ctx.shadowBlur = 20;
       ctx.beginPath(); ctx.arc(p.x, p.y, p.size * (1.3 - p.life * 0.3), 0, 7); ctx.stroke();
@@ -1779,6 +2193,10 @@ function loop(t) {
       updateApitanLogic();
       drawApitanScene(t);
       drawPinchCursor(t);
+    } else if (currentMode === 'majmuk') {
+      updateMajmukLogic();
+      drawMajmukScene(t);
+      if (!majmukIntroActive) drawPinchCursor(t);
     } else {
       // tembak (pilihan A/B/C) - sasar & tembak drone yang betul
       updateShootModeLogic();
@@ -1811,6 +2229,9 @@ async function goToStartMenu() {
   drones = []; matchLeft = []; matchRight = []; matchHeld = null;
   apitanAwalanOptions = []; apitanAkhiranOptions = []; apitanHeld = null;
   apitanAwalanLocked = false; apitanAkhiranLocked = false; currentApitanQuestion = null;
+  clearTimeout(majmukIntroTimer); majmukIntroActive = false; els.majmukIntro.classList.add('hidden');
+  hideModal(els.majmukCountModal);
+  currentMajmukQuestion = null; majmukOptions = []; majmukHeld = null;
   showModal(els.startModal);
   loadLessonList();
 }
@@ -1825,9 +2246,10 @@ async function chooseLesson(lessonId) {
     const hasWords = currentLesson.words && currentLesson.words.length >= 2;
     const hasTembak = currentLesson.tembakQuestions && currentLesson.tembakQuestions.length >= 1;
     const hasApitan = currentLesson.apitanQuestions && currentLesson.apitanQuestions.length >= 1;
-    if (!hasWords && !hasTembak && !hasApitan) {
+    const hasMajmuk = (currentLesson.majmukQuestionCount || 0) >= 1;
+    if (!hasWords && !hasTembak && !hasApitan && !hasMajmuk) {
       hideModal(els.loadingModal);
-      els.lessonStatus.textContent = 'Set pelajaran ini belum ada kandungan. Sila tambah Perkataan, Soalan Tembak atau Soalan Imbuhan Apitan di /game-arab-admin.html.';
+      els.lessonStatus.textContent = 'Set pelajaran ini belum ada kandungan. Sila tambah Perkataan, Soalan Tembak, Soalan Imbuhan Apitan atau Soalan Kata Majmuk di /game-arab-admin.html.';
       showModal(els.startModal);
       return;
     }
@@ -1856,6 +2278,30 @@ async function selectModeAndStart(mode) {
   }
   if (mode === 'apitan' && (!currentLesson.apitanQuestions || currentLesson.apitanQuestions.length < 1)) {
     alert('Tiada Soalan Imbuhan Apitan untuk topik ini lagi.\nSila tambah di Panel Guru - seksyen "🔤 Imbuhan Apitan (Jawi)" dahulu.');
+    return;
+  }
+  if (mode === 'majmuk') {
+    if (!currentLesson.majmukQuestionCount) {
+      alert('Tiada Soalan Kata Majmuk untuk topik ini lagi.\nSila tambah di Panel Guru - seksyen "🧩 Kata Majmuk (Gambar)" dahulu.');
+      return;
+    }
+    currentMode = mode;
+    hideModal(els.modeModal);
+    showModal(els.loadingModal);
+    els.loadingMsg.textContent = 'Memuatkan Soalan Kata Majmuk...';
+    els.loadingBar.style.width = '25%';
+    try {
+      await loadMajmukQuestions(currentLesson._id);
+    } catch (err) {
+      console.error(err);
+      hideModal(els.loadingModal);
+      alert('Gagal muat Soalan Kata Majmuk. Cuba lagi.');
+      showModal(els.modeModal);
+      return;
+    }
+    hideModal(els.loadingModal);
+    if (!majmukAll.length) { alert('Tiada Soalan Kata Majmuk untuk topik ini lagi.'); showModal(els.modeModal); return; }
+    openMajmukCountModal(); // -> chooseMajmukCount() -> ganjaranModal
     return;
   }
   currentMode = mode;
@@ -1899,6 +2345,7 @@ function startGameSession() {
   if (currentMode === 'padan') startPadanRound();
   else if (currentMode === 'isyarat') startIsyaratRound();
   else if (currentMode === 'apitan') startApitanRound();
+  else if (currentMode === 'majmuk') startMajmukIntro(); // tajuk 3 saat + confetti -> soalan pertama
   else nextRound(); // tembak (A/B/C)
 }
 
@@ -1935,6 +2382,18 @@ function buildReviewList() {
       row.innerHTML = `
         <div class="font-kanit text-base font-bold text-slate-100 mb-1" dir="auto">${q.soalan}</div>
         <div class="font-kanit text-sm font-semibold" style="color:#00e68a;" dir="auto">✓ ${correctOpt ? correctOpt.text : '—'}</div>`;
+      els.reviewList.appendChild(row);
+    });
+  } else if (currentMode === 'majmuk') {
+    majmukPlaylist.forEach((q) => {
+      const correct = q.options.find((o) => o.correct);
+      const row = document.createElement('div');
+      row.className = 'glass rounded-lg px-4 py-3 flex items-center gap-3';
+      const im = (src) => { const i = document.createElement('img'); i.src = src; i.alt = ''; i.className = 'rounded-lg'; i.style.cssText = 'width:64px;height:64px;object-fit:cover;flex-shrink:0;'; return i; };
+      const op = (ch) => { const s = document.createElement('span'); s.className = 'font-orbitron text-xl font-black text-amber-300'; s.textContent = ch; return s; };
+      const ans = document.createElement('span');
+      ans.className = 'font-kanit text-xl font-bold'; ans.style.color = '#00e68a'; ans.textContent = correct ? correct.text : '—';
+      row.append(im(q.gambar1), op('+'), im(q.gambar2), op('='), ans);
       els.reviewList.appendChild(row);
     });
   } else if (currentMode === 'apitan') {
@@ -1974,6 +2433,7 @@ document.querySelectorAll('#modeModal .mode-card').forEach((btn) => {
 els.ganjaranBiasaBtn.addEventListener('click', () => proceedAfterGanjaranChoice(false));
 els.ganjaranKotakBtn.addEventListener('click', () => proceedAfterGanjaranChoice(true));
 els.ganjaranBackBtn.addEventListener('click', () => { hideModal(els.ganjaranModal); showModal(els.modeModal); });
+els.majmukCountBackBtn.addEventListener('click', () => { hideModal(els.majmukCountModal); showModal(els.modeModal); });
 els.retryCameraBtn.addEventListener('click', () => {
   hideModal(els.cameraErrorModal);
   if (currentLesson) proceedAfterGanjaranChoice(gunaGanjaranGameBox); else goToStartMenu();

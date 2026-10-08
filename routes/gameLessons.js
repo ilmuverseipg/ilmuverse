@@ -3,6 +3,7 @@ const router = express.Router();
 const XLSX = require('xlsx');
 const { uploadXlsx } = require('../middleware/upload');
 const GameLessonSet = require('../models/GameLessonSet');
+const GameMajmukQuestion = require('../models/GameMajmukQuestion');
 
 // API untuk ciri "Game Arab" - kandungan pelajaran (topik + perkataan)
 // boleh diedit di /game-arab-admin.html, disimpan dalam MongoDB yang sama
@@ -22,6 +23,9 @@ function handleXlsxUpload(req, res, next) {
 router.get('/', async (req, res) => {
   try {
     const lessons = await GameLessonSet.find({}, 'name description words tembakQuestions apitanQuestions').sort({ createdAt: 1 });
+    // Kiraan soalan Kata Majmuk (koleksi berasingan) - satu query agregat sahaja.
+    const majmukCounts = await GameMajmukQuestion.aggregate([{ $group: { _id: '$lessonId', n: { $sum: 1 } } }]);
+    const majmukBy = new Map(majmukCounts.map((c) => [String(c._id), c.n]));
     const summary = lessons.map((l) => ({
       _id: l._id,
       name: l.name,
@@ -29,6 +33,7 @@ router.get('/', async (req, res) => {
       wordCount: l.words.length,
       tembakQuestionCount: l.tembakQuestions.length,
       apitanQuestionCount: l.apitanQuestions.length,
+      majmukQuestionCount: majmukBy.get(String(l._id)) || 0,
     }));
     res.json(summary);
   } catch (err) {
@@ -41,7 +46,8 @@ router.get('/:id', async (req, res) => {
   try {
     const lesson = await GameLessonSet.findById(req.params.id);
     if (!lesson) return res.status(404).json({ error: 'Set pelajaran tidak dijumpai.' });
-    res.json(lesson);
+    const majmukQuestionCount = await GameMajmukQuestion.countDocuments({ lessonId: lesson._id });
+    res.json({ ...lesson.toObject(), majmukQuestionCount });
   } catch (err) {
     res.status(400).json({ error: 'ID tidak sah.', detail: err.message });
   }
@@ -62,10 +68,11 @@ router.post('/', async (req, res) => {
 // PUT /api/game-lessons/:id - kemaskini nama/penerangan set pelajaran
 router.put('/:id', async (req, res) => {
   try {
-    const { name, description } = req.body;
+    const { name, description, majmukTitle } = req.body;
     const update = {};
     if (name !== undefined) update.name = name.trim();
     if (description !== undefined) update.description = description;
+    if (majmukTitle !== undefined) update.majmukTitle = String(majmukTitle).trim() || 'Siasat Kata Majmuk';
     const lesson = await GameLessonSet.findByIdAndUpdate(req.params.id, update, { new: true, runValidators: true });
     if (!lesson) return res.status(404).json({ error: 'Set pelajaran tidak dijumpai.' });
     res.json(lesson);
@@ -79,6 +86,7 @@ router.delete('/:id', async (req, res) => {
   try {
     const lesson = await GameLessonSet.findByIdAndDelete(req.params.id);
     if (!lesson) return res.status(404).json({ error: 'Set pelajaran tidak dijumpai.' });
+    await GameMajmukQuestion.deleteMany({ lessonId: lesson._id }); // soalan bergambar topik ini juga dipadam
     res.json({ ok: true });
   } catch (err) {
     res.status(400).json({ error: 'Gagal padam set pelajaran.', detail: err.message });
@@ -533,6 +541,98 @@ router.post('/:id/apitan-questions/import-xlsx', handleXlsxUpload, async (req, r
     res.status(201).json({ added, rowErrors, lesson });
   } catch (err) {
     res.status(400).json({ error: 'Gagal import fail Excel.', detail: err.message });
+  }
+});
+
+// ------------------------------------------------------------------
+// SOALAN KATA MAJMUK (Mod Kata Majmuk - bergambar). Koleksi BERASINGAN
+// (models/GameMajmukQuestion.js). Setiap soalan: Gambar 1 + Gambar 2 (data URI
+// 800x800, diubah saiz di Panel Guru) & 3 pilihan jawapan, SATU betul.
+// ------------------------------------------------------------------
+const MAX_GAMBAR_CHARS = 1.5 * 1024 * 1024; // ~1.1MB selepas nyahkod - jauh atas saiz JPEG 800x800 biasa
+
+function validateGambar(g, label) {
+  if (typeof g !== 'string' || !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(g)) return `${label} tidak sah (mesti fail gambar).`;
+  if (g.length > MAX_GAMBAR_CHARS) return `${label} terlalu besar.`;
+  return null;
+}
+function validateMajmukOptions(options) {
+  if (!Array.isArray(options) || options.length !== 3) return 'Perlu tepat 3 pilihan jawapan.';
+  if (options.some((o) => !o || !String(o.text || '').trim())) return 'Isikan ketiga-tiga pilihan jawapan.';
+  if (options.filter((o) => o.correct).length !== 1) return 'Tandakan SATU sahaja jawapan yang betul.';
+  return null;
+}
+const cleanMajmukOptions = (options) => options.map((o) => ({ text: String(o.text).trim(), correct: !!o.correct }));
+
+// GET /api/game-lessons/:id/majmuk-questions - senarai penuh (dengan gambar), ikut urutan guru
+router.get('/:id/majmuk-questions', async (req, res) => {
+  try {
+    const qs = await GameMajmukQuestion.find({ lessonId: req.params.id }).sort({ order: 1, createdAt: 1 });
+    res.json(qs);
+  } catch (err) {
+    res.status(400).json({ error: 'Gagal ambil Soalan Kata Majmuk.', detail: err.message });
+  }
+});
+
+// POST /api/game-lessons/:id/majmuk-questions - tambah satu soalan
+router.post('/:id/majmuk-questions', async (req, res) => {
+  try {
+    const { gambar1, gambar2, options } = req.body;
+    const err = validateGambar(gambar1, 'Gambar 1') || validateGambar(gambar2, 'Gambar 2') || validateMajmukOptions(options);
+    if (err) return res.status(400).json({ error: err });
+    const lesson = await GameLessonSet.findById(req.params.id, '_id');
+    if (!lesson) return res.status(404).json({ error: 'Set pelajaran tidak dijumpai.' });
+    const last = await GameMajmukQuestion.findOne({ lessonId: lesson._id }, 'order').sort({ order: -1 });
+    const q = await GameMajmukQuestion.create({
+      lessonId: lesson._id, order: last ? last.order + 1 : 0, gambar1, gambar2, options: cleanMajmukOptions(options),
+    });
+    res.status(201).json(q);
+  } catch (err) {
+    res.status(400).json({ error: 'Gagal tambah Soalan Kata Majmuk.', detail: err.message });
+  }
+});
+
+// PUT /api/game-lessons/:id/majmuk-questions/reorder - susun semula urutan (seret & lepas)
+router.put('/:id/majmuk-questions/reorder', async (req, res) => {
+  try {
+    const { order } = req.body;
+    if (!Array.isArray(order) || !order.length) return res.status(400).json({ error: 'Senarai urutan diperlukan.' });
+    const existing = await GameMajmukQuestion.find({ lessonId: req.params.id }, '_id');
+    const ids = new Set(existing.map((q) => String(q._id)));
+    if (order.length !== ids.size || order.some((qid) => !ids.has(String(qid)))) {
+      return res.status(400).json({ error: 'Senarai urutan tidak sepadan dengan soalan sedia ada.' });
+    }
+    await GameMajmukQuestion.bulkWrite(order.map((qid, i) => ({ updateOne: { filter: { _id: qid }, update: { $set: { order: i } } } })));
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(400).json({ error: 'Gagal susun semula Soalan Kata Majmuk.', detail: err.message });
+  }
+});
+
+// PUT /api/game-lessons/:id/majmuk-questions/:qId - edit (gambar boleh ditukar satu-satu)
+router.put('/:id/majmuk-questions/:qId', async (req, res) => {
+  try {
+    const q = await GameMajmukQuestion.findOne({ _id: req.params.qId, lessonId: req.params.id });
+    if (!q) return res.status(404).json({ error: 'Soalan Kata Majmuk tidak dijumpai.' });
+    const { gambar1, gambar2, options } = req.body;
+    if (gambar1 !== undefined) { const e = validateGambar(gambar1, 'Gambar 1'); if (e) return res.status(400).json({ error: e }); q.gambar1 = gambar1; }
+    if (gambar2 !== undefined) { const e = validateGambar(gambar2, 'Gambar 2'); if (e) return res.status(400).json({ error: e }); q.gambar2 = gambar2; }
+    if (options !== undefined) { const e = validateMajmukOptions(options); if (e) return res.status(400).json({ error: e }); q.options = cleanMajmukOptions(options); }
+    await q.save();
+    res.json(q);
+  } catch (err) {
+    res.status(400).json({ error: 'Gagal kemaskini Soalan Kata Majmuk.', detail: err.message });
+  }
+});
+
+// DELETE /api/game-lessons/:id/majmuk-questions/:qId
+router.delete('/:id/majmuk-questions/:qId', async (req, res) => {
+  try {
+    const r = await GameMajmukQuestion.deleteOne({ _id: req.params.qId, lessonId: req.params.id });
+    if (!r.deletedCount) return res.status(404).json({ error: 'Soalan Kata Majmuk tidak dijumpai.' });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(400).json({ error: 'Gagal padam Soalan Kata Majmuk.', detail: err.message });
   }
 });
 

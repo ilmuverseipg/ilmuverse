@@ -132,6 +132,44 @@
     font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 12px; color: #8B5CF6;
   }
   .tembak-question-card.dragging { opacity: .35; }
+
+  /* ===== SOALAN KATA MAJMUK (Mod Kata Majmuk - bergambar) ===== */
+  .majmuk-panel { margin-top: 14px; border-top: 2px dashed #FFD9A8; padding-top: 14px; }
+  .majmuk-title-bar {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin: 0 2px 12px; padding: 10px 12px; background: #FFF6EA; border-radius: 12px; border: 1.5px solid #FFE0B8;
+  }
+  .majmuk-title-bar label { font-size: 13px; font-weight: 700; color: #9a6a2e; }
+  .majmuk-title-bar input {
+    flex: 1; min-width: 180px; padding: 8px 12px; border-radius: 10px; border: 2px solid #FFE0B8;
+    font-family: 'Fredoka'; font-size: 15px; font-weight: 700; outline: none;
+  }
+  .majmuk-title-bar input:focus { border-color: var(--orange, #FFA45C); }
+  .majmuk-question-card {
+    background: #FFF8EF; border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; border: 2px solid #FFE0B8;
+  }
+  .majmuk-question-card.dragging { opacity: .35; }
+  .mq-fixed-q { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 15px; color: #7a5520; margin: 0 0 8px; }
+  .mq-equation { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .mq-op { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 30px; color: #c08a4a; }
+  .mq-img-box {
+    position: relative; width: 120px; height: 120px; border-radius: 14px; overflow: hidden; cursor: pointer;
+    border: 2.5px dashed #E8BE86; background: #fff; display: flex; align-items: center; justify-content: center;
+    text-align: center; font-size: 12px; font-weight: 700; color: #b08454; padding: 6px; transition: border-color .15s, transform .15s;
+  }
+  .mq-img-box:hover { border-color: #FFA45C; transform: translateY(-2px); }
+  .mq-img-box.has-img { border-style: solid; padding: 0; }
+  .mq-img-box img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .mq-img-box .mq-swap {
+    position: absolute; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.55); color: #fff;
+    font-size: 11px; padding: 3px 0; opacity: 0; transition: opacity .15s;
+  }
+  .mq-img-box.has-img:hover .mq-swap { opacity: 1; }
+  .mq-img-box.busy { opacity: .5; pointer-events: none; }
+  .mq-answer-box {
+    width: 120px; height: 120px; border-radius: 14px; border: 2.5px dashed #c9b8a8; display: flex;
+    align-items: center; justify-content: center; font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 34px; color: #c9b8a8;
+  }
 </style>
 </head>
 <body>
@@ -151,10 +189,11 @@
   <p class="page-subtitle">Urus topik &amp; kandungan kuiz untuk permainan pengesanan tangan "Ilmuverse Gamebox" — sesuai untuk sebarang subjek (Bahasa Arab, Bahasa Melayu, Pendidikan Islam, dll). Perubahan di sini terus dipaparkan dalam permainan.</p>
 
   <div class="card" style="background:#FFF3DC; border:2px solid #FFD98E; margin-bottom:18px;">
-    <strong>ℹ️ Setiap topik ada 2 tempat edit berasingan:</strong>
+    <strong>ℹ️ Setiap topik ada tempat edit berasingan untuk setiap mod:</strong>
     <div style="margin-top:8px; display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
       <div>🎯 <strong>Soalan Tembak (A/B/C)</strong><br>Untuk <strong>Mod Tembak</strong> sahaja. Taip soalan sendiri + taip sendiri 3 pilihan jawapan + tandakan yang betul — kawalan penuh di tangan guru.</div>
       <div>🔗 <strong>Perkataan</strong><br>Untuk <strong>Mod Padan</strong> &amp; <strong>Mod Isyarat Jari</strong> sahaja. Senarai perkataan+maksud — permainan auto padan/jana pilihan sendiri.</div>
+      <div>🧩 <strong>Kata Majmuk (Gambar)</strong><br>Untuk <strong>Mod Kata Majmuk</strong> sahaja. Gambar 1 + Gambar 2 = ? dengan 3 pilihan jawapan.</div>
     </div>
   </div>
 
@@ -195,10 +234,12 @@
         <span class="word-count-badge"></span>
         <span class="tembak-count-badge" style="background:#8B5CF6; color:#fff; font-size:12px; font-weight:700; padding:4px 12px; border-radius:999px; align-self:center;"></span>
         <span class="apitan-count-badge" style="background:#0098D8; color:#fff; font-size:12px; font-weight:700; padding:4px 12px; border-radius:999px; align-self:center;"></span>
+        <span class="majmuk-count-badge" style="background:#E8892E; color:#fff; font-size:12px; font-weight:700; padding:4px 12px; border-radius:999px; align-self:center;"></span>
         <button class="save-lesson-btn btn btn-secondary btn-sm">💾 Simpan</button>
         <button class="toggle-words-btn btn btn-outline btn-sm">🔗 Perkataan (Padan/Isyarat)</button>
         <button class="toggle-tembak-btn btn btn-outline btn-sm">🎯 Soalan Tembak (A/B/C)</button>
         <button class="toggle-apitan-btn btn btn-outline btn-sm">🔤 Imbuhan Apitan (Jawi)</button>
+        <button class="toggle-majmuk-btn btn btn-outline btn-sm">🧩 Kata Majmuk (Gambar)</button>
         <button class="delete-lesson-btn btn btn-danger btn-sm">🗑️ Padam</button>
       </div>
     </div>
@@ -276,6 +317,32 @@
       </div>
       <div class="add-word-hint">💡 Setiap pilihan Awalan/Akhiran perlu Rumi + Jawi diisi. Tiada had bilangan soalan.</div>
     </div>
+
+    <div class="majmuk-panel" style="display:none;">
+      <div class="add-word-hint" style="margin:0 2px 10px;">🧩 Tempat edit untuk <strong>Mod Kata Majmuk</strong> sahaja. Soalan sentiasa <strong>"Apakah Kata Majmuk Ini?"</strong>. Muat naik <strong>Gambar 1</strong> &amp; <strong>Gambar 2</strong> (diubah saiz automatik kepada 800×800), taip 3 pilihan jawapan &amp; tandakan yang betul. Murid cubit &amp; seret jawapan ke kotak.</div>
+      <div class="majmuk-title-bar">
+        <label>🎬 Tajuk pembuka (3 saat):</label>
+        <input class="majmuk-title-input" maxlength="60" placeholder="Siasat Kata Majmuk" />
+        <button class="save-majmuk-title-btn btn btn-secondary btn-sm">💾 Simpan Tajuk</button>
+      </div>
+      <div class="majmuk-questions-list"></div>
+
+      <div class="majmuk-question-card majmuk-new-form">
+        <div class="mq-fixed-q">Soalan baharu: Apakah Kata Majmuk Ini?</div>
+        <div class="mq-equation">
+          <div class="mq-img-box new-mq-img1">📷<br>Klik untuk pilih<br>Gambar 1</div>
+          <span class="mq-op">+</span>
+          <div class="mq-img-box new-mq-img2">📷<br>Klik untuk pilih<br>Gambar 2</div>
+          <span class="mq-op">=</span>
+          <div class="mq-answer-box">?</div>
+        </div>
+        <div class="new-mq-options"></div>
+        <div class="tembak-question-actions">
+          <button class="add-mq-btn btn btn-success btn-sm">+ Tambah Soalan Kata Majmuk</button>
+        </div>
+      </div>
+      <div class="add-word-hint">💡 Gambar boleh diseret terus ke kotak gambar. Klik gambar soalan sedia ada untuk menukarnya. Tiada had bilangan soalan.</div>
+    </div>
   </div>
 </template>
 
@@ -327,6 +394,7 @@ function renderLessonCard(lessonSummary) {
   $('.word-count-badge', card).textContent = `${lessonSummary.wordCount} perkataan`;
   $('.tembak-count-badge', card).textContent = `${lessonSummary.tembakQuestionCount || 0} soalan tembak`;
   $('.apitan-count-badge', card).textContent = `${lessonSummary.apitanQuestionCount || 0} soalan apitan`;
+  $('.majmuk-count-badge', card).textContent = `${lessonSummary.majmukQuestionCount || 0} soalan majmuk`;
 
   $('.save-lesson-btn', card).addEventListener('click', async () => {
     const name = $('.lesson-name', card).value.trim();
@@ -493,6 +561,50 @@ function renderLessonCard(lessonSummary) {
     uploadPath: `/${lessonSummary._id}/apitan-questions/import-xlsx`,
     itemLabel: 'soalan',
     onDone: () => refreshApitanQuestions(lessonSummary._id, apitanPanel, card),
+  });
+
+  // ----- Panel "Kata Majmuk (Gambar)" - tempat edit BERASINGAN -----
+  const majmukPanel = $('.majmuk-panel', card);
+  const toggleMajmukBtn = $('.toggle-majmuk-btn', card);
+  let majmukLoaded = false;
+  toggleMajmukBtn.addEventListener('click', async () => {
+    const showing = majmukPanel.style.display !== 'none';
+    majmukPanel.style.display = showing ? 'none' : 'block';
+    toggleMajmukBtn.textContent = showing ? '🧩 Kata Majmuk (Gambar)' : '🧩 Tutup';
+    if (!showing && !majmukLoaded) { majmukLoaded = true; await refreshMajmukQuestions(lessonSummary._id, majmukPanel, card, true); }
+  });
+
+  $('.save-majmuk-title-btn', card).addEventListener('click', async () => {
+    const input = $('.majmuk-title-input', card);
+    const majmukTitle = input.value.trim() || 'Siasat Kata Majmuk';
+    try {
+      const saved = await api(`/${lessonSummary._id}`, { method: 'PUT', body: JSON.stringify({ majmukTitle }) });
+      input.value = saved.majmukTitle || majmukTitle; flash($('.majmuk-title-bar', card));
+    } catch (err) { alert(err.message); }
+  });
+
+  // Borang "+ Tambah Soalan Kata Majmuk"
+  const newImgs = { 1: null, 2: null };
+  [1, 2].forEach((n) => {
+    wireImagePicker($(`.new-mq-img${n}`, card), `Gambar ${n}`, async (dataUri) => { newImgs[n] = dataUri; });
+  });
+  const newMqFields = buildOptionRows($('.new-mq-options', card), `new-mq-correct-${lessonSummary._id}`);
+  newMqFields.forEach((f, i) => { f.input.placeholder = `Pilihan ${'ABC'[i]} (cth: ${['buku teks', 'buku cerita', 'buku latihan'][i]})`; });
+  newMqFields[0].radio.checked = true; newMqFields[0].row.classList.add('is-correct');
+  const addMqBtn = $('.add-mq-btn', card);
+  addMqBtn.addEventListener('click', async () => {
+    if (!newImgs[1] || !newImgs[2]) return alert('Sila pilih Gambar 1 dan Gambar 2.');
+    const options = newMqFields.map((f) => ({ text: f.input.value.trim(), correct: f.radio.checked }));
+    if (options.some((o) => !o.text)) return alert('Isikan ketiga-tiga pilihan jawapan A/B/C.');
+    addMqBtn.disabled = true; addMqBtn.textContent = '⏳ Menyimpan...';
+    try {
+      await api(`/${lessonSummary._id}/majmuk-questions`, { method: 'POST', body: JSON.stringify({ gambar1: newImgs[1], gambar2: newImgs[2], options }) });
+      newImgs[1] = newImgs[2] = null;
+      [1, 2].forEach((n) => resetImageBox($(`.new-mq-img${n}`, card), `Gambar ${n}`));
+      newMqFields.forEach((f, i) => { f.input.value = ''; f.radio.checked = i === 0; f.row.classList.toggle('is-correct', i === 0); });
+      await refreshMajmukQuestions(lessonSummary._id, majmukPanel, card);
+    } catch (err) { alert(err.message); }
+    finally { addMqBtn.disabled = false; addMqBtn.textContent = '+ Tambah Soalan Kata Majmuk'; }
   });
 
   return card;
@@ -886,6 +998,165 @@ function renumberApitanBadges(listEl) {
     const badge = $('.tq-order-badge', cardEl);
     if (badge) badge.textContent = `Soalan #${i + 1}`;
   });
+}
+
+// ------------------------------------------------------------------
+// SOALAN KATA MAJMUK (Mod Kata Majmuk - bergambar). Gambar diubah saiz
+// di pelayar kepada TEPAT 800x800 (potong tengah, macam "cover") & disimpan
+// sebagai JPEG sebelum dimuat naik - jadi semua gambar dalam permainan
+// sentiasa sama saiz walaupun guru muat naik gambar besar/kecil/tak segi empat.
+// ------------------------------------------------------------------
+const MAJMUK_IMG_SIZE = 800;
+
+function fileToSquareDataUri(file) {
+  return new Promise((resolve, reject) => {
+    if (!file || !/^image\//.test(file.type)) return reject(new Error('Sila pilih fail gambar (jpg, png, webp).'));
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const S = MAJMUK_IMG_SIZE;
+      const c = document.createElement('canvas'); c.width = S; c.height = S;
+      const g = c.getContext('2d');
+      g.fillStyle = '#ffffff'; g.fillRect(0, 0, S, S); // latar putih utk PNG lutsinar
+      const side = Math.min(img.naturalWidth, img.naturalHeight);
+      const sx = (img.naturalWidth - side) / 2, sy = (img.naturalHeight - side) / 2;
+      g.imageSmoothingQuality = 'high';
+      g.drawImage(img, sx, sy, side, side, 0, 0, S, S);
+      URL.revokeObjectURL(url);
+      resolve(c.toDataURL('image/jpeg', 0.85));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Gambar tidak dapat dibaca.')); };
+    img.src = url;
+  });
+}
+
+function showImageInBox(box, dataUri) {
+  box.classList.add('has-img');
+  box.innerHTML = '';
+  const img = document.createElement('img'); img.src = dataUri; img.alt = '';
+  const swap = document.createElement('div'); swap.className = 'mq-swap'; swap.textContent = '🔄 Tukar gambar';
+  box.appendChild(img); box.appendChild(swap);
+}
+function resetImageBox(box, label) {
+  box.classList.remove('has-img');
+  box.innerHTML = `📷<br>Klik untuk pilih<br>${label}`;
+}
+
+// Klik kotak (atau seret fail ke atasnya) -> pilih gambar -> ubah saiz 800x800
+// -> papar pratonton -> panggil onPicked(dataUri).
+function wireImagePicker(box, label, onPicked) {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = 'image/*'; input.style.display = 'none';
+  box.after(input);
+  box.title = `Pilih ${label}`;
+  async function handle(file) {
+    if (!file) return;
+    box.classList.add('busy');
+    try {
+      const dataUri = await fileToSquareDataUri(file);
+      await onPicked(dataUri);
+      showImageInBox(box, dataUri);
+    } catch (err) { alert(err.message); }
+    finally { box.classList.remove('busy'); input.value = ''; }
+  }
+  box.addEventListener('click', () => input.click());
+  input.addEventListener('change', () => handle(input.files[0]));
+  box.addEventListener('dragover', (e) => { e.preventDefault(); box.style.borderColor = '#FFA45C'; });
+  box.addEventListener('dragleave', () => { box.style.borderColor = ''; });
+  box.addEventListener('drop', (e) => { e.preventDefault(); box.style.borderColor = ''; handle(e.dataTransfer.files[0]); });
+}
+
+async function refreshMajmukQuestions(lessonId, majmukPanel, card, loadTitle) {
+  const list = $('.majmuk-questions-list', majmukPanel);
+  list.innerHTML = '<div style="opacity:.6; font-size:14px;">Memuatkan...</div>';
+  try {
+    if (loadTitle) {
+      const lesson = await api(`/${lessonId}`);
+      $('.majmuk-title-input', majmukPanel).value = lesson.majmukTitle || 'Siasat Kata Majmuk';
+    }
+    const qs = await api(`/${lessonId}/majmuk-questions`);
+    list.innerHTML = '';
+    if (!qs.length) {
+      list.innerHTML = '<div style="opacity:.6; font-size:14px; padding:4px 2px 14px;">Tiada Soalan Kata Majmuk lagi. Tambah satu di bawah. 🧩</div>';
+    } else {
+      qs.forEach((q, i) => list.appendChild(renderMajmukQuestionRow(lessonId, q, majmukPanel, card, i + 1)));
+      if (!list.dataset.sortableWired) {
+        list.dataset.sortableWired = '1';
+        makeSortable(list, async (order) => {
+          try {
+            await api(`/${lessonId}/majmuk-questions/reorder`, { method: 'PUT', body: JSON.stringify({ order }) });
+            renumberTembakBadges(list);
+          } catch (err) { alert(err.message); await refreshMajmukQuestions(lessonId, majmukPanel, card); }
+        });
+      }
+    }
+    $('.majmuk-count-badge', card).textContent = `${qs.length} soalan majmuk`;
+  } catch (err) {
+    list.innerHTML = `<div style="color:#FF6B6B; font-size:14px;">${err.message}</div>`;
+  }
+}
+
+function renderMajmukQuestionRow(lessonId, q, majmukPanel, card, orderNum) {
+  const wrap = document.createElement('div');
+  wrap.className = 'majmuk-question-card';
+  wrap.dataset.id = q._id;
+
+  const head = document.createElement('div');
+  head.className = 'tq-card-head';
+  head.innerHTML = '<span class="drag-handle" title="Seret untuk susun semula urutan">⠿</span><span class="tq-order-badge"></span>';
+  $('.tq-order-badge', head).textContent = `Soalan #${orderNum}`;
+  wrap.appendChild(head);
+
+  const eq = document.createElement('div');
+  eq.className = 'mq-equation';
+  const box1 = document.createElement('div'); box1.className = 'mq-img-box';
+  const box2 = document.createElement('div'); box2.className = 'mq-img-box';
+  const plus = document.createElement('span'); plus.className = 'mq-op'; plus.textContent = '+';
+  const eqs = document.createElement('span'); eqs.className = 'mq-op'; eqs.textContent = '=';
+  const ans = document.createElement('div'); ans.className = 'mq-answer-box'; ans.textContent = '?';
+  eq.append(box1, plus, box2, eqs, ans);
+  wrap.appendChild(eq);
+  showImageInBox(box1, q.gambar1);
+  showImageInBox(box2, q.gambar2);
+  // Tukar gambar terus disimpan (tak perlu tekan Simpan)
+  [[box1, 'gambar1', 'Gambar 1'], [box2, 'gambar2', 'Gambar 2']].forEach(([box, key, label]) => {
+    wireImagePicker(box, label, async (dataUri) => {
+      await api(`/${lessonId}/majmuk-questions/${q._id}`, { method: 'PUT', body: JSON.stringify({ [key]: dataUri }) });
+      flash(wrap);
+    });
+  });
+
+  const optWrap = document.createElement('div');
+  wrap.appendChild(optWrap);
+  const fields = buildOptionRows(optWrap, `mq-correct-${q._id}`);
+  q.options.forEach((o, i) => {
+    fields[i].input.value = o.text;
+    fields[i].radio.checked = !!o.correct; fields[i].row.classList.toggle('is-correct', !!o.correct);
+  });
+
+  const actions = document.createElement('div');
+  actions.className = 'tembak-question-actions';
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'btn btn-secondary btn-sm'; saveBtn.textContent = '💾 Simpan Jawapan';
+  const delBtn = document.createElement('button');
+  delBtn.className = 'btn btn-danger btn-sm'; delBtn.textContent = '🗑️ Padam';
+  actions.append(saveBtn, delBtn);
+  wrap.appendChild(actions);
+
+  saveBtn.addEventListener('click', async () => {
+    const options = fields.map((f) => ({ text: f.input.value.trim(), correct: f.radio.checked }));
+    if (options.some((o) => !o.text)) return alert('Isikan ketiga-tiga pilihan jawapan A/B/C.');
+    try { await api(`/${lessonId}/majmuk-questions/${q._id}`, { method: 'PUT', body: JSON.stringify({ options }) }); flash(wrap); }
+    catch (err) { alert(err.message); }
+  });
+  delBtn.addEventListener('click', async () => {
+    if (!confirm('Padam soalan ini?')) return;
+    try {
+      await api(`/${lessonId}/majmuk-questions/${q._id}`, { method: 'DELETE' });
+      await refreshMajmukQuestions(lessonId, majmukPanel, card);
+    } catch (err) { alert(err.message); }
+  });
+  return wrap;
 }
 
 // ------------------------------------------------------------------

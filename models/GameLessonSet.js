@@ -110,6 +110,10 @@ const GameLessonSetSchema = new mongoose.Schema(
       type: [ApitanQuestionSchema],
       default: [],
     },
+    // Tajuk yang dipaparkan 3 saat (dengan confetti) sebelum Mod Kata Majmuk
+    // bermula. Soalan Kata Majmuk sendiri disimpan dalam koleksi berasingan
+    // (models/GameMajmukQuestion.js) kerana setiap satu ada 2 gambar.
+    majmukTitle: { type: String, default: 'Siasat Kata Majmuk', trim: true },
   },
   { timestamps: true }
 );
