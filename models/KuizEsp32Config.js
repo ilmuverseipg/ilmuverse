@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 // Guru tetapkan bilangan soalan (1-5) dan jawapan betul (A/B) di
 // /kuiz-esp32.html. ESP32 ambil konfigurasi ini SEKALI sahaja semasa mod
 // setup (perlu internet), simpan dalam memori flash sendiri, kemudian boleh
-// digunakan tanpa internet.
+// digunakan tanpa internet. Tiada kod peranti: satu konfigurasi tetap.
 //
 // Koleksi berasingan ('kuizesp32configs') - tidak sentuh model/koleksi lain.
 
@@ -22,14 +22,9 @@ const KuizSoalanSchema = new mongoose.Schema(
 
 const KuizEsp32ConfigSchema = new mongoose.Schema(
   {
-    // Kod peranti: rahsia kecil yang sama dalam kod ESP32 dan di laman web.
-    kod: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-      match: [/^[A-Za-z0-9_-]{4,32}$/, 'Kod peranti mesti 4-32 aksara: huruf, nombor, _ atau -.'],
-    },
+    // Sistem tetap: hanya SATU konfigurasi untuk satu kotak. Medan ini sentiasa
+    // 'utama' dan unik, supaya tidak boleh wujud dua dokumen.
+    kunci: { type: String, default: 'utama', unique: true, immutable: true },
     tajuk: { type: String, default: '', trim: true, maxlength: 100 },
     soalan: {
       type: [KuizSoalanSchema],
