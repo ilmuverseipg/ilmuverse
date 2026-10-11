@@ -93,3 +93,5 @@ function siteAuth(app) {
 }
 
 module.exports = siteAuth;
+// Dieksport supaya route API yang perlu dikunci (cth. routes/kuizEsp32.js) boleh semak kuki log masuk.
+module.exports.isAuthed = isAuthed;

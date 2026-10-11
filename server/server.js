@@ -17,6 +17,8 @@ const multer = require('multer');
 // tapi koleksi BERASINGAN ('gamelessonsets') - tidak sentuh/pakai mana-mana
 // skema atau logik Mod 1-5 sedia ada di bawah.
 const gameLessonsRouter = require('../routes/gameLessons');
+// [KOTAK KUIZ MAGIK] Router ESP32 (butang A/B) - routes/kuizEsp32.js
+const kuizEsp32Router = require('../routes/kuizEsp32');
 
 const app = express();
 const server = http.createServer(app);
@@ -34,6 +36,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 // Halaman permainan/panel guru dah dipaparkan terus via static(public/) di
 // atas (public/game-arab.html, public/game-arab-admin.html).
 app.use('/api/game-lessons', gameLessonsRouter);
+app.use('/api/kuiz-esp32', kuizEsp32Router);
 
 // Root ('/') redirect ke guru.html supaya tak "Cannot GET /"
 app.get('/', (req, res) => res.redirect('/guru.html'));

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kotak Kuiz Magik — Setup Soalan 📦</title>
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  .sek-tajuk { font-family: 'Baloo 2', sans-serif; font-size: 18px; font-weight: 700; color: var(--dark); margin-bottom: 12px; }
+  .kod-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .kod-row input {
+    flex: 1 1 200px; padding: 10px 14px; border-radius: 12px; border: 2px solid #eee;
+    font-family: 'Fredoka', sans-serif; font-size: 17px; letter-spacing: .06em; outline: none;
+  }
+  .kod-row input:focus { border-color: var(--pink); }
+  .hint { font-size: 13px; color: #9a8a91; font-weight: 600; margin-top: 8px; line-height: 1.5; }
+
+  .bil-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .bil-btn {
+    width: 52px; height: 52px; border-radius: 16px; border: 2px solid #eee; background: #fff;
+    font-family: 'Fredoka', sans-serif; font-size: 22px; font-weight: 700; cursor: pointer;
+    color: var(--dark); transition: transform .15s ease;
+  }
+  .bil-btn:hover { transform: translateY(-2px); }
+  .bil-btn.aktif { background: var(--purple); border-color: var(--purple); color: #fff; }
+
+  .tajuk-input {
+    width: 100%; padding: 10px 14px; border-radius: 12px; border: 2px solid #eee;
+    font-family: 'Fredoka', sans-serif; font-size: 15px; outline: none; margin-top: 12px;
+  }
+  .tajuk-input:focus { border-color: var(--pink); }
+
+  .soalan-kad { background: #FFF7EE; border-radius: 16px; padding: 14px 16px; margin-bottom: 14px; border: 2px solid #f5e6d3; }
+  .soalan-kad h3 { margin: 0 0 10px; font-family: 'Baloo 2', sans-serif; font-size: 18px; color: var(--dark); }
+  .soalan-kad input[type="text"] {
+    width: 100%; padding: 8px 12px; border-radius: 10px; border: 2px solid #eee; background: #fff;
+    font-family: 'Fredoka', sans-serif; font-size: 14px; outline: none; margin-bottom: 8px;
+  }
+  .soalan-kad input[type="text"]:focus { border-color: var(--pink); }
+  .pilihan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pilihan-sel { display: flex; flex-direction: column; gap: 6px; }
+  .betul-btn {
+    padding: 10px; border-radius: 12px; border: 2px solid #eee; background: #fff; cursor: pointer;
+    font-family: 'Fredoka', sans-serif; font-size: 15px; font-weight: 700; color: var(--dark);
+  }
+  .betul-btn.dipilih { background: var(--green); border-color: var(--green); color: #fff; }
+  .betul-btn.kosong { border-color: #ffb3b3; }
+
+  .kunci-ringkas { font-family: 'Fredoka', monospace; font-size: 22px; font-weight: 700; letter-spacing: .25em; color: var(--purple); }
+  .status { margin-top: 12px; font-weight: 700; font-size: 14px; min-height: 20px; }
+  .status.ok { color: #2f9e68; }
+  .status.ralat { color: #d94a4a; }
+  @media (max-width: 520px) { .pilihan-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/guru.html" class="brand"><span>🌌</span><span>Ilmuverse</span></a>
+  <div class="breadcrumbs">
+    <a href="/guru.html">🧑‍🏫 Papan Guru</a>
+    <a href="/game-arab-admin.html">🎮 Ilmuverse Gamebox</a>
+    <a href="/kuiz-esp32.html" class="active">📦 Kotak Kuiz Magik</a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="page-title">📦 Kotak Kuiz Magik — Setup Soalan</div>
+  <div class="page-subtitle">Tetapkan bilangan soalan dan jawapan betul di sini. Kotak ambil data ini sekali sahaja semasa setup (perlu WiFi), lepas itu boleh digunakan tanpa internet.</div>
+
+  <div class="card">
+    <div class="sek-tajuk">1 · Kod peranti</div>
+    <div class="kod-row">
+      <input type="text" id="kodInput" maxlength="32" autocomplete="off" spellcheck="false" placeholder="cth: kuiz7a3k9x">
+      <button class="btn btn-secondary btn-sm" id="btnMuat">📥 Muat</button>
+      <button class="btn btn-outline btn-sm" id="btnJana">🎲 Kod baharu</button>
+    </div>
+    <div class="hint">Kod ini mesti SAMA dengan <b>KOD_PERANTI</b> dalam kod ESP32. 4-32 aksara: huruf, nombor, _ atau -. Jangan kongsi dengan murid, sebab sesiapa yang tahu kod ini boleh baca kunci jawapan.</div>
+  </div>
+
+  <div class="card">
+    <div class="sek-tajuk">2 · Bilangan soalan (maksimum 5)</div>
+    <div class="bil-row" id="bilRow"></div>
+    <input type="text" class="tajuk-input" id="tajukInput" maxlength="100" placeholder="Tajuk kuiz (pilihan), cth: Ayat Penyata">
+  </div>
+
+  <div class="card">
+    <div class="sek-tajuk">3 · Jawapan betul setiap soalan</div>
+    <div id="soalanList"></div>
+    <div class="hint">Teks soalan dan pilihan A/B hanya untuk rujukan guru di sini. Kotak hanya terima jawapan betul (A atau B).</div>
+  </div>
+
+  <div class="card">
+    <div class="sek-tajuk">Kunci jawapan</div>
+    <div class="kunci-ringkas" id="kunciRingkas">-</div>
+    <div style="margin-top:14px">
+      <button class="btn btn-success" id="btnSimpan">💾 Simpan</button>
+    </div>
+    <div class="status" id="status"></div>
+    <div class="hint">Lepas simpan: pasang kuasa pada kotak, <b>tahan butang paling hujung (5-B) selama 5 saat</b>. LED hijau akan menyala satu demi satu mengikut bilangan soalan bila data berjaya diambil.</div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var MAKS = 5;
+  var kodInput = document.getElementById('kodInput');
+  var tajukInput = document.getElementById('tajukInput');
+  var bilRow = document.getElementById('bilRow');
+  var soalanList = document.getElementById('soalanList');
+  var kunciEl = document.getElementById('kunciRingkas');
+  var statusEl = document.getElementById('status');
+
+  var bil = 5;
+  // data[i] = { teks, pilihanA, pilihanB, betul } ; betul '' = belum pilih
+  var data = [];
+  for (var i = 0; i < MAKS; i++) data.push({ teks: '', pilihanA: '', pilihanB: '', betul: '' });
+
+  function simpanKodLocal(k) { try { localStorage.setItem('kuizEsp32Kod', k); } catch (e) {} }
+  function bacaKodLocal() { try { return localStorage.getItem('kuizEsp32Kod') || ''; } catch (e) { return ''; } }
+
+  function janaKod() {
+    var abjad = 'abcdefghijkmnpqrstuvwxyz23456789';
+    var buf = new Uint8Array(8);
+    (window.crypto || window.msCrypto).getRandomValues(buf);
+    var out = 'kuiz';
+    for (var i = 0; i < buf.length; i++) out += abjad[buf[i] % abjad.length];
+    return out;
+  }
+
+  function setStatus(teks, jenis) {
+    statusEl.textContent = teks || '';
+    statusEl.className = 'status' + (jenis ? ' ' + jenis : '');
+  }
+
+  function kodSah() { return /^[A-Za-z0-9_-]{4,32}$/.test(kodInput.value.trim()); }
+
+  function lukisBil() {
+    bilRow.textContent = '';
+    for (var n = 1; n <= MAKS; n++) {
+      (function (n) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'bil-btn' + (n === bil ? ' aktif' : '');
+        b.textContent = String(n);
+        b.addEventListener('click', function () { bil = n; lukisBil(); lukisSoalan(); });
+        bilRow.appendChild(b);
+      })(n);
+    }
+  }
+
+  function kemasKunci() {
+    var s = [];
+    for (var i = 0; i < bil; i++) s.push(data[i].betul || '?');
+    kunciEl.textContent = s.join(' ');
+  }
+
+  function lukisSoalan() {
+    soalanList.textContent = '';
+    for (var i = 0; i < bil; i++) {
+      (function (i) {
+        var kad = document.createElement('div');
+        kad.className = 'soalan-kad';
+
+        var h = document.createElement('h3');
+        h.textContent = 'Soalan ' + (i + 1);
+        kad.appendChild(h);
+
+        var t = document.createElement('input');
+        t.type = 'text'; t.maxLength = 300; t.placeholder = 'Teks soalan (pilihan)';
+        t.value = data[i].teks;
+        t.addEventListener('input', function () { data[i].teks = t.value; });
+        kad.appendChild(t);
+
+        var grid = document.createElement('div');
+        grid.className = 'pilihan-grid';
+        ['A', 'B'].forEach(function (huruf) {
+          var sel = document.createElement('div');
+          sel.className = 'pilihan-sel';
+          var inp = document.createElement('input');
+          inp.type = 'text'; inp.maxLength = 150; inp.placeholder = 'Pilihan ' + huruf + ' (pilihan)';
+          inp.value = data[i]['pilihan' + huruf];
+          inp.addEventListener('input', function () { data[i]['pilihan' + huruf] = inp.value; });
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'betul-btn' + (data[i].betul === huruf ? ' dipilih' : (data[i].betul ? '' : ' kosong'));
+          btn.textContent = data[i].betul === huruf ? ('✔ ' + huruf + ' betul') : (huruf + ' betul?');
+          btn.addEventListener('click', function () { data[i].betul = huruf; lukisSoalan(); });
+          sel.appendChild(inp);
+          sel.appendChild(btn);
+          grid.appendChild(sel);
+        });
+        kad.appendChild(grid);
+        soalanList.appendChild(kad);
+      })(i);
+    }
+    kemasKunci();
+  }
+
+  async function panggil(method, kod, body) {
+    var opt = { method: method, credentials: 'same-origin', headers: {} };
+    if (body) { opt.headers['Content-Type'] = 'application/json'; opt.body = JSON.stringify(body); }
+    var res = await fetch('/api/kuiz-esp32/config/' + encodeURIComponent(kod), opt);
+    if (res.status === 401) { window.location.href = '/login.html?next=' + encodeURIComponent('/kuiz-esp32.html'); throw new Error('Perlu log masuk.'); }
+    var json = null;
+    try { json = await res.json(); } catch (e) {}
+    return { ok: res.ok, status: res.status, json: json };
+  }
+
+  async function muat() {
+    var kod = kodInput.value.trim();
+    if (!kodSah()) { setStatus('Kod peranti tidak sah (4-32 aksara: huruf, nombor, _ atau -).', 'ralat'); return; }
+    setStatus('Memuatkan…');
+    try {
+      var r = await panggil('GET', kod);
+      if (r.status === 404) { setStatus('Kod ini belum ada data. Isi borang dan tekan Simpan.', ''); return; }
+      if (!r.ok) { setStatus((r.json && r.json.error) || 'Gagal memuatkan.', 'ralat'); return; }
+      var d = r.json;
+      bil = Math.min(MAKS, Math.max(1, d.soalan.length));
+      tajukInput.value = d.tajuk || '';
+      for (var i = 0; i < MAKS; i++) {
+        var s = d.soalan[i] || {};
+        data[i] = { teks: s.teks || '', pilihanA: s.pilihanA || '', pilihanB: s.pilihanB || '', betul: s.betul || '' };
+      }
+      lukisBil(); lukisSoalan();
+      simpanKodLocal(kod);
+      setStatus('Dimuatkan: ' + d.soalan.length + ' soalan, versi ' + d.versi + '.', 'ok');
+    } catch (e) { setStatus('Gagal memuatkan: ' + e.message, 'ralat'); }
+  }
+
+  async function simpan() {
+    var kod = kodInput.value.trim();
+    if (!kodSah()) { setStatus('Kod peranti tidak sah (4-32 aksara: huruf, nombor, _ atau -).', 'ralat'); return; }
+    for (var i = 0; i < bil; i++) {
+      if (data[i].betul !== 'A' && data[i].betul !== 'B') {
+        setStatus('Soalan ' + (i + 1) + ' belum ada jawapan betul (A atau B).', 'ralat');
+        return;
+      }
+    }
+    var senarai = [];
+    for (var j = 0; j < bil; j++) senarai.push(data[j]);
+    setStatus('Menyimpan…');
+    try {
+      var r = await panggil('PUT', kod, { tajuk: tajukInput.value, soalan: senarai });
+      if (!r.ok) { setStatus((r.json && (r.json.detail || r.json.error)) || 'Gagal menyimpan.', 'ralat'); return; }
+      simpanKodLocal(kod);
+      var jam = new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
+      setStatus('Disimpan pada ' + jam + ': ' + r.json.soalan.length + ' soalan, versi ' + r.json.versi + '. Kotak perlu di-setup semula untuk ambil versi ini.', 'ok');
+    } catch (e) { setStatus('Gagal menyimpan: ' + e.message, 'ralat'); }
+  }
+
+  document.getElementById('btnMuat').addEventListener('click', muat);
+  document.getElementById('btnSimpan').addEventListener('click', simpan);
+  document.getElementById('btnJana').addEventListener('click', function () {
+    kodInput.value = janaKod();
+    simpanKodLocal(kodInput.value);
+    setStatus('Kod baharu dijana. Salin ke KOD_PERANTI dalam kod ESP32, kemudian isi soalan dan Simpan.', '');
+  });
+
+  var awal = bacaKodLocal();
+  if (awal) kodInput.value = awal;
+  lukisBil();
+  lukisSoalan();
+  if (awal) muat();
+})();
+</script>
+</body>
+</html>
