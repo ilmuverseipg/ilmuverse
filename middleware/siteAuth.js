@@ -16,11 +16,16 @@ const path = require('path');
 const PASSWORD = process.env.SITE_PASSWORD || 'pokdeng';
 const SECRET = process.env.SITE_AUTH_SECRET || ('ilmuverse-site::' + PASSWORD);
 const COOKIE = 'ilmuverse_akses';
-const MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000; // ingat peranti selama 30 hari
+// Kuki SESI sahaja (tiada maxAge) + had 12 jam di server. Tambahan pula,
+// SETIAP KALI orang MASUK ke laman (taip alamat, buka link luar, bookmark,
+// tab baharu) kata laluan diminta semula walaupun kuki masih sah - lihat
+// isFreshEntry(). Kuki cuma membenarkan bertukar halaman DI DALAM laman.
+const SESSION_MS = 12 * 60 * 60 * 1000;
 
-// Token = HMAC(kata laluan) - berubah sendiri bila kata laluan ditukar,
-// jadi semua peranti lama perlu log masuk semula.
-const TOKEN = crypto.createHmac('sha256', SECRET).update(PASSWORD).digest('hex');
+// Token = "<masa dikeluarkan>.<HMAC>" - HMAC berubah sendiri bila kata
+// laluan ditukar, jadi semua sesi lama terus tidak sah.
+function sign(issued) { return crypto.createHmac('sha256', SECRET).update(PASSWORD + ':' + issued).digest('hex'); }
+function makeToken() { const t = Date.now().toString(36); return t + '.' + sign(t); }
 
 function readCookie(req, name) {
   const raw = req.headers.cookie || '';
@@ -34,7 +39,25 @@ function safeEqual(a, b) {
   const x = Buffer.from(String(a)), y = Buffer.from(String(b));
   return x.length === y.length && crypto.timingSafeEqual(x, y);
 }
-function isAuthed(req) { return safeEqual(readCookie(req, COOKIE), TOKEN); }
+function isAuthed(req) {
+  const v = readCookie(req, COOKIE), i = v.indexOf('.');
+  if (i < 1) return false;
+  const t = v.slice(0, i), issued = parseInt(t, 36);
+  if (!Number.isFinite(issued) || Date.now() - issued > SESSION_MS || issued > Date.now() + 60000) return false;
+  return safeEqual(v.slice(i + 1), sign(t));
+}
+
+// Adakah permintaan ini "masuk dari luar" (bukan klik pautan dalam laman)?
+// Pelayar moden hantar Sec-Fetch-Site: 'same-origin' bila navigasi datang
+// dari halaman Ilmuverse sendiri; 'none' = taip alamat / bookmark / tab baharu;
+// 'cross-site' = link dari WhatsApp, Google, dll. Pelayar lama tanpa header
+// ini -> semak Referer hos yang sama.
+function isFreshEntry(req) {
+  const sfs = req.headers['sec-fetch-site'];
+  if (sfs) return sfs !== 'same-origin';
+  const ref = req.headers.referer || '';
+  try { return new URL(ref).host !== req.headers.host; } catch (e) { return true; }
+}
 
 // Hanya benarkan redirect ke laluan dalaman (elak open-redirect).
 function safeNext(n) {
@@ -67,7 +90,7 @@ function siteAuth(app) {
     }
     attempts.delete(ip);
     const secure = req.secure || req.headers['x-forwarded-proto'] === 'https';
-    res.cookie(COOKIE, TOKEN, { httpOnly: true, sameSite: 'lax', secure, maxAge: MAX_AGE_MS, path: '/' });
+    res.cookie(COOKIE, makeToken(), { httpOnly: true, sameSite: 'lax', secure, path: '/' }); // kuki sesi
     res.json({ ok: true, next: safeNext(req.body && req.body.next) });
   });
 
@@ -77,7 +100,8 @@ function siteAuth(app) {
   });
 
   app.get(['/login', '/login.html'], (req, res) => {
-    if (isAuthed(req)) return res.redirect(safeNext(req.query.next));
+    // Sentiasa papar halaman kata laluan (walaupun sudah log masuk) - setiap kemasukan mesti log masuk.
+    res.set('Cache-Control', 'no-store');
     res.sendFile(loginFile);
   });
 
@@ -86,8 +110,9 @@ function siteAuth(app) {
     if (req.method !== 'GET' && req.method !== 'HEAD') return next();
     const p = req.path;
     const isPage = p === '/' || p.endsWith('/') || p.toLowerCase().endsWith('.html');
-    if (!isPage || isAuthed(req)) return next();
-    res.set('Cache-Control', 'no-store');
+    if (!isPage) return next();
+    res.set('Cache-Control', 'no-store'); // jangan simpan halaman dalam cache pelayar
+    if (isAuthed(req) && !isFreshEntry(req)) return next();
     res.redirect('/login.html?next=' + encodeURIComponent(req.originalUrl));
   });
 }
