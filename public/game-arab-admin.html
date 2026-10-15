@@ -115,6 +115,26 @@
   }
   .aq-jawi-lengkap:focus { border-color: var(--pink); }
   .apitan-question-card.dragging { opacity: .35; }
+
+  /* ===== SOALAN SUSUN AYAT (Mod Susun Ayat) ===== */
+  .susun-panel { margin-top: 14px; border-top: 2px dashed #D9F2E3; padding-top: 14px; }
+  .susun-question-card {
+    background: #EEFBF3; border-radius: 14px; padding: 12px 14px; margin-bottom: 12px;
+    border: 2px solid #CDEFD9;
+  }
+  .susun-question-card.dragging { opacity: .35; }
+  .sq-row { display: grid; grid-template-columns: 1fr 210px; gap: 8px; margin-bottom: 10px; }
+  .sq-row input, .sq-row select {
+    padding: 9px 12px; border-radius: 10px; border: 2px solid #eee;
+    font-family: 'Fredoka'; font-size: 15px; font-weight: 700; outline: none; background: #fff; min-width: 0;
+  }
+  .sq-row input:focus, .sq-row select:focus { border-color: var(--purple); }
+  .sq-kepingan {
+    width: 100%; min-height: 150px; padding: 10px 12px; border-radius: 10px; border: 2px solid #eee;
+    font-family: 'Fredoka', 'Noto Naskh Arabic', serif; font-size: 16px; line-height: 1.7; outline: none; resize: vertical;
+  }
+  .sq-kepingan:focus { border-color: var(--pink); }
+  .sq-preview { font-size: 12px; font-weight: 700; color: #3E9B6A; margin: 6px 2px 4px; }
   .tq-hint-badge {
     display: inline-block; background: #3ECF8E; color: #fff; font-size: 11px; font-weight: 700;
     padding: 2px 8px; border-radius: 999px; margin-left: 6px;
@@ -235,11 +255,13 @@
         <span class="word-count-badge"></span>
         <span class="tembak-count-badge" style="background:#8B5CF6; color:#fff; font-size:12px; font-weight:700; padding:4px 12px; border-radius:999px; align-self:center;"></span>
         <span class="apitan-count-badge" style="background:#0098D8; color:#fff; font-size:12px; font-weight:700; padding:4px 12px; border-radius:999px; align-self:center;"></span>
+        <span class="susun-count-badge" style="background:#16A34A; color:#fff; font-size:12px; font-weight:700; padding:4px 12px; border-radius:999px; align-self:center;"></span>
         <span class="majmuk-count-badge" style="background:#E8892E; color:#fff; font-size:12px; font-weight:700; padding:4px 12px; border-radius:999px; align-self:center;"></span>
         <button class="save-lesson-btn btn btn-secondary btn-sm">💾 Simpan</button>
         <button class="toggle-words-btn btn btn-outline btn-sm">🔗 Perkataan (Padan/Isyarat)</button>
         <button class="toggle-tembak-btn btn btn-outline btn-sm">🎯 Soalan Tembak (A/B/C)</button>
         <button class="toggle-apitan-btn btn btn-outline btn-sm">🔤 Imbuhan Apitan (Jawi)</button>
+        <button class="toggle-susun-btn btn btn-outline btn-sm">🧱 Susun Ayat</button>
         <button class="toggle-majmuk-btn btn btn-outline btn-sm">🧩 Kata Majmuk (Gambar)</button>
         <button class="delete-lesson-btn btn btn-danger btn-sm">🗑️ Padam</button>
       </div>
@@ -319,6 +341,27 @@
       <div class="add-word-hint">💡 Setiap pilihan Awalan/Akhiran perlu Rumi + Jawi diisi. Tiada had bilangan soalan.</div>
     </div>
 
+    <div class="susun-panel" style="display:none;">
+      <div class="add-word-hint" style="margin:0 2px 10px;">🧱 Tempat edit untuk <strong>Mod Susun Ayat</strong> sahaja. Taip ayat yang dipecahkan kepada beberapa kepingan, <strong>satu baris = satu kepingan</strong>, mengikut <strong>urutan yang betul</strong>. Permainan akan kocok kepingan; murid cubit &amp; seret setiap kepingan ke petak ikut urutan. Pilih <strong>Jawi</strong> (petak kanan→kiri) atau <strong>Rumi</strong> (petak kiri→kanan).</div>
+      <div class="susun-questions-list"></div>
+
+      <div class="susun-question-card susun-new-form">
+        <div class="sq-row">
+          <input class="new-sq-tajuk" placeholder="Tajuk / arahan - cth: Susun maksud sunnah" />
+          <select class="new-sq-tulisan">
+            <option value="jawi">Jawi (kanan → kiri)</option>
+            <option value="rumi">Rumi (kiri → kanan)</option>
+          </select>
+        </div>
+        <textarea class="new-sq-kepingan sq-kepingan" dir="auto" placeholder="Satu baris = satu kepingan, ikut urutan betul (2 hingga 10 kepingan)&#10;cth:&#10;سنة رسول الله SAW&#10;اياله سݢالا&#10;ڤرکاتاٴن،"></textarea>
+        <div class="new-sq-preview sq-preview"></div>
+        <div class="tembak-question-actions">
+          <button class="add-sq-btn btn btn-success btn-sm">+ Tambah Soalan Susun</button>
+        </div>
+      </div>
+      <div class="add-word-hint">💡 2 hingga 10 kepingan setiap soalan. Kepingan pendek (1-4 perkataan) paling mudah dibaca di skrin. Tiada had bilangan soalan.</div>
+    </div>
+
     <div class="majmuk-panel" style="display:none;">
       <div class="add-word-hint" style="margin:0 2px 10px;">🧩 Tempat edit untuk <strong>Mod Kata Majmuk</strong> sahaja. Soalan sentiasa <strong>"Apakah Kata Majmuk Ini?"</strong>. Muat naik <strong>Gambar 1</strong> &amp; <strong>Gambar 2</strong> (diubah saiz automatik kepada 800×800), taip 3 pilihan jawapan &amp; tandakan yang betul. Murid cubit &amp; seret jawapan ke kotak.</div>
       <div class="majmuk-title-bar">
@@ -395,6 +438,7 @@ function renderLessonCard(lessonSummary) {
   $('.word-count-badge', card).textContent = `${lessonSummary.wordCount} perkataan`;
   $('.tembak-count-badge', card).textContent = `${lessonSummary.tembakQuestionCount || 0} soalan tembak`;
   $('.apitan-count-badge', card).textContent = `${lessonSummary.apitanQuestionCount || 0} soalan apitan`;
+  $('.susun-count-badge', card).textContent = `${lessonSummary.susunQuestionCount || 0} soalan susun`;
   $('.majmuk-count-badge', card).textContent = `${lessonSummary.majmukQuestionCount || 0} soalan majmuk`;
 
   $('.save-lesson-btn', card).addEventListener('click', async () => {
@@ -562,6 +606,40 @@ function renderLessonCard(lessonSummary) {
     uploadPath: `/${lessonSummary._id}/apitan-questions/import-xlsx`,
     itemLabel: 'soalan',
     onDone: () => refreshApitanQuestions(lessonSummary._id, apitanPanel, card),
+  });
+
+  // ----- Panel "Susun Ayat" - tempat edit BERASINGAN -----
+  const susunPanel = $('.susun-panel', card);
+  const toggleSusunBtn = $('.toggle-susun-btn', card);
+  let susunLoaded = false;
+  toggleSusunBtn.addEventListener('click', async () => {
+    const showing = susunPanel.style.display !== 'none';
+    susunPanel.style.display = showing ? 'none' : 'block';
+    toggleSusunBtn.textContent = showing ? '🧱 Susun Ayat' : '🧱 Tutup';
+    if (!showing && !susunLoaded) { susunLoaded = true; await refreshSusunQuestions(lessonSummary._id, susunPanel, card); }
+  });
+
+  const newSqTajuk = $('.new-sq-tajuk', card);
+  const newSqTulisan = $('.new-sq-tulisan', card);
+  const newSqKepingan = $('.new-sq-kepingan', card);
+  const newSqPreview = $('.new-sq-preview', card);
+  const updateNewSqPreview = () => { newSqPreview.textContent = susunPreviewText(newSqKepingan.value); };
+  newSqKepingan.addEventListener('input', updateNewSqPreview);
+  $('.add-sq-btn', card).addEventListener('click', async () => {
+    const tajuk = newSqTajuk.value.trim();
+    const kepingan = splitKepingan(newSqKepingan.value);
+    if (!tajuk) return alert('Tajuk soalan tidak boleh kosong.');
+    if (kepingan.length < 2) return alert('Perlukan sekurang-kurangnya 2 kepingan (satu baris = satu kepingan).');
+    if (kepingan.length > 10) return alert('Maksimum 10 kepingan sahaja.');
+    try {
+      await api(`/${lessonSummary._id}/susun-questions`, {
+        method: 'POST',
+        body: JSON.stringify({ tajuk, kepingan, tulisan: newSqTulisan.value }),
+      });
+      newSqTajuk.value = ''; newSqKepingan.value = ''; updateNewSqPreview();
+      await refreshSusunQuestions(lessonSummary._id, susunPanel, card);
+      newSqTajuk.focus();
+    } catch (err) { alert(err.message); }
   });
 
   // ----- Panel "Kata Majmuk (Gambar)" - tempat edit BERASINGAN -----
@@ -999,6 +1077,122 @@ function renumberApitanBadges(listEl) {
     const badge = $('.tq-order-badge', cardEl);
     if (badge) badge.textContent = `Soalan #${i + 1}`;
   });
+}
+
+// ------------------------------------------------------------------
+// SOALAN SUSUN AYAT (Mod Susun Ayat) - tempat edit BERASINGAN. Kepingan
+// ditaip satu baris satu kepingan (urutan betul), disimpan sbg senarai.
+// ------------------------------------------------------------------
+function splitKepingan(text) {
+  return String(text || '').split(/\r?\n/).map((t) => t.trim()).filter(Boolean);
+}
+function susunPreviewText(text) {
+  const n = splitKepingan(text).length;
+  if (!n) return '';
+  if (n < 2) return `${n} kepingan - perlukan sekurang-kurangnya 2.`;
+  if (n > 10) return `${n} kepingan - maksimum 10 sahaja.`;
+  return `✓ ${n} kepingan`;
+}
+
+async function refreshSusunQuestions(lessonId, susunPanel, card) {
+  const list = $('.susun-questions-list', susunPanel);
+  list.innerHTML = '<div style="opacity:.6; font-size:14px;">Memuatkan...</div>';
+  try {
+    const lesson = await api(`/${lessonId}`);
+    const qs = lesson.susunQuestions || [];
+    list.innerHTML = '';
+    if (!qs.length) {
+      list.innerHTML = '<div style="opacity:.6; font-size:14px; padding:4px 2px 14px;">Tiada Soalan Susun Ayat lagi. Tambah satu di bawah. 🧱</div>';
+    } else {
+      qs.forEach((q, i) => list.appendChild(renderSusunQuestionRow(lessonId, q, susunPanel, card, i + 1)));
+      if (!list.dataset.sortableWired) {
+        list.dataset.sortableWired = '1';
+        makeSortable(list, async (order) => {
+          try {
+            await api(`/${lessonId}/susun-questions/reorder`, { method: 'PUT', body: JSON.stringify({ order }) });
+            renumberApitanBadges(list);
+          } catch (err) { alert(err.message); await refreshSusunQuestions(lessonId, susunPanel, card); }
+        });
+      }
+    }
+    $('.susun-count-badge', card).textContent = `${qs.length} soalan susun`;
+  } catch (err) {
+    list.innerHTML = `<div style="color:#FF6B6B; font-size:14px;">${err.message}</div>`;
+  }
+}
+
+function renderSusunQuestionRow(lessonId, q, susunPanel, card, orderNum) {
+  const wrap = document.createElement('div');
+  wrap.className = 'susun-question-card';
+  wrap.dataset.id = q._id;
+
+  const head = document.createElement('div');
+  head.className = 'tq-card-head';
+  const dragHandle = document.createElement('span');
+  dragHandle.className = 'drag-handle';
+  dragHandle.title = 'Seret untuk susun semula urutan';
+  dragHandle.textContent = '⠿';
+  const orderBadge = document.createElement('span');
+  orderBadge.className = 'tq-order-badge';
+  orderBadge.textContent = `Soalan #${orderNum}`;
+  head.appendChild(dragHandle);
+  head.appendChild(orderBadge);
+  wrap.appendChild(head);
+
+  const row = document.createElement('div');
+  row.className = 'sq-row';
+  const tajukInput = document.createElement('input');
+  tajukInput.placeholder = 'Tajuk / arahan';
+  tajukInput.value = q.tajuk;
+  const tulisanSelect = document.createElement('select');
+  tulisanSelect.innerHTML = '<option value="jawi">Jawi (kanan → kiri)</option><option value="rumi">Rumi (kiri → kanan)</option>';
+  tulisanSelect.value = q.tulisan === 'rumi' ? 'rumi' : 'jawi';
+  row.appendChild(tajukInput); row.appendChild(tulisanSelect);
+  wrap.appendChild(row);
+
+  const kepinganInput = document.createElement('textarea');
+  kepinganInput.className = 'sq-kepingan'; kepinganInput.dir = 'auto';
+  kepinganInput.value = (q.kepingan || []).join('\n');
+  wrap.appendChild(kepinganInput);
+  const preview = document.createElement('div');
+  preview.className = 'sq-preview';
+  preview.textContent = susunPreviewText(kepinganInput.value);
+  kepinganInput.addEventListener('input', () => { preview.textContent = susunPreviewText(kepinganInput.value); });
+  wrap.appendChild(preview);
+
+  const actions = document.createElement('div');
+  actions.className = 'tembak-question-actions';
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'btn btn-secondary btn-sm'; saveBtn.textContent = '💾 Simpan';
+  const delBtn = document.createElement('button');
+  delBtn.className = 'btn btn-danger btn-sm'; delBtn.textContent = '🗑️ Padam';
+  actions.appendChild(saveBtn); actions.appendChild(delBtn);
+  wrap.appendChild(actions);
+
+  saveBtn.addEventListener('click', async () => {
+    const tajuk = tajukInput.value.trim();
+    const kepingan = splitKepingan(kepinganInput.value);
+    if (!tajuk) return alert('Tajuk soalan tidak boleh kosong.');
+    if (kepingan.length < 2) return alert('Perlukan sekurang-kurangnya 2 kepingan.');
+    if (kepingan.length > 10) return alert('Maksimum 10 kepingan sahaja.');
+    try {
+      await api(`/${lessonId}/susun-questions/${q._id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ tajuk, kepingan, tulisan: tulisanSelect.value }),
+      });
+      flash(wrap);
+    } catch (err) { alert(err.message); }
+  });
+
+  delBtn.addEventListener('click', async () => {
+    if (!confirm('Padam soalan ini?')) return;
+    try {
+      await api(`/${lessonId}/susun-questions/${q._id}`, { method: 'DELETE' });
+      await refreshSusunQuestions(lessonId, susunPanel, card);
+    } catch (err) { alert(err.message); }
+  });
+
+  return wrap;
 }
 
 // ------------------------------------------------------------------

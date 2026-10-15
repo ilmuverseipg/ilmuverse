@@ -86,6 +86,26 @@ const ApitanQuestionSchema = new mongoose.Schema(
   { _id: true, timestamps: false }
 );
 
+// Satu Soalan Susun Ayat (Mod Susun Ayat) - guru taip ayat yang dipecahkan
+// kepada beberapa kepingan MENGIKUT URUTAN BETUL (cth: maksud sunnah).
+// Permainan kocok kepingan; murid cubit & seret setiap kepingan ke petak
+// mengikut urutan. "tulisan" tentukan arah petak: 'jawi' = kanan->kiri,
+// 'rumi' = kiri->kanan. Ejaan Jawi ditaip SENDIRI oleh guru.
+const SusunQuestionSchema = new mongoose.Schema(
+  {
+    tajuk: { type: String, required: true, trim: true }, // cth: "Susun maksud sunnah"
+    kepingan: {
+      type: [String],
+      validate: {
+        validator: (v) => Array.isArray(v) && v.length >= 2 && v.length <= 10 && v.every((s) => typeof s === 'string' && s.trim()),
+        message: 'Soalan Susun perlukan 2 hingga 10 kepingan, semuanya diisi.',
+      },
+    },
+    tulisan: { type: String, enum: ['jawi', 'rumi'], default: 'jawi' },
+  },
+  { _id: true, timestamps: false }
+);
+
 // Satu set/topik pelajaran (cth: "Alatan Bilik Darjah", "Haiwan", "Warna")
 const GameLessonSetSchema = new mongoose.Schema(
   {
@@ -108,6 +128,12 @@ const GameLessonSetSchema = new mongoose.Schema(
     // tempat edit BERASINGAN drpd "words"/"tembakQuestions".
     apitanQuestions: {
       type: [ApitanQuestionSchema],
+      default: [],
+    },
+    // "susunQuestions" - dipakai oleh Mod Susun Ayat sahaja, tempat edit
+    // BERASINGAN drpd soalan mod lain.
+    susunQuestions: {
+      type: [SusunQuestionSchema],
       default: [],
     },
     // Tajuk yang dipaparkan 3 saat (dengan confetti) sebelum Mod Kata Majmuk

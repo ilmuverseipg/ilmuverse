@@ -22,7 +22,7 @@ function handleXlsxUpload(req, res, next) {
 // GET /api/game-lessons - senarai ringkas semua set pelajaran (skrin pilih misi)
 router.get('/', async (req, res) => {
   try {
-    const lessons = await GameLessonSet.find({}, 'name description words tembakQuestions apitanQuestions').sort({ createdAt: 1 });
+    const lessons = await GameLessonSet.find({}, 'name description words tembakQuestions apitanQuestions susunQuestions').sort({ createdAt: 1 });
     // Kiraan soalan Kata Majmuk (koleksi berasingan) - satu query agregat sahaja.
     const majmukCounts = await GameMajmukQuestion.aggregate([{ $group: { _id: '$lessonId', n: { $sum: 1 } } }]);
     const majmukBy = new Map(majmukCounts.map((c) => [String(c._id), c.n]));
@@ -33,6 +33,7 @@ router.get('/', async (req, res) => {
       wordCount: l.words.length,
       tembakQuestionCount: l.tembakQuestions.length,
       apitanQuestionCount: l.apitanQuestions.length,
+      susunQuestionCount: (l.susunQuestions || []).length,
       majmukQuestionCount: majmukBy.get(String(l._id)) || 0,
     }));
     res.json(summary);
@@ -633,6 +634,98 @@ router.delete('/:id/majmuk-questions/:qId', async (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     res.status(400).json({ error: 'Gagal padam Soalan Kata Majmuk.', detail: err.message });
+  }
+});
+
+// ------------------------------------------------------------------
+// SOALAN SUSUN AYAT (Mod Susun Ayat) - tempat edit BERASINGAN drpd soalan mod
+// lain. Setiap soalan: tajuk, senarai kepingan (2-10) MENGIKUT URUTAN BETUL,
+// & tulisan ('jawi' = petak kanan->kiri, 'rumi' = petak kiri->kanan).
+// ------------------------------------------------------------------
+function cleanSusunBody(body, partial) {
+  const out = {};
+  if (!partial || body.tajuk !== undefined) {
+    const tajuk = String(body.tajuk || '').trim();
+    if (!tajuk) return { error: 'Tajuk soalan diperlukan.' };
+    out.tajuk = tajuk;
+  }
+  if (!partial || body.kepingan !== undefined) {
+    if (!Array.isArray(body.kepingan)) return { error: 'Senarai kepingan diperlukan.' };
+    const kepingan = body.kepingan.map((k) => String(k == null ? '' : k).trim()).filter(Boolean);
+    if (kepingan.length < 2) return { error: 'Perlukan sekurang-kurangnya 2 kepingan.' };
+    if (kepingan.length > 10) return { error: 'Maksimum 10 kepingan sahaja (supaya muat di skrin).' };
+    out.kepingan = kepingan;
+  }
+  if (!partial || body.tulisan !== undefined) {
+    const tulisan = body.tulisan === 'rumi' ? 'rumi' : 'jawi';
+    out.tulisan = tulisan;
+  }
+  return { data: out };
+}
+
+// POST /api/game-lessons/:id/susun-questions - tambah satu Soalan Susun
+router.post('/:id/susun-questions', async (req, res) => {
+  try {
+    const { error, data } = cleanSusunBody(req.body || {}, false);
+    if (error) return res.status(400).json({ error });
+    const lesson = await GameLessonSet.findById(req.params.id);
+    if (!lesson) return res.status(404).json({ error: 'Set pelajaran tidak dijumpai.' });
+    lesson.susunQuestions.push(data);
+    await lesson.save();
+    res.status(201).json(lesson);
+  } catch (err) {
+    res.status(400).json({ error: 'Gagal tambah Soalan Susun.', detail: err.message });
+  }
+});
+
+// PUT /api/game-lessons/:id/susun-questions/reorder - susun semula URUTAN soalan
+router.put('/:id/susun-questions/reorder', async (req, res) => {
+  try {
+    const { order } = req.body;
+    if (!Array.isArray(order) || !order.length) return res.status(400).json({ error: 'Senarai urutan diperlukan.' });
+    const lesson = await GameLessonSet.findById(req.params.id);
+    if (!lesson) return res.status(404).json({ error: 'Set pelajaran tidak dijumpai.' });
+    const byId = new Map(lesson.susunQuestions.map((q) => [String(q._id), q]));
+    if (order.length !== byId.size || order.some((qid) => !byId.has(String(qid)))) {
+      return res.status(400).json({ error: 'Senarai urutan tidak sepadan dengan soalan sedia ada.' });
+    }
+    lesson.susunQuestions = order.map((qid) => byId.get(String(qid)));
+    await lesson.save();
+    res.json(lesson);
+  } catch (err) {
+    res.status(400).json({ error: 'Gagal susun semula Soalan Susun.', detail: err.message });
+  }
+});
+
+// PUT /api/game-lessons/:id/susun-questions/:qId - edit satu Soalan Susun
+router.put('/:id/susun-questions/:qId', async (req, res) => {
+  try {
+    const { error, data } = cleanSusunBody(req.body || {}, true);
+    if (error) return res.status(400).json({ error });
+    const lesson = await GameLessonSet.findById(req.params.id);
+    if (!lesson) return res.status(404).json({ error: 'Set pelajaran tidak dijumpai.' });
+    const q = lesson.susunQuestions.id(req.params.qId);
+    if (!q) return res.status(404).json({ error: 'Soalan Susun tidak dijumpai.' });
+    Object.assign(q, data);
+    await lesson.save();
+    res.json(lesson);
+  } catch (err) {
+    res.status(400).json({ error: 'Gagal kemaskini Soalan Susun.', detail: err.message });
+  }
+});
+
+// DELETE /api/game-lessons/:id/susun-questions/:qId - padam satu Soalan Susun
+router.delete('/:id/susun-questions/:qId', async (req, res) => {
+  try {
+    const lesson = await GameLessonSet.findById(req.params.id);
+    if (!lesson) return res.status(404).json({ error: 'Set pelajaran tidak dijumpai.' });
+    const q = lesson.susunQuestions.id(req.params.qId);
+    if (!q) return res.status(404).json({ error: 'Soalan Susun tidak dijumpai.' });
+    q.deleteOne();
+    await lesson.save();
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(400).json({ error: 'Gagal padam Soalan Susun.', detail: err.message });
   }
 });
 
