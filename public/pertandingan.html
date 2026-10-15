@@ -235,7 +235,7 @@
         </div>
       </div>
       <button class="go" id="goBtn">▶ MULA</button>
-      <div class="maxnote">Masa maksimum 60 saat · masa paling singkat menang</div>
+      <div class="maxnote">Masa maksimum 30 saat · masa paling singkat menang</div>
     </div>
     <div class="team" id="teamB"></div>
   </section>
@@ -306,7 +306,7 @@
 (() => {
 'use strict';
 const $ = (id) => document.getElementById(id);
-const MAX_MS = 60000;
+const MAX_MS = 30000; // had masa setiap kumpulan: 30 saat
 const STORE_KEY = 'ilmuversePertandingan.v1';
 
 const DEFAULT_TEAMS = [
@@ -355,10 +355,7 @@ function decide(m) {
   const [a, b] = MATCHES[m].map((i) => S.teams[i]);
   if (a.time == null || b.time == null) return null;
   if (Math.abs(a.time - b.time) >= 10) return a.time < b.time ? { w: 0, by: 'time' } : { w: 1, by: 'time' };
-  // masa sama (beza < 0.01 s): kumpulan dengan lebih banyak ✓ menang, kalau sama juga = seri
-  const sa = a.tick - a.cross, sb = b.tick - b.cross;
-  if (sa !== sb) return { w: sa > sb ? 0 : 1, by: 'marks' };
-  return { w: -1, by: 'tie' };
+  return { w: -1, by: 'tie' }; // masa sama (beza < 0.01 s) = seri
 }
 
 // ===== PAPARAN =====
@@ -372,11 +369,6 @@ function teamCard(el, idx, sideNo) {
     <div class="name">${esc(t.name)}<small>${label(idx).toUpperCase()}</small></div>
     <div class="ttime digits ${t.time == null ? 'empty' : ''}">${timeTxt}</div>
     ${res ? `<div class="badge-res">${res.w === -1 ? 'SERI' : res.w === sideNo ? '🏆 MENANG' : 'KALAH'}</div>` : ''}
-    <div class="marks">
-      <button class="mk tick" data-i="${idx}" data-k="tick" title="Beri tanda betul">✓ <span class="n">${t.tick}</span></button>
-      <button class="mk cross" data-i="${idx}" data-k="cross" title="Beri tanda pangkah">✗ <span class="n">${t.cross}</span></button>
-      <button class="mk-undo" data-i="${idx}" title="Kosongkan tanda kumpulan ini">↺</button>
-    </div>
     ${t.time != null && !running ? `<button class="redo" data-redo="${sideNo}">Ulang masa ${esc(t.name)}</button>` : ''}`;
 }
 function esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
@@ -393,7 +385,7 @@ function renderBoard() {
       const t = S.teams[i];
       const cls = res ? (res.w === side ? ' win' : res.w === -1 ? '' : ' lose') : '';
       return `<div class="row${cls}"><span class="e">${t.emoji}</span><span class="n">${esc(t.name)}<small>K${i + 1}</small></span>
-        <span class="t digits">${t.time == null ? '—' : fmt(t.time) + ' s'}</span><span class="tk">✓ ${t.tick} &nbsp; ✗ ${t.cross}</span></div>`;
+        <span class="t digits">${t.time == null ? '—' : fmt(t.time) + ' s'}</span></div>`;
     };
     card.innerHTML = `<div class="mhead"><b>PUSINGAN ${m + 1}</b><span class="mstat">${status}</span></div>${row(a, 0)}<div class="vs">LAWAN</div>${row(b, 1)}`;
     board.appendChild(card);
@@ -432,7 +424,7 @@ function frame() {
   if (!running) return;
   const ms = performance.now() - startAt;
   const sec = Math.floor(ms / 1000);
-  if (sec !== lastSec) { lastSec = sec; if (sec >= 50 && sec < 60) SFX.tick(); }
+  if (sec !== lastSec) { lastSec = sec; if (sec >= 20 && sec < 30) SFX.tick(); } // bunyi tik 10 saat terakhir
   if (ms >= MAX_MS) { stopWatch(true); return; }
   renderWatch();
   raf = requestAnimationFrame(frame);
@@ -483,15 +475,15 @@ function showResult(m, res, timeout) {
   $('resultRound').textContent = `PUSINGAN ${m + 1}`;
   if (res.w === -1) {
     $('resultWinner').innerHTML = `<span class="em">🤝</span>SERI!`;
-    $('resultNote').textContent = 'Masa dan tanda kedua-dua kumpulan sama.';
+    $('resultNote').textContent = 'Masa kedua-dua kumpulan sama.';
   } else {
     const W = res.w === 0 ? A : B;
     $('resultWinner').innerHTML = `<span class="em">${W.emoji}</span>KUMPULAN ${esc(W.name.toUpperCase())} MENANG!`;
-    $('resultNote').textContent = res.by === 'marks' ? 'Masa sama — pemenang ditentukan oleh tanda ✓ terbanyak.' : 'Masa paling singkat menang.';
+    $('resultNote').textContent = 'Masa paling singkat menang.';
   }
   const cls = (side) => res.w === -1 ? 's' : res.w === side ? 'w' : 'l';
   $('resultGrid').innerHTML = [A, B].map((t, side) =>
-    `<div class="${cls(side)}">${t.emoji} ${esc(t.name)}<span class="digits">${fmt(t.time)} s</span>✓ ${t.tick} · ✗ ${t.cross}</div>`).join('');
+    `<div class="${cls(side)}">${t.emoji} ${esc(t.name)}<span class="digits">${fmt(t.time)} s</span></div>`).join('');
   const more = MATCHES.some((_, i) => !decide(i));
   $('resultNext').textContent = more ? 'Pusingan seterusnya →' : '🏁 Tamat — lihat papan';
   $('result').classList.add('show');
@@ -537,10 +529,8 @@ document.addEventListener('keydown', (e) => {
   if ($('result').classList.contains('show')) $('resultNext').click(); else toggle();
 });
 document.querySelector('.stage').addEventListener('click', (e) => {
-  const mk = e.target.closest('.mk'); const undo = e.target.closest('.mk-undo'); const redo = e.target.closest('.redo');
-  if (mk) { const t = S.teams[+mk.dataset.i]; t[mk.dataset.k]++; SFX.mark(mk.dataset.k === 'tick'); save(); render(); }
-  else if (undo) { const t = S.teams[+undo.dataset.i]; if (t.tick || t.cross) { if (confirm(`Kosongkan tanda ✓ dan ✗ untuk ${t.name}?`)) { t.tick = 0; t.cross = 0; save(); render(); } } }
-  else if (redo && !running) { S.teams[MATCHES[S.match][+redo.dataset.redo]].time = null; S.side = +redo.dataset.redo; elapsed = 0; save(); render(); }
+  const redo = e.target.closest('.redo');
+  if (redo && !running) { S.teams[MATCHES[S.match][+redo.dataset.redo]].time = null; S.side = +redo.dataset.redo; elapsed = 0; save(); render(); }
 });
 $('board').addEventListener('click', (e) => {
   const card = e.target.closest('.match'); if (!card || running) return;
@@ -550,13 +540,13 @@ $('board').addEventListener('click', (e) => {
 $('resetRoundBtn').addEventListener('click', () => {
   if (running) return;
   const [a, b] = MATCHES[S.match];
-  if (!confirm(`Ulang Pusingan ${S.match + 1}? Masa dan tanda ${S.teams[a].name} dan ${S.teams[b].name} akan dikosongkan.`)) return;
+  if (!confirm(`Ulang Pusingan ${S.match + 1}? Masa ${S.teams[a].name} dan ${S.teams[b].name} akan dikosongkan.`)) return;
   [a, b].forEach((i) => Object.assign(S.teams[i], { time: null, tick: 0, cross: 0 }));
   S.side = 0; elapsed = 0; save(); render();
 });
 $('resetAllBtn').addEventListener('click', () => {
   if (running) return;
-  if (!confirm('Set semula SEMUA pusingan? Semua masa dan tanda akan dipadam (nama kumpulan dikekalkan).')) return;
+  if (!confirm('Set semula SEMUA pusingan? Semua masa akan dipadam (nama kumpulan dikekalkan).')) return;
   const names = S.teams.map((t) => ({ name: t.name, emoji: t.emoji }));
   S = freshState(); names.forEach((n, i) => Object.assign(S.teams[i], n));
   elapsed = 0; save(); render();
