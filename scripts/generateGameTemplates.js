@@ -85,9 +85,9 @@ const mixkataRows = [
   [1, 'Air manakah KATA GANDA?', 'kedai', 'kawan-kawan', '', '', 'B'],
   [2, 'Air manakah KATA GANDA?', 'cawan', 'cawan-cawan', 'minuman', '', 'B'],
   [2, 'Tolong Bobo! Suapkan air KATA GANDA.', 'pagi-pagi', 'pagi', 'petang', '', 'A'],
-  [3, 'Ada DUA air KATA GANDA! Suapkan kedua-duanya.', 'duit-duit', 'baki', 'kuih-kuih', 'pembeli', 'A,C'],
-  [3, 'Cari DUA air KATA GANDA untuk Bobo.', 'kedai', 'gelas-gelas', 'minuman', 'botol-botol', 'B,D'],
-  [3, 'Hati-hati! Pilih DUA kata ganda yang BETUL.', 'kawan kawan', 'kawan-kawan', 'cawan-cawan', 'berkawan', 'B,C'],
+  [3, 'Suapkan air KATA GANDA kepada Bobo.', 'duit-duit', 'baki', 'kuih-kuih', 'pembeli', 'A,C'],
+  [3, 'Cari air KATA GANDA untuk Bobo.', 'kedai', 'gelas-gelas', 'minuman', 'botol-botol', 'B,D'],
+  [3, 'Hati-hati! Pilih kata ganda yang BETUL.', 'kawan kawan', 'kawan-kawan', 'cawan-cawan', 'berkawan', 'B,C'],
 ];
 const wbMix = XLSX.utils.book_new();
 const wsMix = XLSX.utils.aoa_to_sheet(mixkataRows);
