@@ -75,23 +75,23 @@ XLSX.writeFile(wbApitan, path.join(outDir, 'templat-imbuhan-apitan.xlsx'));
 
 
 // ------------------------------------------------------------------
-// Templat: MIX-KATA (Suap Si Bubu) - public/game-mixkata.html
-// Level 1 = 2 pilihan, Level 2 = 3 pilihan, Level 3 = 4 pilihan.
-// Kosongkan Pilihan C/D yang tidak digunakan.
+// Templat: MIX-KATA (Suap Bobo) - public/game-mixkata.html
+// Level 1 = 2 pilihan (1 betul), Level 2 = 3 pilihan (1 betul),
+// Level 3 = 4 pilihan (2 betul, tulis cth "A,C"). Kosongkan pilihan tak guna.
 // ------------------------------------------------------------------
 const mixkataRows = [
-  ['Level', 'Soalan', 'Pilihan A', 'Pilihan B', 'Pilihan C', 'Pilihan D', 'Jawapan Betul (A/B/C/D)'],
-  [1, 'Si Bubu mahu minuman KATA GANDA! Suap cawan yang betul.', 'roti-roti', 'roti', '', '', 'A'],
-  [1, 'Cawan manakah KATA GANDA?', 'kedai', 'kawan-kawan', '', '', 'B'],
-  [2, 'Cawan manakah KATA GANDA?', 'cawan', 'cawan-cawan', 'minuman', '', 'B'],
-  [2, 'Si Bubu lapar! Suap cawan KATA GANDA.', 'pagi-pagi', 'pagi', 'petang', '', 'A'],
-  [3, 'Cawan manakah KATA GANDA?', 'duit', 'baki', 'duit-duit', 'pembeli', 'C'],
-  [3, 'Cepat! Suap cawan KATA GANDA.', 'kuih-kuih', 'kuih', 'kek', 'kedai', 'A'],
-  [3, 'Hati-hati! Yang mana kata ganda yang BETUL?', 'kawan kawan', 'kawan-kawan', 'berkawan', 'kawan', 'B'],
+  ['Level', 'Soalan', 'Pilihan A', 'Pilihan B', 'Pilihan C', 'Pilihan D', 'Jawapan Betul (cth: A atau A,C)'],
+  [1, 'Bobo haus! Suapkan air KATA GANDA.', 'roti-roti', 'roti', '', '', 'A'],
+  [1, 'Air manakah KATA GANDA?', 'kedai', 'kawan-kawan', '', '', 'B'],
+  [2, 'Air manakah KATA GANDA?', 'cawan', 'cawan-cawan', 'minuman', '', 'B'],
+  [2, 'Tolong Bobo! Suapkan air KATA GANDA.', 'pagi-pagi', 'pagi', 'petang', '', 'A'],
+  [3, 'Ada DUA air KATA GANDA! Suapkan kedua-duanya.', 'duit-duit', 'baki', 'kuih-kuih', 'pembeli', 'A,C'],
+  [3, 'Cari DUA air KATA GANDA untuk Bobo.', 'kedai', 'gelas-gelas', 'minuman', 'botol-botol', 'B,D'],
+  [3, 'Hati-hati! Pilih DUA kata ganda yang BETUL.', 'kawan kawan', 'kawan-kawan', 'cawan-cawan', 'berkawan', 'B,C'],
 ];
 const wbMix = XLSX.utils.book_new();
 const wsMix = XLSX.utils.aoa_to_sheet(mixkataRows);
-wsMix['!cols'] = [{ wch: 8 }, { wch: 48 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 24 }];
+wsMix['!cols'] = [{ wch: 8 }, { wch: 48 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 30 }];
 XLSX.utils.book_append_sheet(wbMix, wsMix, 'Soalan MIX-KATA');
 XLSX.writeFile(wbMix, path.join(outDir, 'templat-mixkata.xlsx'));
 
