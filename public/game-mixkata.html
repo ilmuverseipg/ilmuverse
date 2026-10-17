@@ -287,6 +287,7 @@ function setupQuestion() {
 // ====================================================================
 // INPUT: tetikus/sentuh + GENGGAM tangan (MediaPipe Hands)
 // ====================================================================
+const GRIP = { close: 1.42, open: 1.65, frames: 3, lostMs: 750 }; // kepekaan genggam
 const IN = { x: -999, y: -999, tx: -999, ty: -999, down: false, active: false, grip: 0, hand: false, lastDown: false, seen: 0 };
 cv.addEventListener('pointerdown', (e) => { ac(); if (G.state === 'hello') skipHello(); if (G.ctrl === 'mouse') { IN.tx = IN.x = e.clientX; IN.ty = IN.y = e.clientY; IN.down = true; IN.active = true; } });
 cv.addEventListener('pointermove', (e) => { if (G.ctrl === 'mouse') { IN.tx = e.clientX; IN.ty = e.clientY; IN.active = true; } });
@@ -302,10 +303,14 @@ function lmToScreen(p) {
 function onHands(r) {
   if (r.multiHandLandmarks && r.multiHandLandmarks.length) {
     const lm = r.multiHandLandmarks[0], d = (a, b) => Math.hypot(lm[a].x - lm[b].x, lm[a].y - lm[b].y);
-    // Jari dikira "genggam" bila hujung jari lebih dekat ke pergelangan berbanding sendi tengahnya
-    let curled = 0; [[8, 6], [12, 10], [16, 14], [20, 18]].forEach(([tip, pip]) => { if (d(tip, 0) < d(pip, 0) * 1.02) curled++; });
-    IN.grip = curled / 4;
-    if (!IN.down && curled >= 3) IN.down = true; else if (IN.down && curled <= 1) IN.down = false;
+    // Ukur "bukaan" tangan: jarak hujung jari ke pergelangan / jarak buku jari ke pergelangan
+    // (tangan terbuka ~1.9, genggam ~1.0). Dilicinkan + histeresis lebar supaya genggaman tak terlepas.
+    const open = [[8, 5], [12, 9], [16, 13], [20, 17]].reduce((sum, [tip, mcp]) => sum + d(tip, 0) / (d(mcp, 0) || 1e-3), 0) / 4;
+    IN.openS = IN.openS == null ? open : IN.openS * 0.55 + open * 0.45;
+    IN.grip = Math.max(0, Math.min(1, (1.75 - IN.openS) / 0.4));
+    if (!IN.down) { if (IN.openS < GRIP.close) { IN.down = true; IN.openFrames = 0; } }
+    else if (IN.openS > GRIP.open) { IN.openFrames = (IN.openFrames || 0) + 1; if (IN.openFrames >= GRIP.frames) IN.down = false; }
+    else IN.openFrames = 0;
     // Kursor = tengah tapak tangan (stabil walaupun tangan digenggam)
     const ids = [0, 5, 9, 13, 17], c = { x: ids.reduce((s, i) => s + lm[i].x, 0) / 5, y: ids.reduce((s, i) => s + lm[i].y, 0) / 5 };
     const p = lmToScreen(c); IN.tx = p.x; IN.ty = p.y; IN.active = true; IN.hand = true; IN.seen = performance.now();
@@ -683,8 +688,8 @@ function drawBear() {
 }
 function drawBubble() {
   const b = bearPos(), R = b.R; let text = null, big = false;
-  if (G.state === 'hello') { const h = G.hello; text = HELLO[Math.min(h.line, HELLO.length - 1)].slice(0, h.chars); big = true; if (!text) return; }
-  else if (G.bubble && G.bubble.t < 1.3) text = G.bubble.text;
+  if (G.state === 'hello') return;
+  if (G.bubble && G.bubble.t < 1.3) text = G.bubble.text;
   else if (G.state === 'oops') text = 'Bukan yang ini…';
   else if (G.state === 'play' && G.held && Math.hypot(G.held.x - mouthPos().x, G.held.y - mouthPos().y) < mouthPos().r * 2.4) text = 'Aaaa…';
   else if (G.state === 'play' && mood() === 'starving') text = 'Hausnya…!';
@@ -751,7 +756,7 @@ function springCups(dt) {
 }
 function update(dt) {
   const B = G.bear;
-  if (G.ctrl === 'hand' && IN.hand && performance.now() - IN.seen > 300) { IN.hand = false; IN.active = false; IN.down = false; }
+  if (G.ctrl === 'hand' && IN.hand && performance.now() - IN.seen > (IN.down ? GRIP.lostMs : 300)) { IN.hand = false; IN.active = false; IN.down = false; }
   const k = G.ctrl === 'hand' ? 0.45 : 1; IN.x += (IN.tx - IN.x) * k; IN.y += (IN.ty - IN.y) * k;
   const m = mouthPos();
   B.blink -= dt; if (B.blink < -3 - Math.random() * 3) B.blink = 0.12;
@@ -776,7 +781,7 @@ function update(dt) {
     G.hp -= info.decay * G.speed * dt;
     if (G.hp < 25 && G.t - G.lastCry > 3.4) { G.lastCry = G.t; SFX.thirsty(); }
     if (G.hp <= 0) { G.hp = 0; die(); }
-    if (justDown && !G.held) {
+    if (pressed && !G.held && (justDown || G.ctrl === 'hand')) {
       const { w, h } = cupSize(), reach = Math.max(w, h) * (G.ctrl === 'hand' ? 0.8 : 0.6); let best = null, bd = 1e9;
       G.cups.forEach((c) => { if (c.eaten) return; const d = Math.hypot(IN.x - c.x, (IN.y - c.y) * 0.8); if (d < reach && d < bd) { bd = d; best = c; } });
       if (best) { G.held = best; best.held = true; best.ox = best.x - IN.x; best.oy = best.y - IN.y; SFX.pick(); }
@@ -848,7 +853,7 @@ function render() {
   G.floaters.forEach((f) => { const e = ease.outCubic(clamp(f.t / 1.4, 0, 1)); ctx.save(); ctx.globalAlpha = 1 - e; ctx.font = F(30 * U); ctx.textAlign = 'center'; ctx.lineWidth = 6 * U; ctx.strokeStyle = '#fff'; ctx.strokeText(f.text, f.x, f.y - e * 70 * U); ctx.fillStyle = f.color; ctx.fillText(f.text, f.x, f.y - e * 70 * U); ctx.restore(); });
   if (G.state === 'oops' && G.oops) drawOops();
   if (G.state === 'intro') drawIntro();
-  if (G.state === 'hello') { ctx.save(); ctx.font = F(16 * U, 600); ctx.fillStyle = 'rgba(125,11,16,.7)'; ctx.textAlign = 'center'; ctx.fillText('Ketik skrin untuk teruskan ▶', W / 2, H - 22 * U); ctx.restore(); }
+  if (G.state === 'hello') drawCaption();
   if (G.ctrl === 'hand' && IN.active && ['play', 'intro', 'oops', 'eating'].includes(G.state)) {
     ctx.save(); const R = 28 * U;
     ctx.beginPath(); ctx.arc(IN.x, IN.y, R, 0, Math.PI * 2); ctx.fillStyle = IN.down ? 'rgba(255,200,61,.6)' : 'rgba(255,255,255,.35)'; ctx.fill();
@@ -861,6 +866,23 @@ function render() {
     ctx.save(); rr(px, py, pw, ph, 14 * U); ctx.clip(); ctx.translate(px + pw, py); ctx.scale(-1, 1); ctx.globalAlpha = 0.9; ctx.drawImage(vid, 0, 0, pw, ph); ctx.restore();
     ctx.save(); rr(px, py, pw, ph, 14 * U); ctx.lineWidth = 4 * U; ctx.strokeStyle = IN.hand ? '#22b573' : '#fff'; ctx.stroke(); ctx.restore();
   }
+}
+function drawCaption() {
+  // Ayat sapaan Bobo: kapsyen BESAR di bahagian bawah skrin
+  const h = G.hello, full = HELLO[Math.min(h.line, HELLO.length - 1)], text = full.slice(0, h.chars);
+  const px = Math.min(76 * U, W * 0.072), maxW = W * 0.8;
+  let fs = px, lines; do { lines = wrapLines(full, maxW - 60 * U, fs); fs -= 2; } while (lines.length > 2 && fs > 20);
+  fs += 2; const lh = fs * 1.15, bh = lines.length * lh + 70 * U, bw = Math.min(maxW, Math.max(...lines.map((l) => { ctx.font = F(fs); return ctx.measureText(l).width; })) + 70 * U);
+  const pop = ease.outBack(clamp(h.chars / 6, 0, 1)), bx = W / 2 - bw / 2, by = H - bh - 24 * U;
+  ctx.save(); ctx.translate(W / 2, by + bh / 2); ctx.scale(0.85 + 0.15 * pop, 0.85 + 0.15 * pop); ctx.translate(-W / 2, -(by + bh / 2));
+  ctx.shadowColor = 'rgba(0,0,0,.3)'; ctx.shadowBlur = 20 * U; ctx.shadowOffsetY = 8 * U;
+  rr(bx, by, bw, bh, 30 * U); ctx.fillStyle = '#fff'; ctx.fill(); ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+  ctx.lineWidth = 7 * U; ctx.strokeStyle = '#e3242b'; ctx.stroke();
+  // tunjuk teks ikut taipan (baris demi baris)
+  ctx.font = F(fs); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#7d0b10';
+  let left = text.length; lines.forEach((l, i) => { const part = l.slice(0, Math.max(0, left)); left -= l.length + 1; ctx.fillText(part, W / 2, by + 30 * U + lh * (i + 0.5)); });
+  ctx.font = F(17 * U, 600); ctx.fillStyle = 'rgba(125,11,16,.6)'; ctx.fillText('Ketik skrin untuk teruskan ▶', W / 2, by + bh - 20 * U);
+  ctx.restore();
 }
 function drawOops() {
   const t = G.oops.t, inE = ease.outElastic(clamp(t / 0.6, 0, 1)), out = t > 1.0 ? clamp((t - 1.0) / 0.25, 0, 1) : 0;

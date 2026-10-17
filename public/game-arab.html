@@ -207,6 +207,8 @@
   .icon-majmuk .ans{ width:24px; height:22px; border-radius:5px; border:2px dashed #ffcc00; display:flex; align-items:center; justify-content:center; font-size:12px; }
 
   /* Mod Susun Ayat: deretan kepingan bernombor */
+  .mode-card[data-mode="kaunter"]{ border-left-color: #f5841f; }
+  .mode-card[data-mode="kaunter"]:hover{ border-left-color: #f5841f; box-shadow: 0 0 20px rgba(245,132,31,.35); }
   .mode-card[data-mode="mixkata"]{ border-left-color: #e3242b; }
   .mode-card[data-mode="mixkata"]:hover{ border-left-color: #e3242b; box-shadow: 0 0 20px rgba(227,36,43,.35); }
   .mode-card[data-mode="susun"]{ border-left-color: #b18cff; }
@@ -335,6 +337,7 @@
 
       <button id="startBtn" class="btn-cyber w-full rounded-lg py-4 font-orbitron font-bold text-lg tracking-widest" disabled>SETERUSNYA →</button>
       <a href="/game-mixkata.html" class="block mt-3 rounded-lg py-3 text-center font-orbitron font-bold tracking-widest text-white" style="background:linear-gradient(135deg,#e3242b,#b3151b);border:2px solid rgba(255,255,255,.35);box-shadow:0 0 18px rgba(227,36,43,.35)">🧋 MIX-KATA: SUAP BOBO <span class="font-kanit font-semibold tracking-normal text-sm">(Kata Ganda)</span></a>
+      <a href="/kaunter-lapar.html" class="block mt-2 rounded-lg py-3 text-center font-orbitron font-bold tracking-widest text-white" style="background:linear-gradient(135deg,#f5841f,#d6409f);border:2px solid rgba(255,255,255,.35);box-shadow:0 0 18px rgba(245,132,31,.35)">⏱ KAUNTER LAPAR 3D <span class="font-kanit font-semibold tracking-normal text-sm">(Pemasa 6 Kumpulan)</span></a>
       <div class="text-center mt-4 flex items-center justify-center gap-5">
         <a href="/guru.html" class="text-sm font-kanit font-semibold text-slate-300 hover:text-cyan-300 underline">← Ilmuverse</a>
         <a href="/game-arab-admin.html" class="text-sm font-kanit font-semibold text-slate-300 hover:text-cyan-300 underline">⚙ Edit kandungan pelajaran (Panel Guru)</a>
@@ -394,6 +397,11 @@
           </div></div>
           <div class="mode-name">MOD SUSUN AYAT</div>
           <div class="mode-desc">Cubit &amp; seret kepingan ayat ke petak mengikut urutan yang betul — sesuai untuk maksud, definisi, doa atau ayat (Jawi/Rumi).</div>
+        </button>
+        <button class="mode-card" data-mode="kaunter">
+          <div class="mode-icon" style="font-size:34px;line-height:1">⏱🧋</div>
+          <div class="mode-name">KAUNTER LAPAR 3D</div>
+          <div class="mode-desc">Pemasa kelas 6 kumpulan: 6 pelanggan 3D makin lapar ikut masa. Tekan nama kumpulan yang siap = pelanggan kenyang. Soalan setiap pusingan melalui templat.</div>
         </button>
         <button class="mode-card" data-mode="mixkata">
           <div class="mode-icon" style="font-size:34px;line-height:1">🧋🐻‍❄️</div>
@@ -2557,6 +2565,7 @@ async function chooseLesson(lessonId) {
 async function selectModeAndStart(mode) {
   // Mod MIX-KATA ialah permainan berasingan (soalan sendiri dlm templat Excel)
   if (mode === 'mixkata') { window.location.href = '/game-mixkata.html'; return; }
+  if (mode === 'kaunter') { window.location.href = '/kaunter-lapar.html'; return; }
   // Sahkan topik ini ada kandungan yg cukup utk mod yg dipilih - Mod Tembak
   // guna tembakQuestions (tempat edit berasingan), Padan/Isyarat guna words.
   if (mode === 'tembak' && (!currentLesson.tembakQuestions || currentLesson.tembakQuestions.length < 1)) {
