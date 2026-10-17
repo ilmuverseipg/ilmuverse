@@ -138,15 +138,15 @@ const DEFAULT_QS = [
   { level: 1, q: 'Air manakah KATA GANDA?', opts: ['kedai', 'kawan-kawan'], ans: [1] },
   { level: 2, q: 'Air manakah KATA GANDA?', opts: ['cawan', 'cawan-cawan', 'minuman'], ans: [1] },
   { level: 2, q: 'Tolong Bobo! Suapkan air KATA GANDA.', opts: ['pagi-pagi', 'pagi', 'petang'], ans: [0] },
-  { level: 3, q: 'Ada DUA air KATA GANDA! Suapkan kedua-duanya.', opts: ['duit-duit', 'baki', 'kuih-kuih', 'pembeli'], ans: [0, 2] },
-  { level: 3, q: 'Cari DUA air KATA GANDA untuk Bobo.', opts: ['kedai', 'gelas-gelas', 'minuman', 'botol-botol'], ans: [1, 3] },
-  { level: 3, q: 'Hati-hati! Pilih DUA kata ganda yang BETUL.', opts: ['kawan kawan', 'kawan-kawan', 'cawan-cawan', 'berkawan'], ans: [1, 2] },
+  { level: 3, q: 'Suapkan air KATA GANDA kepada Bobo.', opts: ['duit-duit', 'baki', 'kuih-kuih', 'pembeli'], ans: [0, 2] },
+  { level: 3, q: 'Cari air KATA GANDA untuk Bobo.', opts: ['kedai', 'gelas-gelas', 'minuman', 'botol-botol'], ans: [1, 3] },
+  { level: 3, q: 'Hati-hati! Pilih kata ganda yang BETUL.', opts: ['kawan kawan', 'kawan-kawan', 'cawan-cawan', 'berkawan'], ans: [1, 2] },
 ];
 const LS_KEY = 'ilmuverse_mixkata_soalan_v2';
 const LEVEL_INFO = {
-  1: { decay: 2.2, label: 'Level 1', sub: '2 cawan • 1 jawapan betul', bpm: 128 },
-  2: { decay: 3.3, label: 'Level 2', sub: '3 cawan • 1 jawapan betul • Bobo makin haus!', bpm: 142 },
-  3: { decay: 4.4, label: 'Level 3', sub: '4 cawan • 2 jawapan betul • Cepat!', bpm: 158 },
+  1: { decay: 2.2, label: 'Level 1', sub: '2 cawan', bpm: 128 },
+  2: { decay: 3.3, label: 'Level 2', sub: '3 cawan • Bobo makin haus!', bpm: 142 },
+  3: { decay: 4.4, label: 'Level 3', sub: '4 cawan • Cepat!', bpm: 158 },
 };
 const FEED = 28, WRONG_COST = 6, START_HP = 72;
 const HELLO = ['Hai, saya Bobo!', 'Bobo tengah haus ni!', 'Tolong Bobo suapkan air kata ganda!'];
@@ -384,7 +384,7 @@ function feedCup(c) {
     floater(m.x, m.y - bearPos().R * 1.95, '+' + pts + ' mata', '#f5a524');
     for (let i = 0; i < 26; i++) burst(m.x, m.y, ['#ff5c8a', '#ffc83d', '#3ccf91', '#5ab8ff', '#3a1f14'][i % 5], i % 3 === 0 ? 'heart' : 'circle');
     const left = needLeft();
-    G.bubble = { text: left > 0 ? 'Sedap! Lagi satu!' : ['Nyam nyam!', 'Sedapnya!', 'Terima kasih!', 'Segarnya!'][Math.floor(Math.random() * 4)], t: 0 };
+    G.bubble = { text: left > 0 ? 'Sedapnya!' : ['Nyam nyam!', 'Sedapnya!', 'Terima kasih!', 'Segarnya!'][Math.floor(Math.random() * 4)], t: 0 };
   } else {
     // SALAH: tidak mati - "KURANG TEPAT", cawan melantun balik, cuba lagi
     G.state = 'oops'; G.stateT = 0; G.oops = { t: 0, word: c.text };
@@ -839,15 +839,6 @@ function render() {
   G.cups.filter((c) => !c.held).forEach(drawCup);
   if (G.held) drawCup(G.held);
   drawBubble();
-  // tanda "2 jawapan betul" untuk Level 3
-  if (G.cups.length && (G.state === 'play' || G.state === 'oops')) {
-    const need = G.cups.filter((c) => c.correct).length;
-    if (need > 1) {
-      const left = needLeft(), t = `🧋 Ada ${need} jawapan betul • tinggal ${left}`; ctx.save(); ctx.font = F(20 * U); const tw = ctx.measureText(t).width;
-      const { h } = cupSize(), y = G.cups[0].hy - h * 0.82; rr(W / 2 - tw / 2 - 16 * U, y - 18 * U, tw + 32 * U, 36 * U, 18 * U); ctx.fillStyle = '#ffc83d'; ctx.fill();
-      ctx.fillStyle = '#7d0b10'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(t, W / 2, y + 1); ctx.restore();
-    }
-  }
   G.particles.forEach((p) => { ctx.save(); ctx.globalAlpha = clamp(p.life, 0, 1); ctx.fillStyle = p.color; ctx.translate(p.x, p.y); ctx.rotate(p.rot);
     if (p.shape === 'heart') heart(0, -p.size / 2, p.size); else if (p.shape === 'rect') ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2); else { ctx.beginPath(); ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2); ctx.fill(); } ctx.restore(); });
   G.floaters.forEach((f) => { const e = ease.outCubic(clamp(f.t / 1.4, 0, 1)); ctx.save(); ctx.globalAlpha = 1 - e; ctx.font = F(30 * U); ctx.textAlign = 'center'; ctx.lineWidth = 6 * U; ctx.strokeStyle = '#fff'; ctx.strokeText(f.text, f.x, f.y - e * 70 * U); ctx.fillStyle = f.color; ctx.fillText(f.text, f.x, f.y - e * 70 * U); ctx.restore(); });

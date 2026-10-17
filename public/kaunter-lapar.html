@@ -24,7 +24,7 @@
   #scene{ position:fixed; inset:0; }
   #scene canvas{ display:block; }
   /* HUD */
-  #hud{ position:fixed; left:0; right:0; top:0; display:flex; align-items:flex-start; justify-content:space-between; padding:10px 14px; pointer-events:none; z-index:4; }
+  #hud{ position:fixed; left:0; right:0; top:0; display:flex; align-items:flex-start; justify-content:flex-end; padding:10px 14px; pointer-events:none; z-index:4; }
   #hud > *{ pointer-events:auto; }
   .pill{ background:rgba(255,255,255,.95); border-radius:999px; padding:8px 16px; font-weight:700; color:var(--red-dd); box-shadow:0 4px 0 rgba(0,0,0,.15); font-size:18px; }
   #tools{ display:flex; gap:8px; }
@@ -93,6 +93,8 @@
   .big{ font-size:clamp(36px,6vw,60px); text-align:center; margin:0; line-height:1.05; }
   #center{ position:fixed; left:50%; top:46%; transform:translate(-50%,-50%); z-index:8; pointer-events:none; text-align:center; font-weight:700; color:#fff; -webkit-text-stroke:3px var(--red-dd); text-shadow:0 8px 0 rgba(125,11,16,.5); font-size:clamp(48px,10vw,130px); opacity:0; }
   #center.show{ animation: zoom .9s cubic-bezier(.2,1.6,.4,1) forwards; }
+  #center.hold{ animation: zoomIn .35s cubic-bezier(.2,1.6,.4,1) forwards; font-size:clamp(90px,20vw,240px); }
+  @keyframes zoomIn{ 0%{ opacity:0; transform:translate(-50%,-50%) scale(.3) } 100%{ opacity:1; transform:translate(-50%,-50%) scale(1) } }
   @keyframes zoom{ 0%{ opacity:0; transform:translate(-50%,-50%) scale(.3) } 30%{ opacity:1; transform:translate(-50%,-50%) scale(1.1) } 70%{ opacity:1; transform:translate(-50%,-50%) scale(1) } 100%{ opacity:0; transform:translate(-50%,-50%) scale(1.15) } }
   #err3d{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; text-align:center; padding:30px; font-weight:600; font-size:20px; color:var(--red-dd); }
   @media (max-width:760px){ #bar{ grid-template-columns:repeat(3,1fr); } .tag{ width:110px; } .tag .nm{ font-size:12px; } #timer{ width:84px; height:84px; } #timerNum{ font-size:32px; } .grid6{ grid-template-columns:repeat(2,1fr); } }
@@ -103,7 +105,6 @@
 <div id="err3d">Pelayar ini tidak menyokong 3D (WebGL). Cuba buka dengan Google Chrome terkini.</div>
 <div id="tags"></div>
 <div id="hud" style="display:none">
-  <div class="pill" id="roundPill">Pusingan 1</div>
   <div id="tools">
     <button id="tPause" title="Jeda (Space)">⏸</button>
     <button id="tMusic" title="Lagu">🎵</button>
@@ -117,20 +118,19 @@
 </div>
 <div id="bar" style="display:none"></div>
 <div id="center"></div>
+<div id="againWrap" style="display:none;position:fixed;left:50%;bottom:120px;transform:translateX(-50%);z-index:9;gap:12px"><button class="btn green" id="btnAgain">▶ MULA LAGI</button><button class="btn alt" id="btnMenu2">🏠 Menu</button></div>
 
 <!-- MENU -->
 <div id="menu" class="overlay">
   <div class="panel">
     <h1>KAUNTER LAPAR</h1>
-    <div class="sub">6 kumpulan • 6 pelanggan lapar • siapa siap dulu, pelanggan dia kenyang! 🧋</div>
+    <div class="sub">6 kumpulan • 6 pelanggan lapar • siap sebelum masa tamat, pelanggan kenyang! 🧋</div>
     <div class="field">⏱ Masa setiap pusingan: <input type="number" id="inTime" min="5" max="600" value="30"> saat</div>
     <div class="row" style="margin-top:18px">
-      <button class="btn green" id="btnStart">▶ BUKA KAUNTER</button>
+      <button class="btn green" id="btnStart">▶ MULA</button>
       <button class="btn alt" id="btnSet">⚙ Tetapan</button>
-      <button class="btn alt" id="btnQ">📋 Soalan</button>
     </div>
-    <div class="note" id="qSummary"></div>
-    <div class="note">Tekan <b>nama kumpulan</b> (atau kekunci <b>1–6</b>) bila kumpulan itu siap menjawab. <b>Space</b> = jeda.<br>
+    <div class="note">Tekan <b>MULA</b> → 3, 2, 1 → masa berjalan. Tekan <b>nama kumpulan</b> (atau kekunci <b>1–6</b>) bila kumpulan itu siap. <b>Space</b> = jeda.<br>
       <a href="/game-arab.html" style="color:#a2353b;font-weight:600">← Kembali ke Ilmuverse GameBox</a></div>
   </div>
 </div>
@@ -510,9 +510,9 @@ function refreshUI() {
     t.querySelector('.st').textContent = (MOOD_TXT[g.mood] || '') + (g.done || g.fainted ? '' : ` ${v}%`);
     t.classList.toggle('low', !g.done && !g.fainted && v < 25 && GAME.state === 'running');
     t.classList.toggle('done', g.done); t.classList.toggle('dead', g.fainted);
-    let rk = t.querySelector('.rank'); if (g.done) { if (!rk) { rk = document.createElement('div'); rk.className = 'rank'; t.appendChild(rk); } rk.textContent = '#' + g.rank; } else if (rk) rk.remove();
+    let rk = t.querySelector('.rank'); if (false) { if (!rk) { rk = document.createElement('div'); rk.className = 'rank'; t.appendChild(rk); } rk.textContent = '#' + g.rank; } else if (rk) rk.remove();
     b.querySelector('.n').textContent = g.name;
-    b.querySelector('.s').textContent = g.done ? `🥰 KENYANG #${g.rank}` : g.fainted ? '😵 PENGSAN' : GAME.state === 'running' || GAME.state === 'paused' ? `Lapar ${v}%` : 'Tekan bila siap';
+    b.querySelector('.s').textContent = g.done ? '🥰 KENYANG' : g.fainted ? '😵 PENGSAN' : GAME.state === 'running' || GAME.state === 'paused' ? `Lapar ${v}%` : 'Tekan bila siap';
     b.classList.toggle('done', g.done); b.classList.toggle('dead', g.fainted);
     let u = b.querySelector('.undo'); if (g.done && GAME.state === 'running') { if (!u) { u = document.createElement('span'); u.className = 'undo'; u.textContent = '↶'; b.appendChild(u); } } else if (u) u.remove();
   });
@@ -531,16 +531,15 @@ function setMood(g, m) {
   const changed = g.mood !== m; g.mood = m; drawFace(g.c.fx, m, g.blink > 0); g.c.ftex.needsUpdate = true;
   if (changed && GAME.state === 'running') { if (m === 'hungry' && g.i % 2 === 0) SFX.growl(); if (m === 'crying' && g.i % 3 === 0) SFX.cry(); }
 }
-function bigText(t) { const c = $('center'); c.textContent = t; c.classList.remove('show'); void c.offsetWidth; c.classList.add('show'); }
+function bigText(t, hold) { const c = $('center'); c.textContent = t; c.classList.remove('show', 'hold'); void c.offsetWidth; c.classList.add(hold ? 'hold' : 'show'); }
 function startRound(r) {
   ac(); GAME.round = r; const q = S.qs[r];
-  GAME.total = Math.max(5, (q && q.t) || S.time); GAME.remaining = GAME.total; GAME.lastSec = -1; GAME.order = 0; GAME.qShowAns = false;
+  void q; GAME.total = Math.max(5, S.time); GAME.remaining = GAME.total; GAME.lastSec = -1; GAME.order = 0; GAME.qShowAns = false;
   groups.forEach((g) => { g.done = false; g.fainted = false; g.rank = 0; g.doneT = 0; g.faintT = 0; g.life = 100; g.c.cup.visible = false; g.c.stars.visible = false; g.c.root.rotation.set(0, 0, 0); g.c.root.position.y = 0; setMood(g, 'happy'); });
   ['menu', 'sumPanel', 'qPanel', 'setPanel'].forEach(hide);
   $('hud').style.display = 'flex'; $('timerWrap').style.display = 'flex'; $('bar').style.display = 'grid';
-  $('roundPill').textContent = S.qs.length ? `Pusingan ${r + 1} / ${S.qs.length}` : `Pusingan ${r + 1}`;
-  renderQBanner(); updateTimer();
-  GAME.state = 'countdown'; GAME.cd = 3.2; GAME.cdLast = 4; refreshUI();
+  $('qBanner').style.display = 'none'; $('againWrap').style.display = 'none'; updateTimer();
+  GAME.state = 'countdown'; GAME.cdEnd = performance.now() + 3200; GAME.cd = 3.2; GAME.cdLast = 4; refreshUI();
 }
 function renderQBanner() {
   const q = S.qs[GAME.round], el = $('qBanner');
@@ -580,9 +579,8 @@ function endRound(allDone) {
     groups.forEach((g, k) => { if (!g.done) { g.fainted = true; g.faintT = 0; g.c.stars.visible = true; setMood(g, 'faint'); setTimeout(() => SFX.faint(), 300 + k * 90); } });
     if (groups.some((g) => g.fainted)) CAM.shake = 0.6;
   }
-  groups.forEach((g) => { if (g.done) g.score += POINTS[g.rank - 1] || 1; });
   refreshUI();
-  setTimeout(showSummary, allDone ? 2600 : 3000);
+  setTimeout(() => { if (GAME.state === 'ended') $('againWrap').style.display = 'flex'; }, allDone ? 2600 : 3000);
 }
 function showSummary() {
   const last = GAME.round + 1 >= roundCount();
@@ -612,14 +610,14 @@ function showFinal() {
   if (top.score > 0) { const tg = groups[top.i]; for (let k = 0; k < 3; k++) setTimeout(() => burst(new THREE.Vector3(tg.c.root.position.x, 3.5, 0.6), 60), k * 400); tg.done = true; tg.rank = 1; tg.animT = 0; tg.c.cup.visible = true; setMood(tg, 'full'); }
 }
 function goMenu() {
-  GAME.state = 'menu'; musicStop(); ['sumPanel', 'qPanel', 'setPanel'].forEach(hide); show('menu');
+  GAME.state = 'menu'; musicStop(); ['sumPanel', 'qPanel', 'setPanel'].forEach(hide); show('menu'); $('againWrap').style.display = 'none';
   $('hud').style.display = 'none'; $('timerWrap').style.display = 'none'; $('bar').style.display = 'none';
   groups.forEach((g) => { g.done = false; g.fainted = false; g.life = 100; g.c.cup.visible = false; g.c.stars.visible = false; g.c.root.rotation.set(0, 0, 0); setMood(g, 'happy'); });
   refreshUI(); refreshSummary();
 }
 function togglePause() {
   if (GAME.state === 'running') { GAME.state = 'paused'; musicStop(); $('tPause').textContent = '▶'; bigText('JEDA ⏸'); }
-  else if (GAME.state === 'paused') { GAME.state = 'running'; musicStart(); $('tPause').textContent = '⏸'; }
+  else if (GAME.state === 'paused') { GAME.state = 'running'; GAME.endAt = performance.now() + GAME.remaining * 1000; musicStart(); $('tPause').textContent = '⏸'; }
 }
 
 // ====================================================================
@@ -657,11 +655,11 @@ function animateGroup(g, dt) {
 function frame() {
   const raw = clock.getDelta(), dt = Math.min(0.05, raw), rdt = Math.min(1, raw); T += dt; // rdt = masa sebenar (untuk pemasa)
   if (GAME.state === 'countdown') {
-    GAME.cd -= rdt; const n = Math.ceil(GAME.cd);
-    if (n !== GAME.cdLast && n >= 1 && n <= 3) { GAME.cdLast = n; bigText(String(n)); SFX.tick(true); }
-    if (GAME.cd <= 0) { GAME.state = 'running'; bigText('BUKA KAUNTER!'); SFX.go(); MUSIC.bpm = 140; musicStart(); }
+    GAME.cd = (GAME.cdEnd - performance.now()) / 1000; const n = Math.ceil(GAME.cd);
+    if (n !== GAME.cdLast && n >= 1 && n <= 3) { GAME.cdLast = n; bigText(String(n), true); SFX.tick(true); }
+    if (GAME.cd <= 0) { GAME.state = 'running'; GAME.endAt = performance.now() + GAME.total * 1000; bigText('MULA!'); SFX.go(); MUSIC.bpm = 140; musicStart(); }
   } else if (GAME.state === 'running') {
-    GAME.remaining = Math.max(0, GAME.remaining - rdt);
+    GAME.remaining = Math.max(0, (GAME.endAt - performance.now()) / 1000);
     const sec = Math.ceil(GAME.remaining);
     if (sec !== GAME.lastSec) { GAME.lastSec = sec; if (sec <= 10 && sec > 0) SFX.tick(sec <= 5); if (sec === 10) MUSIC.bpm = 168; }
     updateTimer();
@@ -731,14 +729,15 @@ function applyLogo() {
   if (!S.logo) { logoImg = null; paintSign(); groups.forEach(paintCounter); return; }
   const im = new Image(); im.onload = () => { logoImg = im; paintSign(); groups.forEach(paintCounter); }; im.src = S.logo;
 }
-$('btnQ').onclick = () => { SFX.click(); hide('menu'); renderQTable(); show('qPanel'); };
+$('btnAgain').onclick = () => { SFX.click(); startRound(0); };
+$('btnMenu2').onclick = () => { SFX.click(); goMenu(); };
 $('btnQBack').onclick = () => { hide('qPanel'); show('menu'); refreshSummary(); };
 $('btnReset').onclick = () => { S.qs = DEFAULT_QS; lsSet(LS.qs, null); $('qErr').textContent = 'Soalan asal digunakan.'; renderQTable(); };
 $('btnNone').onclick = () => { S.qs = []; lsSet(LS.qs, []); $('qErr').textContent = 'Mod tanpa soalan: pemasa sahaja (pusingan tanpa had).'; renderQTable(); };
 $('btnUp').onclick = () => $('fileIn').click();
 $('btnTpl').onclick = downloadTemplate;
 $('fileIn').onchange = async (e) => { const f = e.target.files[0]; e.target.value = ''; if (f) await importFile(f); };
-function refreshSummary() { $('qSummary').textContent = S.qs.length ? `📋 ${S.qs.length} soalan (1 soalan setiap pusingan)` : '⏱ Mod pemasa sahaja (tanpa soalan)'; }
+function refreshSummary() {}
 function renderQTable() { $('qTable').innerHTML = S.qs.length ? '<table><tr><th>#</th><th>Soalan</th><th>Jawapan</th><th>Masa</th></tr>' + S.qs.map((q, k) => `<tr><td>${k + 1}</td><td>${esc(q.q)}${q.opts ? '<br><small>' + q.opts.map((o, i) => 'ABCD'[i] + '. ' + esc(o)).join(' • ') + '</small>' : ''}</td><td>${esc(q.a || '')}</td><td>${q.t ? q.t + 's' : 'ikut tetapan'}</td></tr>`).join('') + '</table>' : ''; }
 function loadScript(src) { return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('Gagal muat ' + src)); document.head.appendChild(s); }); }
 async function ensureXLSX() { if (!window.XLSX) await loadScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'); return window.XLSX; }
@@ -777,7 +776,7 @@ async function importFile(f) {
 $('tPause').onclick = () => { SFX.click(); togglePause(); };
 $('tMusic').onclick = () => { musicOn = !musicOn; $('tMusic').style.opacity = musicOn ? 1 : 0.4; if (musicOn && GAME.state === 'running') musicStart(); else musicStop(); };
 $('tSound').onclick = () => { soundOn = !soundOn; $('tSound').textContent = soundOn ? '🔊' : '🔇'; };
-$('tHome').onclick = () => { if (confirm('Kembali ke menu? Pusingan semasa akan tamat.')) goMenu(); };
+$('tHome').onclick = () => { if (GAME.state === 'ended' || confirm('Kembali ke menu? Masa semasa akan tamat.')) goMenu(); };
 
 window.__kl = { GAME, groups, toggleDone, startRound, parseRows, S };
 resize(); paintSign(); applyLogo(); refreshSummary(); groups.forEach((g) => setMood(g, 'happy')); refreshUI();
