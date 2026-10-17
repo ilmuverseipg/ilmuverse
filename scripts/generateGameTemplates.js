@@ -95,8 +95,27 @@ wsMix['!cols'] = [{ wch: 8 }, { wch: 48 }, { wch: 16 }, { wch: 16 }, { wch: 16 }
 XLSX.utils.book_append_sheet(wbMix, wsMix, 'Soalan MIX-KATA');
 XLSX.writeFile(wbMix, path.join(outDir, 'templat-mixkata.xlsx'));
 
+
+// ------------------------------------------------------------------
+// Templat: KAUNTER LAPAR 3D (pemasa 6 kumpulan) - public/kaunter-lapar.html
+// Satu soalan = satu pusingan. Masa kosong = ikut tetapan (lalai 30 saat).
+// ------------------------------------------------------------------
+const kaunterRows = [
+  ['Soalan', 'Jawapan', 'Masa (saat)'],
+  ['Senaraikan TIGA kata ganda penuh tentang benda di kedai.', 'Contoh: cawan-cawan, roti-roti, kuih-kuih', ''],
+  ["Bina SATU ayat menggunakan kata ganda 'kawan-kawan'.", 'Contoh: Kawan-kawan saya beratur di kaunter.', 60],
+  ["Betulkan ejaan ini: 'pembeli pembeli'", 'pembeli-pembeli', ''],
+  ['Masukkan 4 kad aiskrim KATA GANDA ke dalam Cawan Kata Ganda.', 'Semak dengan senarai jawapan set', 90],
+];
+const wbK = XLSX.utils.book_new();
+const wsK = XLSX.utils.aoa_to_sheet(kaunterRows);
+wsK['!cols'] = [{ wch: 60 }, { wch: 46 }, { wch: 12 }];
+XLSX.utils.book_append_sheet(wbK, wsK, 'Soalan');
+XLSX.writeFile(wbK, path.join(outDir, 'templat-kaunter-lapar.xlsx'));
+
 console.log('Templat dijana:');
 console.log(' -', path.join(outDir, 'templat-perkataan.xlsx'));
 console.log(' -', path.join(outDir, 'templat-soalan-tembak.xlsx'));
 console.log(' -', path.join(outDir, 'templat-imbuhan-apitan.xlsx'));
 console.log(' -', path.join(outDir, 'templat-mixkata.xlsx'));
+console.log(' -', path.join(outDir, 'templat-kaunter-lapar.xlsx'));
