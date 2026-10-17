@@ -106,6 +106,7 @@
 <div id="tags"></div>
 <div id="hud" style="display:none">
   <div id="tools">
+    <button id="tRemote" title="Kawal guna telefon">📱</button>
     <button id="tPause" title="Jeda (Space)">⏸</button>
     <button id="tMusic" title="Lagu">🎵</button>
     <button id="tSound" title="Bunyi">🔊</button>
@@ -129,9 +130,22 @@
     <div class="row" style="margin-top:18px">
       <button class="btn green" id="btnStart">▶ MULA</button>
       <button class="btn alt" id="btnSet">⚙ Tetapan</button>
+      <button class="btn alt" id="btnRemote">📱 Kawal guna telefon</button>
     </div>
     <div class="note">Tekan <b>MULA</b> → 3, 2, 1 → masa berjalan. Tekan <b>nama kumpulan</b> (atau kekunci <b>1–6</b>) bila kumpulan itu siap. <b>Space</b> = jeda.<br>
       <a href="/game-arab.html" style="color:#a2353b;font-weight:600">← Kembali ke Ilmuverse GameBox</a></div>
+  </div>
+</div>
+<!-- KAWALAN TELEFON -->
+<div id="remPanel" class="overlay hidden">
+  <div class="panel" style="width:min(580px,100%);text-align:center">
+    <h2>📱 Kawal guna telefon</h2>
+    <div class="sub" style="margin:4px 0 10px">Imbas kod QR ini dengan kamera telefon</div>
+    <div id="qr" style="display:inline-block;background:#fff;padding:10px;border-radius:16px;min-height:60px"></div>
+    <div style="font-size:16px;font-weight:600;margin-top:8px">atau buka <b id="remLink" style="word-break:break-all"></b> dan masukkan kod:</div>
+    <div id="remCode" style="font-size:64px;font-weight:700;color:var(--red);letter-spacing:10px;line-height:1.1">----</div>
+    <div id="remStat" class="note" style="font-size:16px;font-weight:600"></div>
+    <div class="row"><button class="btn small alt" id="btnNewCode">↻ Tukar kod</button><button class="btn" id="btnRemClose">✔ Tutup</button></div>
   </div>
 </div>
 <!-- TETAPAN -->
@@ -778,7 +792,50 @@ $('tMusic').onclick = () => { musicOn = !musicOn; $('tMusic').style.opacity = mu
 $('tSound').onclick = () => { soundOn = !soundOn; $('tSound').textContent = soundOn ? '🔊' : '🔇'; };
 $('tHome').onclick = () => { if (GAME.state === 'ended' || confirm('Kembali ke menu? Masa semasa akan tamat.')) goMenu(); };
 
-window.__kl = { GAME, groups, toggleDone, startRound, parseRows, S };
+// ====================================================================
+// KAWALAN TELEFON: telefon guru tekan butang -> skrin laptop berubah
+// (WebSocket /kaunter di pelayan Ilmuverse - lihat routes/kaunterRelay.js)
+// ====================================================================
+let BILIK = lsGet('kl_bilik', null);
+if (!BILIK) { BILIK = String(1000 + Math.floor(Math.random() * 9000)); lsSet('kl_bilik', BILIK); }
+const REM = { ws: null, alat: 0, retry: 0, last: '', online: /^https?:$/.test(location.protocol) };
+const remUrl = () => `${location.origin}/kaunter-alat.html?bilik=${BILIK}`;
+function remConnect() {
+  if (!REM.online) return;
+  let ws; try { ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/kaunter?bilik=${BILIK}&peranan=paparan`); } catch (e) { return; }
+  REM.ws = ws;
+  ws.onopen = () => { REM.retry = 0; REM.last = ''; remStatus(); };
+  ws.onmessage = (e) => { let d; try { d = JSON.parse(e.data); } catch (er) { return; } if (d.jenis === 'bilangan') { if (d.alat > REM.alat) { REM.last = ''; SFX.click(); } REM.alat = d.alat; remStatus(); } else if (d.jenis === 'arahan') remCommand(d); };
+  ws.onclose = () => { if (REM.ws === ws) { REM.ws = null; REM.alat = 0; remStatus(); setTimeout(remConnect, Math.min(10000, 1000 * ++REM.retry)); } };
+}
+function remCommand(d) {
+  if (d.a === 'mula') { if (GAME.state === 'menu' || GAME.state === 'ended') { if (d.masa >= 5) { S.time = d.masa; $('inTime').value = S.time; lsSet(LS.time, S.time); } hide('remPanel'); startRound(0); } }
+  else if (d.a === 'kumpulan') toggleDone(d.i);
+  else if (d.a === 'jeda') togglePause();
+  else if (d.a === 'menu') goMenu();
+}
+function remSend() {
+  if (!REM.ws || REM.ws.readyState !== 1) return;
+  const st = { st: GAME.state, rem: Math.ceil(GAME.state === 'countdown' ? Math.max(0, GAME.cd) : GAME.remaining), total: GAME.total, time: S.time, g: groups.map((g) => [g.name, g.done ? 1 : 0, g.fainted ? 1 : 0, Math.round(g.shown)]) };
+  const j = JSON.stringify(st); if (j !== REM.last) { REM.last = j; REM.ws.send(JSON.stringify({ jenis: 'keadaan', data: st })); }
+}
+function remStatus() {
+  const on = REM.ws && REM.ws.readyState === 1, b = $('tRemote');
+  b.style.background = REM.alat ? '#22b573' : 'rgba(255,255,255,.95)'; b.title = REM.alat ? `${REM.alat} telefon bersambung` : 'Kawal guna telefon';
+  $('remStat').innerHTML = !REM.online ? '⚠ Buka halaman ini melalui laman Ilmuverse (internet) untuk guna telefon.' : !on ? '🔴 Menyambung ke pelayan…' : REM.alat ? `🟢 ${REM.alat} telefon bersambung. Tekan butang di telefon!` : '🟡 Menunggu telefon…';
+}
+async function openRemote() {
+  ac(); SFX.click(); $('remCode').textContent = BILIK; $('remLink').textContent = remUrl().replace(/^https?:\/\//, '').replace(/\?.*$/, ''); remStatus(); show('remPanel');
+  try { if (!window.qrcode) await loadScript('https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js'); const q = window.qrcode(0, 'M'); q.addData(remUrl()); q.make(); $('qr').innerHTML = q.createSvgTag({ cellSize: 6, margin: 2, scalable: false }); }
+  catch (e) { $('qr').innerHTML = `<div style="padding:10px;font-weight:600">${esc(remUrl())}</div>`; }
+}
+$('btnRemote').onclick = openRemote; $('tRemote').onclick = openRemote;
+$('btnRemClose').onclick = () => { hide('remPanel'); };
+$('btnNewCode').onclick = () => { BILIK = String(1000 + Math.floor(Math.random() * 9000)); lsSet('kl_bilik', BILIK); if (REM.ws) { const w = REM.ws; REM.ws = null; w.close(); } REM.alat = 0; REM.retry = 0; remConnect(); openRemote(); };
+setInterval(remSend, 250);
+remConnect();
+
+window.__kl = { GAME, groups, toggleDone, startRound, parseRows, S, REM };
 resize(); paintSign(); applyLogo(); refreshSummary(); groups.forEach((g) => setMood(g, 'happy')); refreshUI();
 try { document.fonts && document.fonts.load('700 40px Fredoka').then(() => { paintSign(); groups.forEach(paintCounter); }); } catch (e) {}
 requestAnimationFrame(frame);

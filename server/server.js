@@ -19,6 +19,8 @@ const multer = require('multer');
 const gameLessonsRouter = require('../routes/gameLessons');
 // [KOTAK KUIZ MAGIK] Router ESP32 (butang A/B) - routes/kuizEsp32.js
 const kuizEsp32Router = require('../routes/kuizEsp32');
+// [KAUNTER LAPAR] Geganti WebSocket telefon guru <-> skrin laptop
+const kaunterRelay = require('../routes/kaunterRelay');
 
 const app = express();
 const server = http.createServer(app);
@@ -268,6 +270,8 @@ wss.on('connection', (ws, req) => {
     console.log('[WS] Aplikasi Guru disambung');
     updateStatusPeranti();
     ws.send(JSON.stringify({ jenis: 'game_state', data: gameState }));
+  } else if (url.startsWith('/kaunter')) {
+    kaunterRelay.sambung(ws, url);
   } else if (url === '/murid') {
     clients.murid.push(ws);
     console.log('[WS] Aplikasi Murid disambung');
@@ -278,6 +282,8 @@ wss.on('connection', (ws, req) => {
   ws.on('message', async (raw) => {
     let data;
     try { data = JSON.parse(raw); } catch { return; }
+
+    if (url.startsWith('/kaunter')) { kaunterRelay.mesej(ws, data); return; }
 
     if (url === '/esp32') {
       if (data.jenis === 'nfc_scan') await prosesNFC(data.uid);
@@ -315,6 +321,7 @@ wss.on('connection', (ws, req) => {
     else if (url === '/cam') { clients.cam = null; updateStatusPeranti(); }
     else if (url === '/guru') clients.guru = clients.guru.filter(c => c !== ws);
     else if (url === '/murid') clients.murid = clients.murid.filter(c => c !== ws);
+    else if (url.startsWith('/kaunter')) kaunterRelay.putus(ws);
     console.log(`[WS] Putus: ${url}`);
   });
 });
