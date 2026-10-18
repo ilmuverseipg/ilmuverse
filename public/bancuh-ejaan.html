@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+<title>Bancuh Ejaan Bobo Mixue 🧋</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!--
+  ILMUVERSE GAMEBOX - BANCUH EJAAN BOBO MIXUE (SP 3.3.2 (i) ejaan)
+  Level 1 & 2: GENGGAM huruf boba yang keluar dari mesin, seret ke petak cawan
+               ikut ejaan betul, BUKA tangan untuk lepas (Level 2 ada huruf pengacau).
+  Level 3:     MESIN AISKRIM - gerakkan kon untuk tangkap skop huruf ikut urutan ejaan.
+  Mod Pertarungan: 2 pemain (2 tangan / 2 sentuhan), skrin dibahagi dua.
+  Perkataan dari bobo-kit.js (24 perkataan Menu Ejaan Set 1-6) atau templat Excel.
+-->
+<style>
+  :root{ --red:#e3242b; --red-dd:#7d0b10; --cream:#fff7ec; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; height:100%; overflow:hidden; background:#ffe3c8; font-family:'Fredoka',system-ui,sans-serif; color:#3a1416; }
+  canvas{ position:fixed; inset:0; width:100vw; height:100vh; display:block; touch-action:none; }
+  video{ display:none; }
+  .overlay{ position:fixed; inset:0; display:flex; align-items:flex-end; justify-content:center; padding:16px 16px 22px; z-index:10; pointer-events:none; }
+  .overlay.center{ align-items:center; background:rgba(60,6,10,.5); backdrop-filter:blur(5px); pointer-events:auto; }
+  .overlay.hidden{ display:none; }
+  .panel{ pointer-events:auto; width:min(860px,100%); max-height:62vh; overflow:auto; background:rgba(255,247,236,.97); border-radius:26px; padding:16px 22px; box-shadow:0 12px 0 var(--red-dd), 0 24px 50px rgba(0,0,0,.4); border:4px solid #fff; animation:pop .5s cubic-bezier(.2,1.6,.4,1); }
+  .overlay.center .panel{ max-height:92vh; }
+  @keyframes pop{ from{ transform:scale(.7) translateY(30px); opacity:0 } to{ transform:none; opacity:1 } }
+  .row{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; align-items:center; margin:8px 0; }
+  .lbl{ font-weight:700; color:#a2353b; font-size:14px; text-transform:uppercase; min-width:92px; text-align:right; }
+  .chip{ font-family:inherit; font-weight:600; font-size:15px; padding:8px 13px; border-radius:999px; border:3px solid #f1c9cb; background:#fff; color:#7a3a3e; cursor:pointer; }
+  .chip.on{ border-color:var(--red); background:var(--red); color:#fff; }
+  .btn{ font-family:inherit; font-weight:700; font-size:20px; border:none; border-radius:18px; padding:13px 26px; cursor:pointer; color:#fff; background:var(--red); box-shadow:0 6px 0 var(--red-dd); }
+  .btn:active{ transform:translateY(5px); box-shadow:0 1px 0 var(--red-dd); }
+  .btn.green{ background:#22b573; box-shadow:0 6px 0 #127a4b; font-size:26px; padding:14px 40px; }
+  .btn.alt{ background:#fff; color:var(--red); box-shadow:0 6px 0 #e7c3c5; border:3px solid var(--red); }
+  .btn.small{ font-size:15px; padding:8px 14px; border-radius:14px; }
+  .note{ font-size:13px; color:#7a3a3e; text-align:center; }
+  .err{ color:#b3151b; font-weight:600; font-size:14px; white-space:pre-line; text-align:center; }
+  h2{ margin:0 0 6px; color:var(--red); text-align:center; font-size:30px; }
+  .big{ font-size:clamp(36px,6vw,62px); text-align:center; margin:0; line-height:1.05; color:var(--red); }
+  .stars{ text-align:center; font-size:46px; letter-spacing:6px; }
+  table{ width:100%; border-collapse:collapse; font-size:14px; background:#fff; border-radius:12px; overflow:hidden; margin-top:8px; }
+  th,td{ padding:5px 8px; border-bottom:1px solid #f3dcdd; text-align:left; } th{ background:#ffe3e4; }
+  #tools{ position:fixed; left:12px; bottom:12px; z-index:6; display:none; gap:8px; }
+  #tools button{ font-family:inherit; border:none; border-radius:14px; padding:8px 12px; background:rgba(255,255,255,.92); color:var(--red); cursor:pointer; box-shadow:0 4px 0 rgba(0,0,0,.18); font-size:18px; }
+  #hint{ position:fixed; left:50%; bottom:14px; transform:translateX(-50%); z-index:7; background:rgba(255,255,255,.95); border-radius:999px; padding:8px 18px; font-weight:600; font-size:15px; color:#7a3a3e; box-shadow:0 4px 0 rgba(0,0,0,.15); pointer-events:none; transition:opacity .4s; opacity:0; max-width:92vw; text-align:center; }
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<video id="vid" playsinline muted></video>
+<div id="hint"></div>
+<div id="tools"><button id="tMusic" title="Lagu">🎵</button><button id="tSound" title="Bunyi">🔊</button><button id="tHome" title="Menu">🏠</button></div>
+
+<!-- TAJUK / MENU -->
+<div id="menu" class="overlay">
+  <div class="panel">
+    <div class="row"><span class="lbl">Kawalan</span>
+      <button class="chip on" data-k="ctrl" data-v="hand">✊ Genggam tangan</button><button class="chip" data-k="ctrl" data-v="mouse">🖱️ Tetikus / Sentuh</button></div>
+    <div class="row"><span class="lbl">Pemain</span>
+      <button class="chip on" data-k="mode" data-v="solo">🙋 Seorang</button><button class="chip" data-k="mode" data-v="versus">⚔️ Pertarungan 2 Pemain</button></div>
+    <div class="row" id="setRow"><span class="lbl">Perkataan</span></div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn green" id="btnStart">▶ MULA</button>
+      <button class="btn alt small" id="btnWords">📋 Perkataan</button>
+      <button class="btn alt small" id="btnLogo">🏷 Logo</button>
+      <input type="file" id="logoIn" accept="image/*" style="display:none">
+    </div>
+    <div class="note"><b>Genggam</b> huruf boba, seret ke petak, <b>buka</b> tangan untuk lepas • Level 3: gerakkan kon untuk tangkap huruf ikut urutan • <a href="/game-arab.html" style="color:#a2353b">← GameBox</a></div>
+  </div>
+</div>
+
+<!-- PERKATAAN -->
+<div id="wordPanel" class="overlay center hidden">
+  <div class="panel">
+    <h2>📋 Perkataan</h2>
+    <div class="row">
+      <button class="btn small" id="btnTpl">⬇ Muat turun templat</button>
+      <button class="btn small green" style="font-size:15px;padding:8px 14px" id="btnUp">⬆ Muat naik</button>
+      <button class="btn small alt" id="btnReset">↺ Perkataan asal</button>
+      <input type="file" id="fileIn" accept=".xlsx,.xls,.csv" style="display:none">
+    </div>
+    <div class="note">Lajur: <b>Set</b> | <b>Perkataan Betul</b> | <b>Ejaan Salah</b> | <b>Gambar</b> (emoji, pilihan). Templat yang sama digunakan oleh Misi Penghantaran Ejaan.</div>
+    <div class="err" id="wErr"></div>
+    <div id="wTable"></div>
+    <div class="row"><button class="btn" id="btnWBack">✔ Siap</button></div>
+  </div>
+</div>
+
+<!-- LOGO -->
+<div id="logoPanel" class="overlay center hidden">
+  <div class="panel" style="text-align:center">
+    <h2>🏷 Logo Kedai</h2>
+    <div class="note" style="font-size:15px">Logo dipaparkan pada skrin tajuk dan mesin. Disimpan dalam pelayar komputer ini sahaja.</div>
+    <div class="row"><img id="logoPrev" style="max-width:220px;max-height:120px;background:#fff;border-radius:12px" alt=""></div>
+    <div class="row"><button class="btn small" id="btnLogoUp">⬆ Muat naik logo</button><button class="btn small alt" id="btnLogoX">✖ Buang</button><button class="btn small green" style="font-size:15px;padding:8px 14px" id="btnLogoBack">✔ Siap</button></div>
+  </div>
+</div>
+
+<!-- KEPUTUSAN -->
+<div id="result" class="overlay center hidden">
+  <div class="panel" style="text-align:center">
+    <p class="big" id="rTitle"></p>
+    <div class="stars" id="rStars"></div>
+    <div style="font-size:20px;font-weight:600" id="rMsg"></div>
+    <div class="note" style="font-size:15px" id="rDetail"></div>
+    <div class="row" style="margin-top:14px"><button class="btn green" style="font-size:20px" id="rAgain">↺ Main Semula</button><button class="btn alt" id="rMenu">🏠 Menu</button></div>
+  </div>
+</div>
+
+<script src="/bobo-kit.js"></script>
+<script>
+(() => {
+'use strict';
+const K = window.BoboKit, { clamp, F, rr, ease, SFX } = K;
+const $ = (id) => document.getElementById(id);
+const show = (id) => $(id).classList.remove('hidden'), hide = (id) => $(id).classList.add('hidden');
+const MEL = [72, 76, 79, 84, 79, 76, 74, null, 72, 74, 76, 72, 67, null, 69, 71, 72, 76, 79, 81, 79, 76, 77, 74, 72, null, 76, 74, 72, null, null, null];
+const BASS = [48, 43, 45, 41];
+const PCOL = ['#e3242b', '#2f7fe0'];
+const LV = {
+  1: { name: 'BANCUH EJAAN', sub: 'Genggam boba huruf & susun dalam petak cawan!', time: 45, decoy: 0, mode: 'drag' },
+  2: { name: 'BANCUH CABARAN', sub: 'Hati-hati! Ada huruf PENGACAU!', time: 40, decoy: 2, mode: 'drag' },
+  3: { name: 'MESIN AISKRIM', sub: 'Gerakkan kon & tangkap huruf IKUT URUTAN!', time: 50, decoy: 0, mode: 'catch' },
+};
+const BOBA = ['#3a2318', '#5b3a29', '#7a4b2a'];
+const SCOOP = ['#ff8fb1', '#7fe0b4', '#ffd84d', '#7cc7ff', '#b58cf0', '#ffa63d'];
+
+// ====================================================================
+// KANVAS
+// ====================================================================
+const cv = $('cv'), ctx = cv.getContext('2d');
+let W = 0, H = 0, DPR = 1, U = 1;
+function resize() { DPR = Math.min(window.devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0); U = Math.min(W / 1280, H / 800); bg = null; layoutPlayers(); }
+addEventListener('resize', resize);
+let bg = null;
+function paintBg() {
+  bg = document.createElement('canvas'); bg.width = W * DPR; bg.height = H * DPR; const c = bg.getContext('2d'); c.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#fff3e4'); g.addColorStop(1, '#ffd9bd'); c.fillStyle = g; c.fillRect(0, 0, W, H);
+  for (let x = 0; x < W; x += 80 * U) { c.fillStyle = 'rgba(255,150,150,.13)'; c.fillRect(x, 0, 40 * U, H); }
+  const st = 56 * U; for (let x = 0, i = 0; x < W + st; x += st, i++) { c.fillStyle = i % 2 ? '#fff' : '#e3242b'; c.fillRect(x, 0, st, 46 * U); c.beginPath(); c.arc(x + st / 2, 46 * U, st / 2, 0, Math.PI); c.fill(); }
+}
+
+// ====================================================================
+// KEADAAN
+// ====================================================================
+const S = { ctrl: 'hand', mode: 'solo', set: 'rawak' };
+const G = { state: 'title', t: 0, stT: 0, words: [], wi: 0, level: 1, hearts: 3, score: 0, stars: [], players: [], timeLeft: 0, timeMax: 0, banner: null, shake: 0, roundWinner: -1 };
+const PT = new K.Particles();
+let WORDS = K.loadWords();
+const curW = () => G.words[G.wi];
+
+function makePlayer(i) { return { i, rx: 0, rw: W, cur: K.makeCursor(), letters: [], slots: [], held: null, done: false, fill: 0, seal: 0, mistakes: 0, coneX: 0, falling: [], stack: [], spawnT: 0, pts: 0, msg: null, bobo: { mood: 'happy', t: 0 }, lastProgress: 0 }; }
+function layoutPlayers() {
+  const n = G.players.length || 1;
+  G.players.forEach((p, i) => { p.rx = n === 1 ? 0 : (W / 2) * i; p.rw = n === 1 ? W : W / 2; p.su = Math.min(p.rw / 1000, H / 800); computeGeo(p); });
+}
+function computeGeo(p) {
+  const su = p.su, n = p.slots.length || 4, top = 100 * su;
+  p.g = {
+    card: { x: p.rx + 24 * su, y: top + 18 * su, w: Math.min(300 * su, p.rw * 0.3), h: 230 * su },
+    mach: { x: p.rx + p.rw - 228 * su, y: top + 10 * su, w: 200 * su, h: 260 * su },
+    bobo: { x: p.rx + p.rw * 0.5, y: top + 120 * su, R: 66 * su },
+  };
+  const s = Math.min(84 * su, (p.rw - 60 * su) / n - 10 * su), cupB = H - 14 * su, cupT = cupB - 150 * su, sy = cupT - s - 20 * su;
+  p.g.box = s; p.g.cup = { cx: p.rx + p.rw / 2, top: cupT, bot: cupB, w: Math.max(260 * su, n * (s + 10 * su) + 20 * su) };
+  p.g.slotY = sy; p.g.counter = sy - 58 * su; p.g.r = Math.min(40 * su, s * 0.52);
+  p.slots.forEach((sl, k) => { sl.x = p.rx + p.rw / 2 + (k - (n - 1) / 2) * (s + 10 * su); sl.y = sy + s / 2; sl.s = s; });
+  // mod tangkap
+  p.g.slotTop = top + 30 * su; p.g.coneY = H - 90 * su;
+}
+
+// ====================================================================
+// INPUT
+// ====================================================================
+const vid = $('vid');
+function regionOf(x) { return G.players.length === 2 ? (x < W / 2 ? 0 : 1) : 0; }
+cv.addEventListener('pointerdown', (e) => { K.ac(); if (G.state === 'title') return; if (S.ctrl !== 'mouse') return; const p = G.players[regionOf(e.clientX)]; if (!p) return; p.cur.pointerId = e.pointerId; p.cur.dx = e.clientX; p.cur.dy = e.clientY; p.cur.tx = p.cur.x = e.clientX; p.cur.ty = p.cur.y = e.clientY; p.cur.down = true; p.cur.active = true; });
+cv.addEventListener('pointermove', (e) => { if (S.ctrl !== 'mouse') return; let p = G.players.find((q) => q.cur.pointerId === e.pointerId && q.cur.down); if (!p) p = G.players[regionOf(e.clientX)]; if (!p) return; p.cur.tx = e.clientX; p.cur.ty = e.clientY; p.cur.active = true; });
+addEventListener('pointerup', (e) => { if (S.ctrl !== 'mouse') return; G.players.forEach((p) => { if (p.cur.pointerId === e.pointerId) { p.cur.down = false; p.cur.pointerId = null; } }); });
+function feedHands() {
+  if (S.ctrl !== 'hand' || !K.hands.ready) return;
+  const hs = K.hands.list.slice();
+  G.players.forEach((p) => {
+    let best = null, bd = 1e9;
+    hs.forEach((h) => { if (G.players.length === 2 && regionOf(h.x) !== p.i) return; const d = p.cur.active ? Math.hypot(h.x - p.cur.x, h.y - p.cur.y) : 0; if (d < bd) { bd = d; best = h; } });
+    if (best && best.t !== p.cur.seen) { K.feedHand(p.cur, best); hs.splice(hs.indexOf(best), 1); }
+  });
+}
+
+// ====================================================================
+// ALIRAN
+// ====================================================================
+function hint(t, ms = 3000) { const h = $('hint'); h.textContent = t; h.style.opacity = 1; clearTimeout(hint._t); hint._t = setTimeout(() => (h.style.opacity = 0), ms); }
+function levelFor(i, n) { const a = Math.max(1, Math.round(n * 0.4)), b = Math.max(1, Math.round(n * 0.3)); return i < a ? 1 : i < a + b ? 2 : 3; }
+async function startGame() {
+  K.ac(); WORDS = K.loadWords();
+  G.words = K.pickWords(WORDS.words, S.set, 9);
+  if (!G.words.length) { alert('Tiada perkataan.'); return; }
+  G.players = S.mode === 'versus' ? [makePlayer(0), makePlayer(1)] : [makePlayer(0)];
+  layoutPlayers();
+  G.wi = 0; G.hearts = 3; G.score = 0; G.stars = []; G.level = 0;
+  hide('menu'); hide('result'); $('tools').style.display = 'flex';
+  K.music.start(MEL, BASS, 132);
+  if (S.ctrl === 'hand') {
+    hint('Membuka kamera… benarkan akses kamera.', 4000);
+    const ok = await K.startHands(vid, G.players.length, () => ({ W, H }));
+    if (!ok) { S.ctrl = 'mouse'; syncChips(); hint('Kamera tidak dapat dibuka. Main guna tetikus atau sentuh.', 5000); }
+    else hint(G.players.length === 2 ? 'Pemain 1 di KIRI, Pemain 2 di KANAN • ✊ genggam untuk pegang' : '✊ Genggam untuk pegang • ✋ buka untuk lepas', 5000);
+  }
+  startWord();
+}
+function startWord() {
+  const w = curW(), lv = levelFor(G.wi, G.words.length), L = LV[lv];
+  const newLevel = lv !== G.level; G.level = lv;
+  G.timeMax = L.time; G.timeLeft = L.time; G.roundWinner = -1;
+  G.players.forEach((p) => {
+    p.done = false; p.fill = 0; p.seal = 0; p.mistakes = 0; p.held = null; p.falling = []; p.stack = []; p.spawnT = 0; p.msg = null; p.bobo.mood = 'happy'; p.lastProgress = 0;
+    p.slots = w.betul.split('').map((ch) => ({ ch, filled: false, x: 0, y: 0, s: 0, flash: 0 }));
+    computeGeo(p);
+    p.coneX = p.rx + p.rw / 2;
+    p.letters = [];
+    if (L.mode === 'drag') {
+      const chars = w.betul.split('');
+      const pool = 'abcdefghijklmnoprstuwy'.split('').filter((c) => !chars.includes(c));
+      for (let d = 0; d < L.decoy; d++) chars.push(pool[Math.floor(Math.random() * pool.length)]);
+      const order = K.shuffle(chars), n = order.length, su = p.su, half = Math.min(p.rw / 2 - 70 * su, n * 62 * su), x0 = p.rx + p.rw / 2 - half, x1 = p.rx + p.rw / 2 + half;
+      const homes = K.shuffle(order.map((_, k) => x0 + (x1 - x0) * (n === 1 ? 0.5 : k / (n - 1))));
+      order.forEach((ch, k) => p.letters.push({ ch, x: p.g.mach.x + p.g.mach.w / 2, y: p.g.mach.y + p.g.mach.h * 0.86, vx: 0, vy: 0, homeX: homes[k], state: 'wait', delay: 0.45 + k * 0.22, col: BOBA[k % 3], wob: Math.random() * 6, scale: 0.2, flash: 0 }));
+    }
+  });
+  G.state = newLevel ? 'intro' : 'dispense'; G.stT = 0; G._tick = -1;
+  if (newLevel) { SFX.level(); K.music.bpm(124 + lv * 12); }
+}
+function nextWord() {
+  if (G.wi + 1 < G.words.length) { G.wi++; startWord(); }
+  else finish(true);
+}
+function finish(win) {
+  G.state = 'end'; K.music.stop(); $('tools').style.display = 'none';
+  if (G.players.length === 2) {
+    const [a, b] = G.players; win = true;
+    $('rTitle').textContent = a.pts === b.pts ? '🤝 SERI!' : (a.pts > b.pts ? '🏆 PEMAIN 1 MENANG!' : '🏆 PEMAIN 2 MENANG!');
+    $('rStars').textContent = ''; $('rMsg').textContent = `Pemain 1: ${a.pts} • Pemain 2: ${b.pts}`;
+    $('rDetail').textContent = `${G.words.length} perkataan: ${G.words.map((w) => w.betul).join(', ')}`;
+  } else {
+    const avg = G.stars.length ? G.stars.reduce((x, y) => x + y, 0) / G.stars.length : 0, st = win ? Math.max(1, Math.round(avg)) : 0;
+    $('rTitle').textContent = win ? '🎉 SEMUA PESANAN SIAP!' : '😢 ALAMAK!';
+    $('rStars').textContent = win ? '⭐'.repeat(st) + '☆'.repeat(3 - st) : '';
+    $('rMsg').textContent = win ? 'Hebat! Kamu bancuh semua ejaan dengan betul.' : 'Nyawa habis. Cuba lagi ya!';
+    $('rDetail').textContent = `Mata: ${G.score} • Perkataan: ${G.words.slice(0, G.wi + (win ? 1 : 0)).map((w) => w.betul).join(', ')}`;
+  }
+  if (win) { SFX.win(); PT.confetti(W, 160, U); } else SFX.lose();
+  setTimeout(() => show('result'), win ? 900 : 600);
+}
+function goMenu() { G.state = 'title'; K.music.stop(); hide('result'); hide('wordPanel'); hide('logoPanel'); show('menu'); $('tools').style.display = 'none'; G.players = []; }
+
+function wordComplete(p) {
+  p.done = true; p.bobo.mood = 'joy'; SFX.correct(); setTimeout(() => SFX.fill(), 250);
+  const w = curW(), frac = G.timeLeft / G.timeMax, st = p.mistakes === 0 && frac > 0.45 ? 3 : p.mistakes <= 1 && frac > 0.2 ? 2 : 1;
+  if (G.players.length === 2) {
+    if (G.roundWinner < 0) { G.roundWinner = p.i; p.pts++; G.banner = { txt: `PEMAIN ${p.i + 1} MENANG!`, sub: w.betul, col: PCOL[p.i], t: 0 }; G.state = 'complete'; G.stT = 0; }
+  } else { G.stars.push(st); G.score += 100 + Math.round(G.timeLeft * 5) + st * 50; G.banner = { txt: 'BETUL!', sub: w.betul, col: '#22b573', stars: st, t: 0 }; G.state = 'complete'; G.stT = 0; }
+  const c = p.g.cup; PT.burst(c.cx, c.top, 40, ['#ffc83d', '#3ccf91', '#ff7ab6', '#5ab8ff'], p.su);
+}
+function timeUp() {
+  G.state = 'timeout'; G.stT = 0; SFX.boing();
+  if (G.players.length === 1) { G.hearts--; G.shake = 0.6; }
+  G.banner = { txt: 'MASA TAMAT!', sub: 'Ejaan betul: ' + curW().betul, col: '#e3242b', t: 0 };
+  G.players.forEach((p) => p.slots.forEach((s) => { s.filled = true; s.reveal = true; }));
+}
+
+// ====================================================================
+// KEMASKINI
+// ====================================================================
+let last = performance.now();
+function frame(now) {
+  const raw = (now - last) / 1000, dt = Math.min(0.05, raw); last = now; G.t += dt; G.stT += dt;
+  feedHands(); G.players.forEach((p) => K.updateCursor(p.cur, dt, S.ctrl === 'hand'));
+  update(dt, Math.min(1, raw)); render(); requestAnimationFrame(frame);
+}
+function update(dt, rdt) {
+  PT.update(dt, H); G.shake = Math.max(0, G.shake - dt * 2);
+  if (G.banner) G.banner.t += dt;
+  const L = LV[G.level] || LV[1];
+  if (G.state === 'intro') {
+    const n = Math.floor(G.stT); if (G.stT > 0.9 && n !== G._tick && n <= 3) { G._tick = n; n >= 3 ? SFX.go() : SFX.tick(true); }
+    if (G.stT > 3.4) { G.state = 'dispense'; G.stT = 0; }
+  }
+  if (G.state === 'dispense' || G.state === 'play') {
+    if (G.state === 'dispense' && G.stT > (L.mode === 'drag' ? 0.5 + G.players[0].letters.length * 0.22 + 0.4 : 0.3)) { G.state = 'play'; G.stT = 0; }
+    if (G.state === 'play') { G.timeLeft = Math.max(0, G.timeLeft - rdt); const s = Math.ceil(G.timeLeft); if (s <= 5 && s !== G._sec) { G._sec = s; if (s > 0) SFX.tick(true); } if (G.timeLeft <= 0) timeUp(); }
+    G.players.forEach((p) => (L.mode === 'drag' ? updDrag(p, dt) : updCatch(p, dt)));
+  }
+  if (G.state === 'complete' || G.state === 'timeout') {
+    G.players.forEach((p) => { if (L.mode === 'drag') updDrag(p, dt, true); else updCatch(p, dt, true); if (p.done || G.state === 'timeout') { p.fill = Math.min(1, p.fill + dt * 1.3); if (p.fill >= 1 && p.seal < 1) { if (p.seal === 0) SFX.seal(); p.seal = Math.min(1, p.seal + dt * 3); } } });
+    if (G.stT > 0.25 && G.stT < 0.3 && G.banner && G.banner.stars) for (let k = 0; k < G.banner.stars; k++) setTimeout(() => SFX.star(), k * 140);
+    if (G.stT > 2.4) { G.banner = null; if (G.players.length === 1 && G.hearts <= 0) finish(false); else nextWord(); }
+  }
+  G.players.forEach((p) => { p.bobo.t += dt; p.slots.forEach((s) => (s.flash = Math.max(0, s.flash - dt * 2))); if (p.msg) { p.msg.t += dt; if (p.msg.t > 1.2) p.msg = null; } });
+}
+function updDrag(p, dt, frozen) {
+  const su = p.su, g = 1900 * su, floor = p.g.counter, c = p.cur;
+  p.letters.forEach((l) => {
+    l.wob += dt; l.flash = Math.max(0, l.flash - dt * 2);
+    if (l.state === 'wait') { l.delay -= dt; if (l.delay <= 0) { l.state = 'drop'; l.vx = (l.homeX - l.x) * 1.4; l.vy = -380 * su; SFX.pop(); } return; }
+    if (l.state === 'drop' || l.state === 'return') {
+      l.scale += (1 - l.scale) * Math.min(1, dt * 8); l.vy += g * dt; l.x += l.vx * dt; l.y += l.vy * dt;
+      if (l.y >= floor) { l.y = floor; if (Math.abs(l.vy) > 160 * su) { l.vy *= -0.42; } else { l.vy = 0; l.state = 'rest'; } l.vx *= 0.6; }
+      l.x = clamp(l.x, p.rx + 40 * su, p.rx + p.rw - 40 * su);
+    } else if (l.state === 'rest') { l.x += (l.homeX - l.x) * Math.min(1, dt * 4); l.y = floor + Math.sin(l.wob * 2.4) * 3 * su; l.scale += (1 - l.scale) * Math.min(1, dt * 8); }
+    else if (l.state === 'held') { l.x += (c.x - l.x) * Math.min(1, dt * 20); l.y += (c.y - l.y) * Math.min(1, dt * 20); l.scale += (1.18 - l.scale) * Math.min(1, dt * 10); }
+    else if (l.state === 'placed') { l.x += (l.slot.x - l.x) * Math.min(1, dt * 14); l.y += (l.slot.y - l.y) * Math.min(1, dt * 14); l.scale += (0.92 - l.scale) * Math.min(1, dt * 10); }
+  });
+  if (frozen || p.done) { if (p.held) { p.held.state = 'drop'; p.held = null; } return; }
+  const r = p.g.r;
+  if (c.pressed && !p.held && (c.justDown || S.ctrl === 'hand')) {
+    const px = S.ctrl === 'mouse' && c.justDown && c.dx != null ? c.dx : c.x, py = S.ctrl === 'mouse' && c.justDown && c.dy != null ? c.dy : c.y;
+    let best = null, bd = 1e9; p.letters.forEach((l) => { if (l.state !== 'rest' && l.state !== 'drop') return; const d = Math.hypot(px - l.x, py - l.y); if (d < r * (S.ctrl === 'hand' ? 2 : 1.5) && d < bd) { bd = d; best = l; } });
+    if (best) { p.held = best; best.state = 'held'; SFX.pick(); }
+  }
+  if (p.held && (c.justUp || !c.active || !c.pressed)) {
+    const l = p.held; p.held = null;
+    let sl = null, sd = 1e9; p.slots.forEach((s) => { if (s.filled) return; const d = Math.hypot(l.x - s.x, l.y - s.y); if (d < s.s * 0.95 && d < sd) { sd = d; sl = s; } });
+    if (sl && sl.ch === l.ch) { l.state = 'placed'; l.slot = sl; sl.filled = true; sl.flash = 1; SFX.snap(); p.lastProgress = G.t; PT.burst(sl.x, sl.y, 12, ['#ffc83d', '#fff', '#3ccf91'], p.su * 0.7); if (p.slots.every((s) => s.filled)) wordComplete(p); }
+    else if (sl) { l.state = 'return'; l.vx = (l.homeX - l.x) * 1.2; l.vy = -650 * su; l.flash = 1; sl.flash = -1; p.mistakes++; SFX.wrong(); p.msg = { txt: 'KURANG TEPAT!', x: sl.x, y: sl.y - sl.s, t: 0 }; p.bobo.mood = 'yuck'; setTimeout(() => (p.bobo.mood = 'happy'), 900); }
+    else { l.state = 'drop'; l.vx = 0; l.vy = 0; SFX.drop(); }
+  }
+}
+function updCatch(p, dt, frozen) {
+  const su = p.su, c = p.cur, R = 40 * su;
+  if (c.active) p.coneX += (clamp(c.x, p.rx + 60 * su, p.rx + p.rw - 60 * su) - p.coneX) * Math.min(1, dt * 14);
+  const need = p.slots.findIndex((s) => !s.filled);
+  if (!frozen && !p.done && G.state === 'play') {
+    p.spawnT -= dt;
+    if (p.spawnT <= 0) {
+      const word = curW().betul, nx = need >= 0 ? p.slots[need].ch : 'a', others = 'abcdefghijklmnoprstuwy'.split('').filter((x) => x !== nx);
+      const ch = Math.random() < 0.5 ? nx : (Math.random() < 0.5 ? word[Math.floor(Math.random() * word.length)] : others[Math.floor(Math.random() * others.length)]);
+      const speed = (150 + G.wi * 12 + (G.players.length === 2 ? 0 : 10)) * su;
+      p.falling.push({ ch, x: p.rx + 70 * su + Math.random() * (p.rw - 140 * su), y: p.g.slotTop + 150 * su, vy: speed, col: SCOOP[Math.floor(Math.random() * SCOOP.length)], rot: (Math.random() - 0.5) * 0.4, wob: Math.random() * 6 });
+      p.spawnT = Math.max(0.55, 1.05 - G.wi * 0.03);
+    }
+  }
+  const topY = p.g.coneY - 40 * su - p.stack.length * R * 0.9;
+  for (let k = p.falling.length - 1; k >= 0; k--) {
+    const f = p.falling[k]; f.y += f.vy * dt; f.wob += dt;
+    if (!frozen && !p.done && Math.abs(f.y - topY) < R * 0.9 && Math.abs(f.x - p.coneX) < R * 1.5) {
+      p.falling.splice(k, 1);
+      if (need >= 0 && f.ch === p.slots[need].ch) { p.slots[need].filled = true; p.slots[need].flash = 1; p.stack.push({ ch: f.ch, col: f.col }); SFX.collect(); PT.burst(p.coneX, topY, 14, [f.col, '#fff'], su * 0.7); if (p.slots.every((s) => s.filled)) wordComplete(p); }
+      else { SFX.wrong(); p.mistakes++; G.timeLeft = Math.max(0, G.timeLeft - 3); p.msg = { txt: 'KURANG TEPAT! -3s', x: p.coneX, y: topY - 50 * su, t: 0 }; PT.burst(p.coneX, topY, 18, [f.col], su * 0.8); p.bobo.mood = 'yuck'; setTimeout(() => (p.bobo.mood = 'happy'), 900); }
+      continue;
+    }
+    if (f.y > H + 60) p.falling.splice(k, 1);
+  }
+}
+
+// ====================================================================
+// LUKISAN
+// ====================================================================
+function render() {
+  if (!bg) paintBg();
+  ctx.save(); if (G.shake > 0) ctx.translate((Math.random() - 0.5) * 16 * U * G.shake, (Math.random() - 0.5) * 16 * U * G.shake);
+  ctx.drawImage(bg, 0, 0, W, H);
+  if (G.state === 'title') { drawTitle(); ctx.restore(); PT.draw(ctx); return; }
+  const L = LV[G.level] || LV[1];
+  G.players.forEach((p) => { ctx.save(); ctx.beginPath(); ctx.rect(p.rx, 0, p.rw, H); ctx.clip(); (L.mode === 'drag' ? drawDragScene : drawCatchScene)(p); ctx.restore(); });
+  if (G.players.length === 2) { ctx.fillStyle = '#7d0b10'; ctx.fillRect(W / 2 - 3 * U, 0, 6 * U, H); }
+  drawHud();
+  PT.draw(ctx);
+  if (G.banner) drawBanner();
+  if (G.state === 'intro') drawIntro();
+  G.players.forEach((p) => { if (S.ctrl === 'hand') K.drawHandCursor(ctx, p.cur, p.su, PCOL[p.i]); });
+  ctx.restore();
+  if (S.ctrl === 'hand') K.drawCamPreview(ctx, W, H, U, G.players.some((p) => p.cur.active));
+}
+function drawTitle() {
+  const t = G.t, cx = W / 2, ty = H * 0.2;
+  // boba huruf jatuh
+  for (let k = 0; k < 14; k++) { const x = ((k * 97 + 40) % 100) / 100 * W, y = ((t * (40 + k * 7) + k * 120) % (H + 100)) - 50, r = (22 + (k % 4) * 6) * U; drawBoba(x, y, r, 'ejaan'[k % 5], BOBA[k % 3], 1, 0.35); }
+  if (K.logo) K.drawLogo(ctx, cx, ty - 92 * U, 150 * U, 70 * U);
+  const pulse = 1 + Math.sin(t * 3) * 0.03;
+  ctx.save(); ctx.translate(cx, ty); ctx.scale(pulse, pulse); ctx.rotate(Math.sin(t * 1.5) * 0.02);
+  K.bigText(ctx, 'BANCUH EJAAN', 0, 0, Math.min(110 * U, W * 0.09), '#e3242b', '#fff', 22 * U);
+  K.bigText(ctx, 'BOBO MIXUE', 0, 86 * U, Math.min(70 * U, W * 0.06), '#ffc83d', '#7d0b10', 14 * U);
+  ctx.restore();
+  const sx = Math.min(520 * U, W * 0.4);
+  K.drawBobo(ctx, { x: cx - sx, y: ty - 10 * U + Math.sin(t * 4) * 8 * U, R: 64 * U, t, mood: 'joy', wave: true });
+  drawCup(cx + sx, ty - 70 * U, 130 * U, 170 * U, 0.6 + Math.sin(t * 2) * 0.15, 1, '#c79a6b');
+}
+function drawBoba(x, y, r, ch, col, scale = 1, alpha = 1, flash = 0, glow = 0) {
+  ctx.save(); ctx.globalAlpha = alpha; ctx.translate(x, y); ctx.scale(scale, scale);
+  if (glow) { ctx.shadowColor = '#ffc83d'; ctx.shadowBlur = 24 * glow; }
+  const g = ctx.createRadialGradient(-r * 0.35, -r * 0.4, r * 0.1, 0, 0, r); g.addColorStop(0, '#8a5a3c'); g.addColorStop(1, col); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+  if (flash) { ctx.fillStyle = `rgba(227,36,43,${flash * 0.6})`; ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill(); }
+  ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.beginPath(); ctx.ellipse(-r * 0.35, -r * 0.4, r * 0.28, r * 0.16, -0.6, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.font = F(r * 1.15); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(ch, 0, r * 0.06);
+  ctx.restore();
+}
+function drawCup(cx, top, w, h, fill, seal, liquid) {
+  const tw = w / 2, bw = w * 0.38; ctx.save();
+  ctx.beginPath(); ctx.moveTo(cx - tw, top); ctx.lineTo(cx + tw, top); ctx.lineTo(cx + bw, top + h); ctx.lineTo(cx - bw, top + h); ctx.closePath();
+  ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.fill(); ctx.save(); ctx.clip();
+  const lh = h * clamp(fill, 0, 1); const lg = ctx.createLinearGradient(0, top + h - lh, 0, top + h); lg.addColorStop(0, liquid || '#c79a6b'); lg.addColorStop(1, '#8a5a33'); ctx.fillStyle = lg; ctx.fillRect(cx - tw, top + h - lh, w, lh + 2);
+  ctx.fillStyle = '#2b1810'; for (let k = 0; k < 9; k++) { ctx.beginPath(); ctx.arc(cx - bw * 0.8 + (k % 5) * bw * 0.4, top + h - 12 - Math.floor(k / 5) * 18, w * 0.045, 0, Math.PI * 2); ctx.fill(); }
+  ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.fillRect(cx - tw * 0.7, top + 6, tw * 0.12, h - 12); ctx.restore();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = Math.max(2, w * 0.015); ctx.stroke();
+  // pelekat logo
+  ctx.save(); const lw = w * 0.42; K.rr(ctx, cx - lw / 2, top + h * 0.42, lw, lw * 0.6, lw * 0.12); ctx.fillStyle = '#e3242b'; ctx.fill(); ctx.restore();
+  K.drawLogo(ctx, cx, top + h * 0.42 + lw * 0.3, lw * 0.85, lw * 0.5);
+  if (seal > 0) { const sy = top - (1 - seal) * h * 0.6; ctx.fillStyle = '#e3242b'; K.rr(ctx, cx - tw * 1.04, sy - 8, tw * 2.08, 16, 8); ctx.fill(); ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.fillRect(cx - tw, sy - 2, tw * 2, 4); }
+  ctx.restore();
+}
+function drawMachine(m, su, active) {
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,.15)'; K.rr(ctx, m.x + 8 * su, m.y + 10 * su, m.w, m.h, 26 * su); ctx.fill();
+  const g = ctx.createLinearGradient(m.x, 0, m.x + m.w, 0); g.addColorStop(0, '#d9dfe5'); g.addColorStop(0.5, '#ffffff'); g.addColorStop(1, '#c3ccd5');
+  ctx.fillStyle = g; K.rr(ctx, m.x, m.y, m.w, m.h * 0.78, 26 * su); ctx.fill();
+  ctx.fillStyle = '#e3242b'; K.rr(ctx, m.x + 12 * su, m.y + 14 * su, m.w - 24 * su, m.h * 0.34, 18 * su); ctx.fill();
+  K.drawLogo(ctx, m.x + m.w / 2, m.y + 14 * su + m.h * 0.17, m.w * 0.7, m.h * 0.28);
+  ctx.fillStyle = '#7d0b10'; ctx.font = F(18 * su); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('MESIN BOBA HURUF', m.x + m.w / 2, m.y + m.h * 0.56);
+  // muncung
+  const nx = m.x + m.w / 2, ny = m.y + m.h * 0.78, sh = active ? Math.sin(G.t * 40) * 2 * su : 0;
+  ctx.fillStyle = '#9aa7b4'; ctx.beginPath(); ctx.moveTo(nx - 30 * su + sh, m.y + m.h * 0.7); ctx.lineTo(nx + 30 * su + sh, m.y + m.h * 0.7); ctx.lineTo(nx + 14 * su + sh, ny + 30 * su); ctx.lineTo(nx - 14 * su + sh, ny + 30 * su); ctx.closePath(); ctx.fill();
+  [[-1, '#3ccf91'], [1, '#ffc83d']].forEach(([s, c]) => { ctx.fillStyle = c; ctx.beginPath(); ctx.arc(nx + s * 60 * su, m.y + m.h * 0.66, 12 * su, 0, Math.PI * 2); ctx.fill(); });
+  ctx.restore();
+}
+function drawCard(p) {
+  const c = p.g.card, su = p.su, w = curW();
+  ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.2)'; ctx.shadowBlur = 12 * su; ctx.shadowOffsetY = 6 * su; K.rr(ctx, c.x, c.y, c.w, c.h, 22 * su); ctx.fillStyle = '#fff'; ctx.fill(); ctx.restore();
+  ctx.save(); K.rr(ctx, c.x, c.y, c.w, c.h, 22 * su); ctx.lineWidth = 5 * su; ctx.strokeStyle = '#e3242b'; ctx.stroke();
+  ctx.fillStyle = '#e3242b'; K.rr(ctx, c.x, c.y, c.w, 40 * su, 22 * su); ctx.fill(); ctx.fillRect(c.x, c.y + 20 * su, c.w, 20 * su);
+  ctx.fillStyle = '#fff'; ctx.font = F(19 * su); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('🧾 PESANAN BOBO', c.x + c.w / 2, c.y + 21 * su);
+  ctx.font = `${Math.min(84 * su, c.h * 0.36)}px sans-serif`; ctx.fillText(w.gambar || '🧋', c.x + c.w / 2, c.y + c.h * 0.45);
+  const px = K.fitFont(ctx, w.salah, c.w - 30 * su, 46 * su); ctx.font = F(px); const tw = ctx.measureText(w.salah).width, ty = c.y + c.h * 0.82;
+  ctx.fillStyle = '#e3242b'; ctx.fillText(w.salah, c.x + c.w / 2, ty);
+  ctx.strokeStyle = 'rgba(227,36,43,.8)'; ctx.lineWidth = 4 * su; ctx.beginPath(); ctx.moveTo(c.x + c.w / 2 - tw / 2 - 6 * su, ty + 2 * su); ctx.lineTo(c.x + c.w / 2 + tw / 2 + 6 * su, ty - 2 * su); ctx.stroke();
+  ctx.font = F(14 * su, 600); ctx.fillStyle = '#7a3a3e'; ctx.fillText('Ejaan salah! Eja yang betul ↓', c.x + c.w / 2, c.y + c.h - 12 * su);
+  ctx.restore();
+}
+function drawSlots(p) {
+  p.slots.forEach((s, k) => {
+    ctx.save(); const fl = s.flash, sz = s.s * (1 + (fl > 0 ? fl * 0.12 : 0));
+    K.rr(ctx, s.x - sz / 2, s.y - sz / 2, sz, sz, 14 * p.su); ctx.fillStyle = fl < 0 ? `rgba(227,36,43,${-fl * 0.5 + 0.1})` : s.filled ? '#eafff3' : 'rgba(255,255,255,.92)'; ctx.fill();
+    ctx.lineWidth = 5 * p.su; ctx.setLineDash(s.filled ? [] : [10 * p.su, 7 * p.su]); ctx.strokeStyle = s.filled ? '#22b573' : '#7d0b10'; ctx.stroke(); ctx.setLineDash([]);
+    if (s.reveal) { ctx.fillStyle = '#127a4b'; ctx.font = F(s.s * 0.62); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(s.ch, s.x, s.y + 2); }
+    ctx.fillStyle = 'rgba(125,11,16,.4)'; ctx.font = F(12 * p.su, 600); ctx.textAlign = 'center'; ctx.fillText(k + 1, s.x, s.y + sz / 2 + 12 * p.su);
+    ctx.restore();
+  });
+}
+function drawDragScene(p) {
+  const su = p.su, g = p.g;
+  // kaunter
+  ctx.fillStyle = '#fff'; ctx.fillRect(p.rx, g.counter + g.r, p.rw, 14 * su); ctx.fillStyle = '#e83a40'; ctx.fillRect(p.rx, g.counter + g.r + 14 * su, p.rw, H);
+  ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.fillRect(p.rx, g.counter + g.r + 26 * su, p.rw, 6 * su);
+  drawMachine(g.mach, su, G.state === 'dispense');
+  drawCard(p);
+  K.drawBobo(ctx, { x: g.bobo.x, y: g.bobo.y + (p.done ? -Math.abs(Math.sin(G.t * 7)) * 14 * su : 0), R: g.bobo.R, t: p.bobo.t, mood: p.held ? 'wow' : p.bobo.mood, wave: G.state === 'intro', lookX: p.held ? clamp((p.held.x - g.bobo.x) / 300, -1, 1) : 0, lookY: p.held ? 1 : 0 });
+  if (G.players.length === 2) { ctx.save(); K.rr(ctx, g.bobo.x - 80 * su, 76 * su, 160 * su, 34 * su, 17 * su); ctx.fillStyle = PCOL[p.i]; ctx.fill(); ctx.fillStyle = '#fff'; ctx.font = F(18 * su); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(`PEMAIN ${p.i + 1} • ${p.pts}`, g.bobo.x, 94 * su); ctx.restore(); }
+  const c = g.cup; drawCup(c.cx, c.top, c.w, c.bot - c.top, p.fill, p.seal, '#c79a6b');
+  if (p.seal > 0.6 && G.state === 'complete' && p.done) K.bigText(ctx, 'COP!', c.cx + c.w * 0.42, c.top - 10 * su, 42 * su, '#e3242b', '#fff', 8 * su);
+  drawSlots(p);
+  // huruf: petunjuk bila lama tiada kemajuan
+  const need = p.slots.find((s) => !s.filled), idle = G.state === 'play' && G.t - Math.max(p.lastProgress, G.t - G.stT) > 12;
+  p.letters.filter((l) => l !== p.held && l.state !== 'wait').forEach((l) => drawBoba(l.x, l.y, p.g.r, l.ch, l.col, l.scale, 1, l.flash, idle && need && l.ch === need.ch && l.state === 'rest' ? 0.6 + Math.sin(G.t * 8) * 0.4 : 0));
+  if (p.held) { const l = p.held; ctx.save(); ctx.globalAlpha = 0.25; ctx.fillStyle = '#000'; ctx.beginPath(); ctx.ellipse(l.x + 10 * su, l.y + 24 * su, p.g.r, p.g.r * 0.35, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); drawBoba(l.x, l.y, p.g.r, l.ch, l.col, l.scale, 1, 0, 0.5); }
+  if (p.msg) K.bigText(ctx, p.msg.txt, clamp(p.msg.x, p.rx + 130 * su, p.rx + p.rw - 130 * su), p.msg.y - p.msg.t * 40 * su, 34 * su, '#e3242b', '#fff', 8 * su);
+}
+function drawCatchScene(p) {
+  const su = p.su, g = p.g, R = 40 * su;
+  // mesin aiskrim di atas
+  ctx.save(); const my = g.slotTop + 104 * su; const mg = ctx.createLinearGradient(0, my - 30 * su, 0, my + 30 * su); mg.addColorStop(0, '#ffffff'); mg.addColorStop(1, '#c3ccd5'); ctx.fillStyle = mg; K.rr(ctx, p.rx + 20 * su, my - 26 * su, p.rw - 40 * su, 52 * su, 26 * su); ctx.fill();
+  for (let k = 0; k < 6; k++) { const nx = p.rx + p.rw * (k + 0.5) / 6; ctx.fillStyle = '#e3242b'; ctx.beginPath(); ctx.moveTo(nx - 16 * su, my + 20 * su); ctx.lineTo(nx + 16 * su, my + 20 * su); ctx.lineTo(nx + 7 * su, my + 40 * su); ctx.lineTo(nx - 7 * su, my + 40 * su); ctx.fill(); }
+  ctx.fillStyle = '#7d0b10'; ctx.font = F(18 * su); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('🍦 MESIN AISKRIM HURUF', p.rx + p.rw / 2, my); ctx.restore();
+  // petak di atas + gambar kecil
+  const n = p.slots.length, s = Math.min(64 * su, (p.rw - 260 * su) / n - 8 * su);
+  p.slots.forEach((sl, k) => { sl.x = p.rx + p.rw / 2 + 50 * su + (k - (n - 1) / 2) * (s + 8 * su); sl.y = g.slotTop + s / 2; sl.s = s; });
+  drawSlots(p);
+  const w = curW(); ctx.save(); ctx.font = `${50 * su}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; const x0 = p.slots[0].x - s / 2 - 70 * su; ctx.fillText(w.gambar || '🧋', x0, g.slotTop + s / 2 - 8 * su);
+  ctx.font = F(20 * su); ctx.fillStyle = '#e3242b'; ctx.fillText(w.salah, x0, g.slotTop + s / 2 + 30 * su); ctx.strokeStyle = '#e3242b'; ctx.lineWidth = 3 * su; ctx.beginPath(); ctx.moveTo(x0 - 34 * su, g.slotTop + s / 2 + 32 * su); ctx.lineTo(x0 + 34 * su, g.slotTop + s / 2 + 28 * su); ctx.stroke(); ctx.restore();
+  // huruf seterusnya
+  const need = p.slots.find((sl) => !sl.filled); if (need && G.state === 'play') { ctx.save(); ctx.strokeStyle = '#ffc83d'; ctx.lineWidth = 6 * su; ctx.globalAlpha = 0.6 + Math.sin(G.t * 8) * 0.4; K.rr(ctx, need.x - need.s / 2 - 5 * su, need.y - need.s / 2 - 5 * su, need.s + 10 * su, need.s + 10 * su, 16 * su); ctx.stroke(); ctx.restore(); }
+  // skop jatuh
+  p.falling.forEach((f) => drawScoop(f.x, f.y, R, f.ch, f.col, Math.sin(f.wob * 3) * 0.1));
+  // kon + timbunan
+  const cx = p.coneX, cy = g.coneY;
+  p.stack.forEach((st, k) => drawScoop(cx, cy - 40 * su - k * R * 0.9, R, st.ch, st.col, 0));
+  ctx.save(); ctx.fillStyle = '#f2b766'; ctx.beginPath(); ctx.moveTo(cx - R * 1.1, cy - 26 * su); ctx.lineTo(cx + R * 1.1, cy - 26 * su); ctx.lineTo(cx, cy + 80 * su); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#d8963f'; ctx.lineWidth = 3 * su; for (let k = -3; k <= 3; k++) { ctx.beginPath(); ctx.moveTo(cx + k * 14 * su - 20 * su, cy - 26 * su); ctx.lineTo(cx + k * 14 * su + 20 * su, cy + 30 * su); ctx.stroke(); }
+  ctx.strokeStyle = PCOL[p.i]; ctx.lineWidth = 4 * su; ctx.beginPath(); ctx.moveTo(cx - R * 1.1, cy - 26 * su); ctx.lineTo(cx + R * 1.1, cy - 26 * su); ctx.lineTo(cx, cy + 80 * su); ctx.closePath(); ctx.stroke(); ctx.restore();
+  K.drawBobo(ctx, { x: p.rx + p.rw - 70 * su, y: H - 190 * su, R: 46 * su, t: p.bobo.t, mood: p.bobo.mood, lookX: clamp((p.coneX - (p.rx + p.rw - 70 * su)) / 300, -1, 1) });
+  if (G.players.length === 2) K.bigText(ctx, `PEMAIN ${p.i + 1} • ${p.pts}`, p.rx + 110 * su, g.slotTop + 160 * su, 24 * su, PCOL[p.i], '#fff', 6 * su);
+  if (p.msg) K.bigText(ctx, p.msg.txt, clamp(p.msg.x, p.rx + 150 * su, p.rx + p.rw - 150 * su), p.msg.y - p.msg.t * 40 * su, 30 * su, '#e3242b', '#fff', 7 * su);
+}
+function drawScoop(x, y, R, ch, col, rot) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
+  ctx.fillStyle = col; ctx.beginPath(); ctx.arc(0, 0, R, Math.PI * 0.95, Math.PI * 2.05); for (let k = 0; k <= 6; k++) { const xx = R - (k / 6) * R * 2; ctx.lineTo(xx, R * 0.35 + (k % 2) * R * 0.22); } ctx.closePath(); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,.4)'; ctx.beginPath(); ctx.ellipse(-R * 0.35, -R * 0.45, R * 0.25, R * 0.14, -0.5, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#3a1416'; ctx.font = F(R * 1.05); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(ch, 0, 0); ctx.restore();
+}
+function drawHud() {
+  const u = U, L = LV[G.level] || LV[1];
+  ctx.save();
+  // bar masa di tengah atas
+  const bw = Math.min(520 * u, W * 0.42), bx = W / 2 - bw / 2, by = 58 * u, frac = clamp(G.timeLeft / (G.timeMax || 1), 0, 1);
+  ctx.fillStyle = 'rgba(255,255,255,.95)'; K.rr(ctx, bx - 70 * u, by - 6 * u, bw + 140 * u, 36 * u, 18 * u); ctx.fill();
+  ctx.fillStyle = '#f3dcdd'; K.rr(ctx, bx, by + 4 * u, bw, 16 * u, 8 * u); ctx.fill();
+  ctx.fillStyle = frac > 0.5 ? '#22b573' : frac > 0.25 ? '#f5a524' : '#e3242b'; K.rr(ctx, bx, by + 4 * u, Math.max(16 * u, bw * frac), 16 * u, 8 * u); ctx.fill();
+  ctx.fillStyle = '#7d0b10'; ctx.font = F(18 * u); ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillText('⏱', bx - 10 * u, by + 12 * u);
+  ctx.textAlign = 'left'; ctx.fillText(Math.ceil(G.timeLeft) + 's', bx + bw + 10 * u, by + 12 * u);
+  if (G.players.length === 1) {
+    ctx.fillStyle = 'rgba(255,255,255,.95)'; K.rr(ctx, 14 * u, 52 * u, 250 * u, 44 * u, 22 * u); ctx.fill();
+    ctx.fillStyle = '#e3242b'; ctx.font = F(19 * u); ctx.textAlign = 'left'; ctx.fillText(`LEVEL ${G.level} • ${G.wi + 1}/${G.words.length}`, 30 * u, 75 * u);
+    ctx.fillStyle = 'rgba(255,255,255,.95)'; K.rr(ctx, W - 270 * u, 52 * u, 256 * u, 44 * u, 22 * u); ctx.fill();
+    ctx.font = `${22 * u}px sans-serif`; ctx.textAlign = 'left'; ctx.fillText('❤️'.repeat(Math.max(0, G.hearts)) + '🤍'.repeat(Math.max(0, 3 - G.hearts)), W - 258 * u, 75 * u);
+    ctx.fillStyle = '#7d0b10'; ctx.font = F(20 * u); ctx.textAlign = 'right'; ctx.fillText('⭐ ' + G.score, W - 26 * u, 75 * u);
+  }
+  ctx.restore();
+}
+function drawBanner() {
+  const b = G.banner, k = ease.outElastic(clamp(b.t / 0.7, 0, 1)); ctx.save(); ctx.translate(W / 2, H * 0.42); ctx.scale(k, k);
+  K.bigText(ctx, b.txt, 0, 0, Math.min(96 * U, W * 0.09), b.col, '#fff', 18 * U);
+  if (b.sub) K.bigText(ctx, b.sub, 0, 80 * U, 56 * U, '#7d0b10', '#fff', 12 * U);
+  if (b.stars) { ctx.font = `${52 * U}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; const shown = Math.min(b.stars, Math.floor((b.t - 0.2) / 0.14) + 1); ctx.fillText('⭐'.repeat(Math.max(0, shown)) + '☆'.repeat(3 - Math.max(0, shown)), 0, 150 * U); }
+  ctx.restore();
+}
+function drawIntro() {
+  const L = LV[G.level], t = G.stT, k = ease.outBack(clamp(t / 0.6, 0, 1)), out = t > 3.0 ? clamp((t - 3.0) / 0.4, 0, 1) : 0;
+  ctx.save(); ctx.fillStyle = `rgba(60,6,10,${0.5 * (1 - out)})`; ctx.fillRect(0, 0, W, H); ctx.translate(W / 2, H / 2); ctx.scale(k * (1 - out) + 0.001, k * (1 - out) + 0.001);
+  const bw = Math.min(720 * U, W * 0.92), bh = 260 * U; ctx.fillStyle = '#fff7ec'; K.rr(ctx, -bw / 2, -bh / 2, bw, bh, 34 * U); ctx.fill(); ctx.lineWidth = 7 * U; ctx.strokeStyle = '#e3242b'; ctx.stroke();
+  K.bigText(ctx, `LEVEL ${G.level}`, 0, -78 * U, 40 * U, '#7d0b10', '#fff', 6 * U);
+  K.bigText(ctx, L.name, 0, -20 * U, Math.min(66 * U, bw * 0.1), '#e3242b', '#fff', 10 * U);
+  ctx.fillStyle = '#7a3a3e'; K.fitFont(ctx, L.sub, bw - 40 * U, 26 * U, 600); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(L.sub, 0, 36 * U);
+  const n = 3 - Math.floor(clamp(t - 0.9, 0, 3)); K.bigText(ctx, t < 0.9 ? '' : n > 0 ? String(n) : 'MULA!', 0, 92 * U, 50 * U, n > 0 ? '#3a1416' : '#22b573', '#fff', 8 * U);
+  ctx.restore();
+}
+
+// ====================================================================
+// MENU
+// ====================================================================
+function syncChips() { document.querySelectorAll('#menu .chip').forEach((b) => b.classList.toggle('on', S[b.dataset.k] === b.dataset.v)); }
+function buildSetRow() {
+  WORDS = K.loadWords(); const sets = K.sets(WORDS.words), row = $('setRow');
+  row.innerHTML = '<span class="lbl">Perkataan</span>' + ['rawak', ...sets.map(String)].map((s) => `<button class="chip" data-k="set" data-v="${s}">${s === 'rawak' ? '🎲 Rawak' : 'Set ' + s}</button>`).join('') + (WORDS.custom ? '<span class="note">📂 perkataan sendiri</span>' : '');
+  if (S.set !== 'rawak' && !sets.map(String).includes(S.set)) S.set = 'rawak';
+  row.querySelectorAll('.chip').forEach(bindChip); syncChips();
+}
+function bindChip(b) { b.onclick = () => { K.ac(); SFX.click(); S[b.dataset.k] = b.dataset.v; syncChips(); }; }
+document.querySelectorAll('#menu .chip').forEach(bindChip);
+$('btnStart').onclick = () => { SFX.click(); startGame(); };
+$('btnWords').onclick = () => { SFX.click(); renderWords(); show('wordPanel'); };
+$('btnWBack').onclick = () => { hide('wordPanel'); buildSetRow(); };
+$('btnTpl').onclick = async () => { try { await K.downloadTemplate(); } catch (e) { $('wErr').textContent = 'Templat tidak dapat dimuat turun.'; } };
+$('btnUp').onclick = () => $('fileIn').click();
+$('fileIn').onchange = async (e) => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; $('wErr').textContent = 'Membaca fail…'; try { const r = await K.importWords(f); $('wErr').textContent = (r.words.length ? `✔ ${r.words.length} perkataan dimuat naik.` : '✖ Tiada perkataan disimpan.') + (r.errs.length ? '\n' + r.errs.join('\n') : ''); renderWords(); } catch (er) { $('wErr').textContent = 'Fail tidak dapat dibaca.'; } };
+$('btnReset').onclick = () => { K.clearWords(); $('wErr').textContent = 'Perkataan asal digunakan.'; renderWords(); };
+function renderWords() { WORDS = K.loadWords(); $('wTable').innerHTML = '<table><tr><th>Set</th><th>Gambar</th><th>Ejaan salah</th><th>Ejaan betul</th></tr>' + WORDS.words.map((w) => `<tr><td>${w.set || '-'}</td><td>${K.esc(w.gambar || '')}</td><td style="color:#e3242b">${K.esc(w.salah)}</td><td><b>${K.esc(w.betul)}</b></td></tr>`).join('') + '</table>'; }
+$('btnLogo').onclick = () => { SFX.click(); $('logoPrev').src = K.lsGet('kl_logo_v1', '') || ''; show('logoPanel'); };
+$('btnLogoUp').onclick = () => $('logoIn').click();
+$('logoIn').onchange = (e) => { const f = e.target.files[0]; e.target.value = ''; if (f) K.uploadLogo(f, () => { $('logoPrev').src = K.lsGet('kl_logo_v1', '') || ''; }); };
+$('btnLogoX').onclick = () => K.clearLogo(() => ($('logoPrev').src = ''));
+$('btnLogoBack').onclick = () => hide('logoPanel');
+$('rAgain').onclick = () => { SFX.click(); hide('result'); startGame(); };
+$('rMenu').onclick = () => { SFX.click(); goMenu(); };
+$('tHome').onclick = () => { if (confirm('Kembali ke menu?')) goMenu(); };
+$('tSound').onclick = () => { K.sound = !K.sound; $('tSound').textContent = K.sound ? '🔊' : '🔇'; };
+$('tMusic').onclick = () => { K.musicOn = !K.musicOn; $('tMusic').style.opacity = K.musicOn ? 1 : 0.4; if (K.musicOn) K.music.start(); else K.music.stop(); };
+window.__bancuh = { G, S, startGame, PT };
+
+K.loadLogo(); resize(); buildSetRow(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
