@@ -116,9 +116,30 @@ wsK['!cols'] = [{ wch: 60 }, { wch: 46 }, { wch: 12 }];
 XLSX.utils.book_append_sheet(wbK, wsK, 'Soalan');
 XLSX.writeFile(wbK, path.join(outDir, 'templat-kaunter-lapar.xlsx'));
 
+
+// ------------------------------------------------------------------
+// Templat: EJAAN BOBO - public/bancuh-ejaan.html & public/misi-penghantaran.html
+// Set (pilihan) | Perkataan Betul | Ejaan Salah (kosong = dijana) | Gambar (emoji, pilihan)
+// ------------------------------------------------------------------
+const ejaanRows = [
+  ['Set', 'Perkataan Betul', 'Ejaan Salah', 'Gambar (emoji, pilihan)'],
+  [1, 'bekas', 'beksa', '🥡'], [1, 'gula', 'gual', '🧂'], [1, 'cawan', 'cawna', '🥤'], [1, 'sudu', 'sduu', '🥄'],
+  [2, 'susu', 'ssuu', '🥛'], [2, 'kopi', 'kpoi', '☕'], [2, 'ais', 'asi', '🧊'], [2, 'madu', 'mdau', '🍯'],
+  [3, 'limau', 'liamu', '🍋'], [3, 'mangga', 'mnagga', '🥭'], [3, 'oren', 'orne', '🍊'], [3, 'kelapa', 'kelpaa', '🥥'],
+  [4, 'coklat', 'cokalt', '🍫'], [4, 'kon', 'kno', '🍦'], [4, 'kacang', 'kcaang', '🥜'], [4, 'pisang', 'pisnag', '🍌'],
+  [5, 'roti', 'rtoi', '🍞'], [5, 'kek', 'kke', '🍰'], [5, 'biskut', 'bisukt', '🍪'], [5, 'dulang', 'dualng', '🍽️'],
+  [6, 'beg', 'bge', '👜'], [6, 'plastik', 'plasitk', '🛍️'], [6, 'tisu', 'tsiu', '🧻'], [6, 'wang', 'wnag', '💵'],
+];
+const wbE = XLSX.utils.book_new();
+const wsE = XLSX.utils.aoa_to_sheet(ejaanRows);
+wsE['!cols'] = [{ wch: 6 }, { wch: 18 }, { wch: 18 }, { wch: 22 }];
+XLSX.utils.book_append_sheet(wbE, wsE, 'Perkataan');
+XLSX.writeFile(wbE, path.join(outDir, 'templat-ejaan-bobo.xlsx'));
+
 console.log('Templat dijana:');
 console.log(' -', path.join(outDir, 'templat-perkataan.xlsx'));
 console.log(' -', path.join(outDir, 'templat-soalan-tembak.xlsx'));
 console.log(' -', path.join(outDir, 'templat-imbuhan-apitan.xlsx'));
 console.log(' -', path.join(outDir, 'templat-mixkata.xlsx'));
 console.log(' -', path.join(outDir, 'templat-kaunter-lapar.xlsx'));
+console.log(' -', path.join(outDir, 'templat-ejaan-bobo.xlsx'));
