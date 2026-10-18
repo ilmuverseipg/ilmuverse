@@ -65,6 +65,7 @@
       <button class="btn green" id="btnStart">▶ MULA</button>
       <button class="btn alt small" id="btnWords">📋 Perkataan</button>
       <button class="btn alt small" id="btnLogo">🏷 Logo</button>
+      <span id="bgmSlot"></span>
       <input type="file" id="logoIn" accept="image/*" style="display:none">
     </div>
     <div class="note"><b>Genggam</b> huruf boba, seret ke petak, <b>buka</b> tangan untuk lepas • Level 3: gerakkan kon untuk tangkap huruf ikut urutan • <a href="/game-arab.html" style="color:#a2353b">← GameBox</a></div>
@@ -109,6 +110,7 @@
   </div>
 </div>
 
+<script src="/bobo-bgm.js"></script>
 <script src="/bobo-kit.js"></script>
 <script>
 (() => {
@@ -567,7 +569,7 @@ $('tSound').onclick = () => { K.sound = !K.sound; $('tSound').textContent = K.so
 $('tMusic').onclick = () => { K.musicOn = !K.musicOn; $('tMusic').style.opacity = K.musicOn ? 1 : 0.4; if (K.musicOn) K.music.start(); else K.music.stop(); };
 window.__bancuh = { G, S, startGame, PT };
 
-K.loadLogo(); resize(); buildSetRow(); requestAnimationFrame(frame);
+if (window.BoboBGM) BoboBGM.mount($('bgmSlot'), 'btn alt small'); K.loadLogo(); resize(); buildSetRow(); requestAnimationFrame(frame);
 })();
 </script>
 </body>
