@@ -78,20 +78,23 @@ XLSX.writeFile(wbApitan, path.join(outDir, 'templat-imbuhan-apitan.xlsx'));
 // Templat: MIX-KATA (Suap Bobo) - public/game-mixkata.html
 // Level 1 = 2 pilihan (1 betul), Level 2 = 3 pilihan (1 betul),
 // Level 3 = 4 pilihan (2 betul, tulis cth "A,C"). Kosongkan pilihan tak guna.
+// Petikan (pilihan): bila diisi, petikan dipaparkan besar & murid cari perkataan
+// SALAH EJAAN; 'Ejaan Betul' dipaparkan hijau dalam petikan bila dijawab.
 // ------------------------------------------------------------------
 const mixkataRows = [
-  ['Level', 'Soalan', 'Pilihan A', 'Pilihan B', 'Pilihan C', 'Pilihan D', 'Jawapan Betul (cth: A atau A,C)'],
-  [1, 'Bobo haus! Suapkan air KATA GANDA.', 'roti-roti', 'roti', '', '', 'A'],
-  [1, 'Air manakah KATA GANDA?', 'kedai', 'kawan-kawan', '', '', 'B'],
-  [2, 'Air manakah KATA GANDA?', 'cawan', 'cawan-cawan', 'minuman', '', 'B'],
-  [2, 'Tolong Bobo! Suapkan air KATA GANDA.', 'pagi-pagi', 'pagi', 'petang', '', 'A'],
-  [3, 'Suapkan air KATA GANDA kepada Bobo.', 'duit-duit', 'baki', 'kuih-kuih', 'pembeli', 'A,C'],
-  [3, 'Cari air KATA GANDA untuk Bobo.', 'kedai', 'gelas-gelas', 'minuman', 'botol-botol', 'B,D'],
-  [3, 'Hati-hati! Pilih kata ganda yang BETUL.', 'kawan kawan', 'kawan-kawan', 'cawan-cawan', 'berkawan', 'B,C'],
+  ['Level', 'Soalan', 'Petikan (pilihan)', 'Pilihan A', 'Pilihan B', 'Pilihan C', 'Pilihan D', 'Jawapan Betul (cth: A atau A,C)', 'Ejaan Betul (pilihan)'],
+  [1, 'Cari perkataan yang SALAH EJAAN dalam petikan!', 'Bobo pergi ke kedai. Dia mahu membeli aiskrem.', 'aiskrem', 'kedai', '', '', 'A', 'aiskrim'],
+  [1, 'Cari perkataan yang SALAH EJAAN dalam petikan!', 'Bobo beratur dengan sabar di kaunter. Dia tidak memotong barisn.', 'kaunter', 'barisn', '', '', 'B', 'barisan'],
+  [2, 'Cari perkataan yang SALAH EJAAN dalam petikan!', 'Bobo membeli segelas air teh. Harganya lima ringit. Dia membayar dengan duit kertas.', 'segelas', 'ringit', 'kertas', '', 'B', 'ringgit'],
+  [2, 'Cari perkataan yang SALAH EJAAN dalam petikan!', 'Penjual memberikan baki kepada Bobo. Bobo mengucapkan terima kaseh.', 'baki', 'penjual', 'kaseh', '', 'C', 'kasih'],
+  [3, 'Cari perkataan yang SALAH EJAAN dalam petikan!', 'Penjual tersalah memberi baki. Bobo memulangkan duit itu kerana dia jujor. Penjual itu sangat gembera.', 'jujor', 'penjual', 'gembera', 'baki', 'A,C', 'jujur, gembira'],
+  [3, 'Cari perkataan yang SALAH EJAAN dalam petikan!', 'Bobo minum air teh yang sejok. Dia membuang cawan ke dalam tong sampa. Bobo budak yang bersih.', 'cawan', 'sejok', 'bersih', 'sampa', 'B,D', 'sejuk, sampah'],
+  [3, 'Cari perkataan yang SALAH EJAAN dalam petikan!', 'Bobo membeli dua biji rotti dan sebotol air. Dia membawa beg plastik. Bobo berjalan pulang ke rumh.', 'rotti', 'plastik', 'berjalan', 'rumh', 'A,D', 'roti, rumah'],
+  [1, 'Contoh TANPA petikan (kata ganda): Air manakah KATA GANDA?', '', 'kedai', 'kawan-kawan', '', '', 'B', ''],
 ];
 const wbMix = XLSX.utils.book_new();
 const wsMix = XLSX.utils.aoa_to_sheet(mixkataRows);
-wsMix['!cols'] = [{ wch: 8 }, { wch: 48 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 30 }];
+wsMix['!cols'] = [{ wch: 8 }, { wch: 42 }, { wch: 70 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 28 }, { wch: 22 }];
 XLSX.utils.book_append_sheet(wbMix, wsMix, 'Soalan MIX-KATA');
 XLSX.writeFile(wbMix, path.join(outDir, 'templat-mixkata.xlsx'));
 
