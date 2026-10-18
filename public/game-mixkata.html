@@ -80,6 +80,12 @@
       <button class="chip on" data-design="merah">🟥 Merah Klasik</button>
       <button class="chip" data-design="putih">⬜ Putih Kilat</button>
     </div>
+    <div class="label">Set soalan</div>
+    <div class="opt" id="setOpts">
+      <button class="chip" data-set="ejaan">📖 Ejaan (petikan)</button>
+      <button class="chip" data-set="kataganda">🧋 Kata Ganda</button>
+      <button class="chip" data-set="custom" id="chipCustom" style="display:none">📂 Soalan saya</button>
+    </div>
     <div class="label">Kelajuan haus</div>
     <div class="opt" id="speedOpts">
       <button class="chip" data-speed="0.7">🐢 Perlahan</button>
@@ -104,10 +110,10 @@
     <div class="row">
       <button class="btn small" id="btnTpl">⬇ Muat turun templat</button>
       <button class="btn small green" id="btnUp">⬆ Muat naik soalan</button>
-      <button class="btn small alt" id="btnReset">↺ Guna soalan asal</button>
+      <button class="btn small alt" id="btnReset">🗑 Buang soalan saya</button>
       <input type="file" id="fileIn" accept=".xlsx,.xls,.csv" style="display:none">
     </div>
-    <div class="note">Lajur: <b>Level</b> | <b>Soalan</b> | <b>Pilihan A</b> | <b>Pilihan B</b> | <b>Pilihan C</b> | <b>Pilihan D</b> | <b>Jawapan Betul</b> (cth: <b>A</b>, atau <b>A,C</b> untuk dua jawapan).<br>
+    <div class="note">Lajur: <b>Level</b> | <b>Soalan</b> | <b>Petikan</b> (pilihan) | <b>Pilihan A</b> | <b>Pilihan B</b> | <b>Pilihan C</b> | <b>Pilihan D</b> | <b>Jawapan Betul</b> (cth: <b>A</b>, atau <b>A,C</b>) | <b>Ejaan Betul</b> (pilihan, cth: <b>aiskrim, gembira</b>).<br>
       Level 1: 2 pilihan, 1 betul • Level 2: 3 pilihan, 1 betul • Level 3: 4 pilihan, 2 betul.</div>
     <div class="err" id="qErr"></div>
     <div id="qTable"></div>
@@ -133,7 +139,18 @@
 // SOALAN ASAL (kata ganda penuh)
 // ans = senarai indeks jawapan betul
 // ====================================================================
-const DEFAULT_QS = [
+// SET EJAAN (SP 3.3.2): petikan mudah Tahun 2, cari perkataan yang SALAH EJAAN
+// fix = ejaan betul untuk perkataan salah (dipaparkan hijau dalam petikan bila dijawab)
+const EJAAN_QS = [
+  { level: 1, q: 'Cari perkataan yang SALAH EJAAN dalam petikan!', petikan: 'Bobo pergi ke kedai. Dia mahu membeli aiskrem.', opts: ['aiskrem', 'kedai'], ans: [0], fix: { aiskrem: 'aiskrim' } },
+  { level: 1, q: 'Cari perkataan yang SALAH EJAAN dalam petikan!', petikan: 'Bobo beratur dengan sabar di kaunter. Dia tidak memotong barisn.', opts: ['kaunter', 'barisn'], ans: [1], fix: { barisn: 'barisan' } },
+  { level: 2, q: 'Cari perkataan yang SALAH EJAAN dalam petikan!', petikan: 'Bobo membeli segelas air teh. Harganya lima ringit. Dia membayar dengan duit kertas.', opts: ['segelas', 'ringit', 'kertas'], ans: [1], fix: { ringit: 'ringgit' } },
+  { level: 2, q: 'Cari perkataan yang SALAH EJAAN dalam petikan!', petikan: 'Penjual memberikan baki kepada Bobo. Bobo mengucapkan terima kaseh.', opts: ['baki', 'penjual', 'kaseh'], ans: [2], fix: { kaseh: 'kasih' } },
+  { level: 3, q: 'Cari perkataan yang SALAH EJAAN dalam petikan!', petikan: 'Penjual tersalah memberi baki. Bobo memulangkan duit itu kerana dia jujor. Penjual itu sangat gembera.', opts: ['jujor', 'penjual', 'gembera', 'baki'], ans: [0, 2], fix: { jujor: 'jujur', gembera: 'gembira' } },
+  { level: 3, q: 'Cari perkataan yang SALAH EJAAN dalam petikan!', petikan: 'Bobo minum air teh yang sejok. Dia membuang cawan ke dalam tong sampa. Bobo budak yang bersih.', opts: ['cawan', 'sejok', 'bersih', 'sampa'], ans: [1, 3], fix: { sejok: 'sejuk', sampa: 'sampah' } },
+  { level: 3, q: 'Cari perkataan yang SALAH EJAAN dalam petikan!', petikan: 'Bobo membeli dua biji rotti dan sebotol air. Dia membawa beg plastik. Bobo berjalan pulang ke rumh.', opts: ['rotti', 'plastik', 'berjalan', 'rumh'], ans: [0, 3], fix: { rotti: 'roti', rumh: 'rumah' } },
+];
+const KG_QS = [
   { level: 1, q: 'Bobo haus! Suapkan air KATA GANDA.', opts: ['roti-roti', 'roti'], ans: [0] },
   { level: 1, q: 'Air manakah KATA GANDA?', opts: ['kedai', 'kawan-kawan'], ans: [1] },
   { level: 2, q: 'Air manakah KATA GANDA?', opts: ['cawan', 'cawan-cawan', 'minuman'], ans: [1] },
@@ -142,19 +159,26 @@ const DEFAULT_QS = [
   { level: 3, q: 'Cari air KATA GANDA untuk Bobo.', opts: ['kedai', 'gelas-gelas', 'minuman', 'botol-botol'], ans: [1, 3] },
   { level: 3, q: 'Hati-hati! Pilih kata ganda yang BETUL.', opts: ['kawan kawan', 'kawan-kawan', 'cawan-cawan', 'berkawan'], ans: [1, 2] },
 ];
-const LS_KEY = 'ilmuverse_mixkata_soalan_v2';
+const DEFAULT_QS = EJAAN_QS;
+const SETS = { ejaan: EJAAN_QS, kataganda: KG_QS };
+const LS_KEY = 'ilmuverse_mixkata_soalan_v2', LS_SET = 'ilmuverse_mixkata_set';
+let SET_KEY = (() => { try { return localStorage.getItem(LS_SET) || 'ejaan'; } catch (e) { return 'ejaan'; } })();
 const LEVEL_INFO = {
   1: { decay: 2.2, label: 'Level 1', sub: '2 cawan', bpm: 128 },
   2: { decay: 3.3, label: 'Level 2', sub: '3 cawan • Bobo makin haus!', bpm: 142 },
   3: { decay: 4.4, label: 'Level 3', sub: '4 cawan • Cepat!', bpm: 158 },
 };
 const FEED = 28, WRONG_COST = 6, START_HP = 72;
-const HELLO = ['Hai, saya Bobo!', 'Bobo tengah haus ni!', 'Tolong Bobo suapkan air kata ganda!'];
+let HELLO = ['Hai, saya Bobo!', 'Bobo tengah haus ni!', 'Tolong Bobo suapkan air kata ganda!'];
+const helloLines = () => ['Hai, saya Bobo!', 'Bobo tengah haus ni!', QSTATE.qs.some((q) => q.petikan) ? 'Tolong Bobo cari ejaan yang salah!' : 'Tolong Bobo suapkan air kata ganda!'];
 
-function normQ(q) { const a = Array.isArray(q.ans) ? q.ans : [q.ans]; return { level: q.level, q: q.q, opts: q.opts, ans: a.filter((i) => i >= 0 && i < q.opts.length) }; }
+function normQ(q) { const a = Array.isArray(q.ans) ? q.ans : [q.ans]; return { level: q.level, q: q.q, opts: q.opts, ans: a.filter((i) => i >= 0 && i < q.opts.length), ...(q.petikan ? { petikan: q.petikan } : {}), ...(q.fix ? { fix: q.fix } : {}) }; }
+function loadCustom() { try { const s = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); if (Array.isArray(s) && s.length) return s.map(normQ); } catch (e) {} return null; }
 function loadQs() {
-  try { const s = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); if (Array.isArray(s) && s.length) return { qs: s.map(normQ), custom: true }; } catch (e) {}
-  return { qs: DEFAULT_QS, custom: false };
+  const c = loadCustom();
+  if (SET_KEY === 'custom' && c) return { qs: c, custom: true };
+  if (SET_KEY === 'custom') SET_KEY = 'ejaan';
+  return { qs: SETS[SET_KEY] || EJAAN_QS, custom: false };
 }
 let QSTATE = loadQs();
 function buildLevels(qs) {
@@ -259,16 +283,18 @@ const G = {
   cups: [], held: null, t: 0, stateT: 0, shake: 0, particles: [], floaters: [],
   design: 'merah', speed: 1, ctrl: 'hand', bubble: null, lastCry: 0, oops: null,
   hello: { line: 0, chars: 0, hold: 0 },
-  bear: { mouth: 0.15, chew: 0, jump: 0, blink: 0, tilt: 0 },
+  bear: { mouth: 0.15, chew: 0, jump: 0, blink: 0, tilt: 0 }, bearX: null, fixed: {}, fixT: 0, lastFixed: '',
   startTime: 0, _lastTick: -1,
 };
 const DRINKS = [
   { top: '#c79a6b', bot: '#8a5a33' }, { top: '#ff9fb8', bot: '#e8577e' },
   { top: '#b79cf2', bot: '#7d5bd6' }, { top: '#9edc84', bot: '#4fa93c' },
 ];
-function bearPos() { const R = 108 * U; return { x: W * 0.5, y: H * 0.47, R }; }
+function passageQ() { if (['menu', 'hello'].includes(G.state)) return null; const lv = G.levels[G.li], q = lv && lv.qs[G.qi]; return q && q.petikan ? q : null; }
+function bearTargetX() { return passageQ() && W >= H ? W * 0.8 : W * 0.5; }
+function bearPos() { const R = 108 * U; return { x: G.bearX == null ? W * 0.5 : G.bearX, y: H * 0.47, R }; }
 function mouthPos() { const b = bearPos(); return { x: b.x, y: b.y + b.R * 0.34, r: b.R * 0.62 }; }
-function counterY() { const b = bearPos(); return b.y + b.R * 1.42; }
+function counterY() { return H * 0.47 + 108 * U * 1.42; }
 function cupSize() { const n = Math.max(G.cups.length, 2); const w = Math.min(160 * U, (W * 0.86) / n - 20 * U); return { w, h: w * 1.32 }; }
 function layoutCups(snap) {
   const n = G.cups.length; if (!n) return; const { h } = cupSize();
@@ -281,7 +307,7 @@ const needLeft = () => G.cups.filter((c) => c.correct && !c.eaten).length;
 function setupQuestion() {
   const q = currentQ();
   G.cups = q.opts.map((t, i) => ({ text: t, correct: q.ans.includes(i), x: 0, y: 0, hx: 0, hy: 0, vx: 0, vy: 0, held: false, eaten: false, gone: false, s: 1, rot: 0, flash: 0, drink: DRINKS[(i + G.qi) % DRINKS.length], seed: Math.random() * 6 }));
-  layoutCups(true); G.held = null;
+  layoutCups(true); G.held = null; G.fixed = {};
 }
 
 // ====================================================================
@@ -342,7 +368,7 @@ async function startGame(fromLevel = 0) {
   ac();
   G.levels = buildLevels(QSTATE.qs);
   if (!G.levels.length) { alert('Tiada soalan. Sila muat naik soalan dahulu.'); return; }
-  hide('menu'); hide('result'); hide('qPanel'); $('topBtns').style.display = 'flex';
+  hide('menu'); hide('result'); hide('qPanel'); $('topBtns').style.display = 'flex'; HELLO = helloLines();
   G.li = fromLevel;
   if (!fromLevel) { G.score = 0; G.correctCount = 0; G.wrongCount = 0; }
   G.hp = START_HP; G.startTime = performance.now(); G.oops = null; G.bubble = null;
@@ -381,6 +407,8 @@ function feedCup(c) {
     const gain = Math.min(FEED, 100 - G.hp); G.hp = Math.min(100, G.hp + FEED); G.correctCount++;
     const pts = 100 + Math.round(G.hp); G.score += pts;
     floater(m.x, m.y - bearPos().R * 1.55, '+' + Math.max(1, Math.round(gain)) + ' NYAWA', '#22b573');
+    const q = currentQ(), fx = q.fix && q.fix[c.text.toLowerCase()];
+    if (q.petikan) { G.fixed[c.text.toLowerCase()] = fx || c.text; G.fixT = 0; G.lastFixed = c.text.toLowerCase(); if (fx) floater(W >= H ? (bearPos().x - bearPos().R * 1.4) / 2 : W / 2, counterY() - 30 * U, `${c.text} ➜ ${fx}`, '#127a4b'); }
     floater(m.x, m.y - bearPos().R * 1.95, '+' + pts + ' mata', '#f5a524');
     for (let i = 0; i < 26; i++) burst(m.x, m.y, ['#ff5c8a', '#ffc83d', '#3ccf91', '#5ab8ff', '#3a1f14'][i % 5], i % 3 === 0 ? 'heart' : 'circle');
     const left = needLeft();
@@ -412,7 +440,10 @@ function showResult(win) {
     $('resTitle').textContent = '😵 BOBO KEHAUSAN!';
     $('resStars').textContent = '';
     $('resMsg').textContent = 'Nyawa Bobo habis. Suap lebih cepat ya!';
-    $('resDetail').innerHTML = `Jawapan betul: <b>${q.ans.map((i) => esc(q.opts[i])).join('</b> dan <b>')}</b> (kata ganda penuh: perkataan diulang dengan tanda sempang).<br>Mata: ${G.score} • Sampai ${levelName(lv.level)}`;
+    const jaw = q.petikan
+      ? 'Perkataan salah ejaan: ' + q.ans.map((i) => { const o = q.opts[i], f = (q.fix || {})[o.toLowerCase()]; return `<b>${esc(o)}</b>${f ? ' → <b style="color:#127a4b">' + esc(f) + '</b>' : ''}`; }).join(', ')
+      : `Jawapan betul: <b>${q.ans.map((i) => esc(q.opts[i])).join('</b> dan <b>')}</b>`;
+    $('resDetail').innerHTML = `${jaw}<br>Mata: ${G.score} • Sampai ${levelName(lv.level)}`;
     mk('↺ Cuba Lagi ' + levelName(lv.level), 'green', () => startGame(G.li)); mk('⏮ Mula Semula', '', () => startGame(0)); mk('🏠 Menu', 'alt', goMenu);
   }
   show('result');
@@ -762,6 +793,7 @@ function update(dt) {
   B.blink -= dt; if (B.blink < -3 - Math.random() * 3) B.blink = 0.12;
   if (G.bubble) G.bubble.t += dt;
   B.jump = Math.max(0, B.jump - dt * 3);
+  if (G.bearX == null) G.bearX = W * 0.5; G.bearX += (bearTargetX() - G.bearX) * Math.min(1, dt * 4); G.fixT = (G.fixT || 0) + dt;
 
   if (G.state === 'hello') {
     const h = G.hello, line = HELLO[h.line];
@@ -835,6 +867,7 @@ function render() {
   if (G.state !== 'hello') drawHpBar(top);
   const m = mouthPos();
   if (G.held) { ctx.save(); ctx.strokeStyle = 'rgba(227,36,43,.85)'; ctx.lineWidth = 4 * U; ctx.setLineDash([12 * U, 10 * U]); ctx.lineDashOffset = G.t * 30; ctx.beginPath(); ctx.arc(m.x, m.y, m.r * 1.2 + Math.sin(G.t * 8) * 4 * U, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
+  drawPassage(top);
   drawTray();
   G.cups.filter((c) => !c.held).forEach(drawCup);
   if (G.held) drawCup(G.held);
@@ -857,6 +890,43 @@ function render() {
     ctx.save(); rr(px, py, pw, ph, 14 * U); ctx.clip(); ctx.translate(px + pw, py); ctx.scale(-1, 1); ctx.globalAlpha = 0.9; ctx.drawImage(vid, 0, 0, pw, ph); ctx.restore();
     ctx.save(); rr(px, py, pw, ph, 14 * U); ctx.lineWidth = 4 * U; ctx.strokeStyle = IN.hand ? '#22b573' : '#fff'; ctx.stroke(); ctx.restore();
   }
+}
+function drawPassage(top) {
+  const q = passageQ(); if (!q) return;
+  const b = bearPos(), land = W >= H;
+  const x = 20 * U, y = top + 84 * U, w = (land ? b.x - b.R * 1.4 : W - 20 * U) - x, h = (land ? counterY() - 16 * U : b.y - b.R * 1.3) - y;
+  if (w < 120 || h < 60) return;
+  const k = ease.outBack(clamp((G.bearX - W * 0.5) / Math.max(1, W * 0.3), 0, 1));
+  ctx.save(); ctx.globalAlpha = clamp(k * 1.2, 0, 1);
+  ctx.shadowColor = 'rgba(0,0,0,.25)'; ctx.shadowBlur = 16 * U; ctx.shadowOffsetY = 6 * U;
+  rr(x, y, w, h, 22 * U); ctx.fillStyle = '#fffdf6'; ctx.fill(); ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+  ctx.lineWidth = 6 * U; ctx.strokeStyle = '#e3242b'; ctx.stroke();
+  const hh = 44 * U; ctx.save(); rr(x, y, w, hh + 10 * U, 22 * U); ctx.clip(); ctx.fillStyle = '#e3242b'; ctx.fillRect(x, y, w, hh); ctx.restore();
+  ctx.fillStyle = '#fff'; ctx.font = F(24 * U); ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText('📜 NOTA BOBO', x + 20 * U, y + hh / 2 + 1);
+  // susun perkataan (balut baris) - tulisan BESAR
+  const words = q.petikan.split(/\s+/).filter(Boolean), pad = 24 * U, bw = w - pad * 2, bh = h - hh - pad * 1.4;
+  const core = (t) => t.replace(/[.,!?;:"'()]/g, '');
+  const disp = (t) => { const c = core(t), f = G.fixed && G.fixed[c.toLowerCase()]; return f ? { t: t.replace(c, f), fixed: true, key: c.toLowerCase() } : { t, fixed: false }; };
+  let fs = 60 * U, lines;
+  for (; fs > 16; fs -= 2) {
+    ctx.font = F(fs); const sp = ctx.measureText(' ').width; lines = [[]]; let lw = 0;
+    words.forEach((wd) => { const d = disp(wd), ww = ctx.measureText(d.t).width; if (lw + ww > bw && lines[lines.length - 1].length) { lines.push([]); lw = 0; } lines[lines.length - 1].push({ ...d, w: ww }); lw += ww + sp; });
+    if (lines.length * fs * 1.45 <= bh) break;
+  }
+  ctx.font = F(fs); const sp = ctx.measureText(' ').width, lh = fs * 1.45, ty = y + hh + pad * 0.7 + (bh - lines.length * lh) / 2 + lh / 2;
+  lines.forEach((ln, li) => {
+    let cx = x + pad; const yy = ty + li * lh;
+    ln.forEach((d) => {
+      if (d.fixed) {
+        const pop = d.key === G.lastFixed ? 1 + 0.35 * Math.max(0, 1 - G.fixT / 0.5) : 1;
+        ctx.save(); ctx.translate(cx + d.w / 2, yy); ctx.scale(pop, pop);
+        rr(-d.w / 2 - 6 * U, -fs * 0.62, d.w + 12 * U, fs * 1.24, 10 * U); ctx.fillStyle = 'rgba(60,207,145,.25)'; ctx.fill();
+        ctx.fillStyle = '#127a4b'; ctx.textAlign = 'center'; ctx.fillText(d.t, 0, 2); ctx.restore();
+      } else { ctx.fillStyle = '#2b1510'; ctx.textAlign = 'left'; ctx.fillText(d.t, cx, yy + 2); }
+      cx += d.w + sp;
+    });
+  });
+  ctx.restore();
 }
 function drawCaption() {
   // Ayat sapaan Bobo: kapsyen BESAR di bahagian bawah skrin
@@ -907,21 +977,23 @@ function chipGroup(id, key, apply) { $(id).querySelectorAll('.chip').forEach((b)
 chipGroup('ctrlOpts', 'ctrl', (v) => (G.ctrl = v));
 chipGroup('designOpts', 'design', (v) => (G.design = v));
 chipGroup('speedOpts', 'speed', (v) => (G.speed = parseFloat(v)));
+chipGroup('setOpts', 'set', (v) => { SET_KEY = v; try { localStorage.setItem(LS_SET, v); } catch (e) {} QSTATE = loadQs(); refreshSummary(); });
+function syncSetChips() { $('chipCustom').style.display = loadCustom() ? '' : 'none'; document.querySelectorAll('#setOpts .chip').forEach((b) => b.classList.toggle('on', b.dataset.set === SET_KEY)); }
 $('btnStart').addEventListener('click', () => startGame(0));
 $('btnQ').addEventListener('click', () => { ac(); hide('menu'); renderQTable(); show('qPanel'); });
 $('btnQBack').addEventListener('click', () => { hide('qPanel'); show('menu'); refreshSummary(); });
 $('btnHome').addEventListener('click', () => { if (confirm('Kembali ke menu? Permainan semasa akan tamat.')) goMenu(); });
 $('btnSound').addEventListener('click', () => { soundOn = !soundOn; $('btnSound').textContent = soundOn ? '🔊' : '🔇'; });
 $('btnMusic').addEventListener('click', () => { musicOn = !musicOn; $('btnMusic').style.opacity = musicOn ? 1 : 0.4; if (musicOn) musicStart(); else musicStop(); });
-$('btnReset').addEventListener('click', () => { try { localStorage.removeItem(LS_KEY); } catch (e) {} QSTATE = loadQs(); $('qErr').textContent = 'Soalan asal digunakan semula.'; renderQTable(); });
+$('btnReset').addEventListener('click', () => { try { localStorage.removeItem(LS_KEY); } catch (e) {} if (SET_KEY === 'custom') SET_KEY = 'ejaan'; try { localStorage.setItem(LS_SET, SET_KEY); } catch (e) {} QSTATE = loadQs(); $('qErr').textContent = 'Soalan saya dibuang. Set asal digunakan.'; renderQTable(); });
 $('btnUp').addEventListener('click', () => $('fileIn').click());
 $('btnTpl').addEventListener('click', downloadTemplate);
 $('fileIn').addEventListener('change', async (e) => { const f = e.target.files[0]; e.target.value = ''; if (f) await importFile(f); });
 
-function refreshSummary() { const lv = buildLevels(QSTATE.qs); $('qSummary').innerHTML = (QSTATE.custom ? '📂 Soalan dimuat naik: ' : '📦 Soalan asal: ') + lv.map((l) => `<b>${levelName(l.level)}</b> ${l.qs.length} soalan`).join(' • '); }
+function refreshSummary() { syncSetChips(); const lv = buildLevels(QSTATE.qs); $('qSummary').innerHTML = (QSTATE.custom ? '📂 Soalan dimuat naik: ' : '📦 Soalan asal: ') + lv.map((l) => `<b>${levelName(l.level)}</b> ${l.qs.length} soalan`).join(' • '); }
 function renderQTable() {
   const L = 'ABCD';
-  $('qTable').innerHTML = '<table><tr><th>Level</th><th>Soalan</th><th>Pilihan</th></tr>' + QSTATE.qs.map((q) => `<tr><td>${q.level}</td><td>${esc(q.q)}</td><td>${q.opts.map((o, i) => (q.ans.includes(i) ? `<span class="ok">${L[i]}. ${esc(o)} ✔</span>` : `${L[i]}. ${esc(o)}`)).join('<br>')}</td></tr>`).join('') + '</table>';
+  $('qTable').innerHTML = '<table><tr><th>Level</th><th>Soalan</th><th>Pilihan</th></tr>' + QSTATE.qs.map((q) => `<tr><td>${q.level}</td><td>${esc(q.q)}${q.petikan ? `<br><i>${esc(q.petikan)}</i>` : ''}</td><td>${q.opts.map((o, i) => (q.ans.includes(i) ? `<span class="ok">${L[i]}. ${esc(o)} ✔${q.fix && q.fix[o.toLowerCase()] ? ' → ' + esc(q.fix[o.toLowerCase()]) : ''}</span>` : `${L[i]}. ${esc(o)}`)).join('<br>')}</td></tr>`).join('') + '</table>';
 }
 function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 async function ensureXLSX() { if (!window.XLSX) await loadScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'); return window.XLSX; }
@@ -929,8 +1001,8 @@ async function downloadTemplate() {
   try { const r = await fetch('/templates/templat-mixkata.xlsx', { method: 'HEAD' }); if (r.ok) { const a = document.createElement('a'); a.href = '/templates/templat-mixkata.xlsx'; a.download = 'templat-mixkata.xlsx'; a.click(); return; } } catch (e) {}
   try {
     const X = await ensureXLSX();
-    const rows = [['Level', 'Soalan', 'Pilihan A', 'Pilihan B', 'Pilihan C', 'Pilihan D', 'Jawapan Betul (cth: A atau A,C)'], ...DEFAULT_QS.map((q) => [q.level, q.q, q.opts[0] || '', q.opts[1] || '', q.opts[2] || '', q.opts[3] || '', q.ans.map((i) => 'ABCD'[i]).join(',')])];
-    const ws = X.utils.aoa_to_sheet(rows); ws['!cols'] = [{ wch: 8 }, { wch: 46 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 28 }];
+    const rows = [['Level', 'Soalan', 'Petikan', 'Pilihan A', 'Pilihan B', 'Pilihan C', 'Pilihan D', 'Jawapan Betul (cth: A atau A,C)', 'Ejaan Betul (pilihan)'], ...DEFAULT_QS.map((q) => [q.level, q.q, q.petikan || '', q.opts[0] || '', q.opts[1] || '', q.opts[2] || '', q.opts[3] || '', q.ans.map((i) => 'ABCD'[i]).join(','), q.ans.map((i) => (q.fix || {})[q.opts[i].toLowerCase()] || '').join(', ')])];
+    const ws = X.utils.aoa_to_sheet(rows); ws['!cols'] = [{ wch: 8 }, { wch: 40 }, { wch: 60 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 26 }, { wch: 24 }];
     const wb = X.utils.book_new(); X.utils.book_append_sheet(wb, ws, 'Soalan MIX-KATA'); X.writeFile(wb, 'templat-mixkata.xlsx');
   } catch (e) { $('qErr').textContent = 'Templat tidak dapat dimuat turun (tiada sambungan internet).'; }
 }
@@ -941,7 +1013,7 @@ function parseRows(rows) {
   const iL = find((h) => h.startsWith('level') || h.startsWith('tahap'));
   const iQ = find((h) => h.startsWith('soalan'));
   const iO = ['a', 'b', 'c', 'd'].map((x) => find((h) => h === 'pilihan ' + x || h.startsWith('pilihan ' + x + ' ') || h === x));
-  const iJ = find((h) => h.startsWith('jawapan'));
+  const iJ = find((h) => h.startsWith('jawapan')), iP = find((h) => h.startsWith('petikan')), iE = find((h) => h.startsWith('ejaan'));
   if (iQ < 0 || iJ < 0 || iO[0] < 0 || iO[1] < 0) return { qs, errs: ['Lajur tidak dikenali. Pastikan baris pertama ada: Soalan, Pilihan A, Pilihan B, ..., Jawapan Betul.'] };
   rows.slice(1).forEach((r, k) => {
     const n = k + 2, q = String(r[iQ] ?? '').trim(); if (!q && !r.some((v) => String(v).trim())) return;
@@ -953,7 +1025,10 @@ function parseRows(rows) {
     if (opts.length < 2) { errs.push(`Baris ${n}: perlu sekurang-kurangnya 2 pilihan.`); return; }
     if (letters.length >= opts.length) { errs.push(`Baris ${n}: mesti ada sekurang-kurangnya satu pilihan yang salah.`); return; }
     let level = iL >= 0 ? parseInt(r[iL], 10) : NaN; if (!(level >= 1 && level <= 3)) level = opts.length <= 2 ? 1 : opts.length === 3 ? 2 : 3;
-    qs.push({ level, q, opts, ans: letters.map((L) => map['ABCD'.indexOf(L)]) });
+    const ans = letters.map((L) => map['ABCD'.indexOf(L)]), petikan = iP >= 0 ? String(r[iP] ?? '').trim() : '';
+    const fixes = iE >= 0 ? String(r[iE] ?? '').split(/[,;]/).map((t) => t.trim()) : [], fix = {};
+    ans.forEach((ai, k2) => { if (fixes[k2]) fix[opts[ai].toLowerCase()] = fixes[k2]; });
+    qs.push({ level, q, opts, ans, ...(petikan ? { petikan } : {}), ...(Object.keys(fix).length ? { fix } : {}) });
   });
   if (!qs.length && !errs.length) errs.push('Tiada soalan dijumpai dalam fail.');
   return { qs, errs };
@@ -963,12 +1038,12 @@ async function importFile(f) {
   try {
     const X = await ensureXLSX(), wb = X.read(await f.arrayBuffer(), { type: 'array' }), ws = wb.Sheets[wb.SheetNames[0]];
     const { qs, errs } = parseRows(X.utils.sheet_to_json(ws, { header: 1, defval: '' }));
-    if (qs.length) { try { localStorage.setItem(LS_KEY, JSON.stringify(qs)); } catch (e) {} QSTATE = { qs, custom: true }; }
+    if (qs.length) { try { localStorage.setItem(LS_KEY, JSON.stringify(qs)); localStorage.setItem(LS_SET, 'custom'); } catch (e) {} SET_KEY = 'custom'; QSTATE = { qs, custom: true }; syncSetChips(); }
     $('qErr').textContent = (qs.length ? `✔ ${qs.length} soalan dimuat naik.` : '✖ Tiada soalan disimpan.') + (errs.length ? '\n' + errs.join('\n') : '');
     renderQTable();
   } catch (e) { $('qErr').textContent = 'Fail tidak dapat dibaca. ' + (e.message || ''); }
 }
-window.__mixkata = { G, parseRows, startGame, IN, skipHello };
+window.__mixkata = { G, parseRows, startGame, IN, skipHello, mouthPos };
 
 resize(); refreshSummary(); requestAnimationFrame(frame);
 try { document.fonts && document.fonts.load('700 20px Fredoka').then(() => { cacheKey = ''; }); } catch (e) {}
