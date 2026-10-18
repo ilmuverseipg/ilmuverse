@@ -267,10 +267,16 @@
     const pressed = c.down && c.active; c.justDown = pressed && !c.lastDown; c.justUp = !pressed && c.lastDown; c.pressed = pressed; c.lastDown = pressed;
   };
   K.drawHandCursor = (ctx, c, u, color) => {
-    if (!c.active) return; const R = 28 * u;
-    ctx.save(); ctx.beginPath(); ctx.arc(c.x, c.y, R, 0, Math.PI * 2); ctx.fillStyle = c.down ? 'rgba(255,200,61,.6)' : 'rgba(255,255,255,.35)'; ctx.fill();
-    ctx.lineWidth = 5 * u; ctx.strokeStyle = color || '#e3242b'; ctx.beginPath(); ctx.arc(c.x, c.y, R, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (c.down ? 1 : c.grip)); ctx.stroke();
-    ctx.font = `${28 * u}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(c.down ? '✊' : '✋', c.x, c.y + 1); ctx.restore();
+    if (!c.active) return; const R = 44 * u, col = color || '#e3242b';
+    ctx.save();
+    // jejak gerakan
+    c.trail = c.trail || []; c.trail.push({ x: c.x, y: c.y }); if (c.trail.length > 8) c.trail.shift();
+    c.trail.forEach((p, i) => { ctx.globalAlpha = (i / c.trail.length) * 0.35; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(p.x, p.y, R * 0.45 * (i / c.trail.length), 0, Math.PI * 2); ctx.fill(); });
+    ctx.globalAlpha = 1; ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 14 * u;
+    ctx.beginPath(); ctx.arc(c.x, c.y, R, 0, Math.PI * 2); ctx.fillStyle = c.down ? '#ffc83d' : '#ffffff'; ctx.fill(); ctx.shadowBlur = 0;
+    ctx.lineWidth = 4 * u; ctx.strokeStyle = '#2a1516'; ctx.stroke();
+    ctx.lineWidth = 8 * u; ctx.strokeStyle = col; ctx.beginPath(); ctx.arc(c.x, c.y, R + 7 * u, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (c.down ? 1 : Math.max(0.08, c.grip))); ctx.stroke();
+    ctx.font = `${40 * u}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(c.down ? '✊' : '✋', c.x, c.y + 2 * u); ctx.restore();
   };
   K.drawCamPreview = (ctx, W, H, u, ok) => {
     const v = K.hands.video; if (!K.hands.ready || !v || !v.videoWidth) return;

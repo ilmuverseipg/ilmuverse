@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+<title>Akuarium Ejaan Bobo Mixue 🐟</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!--
+  ILMUVERSE GAMEBOX - AKUARIUM EJAAN BOBO MIXUE (SP 3.3.2 (i) ejaan)
+  Ikan berhuruf berenang dalam akuarium Bobo. Gerakkan TANGAN untuk gerakkan jala,
+  GENGGAM (atau klik / ketik) untuk cedok ikan IKUT URUTAN ejaan betul.
+  Permainan tenang tanpa nyawa - sesuai untuk murid yang lemah. Bintang ikut ketepatan.
+-->
+<style>
+  :root{ --red:#e3242b; --red-dd:#7d0b10; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; height:100%; overflow:hidden; background:#0e5aa7; font-family:'Fredoka',system-ui,sans-serif; color:#3a1416; }
+  canvas{ position:fixed; inset:0; width:100vw; height:100vh; display:block; touch-action:none; }
+  video{ display:none; }
+  .overlay{ position:fixed; inset:0; display:flex; align-items:flex-end; justify-content:center; padding:16px 16px 22px; z-index:10; pointer-events:none; }
+  .overlay.center{ align-items:center; background:rgba(10,30,70,.45); backdrop-filter:blur(5px); pointer-events:auto; }
+  .overlay.hidden{ display:none; }
+  .panel{ pointer-events:auto; width:min(860px,100%); max-height:62vh; overflow:auto; background:rgba(255,247,236,.97); border-radius:26px; padding:16px 22px; box-shadow:0 12px 0 var(--red-dd), 0 24px 50px rgba(0,0,0,.4); border:4px solid #fff; animation:pop .5s cubic-bezier(.2,1.6,.4,1); }
+  .overlay.center .panel{ max-height:92vh; }
+  @keyframes pop{ from{ transform:scale(.7) translateY(30px); opacity:0 } to{ transform:none; opacity:1 } }
+  .row{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; align-items:center; margin:8px 0; }
+  .lbl{ font-weight:700; color:#a2353b; font-size:14px; text-transform:uppercase; min-width:92px; text-align:right; }
+  .chip{ font-family:inherit; font-weight:600; font-size:15px; padding:8px 13px; border-radius:999px; border:3px solid #f1c9cb; background:#fff; color:#7a3a3e; cursor:pointer; }
+  .chip.on{ border-color:var(--red); background:var(--red); color:#fff; }
+  .btn{ font-family:inherit; font-weight:700; font-size:20px; border:none; border-radius:18px; padding:13px 26px; cursor:pointer; color:#fff; background:var(--red); box-shadow:0 6px 0 var(--red-dd); }
+  .btn:active{ transform:translateY(5px); box-shadow:0 1px 0 var(--red-dd); }
+  .btn.green{ background:#22b573; box-shadow:0 6px 0 #127a4b; font-size:26px; padding:14px 40px; }
+  .btn.alt{ background:#fff; color:var(--red); box-shadow:0 6px 0 #e7c3c5; border:3px solid var(--red); }
+  .btn.small{ font-size:15px; padding:8px 14px; border-radius:14px; }
+  .note{ font-size:13px; color:#7a3a3e; text-align:center; }
+  .err{ color:#b3151b; font-weight:600; font-size:14px; white-space:pre-line; text-align:center; }
+  h2{ margin:0 0 6px; color:var(--red); text-align:center; font-size:30px; }
+  .big{ font-size:clamp(36px,6vw,62px); text-align:center; margin:0; line-height:1.05; color:var(--red); }
+  .stars{ text-align:center; font-size:46px; letter-spacing:6px; }
+  table{ width:100%; border-collapse:collapse; font-size:14px; background:#fff; border-radius:12px; overflow:hidden; margin-top:8px; }
+  th,td{ padding:5px 8px; border-bottom:1px solid #f3dcdd; text-align:left; } th{ background:#ffe3e4; }
+  #tools{ position:fixed; left:12px; bottom:12px; z-index:6; display:none; gap:8px; }
+  #tools button{ font-family:inherit; border:none; border-radius:14px; padding:8px 12px; background:rgba(255,255,255,.92); color:var(--red); cursor:pointer; box-shadow:0 4px 0 rgba(0,0,0,.18); font-size:18px; }
+  #hint{ position:fixed; left:50%; bottom:14px; transform:translateX(-50%); z-index:7; background:rgba(255,255,255,.95); border-radius:999px; padding:8px 18px; font-weight:600; font-size:15px; color:#7a3a3e; box-shadow:0 4px 0 rgba(0,0,0,.15); pointer-events:none; transition:opacity .4s; opacity:0; max-width:92vw; text-align:center; }
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<video id="vid" playsinline muted></video>
+<div id="hint"></div>
+<div id="tools"><button id="tMusic" title="Lagu">🎵</button><button id="tSound" title="Bunyi">🔊</button><button id="tHome" title="Menu">🏠</button></div>
+
+<div id="menu" class="overlay">
+  <div class="panel">
+    <div class="row"><span class="lbl">Kawalan</span>
+      <button class="chip on" data-k="ctrl" data-v="hand">✊ Genggam tangan</button><button class="chip" data-k="ctrl" data-v="mouse">🖱️ Tetikus / Sentuh</button></div>
+    <div class="row"><span class="lbl">Ikan</span>
+      <button class="chip" data-k="speed" data-v="0.7">🐢 Perlahan</button><button class="chip on" data-k="speed" data-v="1">🐟 Biasa</button><button class="chip" data-k="speed" data-v="1.35">🐠 Laju</button></div>
+    <div class="row" id="setRow"><span class="lbl">Perkataan</span></div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn green" id="btnStart">▶ MULA</button>
+      <button class="btn alt small" id="btnWords">📋 Perkataan</button>
+      <button class="btn alt small" id="btnLogo">🏷 Logo</button>
+      <input type="file" id="logoIn" accept="image/*" style="display:none">
+    </div>
+    <div class="note">Gerakkan tangan untuk gerakkan <b>jala</b> • <b>genggam</b> untuk cedok ikan ikut urutan ejaan betul • <a href="/game-arab.html" style="color:#a2353b">← GameBox</a></div>
+  </div>
+</div>
+
+<div id="wordPanel" class="overlay center hidden">
+  <div class="panel">
+    <h2>📋 Perkataan</h2>
+    <div class="row">
+      <button class="btn small" id="btnTpl">⬇ Muat turun templat</button>
+      <button class="btn small green" style="font-size:15px;padding:8px 14px" id="btnUp">⬆ Muat naik</button>
+      <button class="btn small alt" id="btnReset">↺ Perkataan asal</button>
+      <input type="file" id="fileIn" accept=".xlsx,.xls,.csv" style="display:none">
+    </div>
+    <div class="note">Lajur: <b>Set</b> | <b>Perkataan Betul</b> | <b>Ejaan Salah</b> | <b>Gambar</b> (emoji, pilihan). Templat yang sama untuk Bancuh Ejaan & Misi Penghantaran.</div>
+    <div class="err" id="wErr"></div>
+    <div id="wTable"></div>
+    <div class="row"><button class="btn" id="btnWBack">✔ Siap</button></div>
+  </div>
+</div>
+
+<div id="logoPanel" class="overlay center hidden">
+  <div class="panel" style="text-align:center">
+    <h2>🏷 Logo Kedai</h2>
+    <div class="note" style="font-size:15px">Logo dipaparkan pada bingkai akuarium dan skrin tajuk. Disimpan dalam pelayar komputer ini sahaja.</div>
+    <div class="row"><img id="logoPrev" style="max-width:220px;max-height:120px;background:#fff;border-radius:12px" alt=""></div>
+    <div class="row"><button class="btn small" id="btnLogoUp">⬆ Muat naik logo</button><button class="btn small alt" id="btnLogoX">✖ Buang</button><button class="btn small green" style="font-size:15px;padding:8px 14px" id="btnLogoBack">✔ Siap</button></div>
+  </div>
+</div>
+
+<div id="result" class="overlay center hidden">
+  <div class="panel" style="text-align:center">
+    <p class="big" id="rTitle"></p>
+    <div class="stars" id="rStars"></div>
+    <div style="font-size:20px;font-weight:600" id="rMsg"></div>
+    <div class="note" style="font-size:15px" id="rDetail"></div>
+    <div class="row" style="margin-top:14px"><button class="btn green" style="font-size:20px" id="rAgain">↺ Main Semula</button><button class="btn alt" id="rMenu">🏠 Menu</button></div>
+  </div>
+</div>
+
+<script src="/bobo-kit.js"></script>
+<script>
+(() => {
+'use strict';
+const K = window.BoboKit, { clamp, F, ease, SFX } = K;
+const $ = (id) => document.getElementById(id);
+const show = (id) => $(id).classList.remove('hidden'), hide = (id) => $(id).classList.add('hidden');
+const MEL = [72, null, 76, 79, 77, null, 74, null, 72, null, 69, 72, 74, null, null, null, 76, null, 79, 84, 81, null, 79, null, 77, 76, 74, 72, 74, null, null, null];
+const BASS = [48, 45, 41, 43];
+const FISHCOL = [['#ff8a3d', '#ffb36b'], ['#ffd23f', '#ffe68a'], ['#ff6fa8', '#ffa6c9'], ['#3ccf91', '#8ce8bd'], ['#b58cf0', '#d6bdf7'], ['#5ab8ff', '#a3d8ff'], ['#ff5c5c', '#ff9b9b']];
+const splash = () => { K.noise(0.35, 0.22, 0, 0, 1400); K.tone(500, 0.25, 'sine', 0.08, 220); };
+const bubble = () => K.tone(700 + Math.random() * 400, 0.08, 'sine', 0.05, 1400);
+
+// ====================================================================
+// KANVAS
+// ====================================================================
+const cv = $('cv'), ctx = cv.getContext('2d');
+let W = 0, H = 0, DPR = 1, U = 1, WT = 0; // WT = paras air (atas)
+function resize() { DPR = Math.min(window.devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0); U = Math.min(W / 1280, H / 800); WT = 200 * U; bg = null; }
+addEventListener('resize', resize);
+let bg = null;
+function paintBg() {
+  bg = document.createElement('canvas'); bg.width = W * DPR; bg.height = H * DPR; const c = bg.getContext('2d'); c.setTransform(DPR, 0, 0, DPR, 0, 0);
+  // dinding kedai di atas
+  c.fillStyle = '#fff3e4'; c.fillRect(0, 0, W, WT); for (let x = 0; x < W; x += 80 * U) { c.fillStyle = 'rgba(255,150,150,.14)'; c.fillRect(x, 0, 40 * U, WT); }
+  // air
+  const g = c.createLinearGradient(0, WT, 0, H); g.addColorStop(0, '#5fd0ff'); g.addColorStop(0.55, '#1f8fe0'); g.addColorStop(1, '#0d5aa8'); c.fillStyle = g; c.fillRect(0, WT, W, H - WT);
+  // pasir & batu
+  c.fillStyle = '#f3d9a4'; c.beginPath(); c.moveTo(0, H); for (let x = 0; x <= W; x += 30) c.lineTo(x, H - 50 * U - Math.sin(x * 0.01) * 14 * U); c.lineTo(W, H); c.fill();
+  [[0.12, '#9aa7b4', 40], [0.18, '#7e8a96', 26], [0.72, '#9aa7b4', 48], [0.86, '#b7c3cf', 30]].forEach(([fx, col, r]) => { c.fillStyle = col; c.beginPath(); c.ellipse(W * fx, H - 40 * U, r * U * 1.4, r * U, 0, Math.PI, 0); c.fill(); });
+  // bingkai akuarium
+  c.lineWidth = 16 * U; c.strokeStyle = '#e3242b'; c.strokeRect(8 * U, WT - 8 * U, W - 16 * U, H - WT); c.fillStyle = '#e3242b'; c.fillRect(0, WT - 16 * U, W, 16 * U);
+}
+
+// ====================================================================
+// KEADAAN
+// ====================================================================
+const S = { ctrl: 'hand', speed: '1', set: 'rawak' };
+const G = { state: 'title', t: 0, stT: 0, words: [], wi: 0, slots: [], fish: [], score: 0, wrongs: 0, totalWrong: 0, stars: [], net: { x: 0, y: 0, dip: 0, catchT: 0 }, banner: null, msg: null, flyers: [], bubbles: [], weeds: [], lastProgress: 0, bobo: 'happy' };
+const PT = new K.Particles(), cur = K.makeCursor();
+let WORDS = K.loadWords();
+const curW = () => G.words[G.wi];
+const needCh = () => { const s = G.slots.find((x) => !x.filled); return s ? s.ch : null; };
+
+// ====================================================================
+// INPUT
+// ====================================================================
+const vid = $('vid');
+cv.addEventListener('pointerdown', (e) => { K.ac(); if (S.ctrl !== 'mouse') return; cur.tx = cur.x = e.clientX; cur.ty = cur.y = e.clientY; cur.down = true; cur.active = true; });
+cv.addEventListener('pointermove', (e) => { if (S.ctrl !== 'mouse') return; cur.tx = e.clientX; cur.ty = e.clientY; cur.active = true; });
+addEventListener('pointerup', () => { if (S.ctrl === 'mouse') cur.down = false; });
+function feedHand() { if (S.ctrl !== 'hand' || !K.hands.ready) return; const h = K.hands.list[0]; if (h && h.t !== cur.seen) K.feedHand(cur, h); }
+
+// ====================================================================
+// ALIRAN
+// ====================================================================
+function hint(t, ms = 3000) { const h = $('hint'); h.textContent = t; h.style.opacity = 1; clearTimeout(hint._t); hint._t = setTimeout(() => (h.style.opacity = 0), ms); }
+async function startGame() {
+  K.ac(); WORDS = K.loadWords(); G.words = K.pickWords(WORDS.words, S.set, 6);
+  if (!G.words.length) { alert('Tiada perkataan.'); return; }
+  G.wi = 0; G.score = 0; G.totalWrong = 0; G.stars = []; G.net.x = W / 2; G.net.y = H * 0.6;
+  hide('menu'); hide('result'); $('tools').style.display = 'flex'; K.music.start(MEL, BASS, 112);
+  startWord();
+  if (S.ctrl === 'hand') {
+    hint('Membuka kamera… benarkan akses kamera.', 4000);
+    const ok = await K.startHands(vid, 1, () => ({ W, H }));
+    if (!ok) { S.ctrl = 'mouse'; syncChips(); hint('Kamera tidak dapat dibuka. Main guna tetikus atau sentuh.', 5000); }
+    else hint('✋ Gerakkan jala • ✊ GENGGAM untuk cedok ikan', 5000);
+  } else hint('Gerakkan jala & KLIK / KETIK untuk cedok ikan', 4000);
+}
+function startWord() {
+  const w = curW(); G.slots = w.betul.split('').map((ch) => ({ ch, filled: false, flash: 0 })); G.wrongs = 0; G.fish = []; G.lastProgress = G.t;
+  const decoys = 2 + Math.min(3, G.wi), pool = 'abcdefghijklmnoprstuwy'.split('').filter((c) => !w.betul.includes(c));
+  const letters = [...w.betul.split(''), ...K.shuffle(pool).slice(0, decoys)];
+  K.shuffle(letters).forEach((ch, i) => spawnFish(ch, i, letters.length));
+  G.state = 'intro'; G.stT = 0; SFX.level();
+}
+function spawnFish(ch, i, n) {
+  const sp = (60 + Math.random() * 50 + G.wi * 8) * U * parseFloat(S.speed), dir = Math.random() < 0.5 ? -1 : 1;
+  const top = WT + 150 * U, bot = H - 140 * U, lane = n ? top + (bot - top) * ((i + 0.5) / n) : top + Math.random() * (bot - top);
+  G.fish.push({ ch, x: Math.random() * W, y: lane, baseY: lane, vx: sp * dir, phase: Math.random() * 6, col: FISHCOL[Math.floor(Math.random() * FISHCOL.length)], size: (1 + Math.random() * 0.15), state: 'swim', t: 0, flip: dir });
+}
+function catchFish() {
+  const n = G.net, R = 95 * U; let best = null, bd = 1e9;
+  if (S.ctrl === 'mouse') { n.x = clamp(cur.x, 60 * U, W - 60 * U); n.y = clamp(cur.y, WT + 60 * U, H - 60 * U); }
+  G.fish.forEach((f) => { if (f.state !== 'swim') return; const d = Math.hypot(f.x - n.x, f.y - n.y); if (d < R * 1.15 && d < bd) { bd = d; best = f; } });
+  n.dip = 1; splash();
+  if (!best) return;
+  const need = needCh();
+  if (best.ch === need) {
+    best.state = 'caught'; best.t = 0; const s = G.slots.find((x) => !x.filled); s.filled = true; s.flash = 1; G.score += 100; G.lastProgress = G.t; SFX.collect(); G.bobo = 'joy'; setTimeout(() => (G.bobo = 'happy'), 900);
+    G.flyers.push({ ch: best.ch, x: best.x, y: best.y, tx: s._x, ty: s._y, t: 0, col: best.col[0] });
+    PT.burst(best.x, best.y, 22, ['#fff', '#ffc83d', '#8ce8bd'], U); PT.text(best.x, best.y - 70 * U, '✓ ' + best.ch, '#22b573', 54 * U);
+    if (!needCh()) setTimeout(wordDone, 650);
+  } else {
+    G.wrongs++; G.totalWrong++; SFX.wrong(); best.state = 'flee'; best.t = 0; best.vx = (best.x < W / 2 ? -1 : 1) * 520 * U; G.msg = { txt: 'KURANG TEPAT!', x: best.x, y: best.y - 70 * U, t: 0 }; G.bobo = 'yuck'; setTimeout(() => (G.bobo = 'happy'), 900);
+  }
+}
+function wordDone() {
+  const w = curW(), st = G.wrongs === 0 ? 3 : G.wrongs <= 2 ? 2 : 1; G.stars.push(st); G.score += st * 50;
+  G.banner = { txt: 'HEBAT!', sub: w.betul, stars: st, t: 0 }; G.state = 'done'; G.stT = 0; SFX.correct(); for (let k = 0; k < st; k++) setTimeout(() => SFX.star(), 300 + k * 160);
+  PT.burst(W / 2, H * 0.45, 50, ['#ffc83d', '#3ccf91', '#ff7ab6', '#5ab8ff', '#fff'], U);
+}
+function finish() {
+  G.state = 'end'; K.music.stop(); $('tools').style.display = 'none';
+  const avg = G.stars.reduce((a, b) => a + b, 0) / Math.max(1, G.stars.length), st = Math.max(1, Math.round(avg));
+  $('rTitle').textContent = '🐟 AKUARIUM PENUH!'; $('rStars').textContent = '⭐'.repeat(st) + '☆'.repeat(3 - st);
+  $('rMsg').textContent = 'Syabas! Semua ikan ejaan berjaya ditangkap.';
+  $('rDetail').textContent = `Mata: ${G.score} • Cedok salah: ${G.totalWrong} • Perkataan: ${G.words.map((w) => w.betul).join(', ')}`;
+  SFX.win(); PT.confetti(W, 150, U); setTimeout(() => show('result'), 900);
+}
+function goMenu() { G.state = 'title'; K.music.stop(); hide('result'); hide('wordPanel'); hide('logoPanel'); show('menu'); $('tools').style.display = 'none'; G.fish = []; }
+
+// ====================================================================
+// KEMASKINI
+// ====================================================================
+let last = performance.now();
+function frame(now) { const dt = Math.min(0.05, (now - last) / 1000); last = now; G.t += dt; G.stT += dt; feedHand(); K.updateCursor(cur, dt, S.ctrl === 'hand'); update(dt); render(); requestAnimationFrame(frame); }
+function update(dt) {
+  PT.update(dt, H); if (G.banner) G.banner.t += dt; if (G.msg) { G.msg.t += dt; if (G.msg.t > 1.2) G.msg = null; }
+  G.slots.forEach((s) => (s.flash = Math.max(0, s.flash - dt * 1.5)));
+  // gelembung latar
+  if (Math.random() < dt * 3) G.bubbles.push({ x: Math.random() * W, y: H, r: (4 + Math.random() * 10) * U, vy: (40 + Math.random() * 60) * U });
+  G.bubbles.forEach((b) => { b.y -= b.vy * dt; b.x += Math.sin(G.t * 2 + b.y * 0.02) * 0.3; }); G.bubbles = G.bubbles.filter((b) => b.y > WT);
+  // ikan di skrin tajuk
+  if (G.state === 'title' && G.fish.length < 7) spawnFish('ejaanbobo'[G.fish.length % 9], G.fish.length, 7);
+  // jala ikut kursor
+  if (cur.active) { G.net.x += (clamp(cur.x, 60 * U, W - 60 * U) - G.net.x) * Math.min(1, dt * 14); G.net.y += (clamp(cur.y, WT + 60 * U, H - 60 * U) - G.net.y) * Math.min(1, dt * 14); }
+  G.net.dip = Math.max(0, G.net.dip - dt * 2.5);
+  if (G.state === 'intro' && G.stT > 2.4) { G.state = 'play'; G.stT = 0; }
+  if (G.state === 'play' && cur.justDown) catchFish();
+  // ikan berenang
+  G.fish.forEach((f) => {
+    f.t += dt; f.phase += dt * 3;
+    if (f.state === 'swim') {
+      f.x += f.vx * dt; f.y = f.baseY + Math.sin(f.phase * 0.6) * 22 * U;
+      const m = 110 * U; if (f.x < -m) { f.x = -m; f.vx = Math.abs(f.vx); } if (f.x > W + m) { f.x = W + m; f.vx = -Math.abs(f.vx); }
+      if (Math.random() < dt * 0.15) f.vx *= -1;
+      // ikan lari sikit bila jala dekat (lebih mencabar bila level naik)
+      const d = Math.hypot(f.x - G.net.x, f.y - G.net.y); if (d < 150 * U && G.wi >= 2) f.x += Math.sign(f.x - G.net.x) * 40 * U * dt;
+      f.flip += (Math.sign(f.vx) - f.flip) * Math.min(1, dt * 6);
+    } else if (f.state === 'flee') { f.x += f.vx * dt; f.flip = Math.sign(f.vx); if (f.t > 1.2) { f.state = 'swim'; f.vx = Math.sign(f.vx) * 80 * U; } }
+  });
+  G.fish = G.fish.filter((f) => !(f.state === 'caught'));
+  G.flyers.forEach((y) => (y.t += dt)); G.flyers = G.flyers.filter((y) => y.t < 0.7);
+  if (G.state === 'done' && G.stT > 2.3) { G.banner = null; if (G.wi + 1 < G.words.length) { G.wi++; startWord(); } else finish(); }
+}
+
+// ====================================================================
+// LUKISAN
+// ====================================================================
+function render() {
+  if (!bg) paintBg(); ctx.drawImage(bg, 0, 0, W, H);
+  // cahaya dalam air
+  ctx.save(); ctx.globalAlpha = 0.12; ctx.fillStyle = '#fff'; for (let k = 0; k < 5; k++) { const x = ((k * 0.23 + G.t * 0.01) % 1.2) * W; ctx.beginPath(); ctx.moveTo(x, WT); ctx.lineTo(x + 70 * U, WT); ctx.lineTo(x - 120 * U, H); ctx.lineTo(x - 220 * U, H); ctx.fill(); } ctx.restore();
+  // rumpai laut
+  for (let k = 0; k < 9; k++) { const x = (k + 0.5) / 9 * W, h = (120 + (k * 37) % 90) * U; ctx.save(); ctx.strokeStyle = k % 2 ? '#2fa84f' : '#3ccf6a'; ctx.lineWidth = 14 * U; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x, H - 40 * U); for (let j = 1; j <= 6; j++) ctx.lineTo(x + Math.sin(G.t * 1.5 + k + j * 0.6) * 14 * U, H - 40 * U - h * j / 6); ctx.stroke(); ctx.restore(); }
+  G.bubbles.forEach((b) => { ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = 2 * U; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.stroke(); });
+  // ikan
+  const need = needCh(), idle = G.state === 'play' && G.t - G.lastProgress > 12;
+  G.fish.forEach((f) => drawFish(f, idle && f.ch === need && f.state === 'swim'));
+  // permukaan air berombak
+  ctx.save(); ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.beginPath(); ctx.moveTo(0, WT); for (let x = 0; x <= W; x += 20) ctx.lineTo(x, WT + Math.sin(x * 0.02 + G.t * 2) * 5 * U); ctx.lineTo(W, WT + 14 * U); ctx.lineTo(0, WT + 14 * U); ctx.fill(); ctx.restore();
+  // Bobo di tepi akuarium
+  const bx = W - 130 * U, by = WT - 78 * U;
+  if (G.state !== 'title') { K.drawBobo(ctx, { x: bx, y: by, R: 92 * U, t: G.t, mood: G.bobo, wave: G.state === 'intro', lookX: clamp((G.net.x - bx) / 400, -1, 1), lookY: 1 }); }
+  ctx.fillStyle = '#e3242b'; ctx.fillRect(0, WT - 16 * U, W, 16 * U); // tepi akuarium di depan Bobo
+  if (G.state !== 'title') drawHud();
+  // huruf terbang ke petak
+  G.flyers.forEach((y) => { const e = ease.inOut(clamp(y.t / 0.6, 0, 1)), x = y.x + (y.tx - y.x) * e, yy = y.y + (y.ty - y.y) * e - Math.sin(e * Math.PI) * 120 * U; K.bigText(ctx, y.ch, x, yy, 80 * U * (1 - e * 0.3), '#127a4b', '#fff', 12 * U); });
+  if (G.state !== 'title') drawNet();
+  PT.draw(ctx);
+  if (G.msg) K.bigText(ctx, G.msg.txt, clamp(G.msg.x, 220 * U, W - 220 * U), G.msg.y - G.msg.t * 40 * U, 54 * U, '#e3242b', '#fff', 11 * U);
+  if (G.state === 'intro') { const k = ease.outBack(clamp(G.stT / 0.5, 0, 1)); ctx.save(); ctx.translate(W / 2, H * 0.55); ctx.scale(k, k); K.bigText(ctx, `PESANAN ${G.wi + 1}`, 0, -40 * U, 64 * U, '#ffc83d', '#7d0b10', 12 * U); K.bigText(ctx, 'Tangkap ikan ikut ejaan betul!', 0, 34 * U, 38 * U, '#fff', '#0d5aa8', 9 * U); ctx.restore(); }
+  if (G.banner) { const b = G.banner, k = ease.outElastic(clamp(b.t / 0.7, 0, 1)); ctx.save(); ctx.translate(W / 2, H * 0.52); ctx.scale(k, k); K.bigText(ctx, b.txt, 0, -50 * U, 96 * U, '#22b573', '#fff', 18 * U); K.bigText(ctx, b.sub, 0, 34 * U, 76 * U, '#7d0b10', '#fff', 14 * U); ctx.font = `${54 * U}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; const sh = clamp(Math.floor((b.t - 0.25) / 0.16) + 1, 0, b.stars); ctx.fillText('⭐'.repeat(sh) + '☆'.repeat(3 - sh), 0, 112 * U); ctx.restore(); }
+  if (G.state === 'title') drawTitle();
+  if (S.ctrl === 'hand' && G.state !== 'title') K.drawCamPreview(ctx, W, H, U, cur.active);
+}
+function drawFish(f, glow) {
+  const s = 92 * U * f.size, [c1, c2] = f.col;
+  ctx.save(); ctx.translate(f.x, f.y); ctx.scale(f.flip >= 0 ? 1 : -1, 1); ctx.rotate(Math.sin(f.phase) * 0.06);
+  if (glow) { ctx.shadowColor = '#ffe066'; ctx.shadowBlur = 40 * U * (0.6 + Math.sin(G.t * 8) * 0.4); }
+  // ekor
+  const tw = Math.sin(f.phase * 2) * 0.35; ctx.fillStyle = c1; ctx.beginPath(); ctx.moveTo(-s * 0.85, 0); ctx.lineTo(-s * 1.45, -s * 0.55 + tw * s * 0.3); ctx.lineTo(-s * 1.32, 0); ctx.lineTo(-s * 1.45, s * 0.55 + tw * s * 0.3); ctx.closePath(); ctx.fill();
+  // badan
+  const g = ctx.createLinearGradient(0, -s * 0.7, 0, s * 0.7); g.addColorStop(0, c2); g.addColorStop(1, c1); ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 0, s, s * 0.68, 0, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+  ctx.lineWidth = 4 * U; ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.stroke();
+  // sirip atas
+  ctx.fillStyle = c1; ctx.beginPath(); ctx.moveTo(-s * 0.3, -s * 0.6); ctx.quadraticCurveTo(0, -s * 1.05, s * 0.35, -s * 0.62); ctx.fill();
+  // mata
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(s * 0.6, -s * 0.18, s * 0.16, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#1d1d22'; ctx.beginPath(); ctx.arc(s * 0.64, -s * 0.18, s * 0.08, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#7d0b10'; ctx.lineWidth = 3 * U; ctx.beginPath(); ctx.arc(s * 0.82, s * 0.12, s * 0.1, 0.2, Math.PI * 0.8); ctx.stroke();
+  // bulatan huruf (sentiasa tegak)
+  ctx.scale(f.flip >= 0 ? 1 : -1, 1); ctx.rotate(-Math.sin(f.phase) * 0.06);
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(-s * 0.05 * (f.flip >= 0 ? 1 : -1), s * 0.04, s * 0.5, 0, Math.PI * 2); ctx.fill(); ctx.lineWidth = 5 * U; ctx.strokeStyle = '#2a1516'; ctx.stroke();
+  ctx.fillStyle = '#2a1516'; ctx.font = F(s * 0.78); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(f.ch, -s * 0.05 * (f.flip >= 0 ? 1 : -1), s * 0.08);
+  ctx.restore();
+}
+function drawNet() {
+  const n = G.net, R = 95 * U, dip = n.dip, sc = 1 - dip * 0.15;
+  ctx.save(); ctx.translate(n.x, n.y + dip * 20 * U); ctx.scale(sc, sc);
+  // pemegang
+  ctx.strokeStyle = '#8a5a33'; ctx.lineWidth = 14 * U; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(R * 0.7, -R * 0.7); ctx.lineTo(R * 1.7, -R * 1.9); ctx.stroke();
+  // jaring
+  ctx.save(); ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.clip(); ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(-R, -R, R * 2, R * 2);
+  ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.lineWidth = 2.5 * U; for (let k = -R; k <= R; k += 18 * U) { ctx.beginPath(); ctx.moveTo(k, -R); ctx.lineTo(k + R, R); ctx.stroke(); ctx.beginPath(); ctx.moveTo(k, -R); ctx.lineTo(k - R, R); ctx.stroke(); } ctx.restore();
+  // gelang jala (tebal & terang supaya jelas)
+  ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 12 * U; ctx.lineWidth = 12 * U; ctx.strokeStyle = cur.down ? '#ffc83d' : '#e3242b'; ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.stroke(); ctx.shadowBlur = 0;
+  ctx.lineWidth = 3 * U; ctx.strokeStyle = '#fff'; ctx.beginPath(); ctx.arc(0, 0, R + 7 * U, 0, Math.PI * 2); ctx.stroke();
+  if (S.ctrl === 'hand') { ctx.font = `${42 * U}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(cur.down ? '✊' : '✋', R * 1.75, -R * 1.95); }
+  ctx.restore();
+}
+function drawHud() {
+  const w = curW(), u = U; if (!w) return; ctx.save();
+  // kad pesanan (besar)
+  const cx = 16 * u, cy = 14 * u, cw = 300 * u, ch = WT - 38 * u;
+  ctx.fillStyle = '#fff'; K.rr(ctx, cx, cy, cw, ch, 20 * u); ctx.fill(); ctx.lineWidth = 6 * u; ctx.strokeStyle = '#e3242b'; ctx.stroke();
+  ctx.font = `${Math.min(86 * u, ch * 0.65)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(w.gambar || '🧋', cx + 68 * u, cy + ch / 2 + 4 * u);
+  const px = K.fitFont(ctx, w.salah, 148 * u, 56 * u); ctx.font = F(px); ctx.fillStyle = '#e3242b'; ctx.fillText(w.salah, cx + 214 * u, cy + ch / 2 - 10 * u); const tw = ctx.measureText(w.salah).width;
+  ctx.strokeStyle = '#e3242b'; ctx.lineWidth = 5 * u; ctx.beginPath(); ctx.moveTo(cx + 214 * u - tw / 2 - 4 * u, cy + ch / 2 - 6 * u); ctx.lineTo(cx + 214 * u + tw / 2 + 4 * u, cy + ch / 2 - 14 * u); ctx.stroke();
+  ctx.font = F(16 * u, 600); ctx.fillStyle = '#7a3a3e'; ctx.fillText('Ejaan salah!', cx + 214 * u, cy + ch / 2 + 34 * u);
+  // petak ejaan (besar)
+  const n = G.slots.length, s = Math.min(104 * u, (W - 640 * u) / n - 10 * u), sx = cx + cw + 30 * u, sy = cy + (ch - s) / 2;
+  const needI = G.slots.findIndex((x) => !x.filled);
+  G.slots.forEach((sl, k) => { const x = sx + k * (s + 10 * u), sz = s * (1 + sl.flash * 0.18); sl._x = x + s / 2; sl._y = sy + s / 2; K.rr(ctx, x + s / 2 - sz / 2, sy + s / 2 - sz / 2, sz, sz, 16 * u); ctx.fillStyle = sl.filled ? '#eafff3' : '#fff'; ctx.fill(); ctx.lineWidth = (k === needI ? 7 + Math.sin(G.t * 8) * 2 : 5) * u; ctx.strokeStyle = sl.filled ? '#22b573' : k === needI ? '#ffc83d' : '#7d0b10'; ctx.setLineDash(sl.filled || k === needI ? [] : [10 * u, 7 * u]); ctx.stroke(); ctx.setLineDash([]); if (sl.filled) { ctx.fillStyle = '#127a4b'; ctx.font = F(s * 0.7); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(sl.ch, x + s / 2, sy + s / 2 + 3 * u); } });
+  // mata
+  ctx.fillStyle = 'rgba(255,255,255,.95)'; K.rr(ctx, W - 410 * u, 14 * u, 150 * u, 44 * u, 22 * u); ctx.fill(); ctx.fillStyle = '#7d0b10'; ctx.font = F(22 * u); ctx.textAlign = 'center'; ctx.fillText(`⭐ ${G.score}`, W - 335 * u, 37 * u);
+  ctx.fillStyle = 'rgba(255,255,255,.95)'; K.rr(ctx, W - 410 * u, 66 * u, 150 * u, 40 * u, 20 * u); ctx.fill(); ctx.fillStyle = '#0d5aa8'; ctx.font = F(19 * u); ctx.fillText(`🐟 ${G.wi + 1} / ${G.words.length}`, W - 335 * u, 87 * u);
+  ctx.restore();
+}
+function drawTitle() {
+  const cx = W / 2, ty = H * 0.17;
+  if (K.logo) K.drawLogo(ctx, cx, ty - 84 * U, 150 * U, 64 * U);
+  ctx.save(); ctx.translate(cx, ty); const p = 1 + Math.sin(G.t * 3) * 0.03; ctx.scale(p, p);
+  K.bigText(ctx, 'AKUARIUM EJAAN', 0, 0, Math.min(90 * U, W * 0.072), '#e3242b', '#fff', 20 * U);
+  K.bigText(ctx, 'BOBO MIXUE', 0, 84 * U, Math.min(68 * U, W * 0.06), '#ffc83d', '#7d0b10', 14 * U);
+  ctx.restore();
+  K.drawBobo(ctx, { x: cx - Math.min(540 * U, W * 0.42), y: ty + 20 * U + Math.sin(G.t * 4) * 8 * U, R: 58 * U, t: G.t, mood: 'joy', wave: true });
+}
+
+// ====================================================================
+// MENU
+// ====================================================================
+function syncChips() { document.querySelectorAll('#menu .chip').forEach((b) => b.classList.toggle('on', S[b.dataset.k] === b.dataset.v)); }
+function bindChip(b) { b.onclick = () => { K.ac(); SFX.click(); S[b.dataset.k] = b.dataset.v; syncChips(); }; }
+function buildSetRow() {
+  WORDS = K.loadWords(); const sets = K.sets(WORDS.words), row = $('setRow');
+  row.innerHTML = '<span class="lbl">Perkataan</span>' + ['rawak', ...sets.map(String)].map((s) => `<button class="chip" data-k="set" data-v="${s}">${s === 'rawak' ? '🎲 Rawak' : 'Set ' + s}</button>`).join('') + (WORDS.custom ? '<span class="note">📂 perkataan sendiri</span>' : '');
+  if (S.set !== 'rawak' && !sets.map(String).includes(S.set)) S.set = 'rawak';
+  row.querySelectorAll('.chip').forEach(bindChip); syncChips();
+}
+document.querySelectorAll('#menu .chip').forEach(bindChip);
+$('btnStart').onclick = () => { SFX.click(); startGame(); };
+$('btnWords').onclick = () => { SFX.click(); renderWords(); show('wordPanel'); };
+$('btnWBack').onclick = () => { hide('wordPanel'); buildSetRow(); };
+$('btnTpl').onclick = async () => { try { await K.downloadTemplate(); } catch (e) { $('wErr').textContent = 'Templat tidak dapat dimuat turun.'; } };
+$('btnUp').onclick = () => $('fileIn').click();
+$('fileIn').onchange = async (e) => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; $('wErr').textContent = 'Membaca fail…'; try { const r = await K.importWords(f); $('wErr').textContent = (r.words.length ? `✔ ${r.words.length} perkataan dimuat naik.` : '✖ Tiada perkataan disimpan.') + (r.errs.length ? '\n' + r.errs.join('\n') : ''); renderWords(); } catch (er) { $('wErr').textContent = 'Fail tidak dapat dibaca.'; } };
+$('btnReset').onclick = () => { K.clearWords(); $('wErr').textContent = 'Perkataan asal digunakan.'; renderWords(); };
+function renderWords() { WORDS = K.loadWords(); $('wTable').innerHTML = '<table><tr><th>Set</th><th>Gambar</th><th>Ejaan salah</th><th>Ejaan betul</th></tr>' + WORDS.words.map((w) => `<tr><td>${w.set || '-'}</td><td>${K.esc(w.gambar || '')}</td><td style="color:#e3242b">${K.esc(w.salah)}</td><td><b>${K.esc(w.betul)}</b></td></tr>`).join('') + '</table>'; }
+$('btnLogo').onclick = () => { SFX.click(); $('logoPrev').src = K.lsGet('kl_logo_v1', '') || ''; show('logoPanel'); };
+$('btnLogoUp').onclick = () => $('logoIn').click();
+$('logoIn').onchange = (e) => { const f = e.target.files[0]; e.target.value = ''; if (f) K.uploadLogo(f, () => { $('logoPrev').src = K.lsGet('kl_logo_v1', '') || ''; }); };
+$('btnLogoX').onclick = () => K.clearLogo(() => ($('logoPrev').src = ''));
+$('btnLogoBack').onclick = () => hide('logoPanel');
+$('rAgain').onclick = () => { SFX.click(); hide('result'); startGame(); };
+$('rMenu').onclick = () => { SFX.click(); goMenu(); };
+$('tHome').onclick = () => { if (confirm('Kembali ke menu?')) goMenu(); };
+$('tSound').onclick = () => { K.sound = !K.sound; $('tSound').textContent = K.sound ? '🔊' : '🔇'; };
+$('tMusic').onclick = () => { K.musicOn = !K.musicOn; $('tMusic').style.opacity = K.musicOn ? 1 : 0.4; if (K.musicOn) K.music.start(); else K.music.stop(); };
+window.__akuarium = { G, S, startGame, cur };
+
+K.loadLogo(); resize(); buildSetRow(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
