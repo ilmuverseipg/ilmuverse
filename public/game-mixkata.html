@@ -95,6 +95,7 @@
     <div class="row" style="margin-top:20px">
       <button class="btn green" id="btnStart">▶ MULA MAIN</button>
       <button class="btn alt" id="btnQ">📋 Soalan</button>
+      <span id="bgmSlot"></span>
     </div>
     <div class="note" id="qSummary"></div>
     <div class="note"><b>Genggam</b> tangan untuk pegang cawan, seret ke mulut Bobo, <b>buka</b> tangan untuk lepas.<br>
@@ -132,6 +133,7 @@
   </div>
 </div>
 
+<script src="/bobo-bgm.js"></script>
 <script>
 (() => {
 'use strict';
@@ -257,8 +259,14 @@ function musicTick() {
   const a = AC; if (!a) return; const e = 60 / MUSIC.bpm / 2;
   while (MUSIC.next < a.currentTime + 0.2) { musicStep(MUSIC.step, MUSIC.next, e); MUSIC.next += e; MUSIC.step = (MUSIC.step + 1) % MEL.length; }
 }
-function musicStart() { if (!musicOn || MUSIC.timer) return; const a = ac(); if (!a) return; MUSIC.next = a.currentTime + 0.12; MUSIC.step = 0; MUSIC.timer = setInterval(musicTick, 50); }
-function musicStop() { clearInterval(MUSIC.timer); MUSIC.timer = null; }
+function musicStart() {
+  if (!musicOn) return;
+  // lagu muat naik guru (bobo-bgm.js) diutamakan; muzik sintesis jadi sandaran
+  const bg = window.BoboBGM; if (bg) { bg.want = true; if (bg.ready) { clearInterval(MUSIC.timer); MUSIC.timer = null; bg.play(); return; } }
+  if (MUSIC.timer) return; const a = ac(); if (!a) return; MUSIC.next = a.currentTime + 0.12; MUSIC.step = 0; MUSIC.timer = setInterval(musicTick, 50);
+}
+function musicStop() { clearInterval(MUSIC.timer); MUSIC.timer = null; if (window.BoboBGM) BoboBGM.stop(); }
+if (window.BoboBGM) BoboBGM.onChange((b) => { if (!b.want || !musicOn) return; if (b.ready) { clearInterval(MUSIC.timer); MUSIC.timer = null; b.play(); } else if (!MUSIC.timer) musicStart(); });
 
 // ====================================================================
 // KANVAS & SAIZ
@@ -989,6 +997,7 @@ $('btnQ').addEventListener('click', () => { ac(); hide('menu'); renderQTable(); 
 $('btnQBack').addEventListener('click', () => { hide('qPanel'); show('menu'); refreshSummary(); });
 $('btnHome').addEventListener('click', () => { if (confirm('Kembali ke menu? Permainan semasa akan tamat.')) goMenu(); });
 $('btnSound').addEventListener('click', () => { soundOn = !soundOn; $('btnSound').textContent = soundOn ? '🔊' : '🔇'; });
+if (window.BoboBGM) BoboBGM.mount(document.getElementById('bgmSlot'), 'btn alt');
 $('btnMusic').addEventListener('click', () => { musicOn = !musicOn; $('btnMusic').style.opacity = musicOn ? 1 : 0.4; if (musicOn) musicStart(); else musicStop(); });
 $('btnReset').addEventListener('click', () => { try { localStorage.removeItem(LS_KEY); } catch (e) {} if (SET_KEY === 'custom') SET_KEY = 'ejaan'; try { localStorage.setItem(LS_SET, SET_KEY); } catch (e) {} QSTATE = loadQs(); $('qErr').textContent = 'Soalan saya dibuang. Set asal digunakan.'; renderQTable(); });
 $('btnUp').addEventListener('click', () => $('fileIn').click());

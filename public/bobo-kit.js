@@ -89,9 +89,20 @@
       M.next += e; M.step = (i + 1) % M.mel.length;
     }
   }
+  let bgmBound = false;
+  function bgmHook() {
+    const bg = window.BoboBGM; if (!bg) return null;
+    if (!bgmBound) { bgmBound = true; bg.onChange((b) => { if (!b.want || !K.musicOn) return; if (b.ready) { clearInterval(M.timer); M.timer = null; b.play(); } else if (!M.timer) K.music.start(); }); }
+    return bg;
+  }
   K.music = {
-    start(mel, bass, bpm) { if (mel) { M.mel = mel; M.bass = bass; } if (bpm) M.bpm = bpm; if (!K.musicOn || M.timer || !M.mel.length) return; const a = K.ac(); if (!a) return; M.next = a.currentTime + 0.1; M.step = 0; M.timer = setInterval(mTick, 50); },
-    stop() { clearInterval(M.timer); M.timer = null; },
+    start(mel, bass, bpm) {
+      if (mel) { M.mel = mel; M.bass = bass; } if (bpm) M.bpm = bpm; if (!K.musicOn) return;
+      // lagu muat naik guru (bobo-bgm.js) diutamakan; muzik sintesis jadi sandaran
+      const bg = bgmHook(); if (bg) { bg.want = true; if (bg.ready) { clearInterval(M.timer); M.timer = null; bg.play(); return; } }
+      if (M.timer || !M.mel.length) return; const a = K.ac(); if (!a) return; M.next = a.currentTime + 0.1; M.step = 0; M.timer = setInterval(mTick, 50);
+    },
+    stop() { clearInterval(M.timer); M.timer = null; const bg = bgmHook(); if (bg) bg.stop(); },
     bpm(b) { M.bpm = b; },
     playing: () => !!M.timer,
   };
