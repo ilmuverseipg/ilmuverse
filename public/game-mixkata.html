@@ -292,10 +292,10 @@ const DRINKS = [
 ];
 function passageQ() { if (['menu', 'hello'].includes(G.state)) return null; const lv = G.levels[G.li], q = lv && lv.qs[G.qi]; return q && q.petikan ? q : null; }
 function bearTargetX() { return passageQ() && W >= H ? W * 0.8 : W * 0.5; }
-function bearPos() { const R = 108 * U; return { x: G.bearX == null ? W * 0.5 : G.bearX, y: H * 0.47, R }; }
+function bearPos() { const R = 124 * U; return { x: G.bearX == null ? W * 0.5 : G.bearX, y: H * 0.47, R }; }
 function mouthPos() { const b = bearPos(); return { x: b.x, y: b.y + b.R * 0.34, r: b.R * 0.62 }; }
-function counterY() { return H * 0.47 + 108 * U * 1.42; }
-function cupSize() { const n = Math.max(G.cups.length, 2); const w = Math.min(160 * U, (W * 0.86) / n - 20 * U); return { w, h: w * 1.32 }; }
+function counterY() { return H * 0.47 + 124 * U * 1.42; }
+function cupSize() { const n = Math.max(G.cups.length, 2); const w = Math.min(196 * U, (W * 0.88) / n - 18 * U); return { w, h: w * 1.32 }; }
 function layoutCups(snap) {
   const n = G.cups.length; if (!n) return; const { h } = cupSize();
   const y = Math.min(H - h * 0.6, H * 0.83);
@@ -879,10 +879,14 @@ function render() {
   if (G.state === 'intro') drawIntro();
   if (G.state === 'hello') drawCaption();
   if (G.ctrl === 'hand' && IN.active && ['play', 'intro', 'oops', 'eating'].includes(G.state)) {
-    ctx.save(); const R = 28 * U;
-    ctx.beginPath(); ctx.arc(IN.x, IN.y, R, 0, Math.PI * 2); ctx.fillStyle = IN.down ? 'rgba(255,200,61,.6)' : 'rgba(255,255,255,.35)'; ctx.fill();
-    ctx.lineWidth = 5 * U; ctx.strokeStyle = IN.down ? '#ffc83d' : '#e3242b'; ctx.beginPath(); ctx.arc(IN.x, IN.y, R, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (IN.down ? 1 : IN.grip)); ctx.stroke();
-    ctx.font = `${28 * U}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(IN.down ? '✊' : '✋', IN.x, IN.y + 1); ctx.restore();
+    ctx.save(); const R = 44 * U;
+    IN.trail = IN.trail || []; IN.trail.push({ x: IN.x, y: IN.y }); if (IN.trail.length > 8) IN.trail.shift();
+    IN.trail.forEach((p, i) => { ctx.globalAlpha = (i / IN.trail.length) * 0.35; ctx.fillStyle = '#e3242b'; ctx.beginPath(); ctx.arc(p.x, p.y, R * 0.45 * (i / IN.trail.length), 0, Math.PI * 2); ctx.fill(); });
+    ctx.globalAlpha = 1; ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 14 * U;
+    ctx.beginPath(); ctx.arc(IN.x, IN.y, R, 0, Math.PI * 2); ctx.fillStyle = IN.down ? '#ffc83d' : '#ffffff'; ctx.fill(); ctx.shadowBlur = 0;
+    ctx.lineWidth = 4 * U; ctx.strokeStyle = '#2a1516'; ctx.stroke();
+    ctx.lineWidth = 8 * U; ctx.strokeStyle = '#e3242b'; ctx.beginPath(); ctx.arc(IN.x, IN.y, R + 7 * U, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (IN.down ? 1 : Math.max(0.08, IN.grip))); ctx.stroke();
+    ctx.font = `${40 * U}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(IN.down ? '✊' : '✋', IN.x, IN.y + 2 * U); ctx.restore();
   }
   ctx.restore();
   if (G.ctrl === 'hand' && camReady && vid.videoWidth) {

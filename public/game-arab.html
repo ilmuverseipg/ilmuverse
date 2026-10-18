@@ -209,6 +209,7 @@
   /* Mod Susun Ayat: deretan kepingan bernombor */
   .mode-card[data-mode="bancuh"]{ border-left-color: #e3242b; }
   .mode-card[data-mode="misi"]{ border-left-color: #2f7fe0; }
+  .mode-card[data-mode="akuarium"]{ border-left-color: #1fa3e0; }
   .mode-card[data-mode="kaunter"]{ border-left-color: #f5841f; }
   .mode-card[data-mode="kaunter"]:hover{ border-left-color: #f5841f; box-shadow: 0 0 20px rgba(245,132,31,.35); }
   .mode-card[data-mode="mixkata"]{ border-left-color: #e3242b; }
@@ -342,6 +343,7 @@
       <div class="grid grid-cols-2 gap-2 mt-2">
         <a href="/bancuh-ejaan.html" class="block rounded-lg py-3 text-center font-orbitron font-bold tracking-wide text-white text-sm" style="background:linear-gradient(135deg,#e3242b,#7d0b10);border:2px solid rgba(255,255,255,.35)">🧋 BANCUH EJAAN<br><span class="font-kanit font-semibold tracking-normal">Bobo Mixue</span></a>
         <a href="/misi-penghantaran.html" class="block rounded-lg py-3 text-center font-orbitron font-bold tracking-wide text-white text-sm" style="background:linear-gradient(135deg,#2f7fe0,#1f5fbf);border:2px solid rgba(255,255,255,.35)">🛵 MISI PENGHANTARAN<br><span class="font-kanit font-semibold tracking-normal">Ejaan Bobo Mixue</span></a>
+        <a href="/akuarium-ejaan.html" class="col-span-2 block rounded-lg py-3 text-center font-orbitron font-bold tracking-wide text-white text-sm" style="background:linear-gradient(135deg,#1fa3e0,#0d5aa8);border:2px solid rgba(255,255,255,.35)">🐟 AKUARIUM EJAAN <span class="font-kanit font-semibold tracking-normal">Bobo Mixue (Tangkap Ikan Huruf)</span></a>
       </div>
       <a href="/kaunter-lapar.html" class="block mt-2 rounded-lg py-3 text-center font-orbitron font-bold tracking-widest text-white" style="background:linear-gradient(135deg,#f5841f,#d6409f);border:2px solid rgba(255,255,255,.35);box-shadow:0 0 18px rgba(245,132,31,.35)">⏱ KAUNTER LAPAR 3D <span class="font-kanit font-semibold tracking-normal text-sm">(Pemasa 6 Kumpulan)</span></a>
       <div class="text-center mt-4 flex items-center justify-center gap-5">
@@ -413,6 +415,11 @@
           <div class="mode-icon" style="font-size:34px;line-height:1">🛵📦</div>
           <div class="mode-name">MISI PENGHANTARAN EJAAN</div>
           <div class="mode-desc">Bobo menunggang skuter! Gerakkan tangan ke kiri/kanan untuk tukar lorong & kutip kotak huruf ikut ejaan betul. Elak kon jalan & sampai ke sekolah.</div>
+        </button>
+        <button class="mode-card" data-mode="akuarium">
+          <div class="mode-icon" style="font-size:34px;line-height:1">🐟🔤</div>
+          <div class="mode-name">AKUARIUM EJAAN</div>
+          <div class="mode-desc">Ikan berhuruf berenang dalam akuarium Bobo! Gerakkan jala dengan tangan & genggam untuk cedok ikan ikut urutan ejaan betul. Tanpa nyawa, sesuai untuk semua murid.</div>
         </button>
         <button class="mode-card" data-mode="kaunter">
           <div class="mode-icon" style="font-size:34px;line-height:1">⏱🧋</div>
@@ -2584,6 +2591,7 @@ async function selectModeAndStart(mode) {
   if (mode === 'kaunter') { window.location.href = '/kaunter-lapar.html'; return; }
   if (mode === 'bancuh') { window.location.href = '/bancuh-ejaan.html'; return; }
   if (mode === 'misi') { window.location.href = '/misi-penghantaran.html'; return; }
+  if (mode === 'akuarium') { window.location.href = '/akuarium-ejaan.html'; return; }
   // Sahkan topik ini ada kandungan yg cukup utk mod yg dipilih - Mod Tembak
   // guna tembakQuestions (tempat edit berasingan), Padan/Isyarat guna words.
   if (mode === 'tembak' && (!currentLesson.tembakQuestions || currentLesson.tembakQuestions.length < 1)) {

@@ -159,13 +159,13 @@ function layoutPlayers() {
 function computeGeo(p) {
   const su = p.su, n = p.slots.length || 4, top = 100 * su;
   p.g = {
-    card: { x: p.rx + 24 * su, y: top + 18 * su, w: Math.min(300 * su, p.rw * 0.3), h: 230 * su },
+    card: { x: p.rx + 20 * su, y: top + 12 * su, w: Math.min(340 * su, p.rw * 0.34), h: 268 * su },
     mach: { x: p.rx + p.rw - 228 * su, y: top + 10 * su, w: 200 * su, h: 260 * su },
-    bobo: { x: p.rx + p.rw * 0.5, y: top + 120 * su, R: 66 * su },
+    bobo: { x: p.rx + p.rw * 0.5, y: top + 116 * su, R: 84 * su },
   };
-  const s = Math.min(84 * su, (p.rw - 60 * su) / n - 10 * su), cupB = H - 14 * su, cupT = cupB - 150 * su, sy = cupT - s - 20 * su;
+  const s = Math.min(100 * su, (p.rw - 60 * su) / n - 10 * su), cupB = H - 14 * su, cupT = cupB - 150 * su, sy = cupT - s - 20 * su;
   p.g.box = s; p.g.cup = { cx: p.rx + p.rw / 2, top: cupT, bot: cupB, w: Math.max(260 * su, n * (s + 10 * su) + 20 * su) };
-  p.g.slotY = sy; p.g.counter = sy - 58 * su; p.g.r = Math.min(40 * su, s * 0.52);
+  p.g.slotY = sy; p.g.counter = sy - 58 * su; p.g.r = Math.min(54 * su, s * 0.6);
   p.slots.forEach((sl, k) => { sl.x = p.rx + p.rw / 2 + (k - (n - 1) / 2) * (s + 10 * su); sl.y = sy + s / 2; sl.s = s; });
   // mod tangkap
   p.g.slotTop = top + 30 * su; p.g.coneY = H - 90 * su;
@@ -329,7 +329,7 @@ function updDrag(p, dt, frozen) {
   }
 }
 function updCatch(p, dt, frozen) {
-  const su = p.su, c = p.cur, R = 40 * su;
+  const su = p.su, c = p.cur, R = 54 * su;
   if (c.active) p.coneX += (clamp(c.x, p.rx + 60 * su, p.rx + p.rw - 60 * su) - p.coneX) * Math.min(1, dt * 14);
   const need = p.slots.findIndex((s) => !s.filled);
   if (!frozen && !p.done && G.state === 'play') {
@@ -338,7 +338,7 @@ function updCatch(p, dt, frozen) {
       const word = curW().betul, nx = need >= 0 ? p.slots[need].ch : 'a', others = 'abcdefghijklmnoprstuwy'.split('').filter((x) => x !== nx);
       const ch = Math.random() < 0.5 ? nx : (Math.random() < 0.5 ? word[Math.floor(Math.random() * word.length)] : others[Math.floor(Math.random() * others.length)]);
       const speed = (150 + G.wi * 12 + (G.players.length === 2 ? 0 : 10)) * su;
-      p.falling.push({ ch, x: p.rx + 70 * su + Math.random() * (p.rw - 140 * su), y: p.g.slotTop + 150 * su, vy: speed, col: SCOOP[Math.floor(Math.random() * SCOOP.length)], rot: (Math.random() - 0.5) * 0.4, wob: Math.random() * 6 });
+      p.falling.push({ ch, x: p.rx + 70 * su + Math.random() * (p.rw - 140 * su), y: p.g.slotTop + 170 * su, vy: speed, col: SCOOP[Math.floor(Math.random() * SCOOP.length)], rot: (Math.random() - 0.5) * 0.4, wob: Math.random() * 6 });
       p.spawnT = Math.max(0.55, 1.05 - G.wi * 0.03);
     }
   }
@@ -431,8 +431,8 @@ function drawCard(p) {
   ctx.save(); K.rr(ctx, c.x, c.y, c.w, c.h, 22 * su); ctx.lineWidth = 5 * su; ctx.strokeStyle = '#e3242b'; ctx.stroke();
   ctx.fillStyle = '#e3242b'; K.rr(ctx, c.x, c.y, c.w, 40 * su, 22 * su); ctx.fill(); ctx.fillRect(c.x, c.y + 20 * su, c.w, 20 * su);
   ctx.fillStyle = '#fff'; ctx.font = F(19 * su); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('🧾 PESANAN BOBO', c.x + c.w / 2, c.y + 21 * su);
-  ctx.font = `${Math.min(84 * su, c.h * 0.36)}px sans-serif`; ctx.fillText(w.gambar || '🧋', c.x + c.w / 2, c.y + c.h * 0.45);
-  const px = K.fitFont(ctx, w.salah, c.w - 30 * su, 46 * su); ctx.font = F(px); const tw = ctx.measureText(w.salah).width, ty = c.y + c.h * 0.82;
+  ctx.font = `${Math.min(120 * su, c.h * 0.44)}px sans-serif`; ctx.fillText(w.gambar || '🧋', c.x + c.w / 2, c.y + c.h * 0.46);
+  const px = K.fitFont(ctx, w.salah, c.w - 30 * su, 56 * su); ctx.font = F(px); const tw = ctx.measureText(w.salah).width, ty = c.y + c.h * 0.82;
   ctx.fillStyle = '#e3242b'; ctx.fillText(w.salah, c.x + c.w / 2, ty);
   ctx.strokeStyle = 'rgba(227,36,43,.8)'; ctx.lineWidth = 4 * su; ctx.beginPath(); ctx.moveTo(c.x + c.w / 2 - tw / 2 - 6 * su, ty + 2 * su); ctx.lineTo(c.x + c.w / 2 + tw / 2 + 6 * su, ty - 2 * su); ctx.stroke();
   ctx.font = F(14 * su, 600); ctx.fillStyle = '#7a3a3e'; ctx.fillText('Ejaan salah! Eja yang betul ↓', c.x + c.w / 2, c.y + c.h - 12 * su);
@@ -467,17 +467,17 @@ function drawDragScene(p) {
   if (p.msg) K.bigText(ctx, p.msg.txt, clamp(p.msg.x, p.rx + 130 * su, p.rx + p.rw - 130 * su), p.msg.y - p.msg.t * 40 * su, 34 * su, '#e3242b', '#fff', 8 * su);
 }
 function drawCatchScene(p) {
-  const su = p.su, g = p.g, R = 40 * su;
+  const su = p.su, g = p.g, R = 54 * su;
   // mesin aiskrim di atas
-  ctx.save(); const my = g.slotTop + 104 * su; const mg = ctx.createLinearGradient(0, my - 30 * su, 0, my + 30 * su); mg.addColorStop(0, '#ffffff'); mg.addColorStop(1, '#c3ccd5'); ctx.fillStyle = mg; K.rr(ctx, p.rx + 20 * su, my - 26 * su, p.rw - 40 * su, 52 * su, 26 * su); ctx.fill();
+  ctx.save(); const my = g.slotTop + 124 * su; const mg = ctx.createLinearGradient(0, my - 30 * su, 0, my + 30 * su); mg.addColorStop(0, '#ffffff'); mg.addColorStop(1, '#c3ccd5'); ctx.fillStyle = mg; K.rr(ctx, p.rx + 20 * su, my - 26 * su, p.rw - 40 * su, 52 * su, 26 * su); ctx.fill();
   for (let k = 0; k < 6; k++) { const nx = p.rx + p.rw * (k + 0.5) / 6; ctx.fillStyle = '#e3242b'; ctx.beginPath(); ctx.moveTo(nx - 16 * su, my + 20 * su); ctx.lineTo(nx + 16 * su, my + 20 * su); ctx.lineTo(nx + 7 * su, my + 40 * su); ctx.lineTo(nx - 7 * su, my + 40 * su); ctx.fill(); }
   ctx.fillStyle = '#7d0b10'; ctx.font = F(18 * su); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('🍦 MESIN AISKRIM HURUF', p.rx + p.rw / 2, my); ctx.restore();
   // petak di atas + gambar kecil
-  const n = p.slots.length, s = Math.min(64 * su, (p.rw - 260 * su) / n - 8 * su);
+  const n = p.slots.length, s = Math.min(82 * su, (p.rw - 300 * su) / n - 8 * su);
   p.slots.forEach((sl, k) => { sl.x = p.rx + p.rw / 2 + 50 * su + (k - (n - 1) / 2) * (s + 8 * su); sl.y = g.slotTop + s / 2; sl.s = s; });
   drawSlots(p);
-  const w = curW(); ctx.save(); ctx.font = `${50 * su}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; const x0 = p.slots[0].x - s / 2 - 70 * su; ctx.fillText(w.gambar || '🧋', x0, g.slotTop + s / 2 - 8 * su);
-  ctx.font = F(20 * su); ctx.fillStyle = '#e3242b'; ctx.fillText(w.salah, x0, g.slotTop + s / 2 + 30 * su); ctx.strokeStyle = '#e3242b'; ctx.lineWidth = 3 * su; ctx.beginPath(); ctx.moveTo(x0 - 34 * su, g.slotTop + s / 2 + 32 * su); ctx.lineTo(x0 + 34 * su, g.slotTop + s / 2 + 28 * su); ctx.stroke(); ctx.restore();
+  const w = curW(); ctx.save(); ctx.font = `${72 * su}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; const x0 = p.slots[0].x - s / 2 - 84 * su; ctx.fillText(w.gambar || '🧋', x0, g.slotTop + s / 2 - 8 * su);
+  ctx.font = F(26 * su); ctx.fillStyle = '#e3242b'; ctx.fillText(w.salah, x0, g.slotTop + s / 2 + 42 * su); ctx.strokeStyle = '#e3242b'; ctx.lineWidth = 3 * su; ctx.beginPath(); ctx.moveTo(x0 - 34 * su, g.slotTop + s / 2 + 32 * su); ctx.lineTo(x0 + 34 * su, g.slotTop + s / 2 + 28 * su); ctx.stroke(); ctx.restore();
   // huruf seterusnya
   const need = p.slots.find((sl) => !sl.filled); if (need && G.state === 'play') { ctx.save(); ctx.strokeStyle = '#ffc83d'; ctx.lineWidth = 6 * su; ctx.globalAlpha = 0.6 + Math.sin(G.t * 8) * 0.4; K.rr(ctx, need.x - need.s / 2 - 5 * su, need.y - need.s / 2 - 5 * su, need.s + 10 * su, need.s + 10 * su, 16 * su); ctx.stroke(); ctx.restore(); }
   // skop jatuh
@@ -488,7 +488,7 @@ function drawCatchScene(p) {
   ctx.save(); ctx.fillStyle = '#f2b766'; ctx.beginPath(); ctx.moveTo(cx - R * 1.1, cy - 26 * su); ctx.lineTo(cx + R * 1.1, cy - 26 * su); ctx.lineTo(cx, cy + 80 * su); ctx.closePath(); ctx.fill();
   ctx.strokeStyle = '#d8963f'; ctx.lineWidth = 3 * su; for (let k = -3; k <= 3; k++) { ctx.beginPath(); ctx.moveTo(cx + k * 14 * su - 20 * su, cy - 26 * su); ctx.lineTo(cx + k * 14 * su + 20 * su, cy + 30 * su); ctx.stroke(); }
   ctx.strokeStyle = PCOL[p.i]; ctx.lineWidth = 4 * su; ctx.beginPath(); ctx.moveTo(cx - R * 1.1, cy - 26 * su); ctx.lineTo(cx + R * 1.1, cy - 26 * su); ctx.lineTo(cx, cy + 80 * su); ctx.closePath(); ctx.stroke(); ctx.restore();
-  K.drawBobo(ctx, { x: p.rx + p.rw - 70 * su, y: H - 190 * su, R: 46 * su, t: p.bobo.t, mood: p.bobo.mood, lookX: clamp((p.coneX - (p.rx + p.rw - 70 * su)) / 300, -1, 1) });
+  K.drawBobo(ctx, { x: p.rx + p.rw - 86 * su, y: H - 220 * su, R: 62 * su, t: p.bobo.t, mood: p.bobo.mood, lookX: clamp((p.coneX - (p.rx + p.rw - 70 * su)) / 300, -1, 1) });
   if (G.players.length === 2) K.bigText(ctx, `PEMAIN ${p.i + 1} • ${p.pts}`, p.rx + 110 * su, g.slotTop + 160 * su, 24 * su, PCOL[p.i], '#fff', 6 * su);
   if (p.msg) K.bigText(ctx, p.msg.txt, clamp(p.msg.x, p.rx + 150 * su, p.rx + p.rw - 150 * su), p.msg.y - p.msg.t * 40 * su, 30 * su, '#e3242b', '#fff', 7 * su);
 }
