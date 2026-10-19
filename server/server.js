@@ -29,6 +29,10 @@ const wss = new WebSocket.Server({ server });
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+// [MISI DETEKTIF INTEGRITI] Pautan peribadi /detektif/<token> - TANPA kata
+// laluan, untuk kawan guru sahaja. Mesti SEBELUM pintu kata laluan di bawah.
+// Halaman lain kekal dikunci. Lihat routes/misiDetektif.js.
+require('../routes/misiDetektif')(app);
 // [PINTU KATA LALUAN] Mesti SEBELUM static() supaya halaman .html dikunci.
 // API & WebSocket tidak dikunci - lihat middleware/siteAuth.js.
 require('../middleware/siteAuth')(app);

@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Misi Detektif Integriti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Nunito:wght@700;800;900&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy-0: #050b17;
+    --navy-1: #0a1630;
+    --navy-2: #102347;
+    --navy-3: #1a3466;
+    --gold: #f2c14e;
+    --gold-hi: #ffe08a;
+    --gold-lo: #a97c1f;
+    --ink: #f5ecd6;
+    --muted: #9fb0cf;
+    --manila: #e9d29a;
+    --manila-2: #d9bb72;
+    --stamp: #c8323a;
+    --ok: #67d391;
+    --f-title: 'Alfa Slab One', 'Rockwell', 'Georgia', serif;
+    --f-type: 'Special Elite', 'Courier New', monospace;
+    --f-body: 'Nunito', 'Segoe UI', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: var(--navy-0); }
+  body {
+    font-family: var(--f-body); color: var(--ink);
+    user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  button { font: inherit; color: inherit; border: none; background: none; cursor: pointer; touch-action: manipulation; }
+  button:focus-visible { outline: 4px solid var(--gold-hi); outline-offset: 4px; }
+  .no-anim *, .no-anim *::before, .no-anim *::after { transition: none !important; animation: none !important; }
+
+  /* ---------- PENTAS 16:9 (1600x900, diskala ikut skrin) ---------- */
+  #stage {
+    position: absolute; left: 50%; top: 50%; width: 1600px; height: 900px;
+    transform: translate(-50%, -50%) scale(var(--s, 1)); transform-origin: center;
+    overflow: hidden; border-radius: 6px;
+    background:
+      radial-gradient(900px 600px at 160px 90px, rgba(242,193,78,.16), transparent 70%),
+      radial-gradient(1200px 800px at 700px 520px, rgba(26,52,102,.55), transparent 75%),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.018) 0 2px, transparent 2px 80px),
+      linear-gradient(180deg, var(--navy-1) 0%, var(--navy-0) 100%);
+  }
+  #stage::after { /* vinyet gelap di tepi */
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse at 45% 50%, transparent 55%, rgba(0,0,0,.6) 100%);
+  }
+
+  /* ---------- HIASAN TEPI ---------- */
+  .decor { position: absolute; pointer-events: none; }
+  .lamp { left: -10px; top: -6px; width: 230px; }
+  .lamp-glow {
+    position: absolute; left: 70px; top: 120px; width: 520px; height: 520px; pointer-events: none;
+    background: conic-gradient(from 118deg at 0 0, transparent 0deg, rgba(255,214,120,.10) 8deg, rgba(255,214,120,.05) 32deg, transparent 44deg);
+    filter: blur(6px);
+  }
+  .fp1 { left: 34px; top: 330px; width: 120px; transform: rotate(-18deg); opacity: .5; }
+  .fp2 { left: 120px; top: 420px; width: 70px; transform: rotate(24deg); opacity: .32; }
+  .mag-decor { left: 20px; top: 520px; width: 170px; transform: rotate(-28deg); }
+  .files { left: 6px; top: 690px; width: 200px; }
+  .dust { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: rgba(255,224,138,.55); pointer-events: none; animation: drift 14s linear infinite; }
+  @keyframes drift { 0% { transform: translate(0,0); opacity: 0; } 15% { opacity: .9; } 85% { opacity: .6; } 100% { transform: translate(60px, 220px); opacity: 0; } }
+
+  /* ---------- TAJUK ---------- */
+  .head { position: absolute; left: 200px; width: 960px; top: 22px; text-align: center; }
+  .title {
+    font-family: var(--f-title); font-size: 54px; letter-spacing: 2px; line-height: 1.05;
+    color: var(--gold);
+    background: linear-gradient(180deg, var(--gold-hi) 0%, var(--gold) 55%, var(--gold-lo) 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 3px 0 rgba(0,0,0,.6)) drop-shadow(0 0 18px rgba(242,193,78,.35));
+  }
+  .subtitle {
+    margin-top: 8px; display: inline-flex; align-items: center; gap: 16px;
+    font-family: var(--f-type); font-size: 30px; letter-spacing: 6px; color: var(--ink);
+  }
+  .subtitle::before, .subtitle::after { content: ''; width: 70px; height: 2px; background: linear-gradient(90deg, transparent, var(--gold)); }
+  .subtitle::after { transform: scaleX(-1); }
+  .instr { margin-top: 8px; font-size: 24px; font-weight: 800; color: var(--muted); }
+
+  /* ---------- BAR GILIRAN ---------- */
+  .turnbar { position: absolute; left: 200px; width: 960px; top: 182px; display: flex; justify-content: center; align-items: center; gap: 18px; }
+  .turn-pill {
+    font-family: var(--f-title); font-size: 34px; letter-spacing: 1.5px; color: var(--navy-0);
+    padding: 8px 34px; border-radius: 999px;
+    background: linear-gradient(180deg, var(--gold-hi), var(--gold));
+    box-shadow: 0 0 0 3px rgba(0,0,0,.4), 0 0 24px rgba(242,193,78,.45);
+  }
+  .turn-pill.pulse { animation: pill 1.6s ease-in-out infinite; }
+  @keyframes pill { 50% { box-shadow: 0 0 0 3px rgba(0,0,0,.4), 0 0 42px rgba(242,193,78,.8); } }
+  .turn-pill.flash { animation: pillIn .5s ease-out; }
+  @keyframes pillIn { from { transform: scale(.8); opacity: .3; } to { transform: scale(1); opacity: 1; } }
+  .turn-pill.done { background: linear-gradient(180deg, #8ff0b5, var(--ok)); font-size: 30px; }
+  .turn-status { font-size: 22px; font-weight: 800; color: var(--ink); background: rgba(5,11,23,.55); border: 2px solid rgba(242,193,78,.35); padding: 8px 18px; border-radius: 14px; }
+  .turn-status:empty { display: none; }
+
+  /* ---------- GRID KAD ---------- */
+  .grid { position: absolute; left: 215px; top: 262px; width: 935px; height: 614px; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); gap: 28px; }
+  .card { position: relative; perspective: 1400px; border-radius: 22px; }
+  .card-inner { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .65s cubic-bezier(.3,.7,.3,1); }
+  .card.open .card-inner { transform: rotateY(180deg); }
+  .face { position: absolute; inset: 0; border-radius: 22px; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; }
+
+  .front {
+    background:
+      radial-gradient(circle at 50% 38%, rgba(242,193,78,.18), transparent 60%),
+      linear-gradient(160deg, var(--navy-3) 0%, var(--navy-1) 70%, #060d1d 100%);
+    border: 4px solid var(--gold);
+    box-shadow: 0 0 0 2px rgba(0,0,0,.6), 0 0 18px rgba(242,193,78,.35), inset 0 0 0 7px rgba(5,11,23,.85), inset 0 0 0 9px rgba(242,193,78,.55), 0 14px 26px rgba(0,0,0,.55);
+    transition: box-shadow .25s ease, transform .25s ease;
+  }
+  .front .sil { position: absolute; left: 50%; bottom: 46px; width: 74%; transform: translateX(-50%); }
+  .front .q {
+    position: absolute; left: 0; right: 0; top: 14px; text-align: center;
+    font-family: var(--f-title); font-size: 150px; line-height: 1; color: var(--gold);
+    text-shadow: 0 0 22px rgba(242,193,78,.75), 0 5px 0 #6b4c0d, 0 8px 14px rgba(0,0,0,.6);
+  }
+  .front .label {
+    position: absolute; left: 18px; right: 18px; bottom: 16px; height: 40px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(180deg, var(--gold), var(--gold-lo)); color: var(--navy-0);
+    font-family: var(--f-type); font-size: 25px; font-weight: 700; letter-spacing: 4px;
+  }
+  @media (hover: hover) {
+    .card.pickable:hover .front { box-shadow: 0 0 0 2px rgba(0,0,0,.6), 0 0 38px rgba(255,224,138,.85), inset 0 0 0 7px rgba(5,11,23,.85), inset 0 0 0 9px rgba(255,224,138,.9), 0 14px 26px rgba(0,0,0,.55); transform: translateY(-4px); }
+  }
+  .card.pickable { cursor: pointer; }
+  .card.pickable:active .front { transform: scale(.98); }
+  .card.resting .front { filter: saturate(.55) brightness(.62); }
+  .card.chosen-hint .front { animation: nudge .45s ease; }
+  @keyframes nudge { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+
+  /* imbasan kaca pembesar */
+  .scan { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+  .card.scanning .scan { opacity: 1; }
+  .card.scanning .front { box-shadow: 0 0 0 2px rgba(0,0,0,.6), 0 0 50px rgba(255,224,138,.95), inset 0 0 0 7px rgba(5,11,23,.85), inset 0 0 0 9px var(--gold-hi); }
+  .scan .line { position: absolute; left: 6%; right: 6%; height: 6px; top: 0; border-radius: 3px; background: linear-gradient(90deg, transparent, var(--gold-hi), transparent); box-shadow: 0 0 18px var(--gold-hi); }
+  .card.scanning .scan .line { animation: scanline 1s ease-in-out; }
+  @keyframes scanline { 0% { top: 6%; } 50% { top: 90%; } 100% { top: 6%; } }
+  .scan .lens { position: absolute; width: 140px; left: 50%; top: 50%; margin: -70px 0 0 -70px; filter: drop-shadow(0 6px 10px rgba(0,0,0,.6)); }
+  .card.scanning .scan .lens { animation: lens 1s ease-in-out; }
+  @keyframes lens {
+    0% { transform: translate(-70px,-60px) rotate(-10deg); }
+    30% { transform: translate(60px,-30px) rotate(6deg); }
+    60% { transform: translate(-50px,40px) rotate(-6deg); }
+    100% { transform: translate(10px,0) rotate(0deg) scale(1.15); }
+  }
+
+  .back {
+    transform: rotateY(180deg);
+    background:
+      repeating-linear-gradient(0deg, rgba(120,90,30,.07) 0 2px, transparent 2px 34px),
+      linear-gradient(170deg, var(--manila) 0%, var(--manila-2) 100%);
+    border: 4px solid var(--gold);
+    box-shadow: 0 0 22px rgba(242,193,78,.45), inset 0 0 0 7px rgba(255,255,255,.25), 0 14px 26px rgba(0,0,0,.55);
+    color: #2a1c05; text-align: center;
+  }
+  .back .b-top { margin-top: 18px; font-family: var(--f-type); font-size: 30px; letter-spacing: 6px; }
+  .back .b-num { font-family: var(--f-title); font-size: 136px; line-height: 1; color: #1b2c55; text-shadow: 0 4px 0 rgba(255,255,255,.45); }
+  .back .b-grp {
+    position: absolute; left: 16px; right: 16px; bottom: 16px; height: 46px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--navy-1); color: var(--gold); font-family: var(--f-title); font-size: 26px; letter-spacing: 1px;
+  }
+
+  /* ---------- PANEL KANAN ---------- */
+  .side { position: absolute; left: 1174px; top: 22px; width: 404px; height: 856px; display: flex; flex-direction: column; gap: 16px; }
+  .ctrls { display: flex; gap: 12px; }
+  .btn {
+    min-height: 64px; border-radius: 16px; padding: 0 18px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    font-weight: 900; font-size: 21px; white-space: nowrap; transition: transform .15s ease, filter .15s ease, opacity .2s ease;
+  }
+  .btn:active:not(:disabled) { transform: scale(.96); }
+  .btn svg { width: 26px; height: 26px; flex: none; }
+  .ctrls .btn-dark { padding: 0 10px; font-size: 19px; gap: 8px; }
+  .btn-dark { flex: 1; background: rgba(16,35,71,.9); border: 2px solid rgba(242,193,78,.55); color: var(--ink); }
+  .btn-dark.on { background: linear-gradient(180deg, #23457f, #17305c); border-color: var(--gold); color: var(--gold-hi); }
+  .btn-gold { background: linear-gradient(180deg, var(--gold-hi), var(--gold) 60%, #d9a43a); color: var(--navy-0); box-shadow: 0 6px 0 #7a5814, 0 0 26px rgba(242,193,78,.4); font-family: var(--f-title); font-weight: 400; font-size: 26px; letter-spacing: .5px; }
+  .btn-gold:disabled { filter: grayscale(.9) brightness(.55); box-shadow: 0 6px 0 #333; cursor: not-allowed; }
+  .btn-gold.ready { animation: ready 1.4s ease-in-out infinite; }
+  @keyframes ready { 50% { box-shadow: 0 6px 0 #7a5814, 0 0 44px rgba(255,224,138,.95); } }
+  .btn-gold.nudge { animation: nudge .45s ease; }
+  .btn-ghost { background: transparent; border: 2px solid rgba(200,50,58,.75); color: #ffb3b3; }
+  .btn-ghost svg { width: 22px; height: 22px; }
+
+  .panel {
+    background: linear-gradient(180deg, rgba(16,35,71,.92), rgba(7,15,32,.95));
+    border: 2px solid rgba(242,193,78,.55); border-radius: 20px; padding: 16px 18px;
+    box-shadow: 0 12px 30px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  .p-title { font-family: var(--f-type); font-size: 25px; letter-spacing: 4px; color: var(--gold); display: flex; align-items: center; gap: 10px; }
+  .p-title svg { width: 24px; height: 24px; }
+  .prog-text { margin-top: 6px; font-size: 19px; font-weight: 800; color: var(--muted); }
+  .prog-bar { margin-top: 8px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+  .prog-bar i { height: 10px; border-radius: 5px; background: rgba(255,255,255,.12); transition: background .3s ease; }
+  .prog-bar i.on { background: linear-gradient(90deg, var(--gold), var(--gold-hi)); box-shadow: 0 0 8px rgba(242,193,78,.6); }
+  .rows { margin-top: 12px; display: flex; flex-direction: column; gap: 7px; }
+  .row { display: flex; align-items: center; justify-content: space-between; height: 50px; padding: 0 14px; border-radius: 12px; background: rgba(255,255,255,.05); border: 2px solid transparent; transition: background .3s, border-color .3s; }
+  .row .g { font-size: 22px; font-weight: 900; }
+  .row .v { font-size: 19px; font-weight: 800; color: var(--muted); }
+  .row.has .v { font-family: var(--f-title); font-weight: 400; font-size: 21px; color: var(--navy-0); background: var(--gold); padding: 3px 14px; border-radius: 999px; }
+  .row.now { border-color: var(--gold); background: rgba(242,193,78,.12); }
+  .row.now .g::before { content: '▶ '; color: var(--gold); }
+
+  .teacher { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+  .t-hint { font-size: 18px; font-weight: 800; color: var(--muted); line-height: 1.3; min-height: 24px; }
+  .teacher .btn-gold { min-height: 84px; font-size: 24px; }
+  .teacher .btn-ghost { margin-top: auto; }
+
+  /* ---------- LAPISAN (overlay) ---------- */
+  .overlay { position: absolute; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; background: rgba(2,6,14,.72); opacity: 0; pointer-events: none; transition: opacity .25s ease; }
+  .overlay.show { opacity: 1; pointer-events: auto; }
+  .dialog {
+    position: relative; overflow: hidden; text-align: center;
+    background: linear-gradient(180deg, #13284f, #070f20); border: 4px solid var(--gold); border-radius: 30px;
+    box-shadow: 0 0 0 3px rgba(0,0,0,.6), 0 0 60px rgba(242,193,78,.45), 0 30px 60px rgba(0,0,0,.7);
+    transform: scale(.85); transition: transform .3s cubic-bezier(.2,.9,.3,1.2);
+  }
+  .overlay.show .dialog { transform: scale(1); }
+  .rays { position: absolute; left: 50%; top: 50%; width: 1400px; height: 1400px; margin: -700px 0 0 -700px; pointer-events: none;
+    background: repeating-conic-gradient(rgba(242,193,78,.13) 0 9deg, transparent 9deg 22deg);
+    -webkit-mask: radial-gradient(circle, #000 0, transparent 60%); mask: radial-gradient(circle, #000 0, transparent 60%);
+    opacity: 0; }
+  .overlay.show .rays { animation: rays 2.2s ease-out forwards; }
+  @keyframes rays { 0% { opacity: 0; transform: rotate(0) scale(.6); } 30% { opacity: 1; } 100% { opacity: .55; transform: rotate(25deg) scale(1); } }
+  .d-body { position: relative; }
+
+  #result .dialog { width: 980px; padding: 40px 50px 36px; }
+  .r-head { font-family: var(--f-type); font-size: 40px; letter-spacing: 4px; color: var(--gold-hi); text-shadow: 0 0 18px rgba(242,193,78,.6); }
+  .r-group { margin-top: 14px; font-family: var(--f-title); font-size: 50px; color: var(--ink); letter-spacing: 1px; }
+  .r-sit { font-family: var(--f-title); font-size: 128px; line-height: 1.05; color: var(--gold);
+    background: linear-gradient(180deg, var(--gold-hi), var(--gold) 60%, var(--gold-lo)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 5px 0 rgba(0,0,0,.6)) drop-shadow(0 0 22px rgba(242,193,78,.5)); }
+  .r-note { margin: 10px auto 0; display: inline-block; font-size: 30px; font-weight: 900; color: var(--navy-0); background: var(--manila); padding: 12px 26px; border-radius: 14px; box-shadow: 0 6px 0 #8a6e2c; }
+  .stamp {
+    position: absolute; right: 26px; top: 84px; transform: rotate(-14deg);
+    font-family: var(--f-type); font-weight: 700; font-size: 30px; letter-spacing: 4px; color: var(--stamp);
+    border: 5px solid var(--stamp); border-radius: 10px; padding: 4px 16px; background: rgba(200,50,58,.08);
+    opacity: 0;
+  }
+  .overlay.show .stamp { animation: stamp .45s .55s cubic-bezier(.3,1.6,.5,1) forwards; }
+  @keyframes stamp { from { opacity: 0; transform: rotate(-14deg) scale(2.6); } to { opacity: .92; transform: rotate(-14deg) scale(1); } }
+  .d-actions { margin-top: 28px; display: flex; justify-content: center; gap: 16px; }
+  .d-actions .btn-gold { min-width: 360px; min-height: 80px; }
+  .d-actions .btn-dark { flex: none; min-width: 170px; min-height: 80px; font-size: 22px; }
+
+  #final .dialog { width: 1060px; padding: 36px 50px 34px; }
+  .f-head { font-family: var(--f-title); font-size: 56px; color: var(--gold-hi); letter-spacing: 1px; text-shadow: 0 0 22px rgba(242,193,78,.55); }
+  .f-sum { margin: 22px auto 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .f-sum div { background: rgba(255,255,255,.06); border: 2px solid rgba(242,193,78,.4); border-radius: 14px; padding: 10px; font-size: 22px; font-weight: 900; }
+  .f-sum b { display: block; font-family: var(--f-title); font-weight: 400; font-size: 30px; color: var(--gold); }
+  .f-task { margin-top: 24px; text-align: left; display: flex; gap: 22px; align-items: center; background: linear-gradient(170deg, var(--manila), var(--manila-2)); color: #2a1c05; border-radius: 18px; padding: 22px 28px; box-shadow: 0 8px 0 #8a6e2c; }
+  .f-task .tag { flex: none; font-family: var(--f-type); font-size: 22px; letter-spacing: 3px; color: var(--stamp); border: 3px solid var(--stamp); border-radius: 8px; padding: 6px 10px; transform: rotate(-6deg); }
+  .f-task p { font-size: 31px; font-weight: 900; line-height: 1.3; }
+
+  #confirm .dialog { width: 720px; padding: 40px 46px 34px; }
+  .c-head { font-family: var(--f-title); font-size: 40px; color: var(--gold-hi); }
+  .c-text { margin-top: 14px; font-size: 25px; font-weight: 800; color: var(--ink); line-height: 1.35; }
+  .btn-danger { min-height: 80px; min-width: 300px; border-radius: 16px; background: linear-gradient(180deg, #e0525a, #a8242c); color: #fff; font-weight: 900; font-size: 24px; box-shadow: 0 6px 0 #5e1217; }
+  .btn-danger:active { transform: scale(.96); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dust, .turn-pill.pulse, .btn-gold.ready { animation: none !important; }
+  }
+</style>
+</head>
+<body class="no-anim">
+<div id="stage">
+
+  <!-- ===== HIASAN ===== -->
+  <div class="lamp-glow"></div>
+  <svg class="decor lamp" viewBox="0 0 230 190" aria-hidden="true">
+    <defs>
+      <linearGradient id="lg-shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe08a"/><stop offset=".6" stop-color="#c99a2e"/><stop offset="1" stop-color="#7a5814"/></linearGradient>
+      <radialGradient id="lg-bulb"><stop offset="0" stop-color="#fffbe6"/><stop offset=".5" stop-color="#ffe08a" stop-opacity=".9"/><stop offset="1" stop-color="#ffe08a" stop-opacity="0"/></radialGradient>
+    </defs>
+    <path d="M0 22 L70 22 L118 78" fill="none" stroke="#2b3b5c" stroke-width="9" stroke-linecap="round"/>
+    <circle cx="70" cy="22" r="9" fill="#a97c1f"/>
+    <path d="M86 70 L150 46 L196 120 L118 148 Z" fill="url(#lg-shade)" stroke="#5c430f" stroke-width="3"/>
+    <ellipse cx="157" cy="135" rx="42" ry="14" transform="rotate(-20 157 135)" fill="#3b2a07"/>
+    <circle cx="160" cy="138" r="30" fill="url(#lg-bulb)"/>
+  </svg>
+
+  <svg class="decor fp1" viewBox="0 0 120 150" aria-hidden="true">
+    <g fill="none" stroke="#f2c14e" stroke-width="3" stroke-linecap="round">
+      <ellipse cx="60" cy="78" rx="8" ry="12"/>
+      <ellipse cx="60" cy="78" rx="16" ry="22" stroke-dasharray="40 8"/>
+      <ellipse cx="60" cy="78" rx="24" ry="32" stroke-dasharray="60 10 20 8"/>
+      <ellipse cx="60" cy="78" rx="32" ry="42" stroke-dasharray="80 12"/>
+      <ellipse cx="60" cy="78" rx="40" ry="52" stroke-dasharray="50 9 70 14"/>
+      <ellipse cx="60" cy="78" rx="48" ry="62" stroke-dasharray="110 16 40 20"/>
+      <ellipse cx="60" cy="78" rx="55" ry="70" stroke-dasharray="90 30 60 40"/>
+    </g>
+  </svg>
+  <svg class="decor fp2" viewBox="0 0 120 150" aria-hidden="true">
+    <g fill="none" stroke="#f2c14e" stroke-width="4" stroke-linecap="round">
+      <ellipse cx="60" cy="78" rx="10" ry="14"/>
+      <ellipse cx="60" cy="78" rx="20" ry="27" stroke-dasharray="44 10"/>
+      <ellipse cx="60" cy="78" rx="30" ry="40" stroke-dasharray="70 12"/>
+      <ellipse cx="60" cy="78" rx="40" ry="53" stroke-dasharray="90 16 30 12"/>
+      <ellipse cx="60" cy="78" rx="50" ry="66" stroke-dasharray="120 30"/>
+    </g>
+  </svg>
+
+  <svg class="decor mag-decor" viewBox="0 0 200 120" aria-hidden="true">
+    <defs><radialGradient id="lg-lens" cx=".4" cy=".35"><stop offset="0" stop-color="#bcd6ff" stop-opacity=".45"/><stop offset="1" stop-color="#1a3466" stop-opacity=".25"/></radialGradient></defs>
+    <rect x="104" y="52" width="92" height="18" rx="9" fill="#3a2608" stroke="#a97c1f" stroke-width="3"/>
+    <rect x="96" y="54" width="18" height="14" rx="3" fill="#c99a2e"/>
+    <circle cx="56" cy="61" r="46" fill="url(#lg-lens)" stroke="#f2c14e" stroke-width="10"/>
+    <path d="M30 44 Q40 26 62 24" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="6" stroke-linecap="round"/>
+  </svg>
+
+  <svg class="decor files" viewBox="0 0 200 190" aria-hidden="true">
+    <g transform="rotate(-8 100 120)">
+      <path d="M14 60 h52 l10 -14 h46 v14 h62 v120 H14z" fill="#8a6e2c"/>
+      <rect x="14" y="66" width="170" height="118" rx="4" fill="#b8963f"/>
+    </g>
+    <g transform="rotate(5 100 120)">
+      <path d="M18 70 h40 l10 -14 h50 v14 h66 v114 H18z" fill="#a8873a"/>
+      <rect x="18" y="76" width="166" height="108" rx="4" fill="#e0c37c"/>
+      <text x="40" y="120" font-family="Special Elite, Courier New, monospace" font-size="22" fill="#3b2a07" letter-spacing="2">FAIL KES</text>
+      <rect x="40" y="134" width="96" height="30" rx="3" fill="none" stroke="#c8323a" stroke-width="3" transform="rotate(-8 88 149)"/>
+      <text x="52" y="157" font-family="Special Elite, Courier New, monospace" font-size="20" fill="#c8323a" letter-spacing="3" transform="rotate(-8 88 149)">SULIT</text>
+      <path d="M150 64 v34 a8 8 0 0 0 16 0 v-30" fill="none" stroke="#c9d3e6" stroke-width="4" stroke-linecap="round"/>
+    </g>
+  </svg>
+
+  <div id="dustLayer"></div>
+
+  <!-- ===== TAJUK ===== -->
+  <header class="head">
+    <h1 class="title">MISI DETEKTIF INTEGRITI</h1>
+    <div class="subtitle">BONGKAR KAD SITUASI</div>
+    <p class="instr">Sentuh satu kad misteri untuk mengetahui situasi kumpulan anda.</p>
+  </header>
+
+  <div class="turnbar">
+    <div class="turn-pill pulse" id="turnPill">GILIRAN: KUMPULAN 1</div>
+    <div class="turn-status" id="turnStatus"></div>
+  </div>
+
+  <!-- ===== KAD ===== -->
+  <main class="grid" id="grid" aria-label="Enam kad misteri"></main>
+
+  <!-- ===== PANEL KANAN ===== -->
+  <aside class="side">
+    <div class="ctrls">
+      <button class="btn btn-dark" id="btnFs" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+        <span id="fsLabel">Skrin Penuh</span>
+      </button>
+      <button class="btn btn-dark" id="btnSound" type="button" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor" fill-opacity=".25"/><g id="sndWaves" style="display:none"><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></g><g id="sndMute"><path d="M17 9l5 6M22 9l-5 6"/></g></svg>
+        <span id="soundLabel">Bunyi: Senyap</span>
+      </button>
+    </div>
+
+    <section class="panel">
+      <div class="p-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h7M9 16h7"/></svg>
+        REKOD AGIHAN
+      </div>
+      <div class="prog-text" id="progText">0 daripada 6 kumpulan telah memilih</div>
+      <div class="prog-bar" id="progBar"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="rows" id="rows"></div>
+    </section>
+
+    <section class="panel teacher">
+      <div class="p-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
+        PANEL GURU
+      </div>
+      <div class="t-hint" id="tHint"></div>
+      <button class="btn btn-gold" id="btnNext" type="button" disabled>Kumpulan Seterusnya ▶</button>
+      <button class="btn btn-ghost" id="btnReset" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+        Mula Semula
+      </button>
+    </section>
+  </aside>
+
+  <!-- ===== KEPUTUSAN ===== -->
+  <div class="overlay" id="result" role="dialog" aria-modal="true" aria-live="assertive">
+    <div class="dialog">
+      <div class="rays"></div>
+      <div class="d-body">
+        <div class="r-head">FAIL BERJAYA DIBUKA!</div>
+        <div class="r-group" id="rGroup">KUMPULAN 1</div>
+        <div class="r-sit" id="rSit">SITUASI 1</div>
+        <div class="r-note" id="rNote">Ambil sampul Situasi 1 daripada guru.</div>
+        <div class="d-actions">
+          <button class="btn btn-gold" id="rNext" type="button">Kumpulan Seterusnya ▶</button>
+          <button class="btn btn-dark" id="rClose" type="button">Tutup</button>
+        </div>
+      </div>
+      <div class="stamp">DITUGASKAN</div>
+    </div>
+  </div>
+
+  <!-- ===== SELESAI ===== -->
+  <div class="overlay" id="final" role="dialog" aria-modal="true">
+    <div class="dialog">
+      <div class="rays"></div>
+      <div class="d-body">
+        <div class="f-head">SEMUA KES TELAH DIAGIHKAN</div>
+        <div class="f-sum" id="fSum"></div>
+        <div class="f-task">
+          <span class="tag">TUGASAN</span>
+          <p>Bincangkan tiga cadangan berserta alasan yang kreatif. Pilih satu cadangan terbaik untuk ditaip pada komputer guru.</p>
+        </div>
+        <div class="d-actions">
+          <button class="btn btn-gold" id="fClose" type="button">Mulakan Perbincangan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PENGESAHAN MULA SEMULA ===== -->
+  <div class="overlay" id="confirm" role="dialog" aria-modal="true">
+    <div class="dialog">
+      <div class="d-body">
+        <div class="c-head">Mula Semula?</div>
+        <p class="c-text">Semua keputusan agihan akan dipadamkan dan kedudukan situasi akan diacak semula.</p>
+        <div class="d-actions">
+          <button class="btn-danger" id="cYes" type="button">Ya, Padam &amp; Mula Semula</button>
+          <button class="btn btn-dark" id="cNo" type="button">Batal</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var N = 6;
+  var KEY = 'ilmuverse.misiDetektifIntegriti.v1';
+  var SCAN_MS = 1000, FLIP_MS = 680;
+
+  var SIL = '<svg class="sil" viewBox="0 0 200 170" aria-hidden="true">' +
+    '<path d="M26 66 Q100 52 174 66 Q178 74 160 76 L40 76 Q22 74 26 66Z" fill="#05070d"/>' +
+    '<path d="M56 68 Q56 30 72 22 Q86 30 100 22 Q114 30 128 22 Q144 30 144 68Z" fill="#05070d"/>' +
+    '<path d="M57 58 Q100 50 143 58 L143 66 Q100 58 57 66Z" fill="#a97c1f" opacity=".55"/>' +
+    '<ellipse cx="100" cy="92" rx="25" ry="24" fill="#05070d"/>' +
+    '<path d="M20 170 Q26 118 70 106 L100 132 L130 106 Q174 118 180 170Z" fill="#05070d"/>' +
+    '<path d="M70 106 L86 150 L100 132 L114 150 L130 106" fill="none" stroke="#a97c1f" stroke-opacity=".5" stroke-width="3" stroke-linejoin="round"/>' +
+    '</svg>';
+  var LENS = '<svg class="lens" viewBox="0 0 140 140" aria-hidden="true">' +
+    '<rect x="88" y="90" width="58" height="20" rx="10" transform="rotate(45 88 90)" fill="#3a2608" stroke="#f2c14e" stroke-width="3"/>' +
+    '<circle cx="58" cy="58" r="44" fill="rgba(188,214,255,.22)" stroke="#f2c14e" stroke-width="10"/>' +
+    '<path d="M32 44 Q40 26 60 24" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="6" stroke-linecap="round"/>' +
+    '</svg>';
+
+  var $ = function (id) { return document.getElementById(id); };
+  var grid = $('grid'), rowsEl = $('rows');
+  var state, busy = false;
+
+  // ---------- simpanan ----------
+  function shuffle() {
+    var a = [1, 2, 3, 4, 5, 6];
+    for (var i = a.length - 1; i > 0; i--) {
+      var r;
+      try { var u = new Uint32Array(1); crypto.getRandomValues(u); r = u[0] / 4294967296; } catch (e) { r = Math.random(); }
+      var j = Math.floor(r * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  function fresh() { return { order: shuffle(), slotGroup: [0, 0, 0, 0, 0, 0], turn: 1, phase: 'pick' }; }
+  function valid(s) {
+    if (!s || !Array.isArray(s.order) || s.order.length !== N || !Array.isArray(s.slotGroup) || s.slotGroup.length !== N) return false;
+    if (s.order.slice().sort().join() !== '1,2,3,4,5,6') return false;
+    if (['pick', 'picked', 'done'].indexOf(s.phase) < 0 || !(s.turn >= 1 && s.turn <= N)) return false;
+    var seen = {};
+    for (var i = 0; i < N; i++) {
+      var g = s.slotGroup[i];
+      if (g !== 0 && (!(g >= 1 && g <= N) || seen[g])) return false;
+      if (g) seen[g] = 1;
+    }
+    return true;
+  }
+  function load() {
+    try { var s = JSON.parse(localStorage.getItem(KEY)); if (valid(s)) return s; } catch (e) {}
+    return fresh();
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+  function slotOf(g) { return state.slotGroup.indexOf(g); }
+  function sitOf(g) { var s = slotOf(g); return s < 0 ? 0 : state.order[s]; }
+  function count() { return state.slotGroup.filter(function (g) { return g > 0; }).length; }
+
+  // ---------- bina kad & baris ----------
+  var cards = [];
+  for (var i = 0; i < N; i++) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'card'; b.dataset.slot = i;
+    b.innerHTML =
+      '<div class="card-inner">' +
+        '<div class="face front">' + SIL + '<div class="q">?</div><div class="label">FAIL MISTERI</div>' +
+          '<div class="scan"><div class="line"></div>' + LENS + '</div></div>' +
+        '<div class="face back"><div class="b-top">SITUASI</div><div class="b-num"></div>' +
+          '<div class="b-grp"></div></div>' +
+      '</div>';
+    b.addEventListener('click', onCard.bind(null, i));
+    grid.appendChild(b); cards.push(b);
+  }
+  var rows = [];
+  for (var g = 1; g <= N; g++) {
+    var r = document.createElement('div');
+    r.className = 'row';
+    r.innerHTML = '<span class="g">Kumpulan ' + g + '</span><span class="v">Belum memilih</span>';
+    rowsEl.appendChild(r); rows.push(r);
+  }
+
+  // ---------- paparan ----------
+  function paintCard(i) {
+    var c = cards[i], g = state.slotGroup[i];
+    var num = c.querySelector('.b-num'), grp = c.querySelector('.b-grp');
+    if (g) {
+      num.textContent = state.order[i];          // nombor hanya dimasukkan selepas dipilih
+      grp.textContent = 'KUMPULAN ' + g;
+      c.classList.add('open');
+      c.setAttribute('aria-label', 'Situasi ' + state.order[i] + ', Kumpulan ' + g);
+    } else {
+      num.textContent = ''; grp.textContent = '';
+      c.classList.remove('open');
+      c.setAttribute('aria-label', 'Fail misteri');
+    }
+    var canPick = !g && state.phase === 'pick';
+    c.classList.toggle('pickable', canPick);
+    c.classList.toggle('resting', !g && state.phase !== 'pick');
+  }
+
+  function render() {
+    for (var i = 0; i < N; i++) paintCard(i);
+    var n = count();
+
+    // bar giliran
+    var pill = $('turnPill'), st = $('turnStatus');
+    if (state.phase === 'done') {
+      pill.textContent = 'SEMUA KES TELAH DIAGIHKAN';
+      pill.className = 'turn-pill done';
+      st.textContent = '';
+    } else {
+      pill.textContent = 'GILIRAN: KUMPULAN ' + state.turn;
+      pill.className = 'turn-pill' + (state.phase === 'pick' ? ' pulse' : '');
+      st.textContent = state.phase === 'picked' ? '✓ Situasi ' + sitOf(state.turn) + ' diperoleh' : '';
+    }
+
+    // rekod
+    for (var g = 1; g <= N; g++) {
+      var r = rows[g - 1], s = sitOf(g);
+      r.classList.toggle('has', s > 0);
+      r.classList.toggle('now', state.phase !== 'done' && g === state.turn);
+      r.querySelector('.v').textContent = s ? 'Situasi ' + s : 'Belum memilih';
+    }
+    $('progText').textContent = n + ' daripada 6 kumpulan telah memilih';
+    var bars = $('progBar').children;
+    for (var k = 0; k < N; k++) bars[k].classList.toggle('on', k < n);
+
+    // panel guru
+    var next = $('btnNext'), hint = $('tHint');
+    if (state.phase === 'done') {
+      next.disabled = false; next.classList.remove('ready');
+      next.textContent = 'Lihat Arahan Aktiviti';
+      hint.textContent = 'Semua kumpulan telah menerima situasi.';
+    } else {
+      var last = n === N;
+      next.textContent = last ? 'Selesai ▶' : 'Kumpulan Seterusnya ▶';
+      next.disabled = state.phase !== 'picked';
+      next.classList.toggle('ready', state.phase === 'picked');
+      hint.textContent = state.phase === 'pick'
+        ? 'Menunggu Kumpulan ' + state.turn + ' memilih kad.'
+        : 'Serahkan sampul Situasi ' + sitOf(state.turn) + ', kemudian tekan butang di bawah.';
+    }
+  }
+
+  // ---------- overlay ----------
+  function show(id) { var o = $(id); o.classList.remove('show'); void o.offsetWidth; o.classList.add('show'); }
+  function hide(id) { $(id).classList.remove('show'); }
+  function isShown(id) { return $(id).classList.contains('show'); }
+
+  function showResult(g) {
+    var s = sitOf(g);
+    $('rGroup').textContent = 'KUMPULAN ' + g;
+    $('rSit').textContent = 'SITUASI ' + s;
+    $('rNote').textContent = 'Ambil sampul Situasi ' + s + ' daripada guru.';
+    $('rNext').textContent = count() === N ? 'Selesai ▶' : 'Kumpulan Seterusnya ▶';
+    show('result');
+  }
+  function showFinal() {
+    var html = '';
+    for (var g = 1; g <= N; g++) html += '<div>Kumpulan ' + g + '<b>Situasi ' + sitOf(g) + '</b></div>';
+    $('fSum').innerHTML = html;
+    show('final');
+  }
+
+  // ---------- tindakan ----------
+  function onCard(i) {
+    if (busy || state.phase === 'done' || state.slotGroup[i]) return;
+    if (state.phase === 'picked') {      // kumpulan ini sudah memilih - ingatkan guru
+      var nb = $('btnNext'); nb.classList.remove('nudge'); void nb.offsetWidth; nb.classList.add('nudge');
+      return;
+    }
+    busy = true;
+    var g = state.turn;
+    state.slotGroup[i] = g;
+    state.phase = 'picked';
+    save();                                // simpan serta-merta - tiada pilihan berganda walau dimuat semula
+
+    cards.forEach(function (c, k) { c.classList.remove('pickable'); if (k !== i && !state.slotGroup[k]) c.classList.add('resting'); });
+    var c = cards[i];
+    c.classList.add('scanning');
+    sfxScan();
+    setTimeout(function () {
+      c.classList.remove('scanning');
+      paintCard(i);                        // isi nombor & balikkan kad
+    }, SCAN_MS);
+    setTimeout(function () {
+      render();
+      showResult(g);
+      sfxWin();
+      busy = false;
+    }, SCAN_MS + FLIP_MS);
+  }
+
+  function nextGroup() {
+    if (busy) return;
+    if (state.phase === 'done') { showFinal(); return; }
+    if (state.phase !== 'picked') return;
+    hide('result');
+    if (count() === N) {
+      state.phase = 'done'; save(); render();
+      setTimeout(function () { showFinal(); sfxWin(); }, 250);
+      return;
+    }
+    state.turn += 1; state.phase = 'pick'; save(); render();
+    var p = $('turnPill'); p.classList.add('flash');
+    setTimeout(function () { p.classList.remove('flash'); }, 520);
+  }
+
+  function restart() {
+    hide('confirm'); hide('result'); hide('final');
+    state = fresh(); save();
+    cards.forEach(function (c) { c.classList.remove('scanning'); });
+    render();
+  }
+
+  $('btnNext').addEventListener('click', nextGroup);
+  $('rNext').addEventListener('click', nextGroup);
+  $('rClose').addEventListener('click', function () { hide('result'); });
+  $('fClose').addEventListener('click', function () { hide('final'); });
+  $('btnReset').addEventListener('click', function () { if (!busy) show('confirm'); });
+  $('cYes').addEventListener('click', restart);
+  $('cNo').addEventListener('click', function () { hide('confirm'); });
+  ['result', 'final', 'confirm'].forEach(function (id) {
+    $(id).addEventListener('click', function (e) { if (e.target === e.currentTarget && id !== 'result') hide(id); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { hide('confirm'); hide('final'); hide('result'); }
+  });
+
+  // ---------- bunyi (Web Audio, tiada fail) ----------
+  var soundOn = false, ac = null;
+  function tone(freq, start, dur, type, vol) {
+    var o = ac.createOscillator(), gn = ac.createGain();
+    o.type = type || 'triangle'; o.frequency.setValueAtTime(freq, ac.currentTime + start);
+    gn.gain.setValueAtTime(0.0001, ac.currentTime + start);
+    gn.gain.exponentialRampToValueAtTime(vol || 0.12, ac.currentTime + start + 0.015);
+    gn.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + start + dur);
+    o.connect(gn); gn.connect(ac.destination);
+    o.start(ac.currentTime + start); o.stop(ac.currentTime + start + dur + 0.05);
+  }
+  function sfxScan() {
+    if (!soundOn || !ac) return;
+    for (var k = 0; k < 7; k++) tone(520 + k * 90, k * 0.13, 0.08, 'square', 0.035);
+  }
+  function sfxWin() {
+    if (!soundOn || !ac) return;
+    [523.25, 659.25, 783.99, 1046.5].forEach(function (f, k) { tone(f, k * 0.09, 0.35, 'triangle', 0.13); });
+    tone(1318.5, 0.38, 0.5, 'sine', 0.08);
+  }
+  $('btnSound').addEventListener('click', function () {
+    soundOn = !soundOn;
+    if (soundOn) {
+      try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === 'suspended') ac.resume(); } catch (e) { soundOn = false; }
+    }
+    this.classList.toggle('on', soundOn);
+    this.setAttribute('aria-pressed', soundOn);
+    $('soundLabel').textContent = soundOn ? 'Bunyi: Hidup' : 'Bunyi: Senyap';
+    $('sndWaves').style.display = soundOn ? '' : 'none';
+    $('sndMute').style.display = soundOn ? 'none' : '';
+    if (soundOn) tone(880, 0, 0.12, 'triangle', 0.08);
+  });
+
+  // ---------- skrin penuh ----------
+  function fsEl() { return document.fullscreenElement || document.webkitFullscreenElement; }
+  $('btnFs').addEventListener('click', function () {
+    var d = document.documentElement;
+    try {
+      if (fsEl()) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+      else (d.requestFullscreen || d.webkitRequestFullscreen).call(d);
+    } catch (e) {}
+  });
+  function fsLabel() { $('fsLabel').textContent = fsEl() ? 'Keluar Skrin Penuh' : 'Skrin Penuh'; }
+  document.addEventListener('fullscreenchange', fsLabel);
+  document.addEventListener('webkitfullscreenchange', fsLabel);
+
+  // ---------- skala 16:9 ----------
+  var stage = $('stage');
+  function fit() {
+    var s = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
+    stage.style.setProperty('--s', s);
+  }
+  window.addEventListener('resize', fit);
+  fit();
+
+  // ---------- habuk dalam cahaya lampu ----------
+  var dust = $('dustLayer');
+  for (var d = 0; d < 10; d++) {
+    var p = document.createElement('i');
+    p.className = 'dust';
+    p.style.left = (130 + Math.random() * 260) + 'px';
+    p.style.top = (130 + Math.random() * 200) + 'px';
+    p.style.animationDelay = (-Math.random() * 14) + 's';
+    p.style.animationDuration = (11 + Math.random() * 8) + 's';
+    dust.appendChild(p);
+  }
+
+  // ---------- mula ----------
+  state = load();
+  save();                                   // susunan rawak dikekalkan sepanjang sesi
+  render();
+  requestAnimationFrame(function () {
+    requestAnimationFrame(function () {
+      document.body.classList.remove('no-anim');
+      if (state.phase === 'picked') showResult(state.turn);   // sambung semula selepas muat semula
+    });
+  });
+})();
+</script>
+</body>
+</html>
