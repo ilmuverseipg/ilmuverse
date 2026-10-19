@@ -33,6 +33,9 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // laluan, untuk kawan guru sahaja. Mesti SEBELUM pintu kata laluan di bawah.
 // Halaman lain kekal dikunci. Lihat routes/misiDetektif.js.
 require('../routes/misiDetektif')(app);
+// [MAHKAMAH MASA] Timer detektif - pautan peribadi /hakim/<token>, TANPA
+// kata laluan. Lihat routes/mahkamahMasa.js.
+require('../routes/mahkamahMasa')(app);
 // [PINTU KATA LALUAN] Mesti SEBELUM static() supaya halaman .html dikunci.
 // API & WebSocket tidak dikunci - lihat middleware/siteAuth.js.
 require('../middleware/siteAuth')(app);
