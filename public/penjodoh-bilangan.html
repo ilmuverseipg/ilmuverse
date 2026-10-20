@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+<title>Penjodoh Bilangan 🚲</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!--
+  ILMUVERSE GAMEBOX - PENJODOH BILANGAN (Bahasa Melayu Tahun 2)
+  Basikal berbakul di kampung. GENGGAM kad penjodoh bilangan yang betul (atau klik/sentuh)
+  dan seret ke dalam BAKUL basikal. 10 soalan, boleh ditukar melalui templat Excel.
+  Guru boleh muat naik gambar watak, nama watak, tajuk dan lagu latar sendiri -
+  semuanya disimpan dalam pelayar komputer guru sahaja (tidak dihantar ke pelayan).
+-->
+<style>
+  :root{ --blue:#1f6fd1; --blue-dd:#0d3f80; --red:#e3242b; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; height:100%; overflow:hidden; background:#8fd3ff; font-family:'Fredoka',system-ui,sans-serif; color:#16324f; }
+  canvas{ position:fixed; inset:0; width:100vw; height:100vh; display:block; touch-action:none; }
+  video{ display:none; }
+  .overlay{ position:fixed; inset:0; display:flex; align-items:flex-end; justify-content:center; padding:16px 16px 22px; z-index:10; pointer-events:none; }
+  .overlay.center{ align-items:center; background:rgba(10,40,80,.45); backdrop-filter:blur(5px); pointer-events:auto; }
+  .overlay.hidden{ display:none; }
+  .panel{ pointer-events:auto; width:min(900px,100%); max-height:60vh; overflow:auto; background:rgba(255,253,245,.97); border-radius:26px; padding:16px 22px; box-shadow:0 12px 0 var(--blue-dd), 0 24px 50px rgba(0,0,0,.35); border:4px solid #fff; animation:pop .5s cubic-bezier(.2,1.6,.4,1); }
+  .overlay.center .panel{ max-height:92vh; }
+  @keyframes pop{ from{ transform:scale(.7) translateY(30px); opacity:0 } to{ transform:none; opacity:1 } }
+  .row{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; align-items:center; margin:8px 0; }
+  .lbl{ font-weight:700; color:var(--blue-dd); font-size:14px; text-transform:uppercase; min-width:92px; text-align:right; }
+  .chip{ font-family:inherit; font-weight:600; font-size:15px; padding:8px 13px; border-radius:999px; border:3px solid #c9dcf3; background:#fff; color:#25466b; cursor:pointer; }
+  .chip.on{ border-color:var(--blue); background:var(--blue); color:#fff; }
+  .btn{ font-family:inherit; font-weight:700; font-size:20px; border:none; border-radius:18px; padding:13px 26px; cursor:pointer; color:#fff; background:var(--blue); box-shadow:0 6px 0 var(--blue-dd); }
+  .btn:active{ transform:translateY(5px); box-shadow:0 1px 0 var(--blue-dd); }
+  .btn.green{ background:#22b573; box-shadow:0 6px 0 #127a4b; font-size:26px; padding:14px 40px; }
+  .btn.alt{ background:#fff; color:var(--blue); box-shadow:0 6px 0 #c9dcf3; border:3px solid var(--blue); }
+  .btn.small{ font-size:15px; padding:8px 14px; border-radius:14px; }
+  .note{ font-size:13px; color:#3b5675; text-align:center; }
+  .err{ color:#b3151b; font-weight:600; font-size:14px; white-space:pre-line; text-align:center; }
+  h2{ margin:0 0 6px; color:var(--blue); text-align:center; font-size:30px; }
+  .big{ font-size:clamp(36px,6vw,62px); text-align:center; margin:0; line-height:1.05; color:#22b573; }
+  .stars{ text-align:center; font-size:46px; letter-spacing:6px; }
+  table{ width:100%; border-collapse:collapse; font-size:14px; background:#fff; border-radius:12px; overflow:hidden; margin-top:8px; }
+  th,td{ padding:5px 8px; border-bottom:1px solid #dbe7f5; text-align:left; } th{ background:#e3efff; }
+  label.f{ display:flex; flex-direction:column; gap:4px; font-weight:600; font-size:14px; color:#25466b; min-width:220px; }
+  label.f input{ font-family:inherit; font-size:16px; padding:8px 10px; border-radius:12px; border:2px solid #c9dcf3; }
+  #tools{ position:fixed; left:12px; bottom:12px; z-index:6; display:none; gap:8px; }
+  #tools button{ font-family:inherit; border:none; border-radius:14px; padding:8px 12px; background:rgba(255,255,255,.92); color:var(--blue); cursor:pointer; box-shadow:0 4px 0 rgba(0,0,0,.18); font-size:18px; }
+  #hint{ position:fixed; left:50%; bottom:14px; transform:translateX(-50%); z-index:7; background:rgba(255,255,255,.95); border-radius:999px; padding:8px 18px; font-weight:600; font-size:15px; color:#25466b; box-shadow:0 4px 0 rgba(0,0,0,.15); pointer-events:none; transition:opacity .4s; opacity:0; max-width:92vw; text-align:center; }
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<video id="vid" playsinline muted></video>
+<div id="hint"></div>
+<div id="tools"><button id="tMusic" title="Lagu">🎵</button><button id="tSound" title="Bunyi">🔊</button><button id="tHome" title="Menu">🏠</button></div>
+
+<div id="menu" class="overlay">
+  <div class="panel">
+    <div class="row"><span class="lbl">Kawalan</span>
+      <button class="chip on" data-k="ctrl" data-v="hand">✊ Genggam tangan</button><button class="chip" data-k="ctrl" data-v="mouse">🖱️ Tetikus / Sentuh</button></div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn green" id="btnStart">▶ MULA</button>
+      <button class="btn alt small" id="btnQ">📋 Soalan</button>
+      <button class="btn alt small" id="btnCfg">⚙️ Watak & Tajuk</button>
+      <span id="bgmSlot"></span>
+    </div>
+    <div class="note" id="qSummary"></div>
+    <div class="note"><b>Genggam</b> kad penjodoh bilangan yang betul, seret ke dalam <b>bakul basikal</b>, <b>buka</b> tangan untuk lepas • <a href="/game-arab.html" style="color:#1f6fd1">← GameBox</a></div>
+  </div>
+</div>
+
+<div id="qPanel" class="overlay center hidden">
+  <div class="panel">
+    <h2>📋 Soalan</h2>
+    <div class="row">
+      <button class="btn small" id="btnTpl">⬇ Muat turun templat</button>
+      <button class="btn small green" style="font-size:15px;padding:8px 14px" id="btnUp">⬆ Muat naik</button>
+      <button class="btn small alt" id="btnReset">↺ Soalan asal</button>
+      <input type="file" id="fileIn" accept=".xlsx,.xls,.csv" style="display:none">
+    </div>
+    <div class="note">Lajur: <b>Ayat</b> (guna ___ untuk tempat kosong) | <b>Jawapan</b> | <b>Pilihan Salah 1–3</b> | <b>Gambar</b> (emoji, pilihan). Maksimum 20 soalan.</div>
+    <div class="err" id="qErr"></div>
+    <div id="qTable"></div>
+    <div class="row"><button class="btn" id="btnQBack">✔ Siap</button></div>
+  </div>
+</div>
+
+<div id="cfgPanel" class="overlay center hidden">
+  <div class="panel">
+    <h2>⚙️ Watak & Tajuk</h2>
+    <div class="note" style="font-size:14px">Semua tetapan disimpan dalam pelayar komputer ini sahaja.</div>
+    <div class="row"><label class="f" style="flex:1;min-width:300px">Tajuk permainan<input id="cTitle" maxlength="60"></label></div>
+    <div class="row"><label class="f">Nama watak kiri<input id="cN1" maxlength="16"></label><label class="f">Nama watak kanan<input id="cN2" maxlength="16"></label></div>
+    <div class="row"><img id="cPrev" style="max-width:240px;max-height:160px;background:#fff;border-radius:12px;display:none" alt="Gambar watak"></div>
+    <div class="row">
+      <button class="btn small" id="btnImgUp">⬆ Muat naik gambar watak</button>
+      <button class="btn small alt" id="btnImgX">✖ Buang gambar</button>
+      <input type="file" id="imgIn" accept="image/*" style="display:none">
+    </div>
+    <div class="note">Gambar watak dipaparkan di sebelah basikal. Gambar berlatar lutsinar (PNG) paling cantik.</div>
+    <div class="row"><button class="btn green" style="font-size:18px;padding:10px 24px" id="btnCfgSave">✔ Simpan</button></div>
+  </div>
+</div>
+
+<div id="result" class="overlay center hidden">
+  <div class="panel" style="text-align:center">
+    <p class="big" id="rTitle">🎉 TAHNIAH!</p>
+    <div class="stars" id="rStars"></div>
+    <div style="font-size:20px;font-weight:600" id="rMsg"></div>
+    <div class="note" style="font-size:15px" id="rDetail"></div>
+    <div class="row" style="margin-top:14px"><button class="btn green" style="font-size:20px" id="rAgain">↺ Main Semula</button><button class="btn alt" id="rMenu">🏠 Menu</button></div>
+  </div>
+</div>
+
+<script>window.BOBO_BGM_KEY = 'penjodoh_bgm';</script>
+<script src="/bobo-bgm.js"></script>
+<script src="/bobo-kit.js"></script>
+<script>
+(() => {
+'use strict';
+const K = window.BoboKit, { clamp, F, ease, SFX } = K;
+const $ = (id) => document.getElementById(id);
+const show = (id) => $(id).classList.remove('hidden'), hide = (id) => $(id).classList.add('hidden');
+const MEL = [67, 67, 72, null, 72, 74, 76, null, 76, 74, 72, 74, 76, null, 72, null, 67, 67, 72, null, 72, 74, 76, null, 79, 77, 76, 74, 72, null, null, null];
+const BASS = [48, 43, 45, 41];
+const bell = () => { K.tone(1568, 0.5, 'sine', 0.12); K.tone(2093, 0.6, 'sine', 0.08, null, 0.02); K.tone(1568, 0.5, 'sine', 0.12, null, 0.22); K.tone(2093, 0.6, 'sine', 0.08, null, 0.24); };
+
+// ====================================================================
+// DATA: soalan, tetapan, gambar watak
+// ====================================================================
+const DEFAULT_QS = [
+  { ayat: 'Atuk membela tiga ___ ayam.', jawapan: 'ekor', salah: ['biji', 'buah'], gambar: '🐔' },
+  { ayat: 'Ibu membeli sepuluh ___ telur.', jawapan: 'biji', salah: ['helai', 'orang'], gambar: '🥚' },
+  { ayat: 'Ada dua ___ kereta di halaman rumah.', jawapan: 'buah', salah: ['ekor', 'batang'], gambar: '🚗' },
+  { ayat: 'Adik memegang ___ pensel.', jawapan: 'sebatang', salah: ['seekor', 'sebiji'], gambar: '✏️' },
+  { ayat: 'Kakak melipat dua ___ baju.', jawapan: 'helai', salah: ['buah', 'biji'], gambar: '👕' },
+  { ayat: 'Tiga ___ murid sedang membaca.', jawapan: 'orang', salah: ['ekor', 'helai'], gambar: '🧒' },
+  { ayat: 'Ayah membeli ___ tembikai.', jawapan: 'sebiji', salah: ['sehelai', 'seorang'], gambar: '🍉' },
+  { ayat: 'Ada ___ rumah kayu di tepi sawah.', jawapan: 'sebuah', salah: ['seekor', 'sebatang'], gambar: '🏠' },
+  { ayat: 'Dua ___ kucing tidur di atas tikar.', jawapan: 'ekor', salah: ['orang', 'buah'], gambar: '🐱' },
+  { ayat: 'Atuk membersihkan ___ meriam buluh.', jawapan: 'selaras', salah: ['sehelai', 'sebiji'], gambar: '🎋' },
+];
+const LS_Q = 'pjb_soalan_v1', LS_CFG = 'pjb_cfg_v1', LS_IMG = 'pjb_watak_v1';
+let QS = loadQs();
+function loadQs() { const c = K.lsGet(LS_Q, null); return Array.isArray(c) && c.length ? { qs: c, custom: true } : { qs: DEFAULT_QS, custom: false }; }
+const CFG = Object.assign({ title: 'Penjodoh Bilangan', n1: 'Ali', n2: 'Mira' }, K.lsGet(LS_CFG, {}) || {});
+let charImg = null;
+function loadCharImg(cb) { const d = K.lsGet(LS_IMG, null); if (!d) { charImg = null; cb && cb(); return; } const im = new Image(); im.onload = () => { charImg = im; cb && cb(); }; im.onerror = () => { charImg = null; cb && cb(); }; im.src = d; }
+function uploadCharImg(file, cb) {
+  const img = new Image(); img.onload = () => {
+    const sc = Math.min(1, 900 / Math.max(img.width, img.height)), c = document.createElement('canvas'); c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    let d = /png|webp|gif/.test(file.type) ? c.toDataURL('image/png') : c.toDataURL('image/jpeg', 0.9);
+    if (!K.lsSet(LS_IMG, d)) { d = c.toDataURL('image/jpeg', 0.8); if (!K.lsSet(LS_IMG, d)) alert('Gambar terlalu besar untuk disimpan.'); }
+    URL.revokeObjectURL(img.src); loadCharImg(cb);
+  }; img.onerror = () => alert('Fail gambar tidak dapat dibaca.'); img.src = URL.createObjectURL(file);
+}
+
+// ====================================================================
+// KANVAS & LATAR KAMPUNG
+// ====================================================================
+const cv = $('cv'), ctx = cv.getContext('2d');
+let W = 0, H = 0, DPR = 1, U = 1, GY = 0, bg = null;
+function resize() { DPR = Math.min(window.devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0); U = Math.min(W / 1280, H / 800); GY = H * 0.9; bg = null; }
+addEventListener('resize', resize);
+function paintBg() {
+  bg = document.createElement('canvas'); bg.width = W * DPR; bg.height = H * DPR; const c = bg.getContext('2d'); c.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const sky = c.createLinearGradient(0, 0, 0, H * 0.7); sky.addColorStop(0, '#5cc2ff'); sky.addColorStop(1, '#c9ecff'); c.fillStyle = sky; c.fillRect(0, 0, W, H);
+  c.fillStyle = '#ffe36b'; c.beginPath(); c.arc(W * 0.9, H * 0.13, 60 * U, 0, Math.PI * 2); c.fill();
+  // bukit
+  c.fillStyle = '#7fcf6a'; c.beginPath(); c.moveTo(0, H * 0.66); for (let x = 0; x <= W; x += 20) c.lineTo(x, H * 0.6 - Math.sin(x * 0.004) * 50 * U - Math.sin(x * 0.011) * 18 * U); c.lineTo(W, H); c.lineTo(0, H); c.fill();
+  // sawah
+  c.fillStyle = '#9ddc5c'; c.fillRect(0, H * 0.68, W, H * 0.32);
+  for (let y = H * 0.7; y < H; y += 26 * U) { c.strokeStyle = 'rgba(60,140,40,.25)'; c.lineWidth = 3 * U; c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }
+  // jalan tanah
+  c.fillStyle = '#e2b77a'; c.beginPath(); c.moveTo(0, GY - 30 * U); c.lineTo(W, GY - 30 * U); c.lineTo(W, H); c.lineTo(0, H); c.fill();
+  c.fillStyle = 'rgba(160,110,60,.25)'; for (let k = 0; k < 40; k++) { c.beginPath(); c.ellipse((k * 137) % W, GY - 10 * U + (k * 53) % (H - GY + 20 * U), 8 * U, 3 * U, 0, 0, Math.PI * 2); c.fill(); }
+  // rumah kayu (kanan)
+  const hx = W - 330 * U, hy = H * 0.68; c.fillStyle = '#b97a45'; c.fillRect(hx, hy - 170 * U, 250 * U, 150 * U);
+  for (let x = hx; x < hx + 250 * U; x += 22 * U) { c.strokeStyle = 'rgba(80,45,15,.35)'; c.lineWidth = 2 * U; c.beginPath(); c.moveTo(x, hy - 170 * U); c.lineTo(x, hy - 20 * U); c.stroke(); }
+  c.fillStyle = '#8a4a26'; c.beginPath(); c.moveTo(hx - 30 * U, hy - 165 * U); c.lineTo(hx + 125 * U, hy - 260 * U); c.lineTo(hx + 280 * U, hy - 165 * U); c.fill();
+  c.fillStyle = '#ffe9b0'; c.fillRect(hx + 30 * U, hy - 140 * U, 50 * U, 50 * U); c.fillRect(hx + 170 * U, hy - 140 * U, 50 * U, 50 * U);
+  c.fillStyle = '#6b3a1c'; c.fillRect(hx + 100 * U, hy - 120 * U, 50 * U, 100 * U);
+  c.fillStyle = '#6b3a1c'; for (let k = 0; k < 5; k++) c.fillRect(hx + 10 * U + k * 55 * U, hy - 20 * U, 10 * U, 40 * U);
+  // pokok kelapa
+  const palm = (x, y, h) => { c.strokeStyle = '#8b5a2b'; c.lineWidth = 14 * U; c.lineCap = 'round'; c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x + 30 * U, y - h * 0.5, x + 10 * U, y - h); c.stroke();
+    c.fillStyle = '#2f9e44'; for (let a = 0; a < 7; a++) { const ang = -Math.PI + a * (Math.PI / 6); c.beginPath(); c.ellipse(x + 10 * U + Math.cos(ang) * 55 * U, y - h + Math.sin(ang) * 20 * U + 10 * U, 70 * U, 16 * U, ang * 0.6, 0, Math.PI * 2); c.fill(); }
+    c.fillStyle = '#7a4a1e'; c.beginPath(); c.arc(x + 4 * U, y - h + 14 * U, 9 * U, 0, Math.PI * 2); c.arc(x + 20 * U, y - h + 16 * U, 9 * U, 0, Math.PI * 2); c.fill(); };
+  palm(80 * U, H * 0.7, 300 * U); palm(W * 0.62, H * 0.68, 240 * U); palm(W - 60 * U, H * 0.72, 280 * U);
+}
+const clouds = Array.from({ length: 5 }, (_, i) => ({ x: Math.random(), y: 0.05 + Math.random() * 0.18, s: 0.7 + Math.random() * 0.6, v: 0.004 + Math.random() * 0.006 }));
+
+// ====================================================================
+// KEADAAN
+// ====================================================================
+const S = { ctrl: 'hand' };
+const G = { state: 'title', t: 0, stT: 0, qs: [], qi: 0, cards: [], held: null, wrongs: 0, totalWrong: 0, stars: [], basket: [], bubble: null, dialog: [], di: 0, bikeX: 0, bikeV: 0, wheel: 0, bounce: 0 };
+const PT = new K.Particles(), cur = K.makeCursor();
+const curQ = () => G.qs[G.qi];
+const fullSentence = (q) => q.ayat.replace(/_{2,}/, q.jawapan);
+
+// ====================================================================
+// INPUT
+// ====================================================================
+const vid = $('vid');
+cv.addEventListener('pointerdown', (e) => { K.ac(); if (S.ctrl !== 'mouse') return; cur.tx = cur.x = e.clientX; cur.ty = cur.y = e.clientY; cur.down = true; cur.active = true; if (G.state === 'intro') nextDialog(); });
+cv.addEventListener('pointermove', (e) => { if (S.ctrl !== 'mouse') return; cur.tx = e.clientX; cur.ty = e.clientY; cur.active = true; });
+addEventListener('pointerup', () => { if (S.ctrl === 'mouse') cur.down = false; });
+addEventListener('keydown', (e) => { if (G.state === 'intro' && (e.key === ' ' || e.key === 'Enter')) nextDialog(); });
+function feedHand() { if (S.ctrl !== 'hand' || !K.hands.ready) return; const h = K.hands.list[0]; if (h && h.t !== cur.seen) K.feedHand(cur, h); }
+
+// ====================================================================
+// GEOMETRI
+// ====================================================================
+const bikeX0 = () => W * 0.6, bikeS = () => U * 1.15;
+function basketRect() { const s = bikeS(), x = G.bikeX + 150 * s, y = GY - 222 * s + G.bounce; return { x: x - 82 * s, y: y - 52 * s, w: 164 * s, h: 96 * s, cx: x, cy: y - 4 * s }; }
+const charBox = () => { const w = Math.min(420 * U, W * 0.33), h = Math.min(470 * U, H * 0.56); return { x: W * 0.05, y: GY - h + 10 * U, w, h }; };
+
+// ====================================================================
+// ALIRAN
+// ====================================================================
+function hint(t, ms = 3000) { const h = $('hint'); h.textContent = t; h.style.opacity = 1; clearTimeout(hint._t); hint._t = setTimeout(() => (h.style.opacity = 0), ms); }
+async function startGame() {
+  K.ac(); QS = loadQs(); G.qs = QS.qs.slice(0, 20); if (!G.qs.length) return;
+  G.qi = 0; G.totalWrong = 0; G.stars = []; G.basket = []; G.bikeX = bikeX0(); G.bikeV = 0;
+  hide('menu'); hide('result'); $('tools').style.display = 'flex'; K.music.start(MEL, BASS, 120);
+  G.dialog = [
+    { who: 1, txt: `Hai semua! Saya ${CFG.n1}!` },
+    { who: 2, txt: `Saya pula ${CFG.n2}!` },
+    { who: 1, txt: 'Hari ini kita belajar penjodoh bilangan.' },
+    { who: 2, txt: 'Tolong kami isi bakul basikal ni, ya!' },
+    { who: 1, txt: 'Genggam kad yang betul, letak dalam bakul!' },
+  ];
+  G.di = 0; G.state = 'intro'; G.stT = 0; SFX.pop();
+  if (S.ctrl === 'hand') {
+    hint('Membuka kamera… benarkan akses kamera.', 4000);
+    const ok = await K.startHands(vid, 1, () => ({ W, H }));
+    if (!ok) { S.ctrl = 'mouse'; syncChips(); hint('Kamera tidak dapat dibuka. Main guna tetikus atau sentuh.', 5000); }
+    else hint('✊ Genggam untuk teruskan dialog', 4000);
+  } else hint('Klik untuk teruskan dialog ▶', 3000);
+}
+function nextDialog() { if (G.state !== 'intro' || G.stT < 0.35) return; G.di++; G.stT = 0; SFX.blip(); if (G.di >= G.dialog.length) { G.state = 'ready'; G.stT = 0; } }
+function startQuestion() {
+  const q = curQ(); G.wrongs = 0; G.held = null;
+  const opts = K.shuffle([q.jawapan, ...q.salah.filter(Boolean).slice(0, 3)]);
+  const n = opts.length, cw = Math.min(240 * U, (W * 0.56) / n - 24 * U), x0 = W * 0.665 - ((n - 1) * (cw + 28 * U)) / 2;
+  G.cards = opts.map((w, i) => ({ w, ok: w === q.jawapan, hx: x0 + i * (cw + 28 * U), hy: H * 0.345, x: x0 + i * (cw + 28 * U), y: -120 * U, cw, ch: 92 * U, state: 'home', t: Math.random() * 6, shake: 0, col: ['#ff8a3d', '#5ab8ff', '#b58cf0', '#3ccf91'][i % 4] }));
+  G.state = 'play'; G.stT = 0; G.bubble = null; SFX.whoosh();
+}
+function release(card) {
+  const b = basketRect(), inB = card.x > b.x - 40 * U && card.x < b.x + b.w + 40 * U && card.y > b.y - 70 * U && card.y < b.y + b.h + 30 * U;
+  if (!inB) { card.state = 'home'; SFX.drop(); return; }
+  if (card.ok) {
+    card.state = 'in'; card.t = 0; bell(); SFX.correct(); G.basket.push(curQ().gambar || '⭐');
+    PT.burst(b.cx, b.cy, 34, ['#ffc83d', '#3ccf91', '#ff7ab6', '#5ab8ff', '#fff'], U);
+    G.bubble = { who: 1 + (G.qi % 2), txt: 'Betul! ' + cap(fullSentence(curQ())), t: 0, good: true };
+    const st = G.wrongs === 0 ? 3 : G.wrongs === 1 ? 2 : 1; G.stars.push(st);
+    G.state = 'done'; G.stT = 0; G.bounce = 18 * U;
+  } else {
+    G.wrongs++; G.totalWrong++; card.state = 'home'; card.shake = 1; SFX.wrong();
+    G.bubble = { who: 1 + ((G.qi + 1) % 2), txt: 'Alamak, cuba lagi!', t: 0, good: false };
+    PT.text(b.cx, b.y - 40 * U, 'Cuba lagi!', '#e3242b', 46 * U);
+  }
+}
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+function finish() {
+  G.state = 'ride'; G.stT = 0; SFX.horn && SFX.horn();
+}
+function showResult() {
+  G.state = 'end'; K.music.stop(); $('tools').style.display = 'none';
+  const avg = G.stars.reduce((a, b) => a + b, 0) / Math.max(1, G.stars.length), st = Math.max(1, Math.round(avg));
+  $('rStars').textContent = '⭐'.repeat(st) + '☆'.repeat(3 - st);
+  $('rMsg').textContent = `Bakul basikal ${CFG.n1} dan ${CFG.n2} sudah penuh!`;
+  $('rDetail').textContent = `Soalan: ${G.qs.length} • Cubaan salah: ${G.totalWrong}`;
+  SFX.win(); PT.confetti(W, 160, U); setTimeout(() => show('result'), 600);
+}
+function goMenu() { G.state = 'title'; K.music.stop(); hide('result'); hide('qPanel'); hide('cfgPanel'); show('menu'); $('tools').style.display = 'none'; G.cards = []; G.basket = []; G.bubble = null; G.bikeX = bikeX0(); refreshSummary(); }
+
+// ====================================================================
+// KEMASKINI
+// ====================================================================
+let last = performance.now();
+function frame(now) { const dt = Math.min(0.05, (now - last) / 1000); last = now; G.t += dt; G.stT += dt; feedHand(); K.updateCursor(cur, dt, S.ctrl === 'hand'); update(dt); render(); requestAnimationFrame(frame); }
+function update(dt) {
+  PT.update(dt, H); clouds.forEach((c) => { c.x += c.v * dt; if (c.x > 1.2) c.x = -0.2; });
+  G.bounce *= Math.pow(0.02, dt); if (G.bubble) G.bubble.t += dt;
+  if (G.state === 'title') { G.bikeX = bikeX0(); }
+  if (G.state === 'intro') { if (S.ctrl === 'hand' && cur.justDown) nextDialog(); if (G.stT > 3.4) nextDialog(); }
+  if (G.state === 'ready' && G.stT > 0.4) startQuestion();
+  // kad
+  G.cards.forEach((c) => {
+    c.t += dt; c.shake = Math.max(0, c.shake - dt * 2.5);
+    if (c.state === 'home') { const ty = c.hy + Math.sin(c.t * 2) * 8 * U; c.x += (c.hx - c.x) * Math.min(1, dt * 9); c.y += (ty - c.y) * Math.min(1, dt * 7); }
+    else if (c.state === 'held') { c.x += (cur.x - c.x) * Math.min(1, dt * 25); c.y += (cur.y - c.y) * Math.min(1, dt * 25); }
+    else if (c.state === 'in') { const b = basketRect(); c.x += (b.cx - c.x) * Math.min(1, dt * 10); c.y += (b.cy - c.y) * Math.min(1, dt * 10); }
+  });
+  if (G.state === 'play') {
+    if (cur.justDown && !G.held) {
+      let best = null; G.cards.forEach((c) => { if (c.state === 'home' && Math.abs(cur.x - c.x) < c.cw / 2 + 24 * U && Math.abs(cur.y - c.y) < c.ch / 2 + 24 * U) best = c; });
+      if (best) { best.state = 'held'; G.held = best; SFX.pick(); }
+    }
+    if (G.held && !cur.pressed) { const c = G.held; G.held = null; release(c); }
+  }
+  if (G.state === 'done' && G.stT > 2.2) { G.cards = []; G.bubble = null; if (G.qi + 1 < G.qs.length) { G.qi++; startQuestion(); } else finish(); }
+  if (G.state === 'ride') { G.bikeV += 500 * U * dt; G.bikeX += G.bikeV * dt; G.wheel += G.bikeV * dt / (62 * bikeS()); if (G.stT > 0.4 && Math.random() < dt * 3) bell(); if (G.bikeX > W + 400 * U) showResult(); }
+}
+
+// ====================================================================
+// LUKISAN
+// ====================================================================
+function render() {
+  if (!bg) paintBg(); ctx.drawImage(bg, 0, 0, W, H);
+  clouds.forEach((c) => { const x = c.x * W, y = c.y * H, s = c.s * U; ctx.fillStyle = 'rgba(255,255,255,.92)'; ctx.beginPath(); ctx.arc(x, y, 34 * s, 0, Math.PI * 2); ctx.arc(x + 40 * s, y - 14 * s, 40 * s, 0, Math.PI * 2); ctx.arc(x + 82 * s, y, 32 * s, 0, Math.PI * 2); ctx.fill(); });
+  drawChars();
+  drawBike();
+  if (G.state !== 'title') drawHud();
+  G.cards.forEach((c) => { if (c !== G.held) drawCard(c); }); if (G.held) drawCard(G.held);
+  if (G.bubble) drawBubble(G.bubble.who, G.bubble.txt, G.bubble.good ? '#e9fff2' : '#fff1f1', G.bubble.good ? '#22b573' : '#e3242b');
+  if (G.state === 'intro') { const d = G.dialog[G.di]; if (d) drawBubble(d.who, d.txt, '#fff', '#1f6fd1', true); }
+  PT.draw(ctx);
+  if (G.state === 'title') drawTitle();
+  if (S.ctrl === 'hand' && G.state !== 'title') { K.drawHandCursor(ctx, cur, U, '#1f6fd1'); K.drawCamPreview(ctx, W, H, U, cur.active); }
+}
+function drawTitle() {
+  const t = CFG.title || 'Penjodoh Bilangan', px = K.fitFont(ctx, t, W * 0.9, Math.min(96 * U, W * 0.08));
+  ctx.save(); ctx.translate(W / 2, H * 0.14); const p = 1 + Math.sin(G.t * 3) * 0.025; ctx.scale(p, p);
+  K.bigText(ctx, t, 0, 0, px, '#ffc83d', '#0d3f80', px * 0.2); ctx.restore();
+  K.bigText(ctx, '🚲 Isi bakul dengan penjodoh bilangan yang betul!', W / 2, H * 0.14 + px * 0.95, Math.min(34 * U, W * 0.03), '#fff', '#0d3f80', 8 * U);
+}
+function drawChars() {
+  const b = charBox(), bob = Math.sin(G.t * 2.2) * 4 * U;
+  if (charImg) { const r = Math.min(b.w / charImg.width, b.h / charImg.height), w = charImg.width * r, h = charImg.height * r; ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.25)'; ctx.shadowBlur = 18 * U; ctx.drawImage(charImg, b.x + (b.w - w) / 2, b.y + b.h - h + bob, w, h); ctx.restore(); return; }
+  // watak asal ringkas (lalai) - guru boleh muat naik gambar watak sendiri
+  const kid = (x, y, s, girl, wave) => {
+    ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+    ctx.fillStyle = girl ? '#ff7ab6' : '#3a8de0'; K.rr(ctx, -45, -150, 90, 120, 30); ctx.fill();
+    ctx.fillStyle = '#2b2b3a'; ctx.fillRect(-36, -40, 26, 48); ctx.fillRect(10, -40, 26, 48);
+    ctx.fillStyle = '#f2c299'; ctx.lineCap = 'round'; ctx.strokeStyle = '#f2c299'; ctx.lineWidth = 20;
+    ctx.beginPath(); ctx.moveTo(-45, -130); ctx.lineTo(-70, wave ? -200 + Math.sin(G.t * 8) * 12 : -70); ctx.stroke(); ctx.beginPath(); ctx.moveTo(45, -130); ctx.lineTo(68, -70); ctx.stroke();
+    if (girl) { ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.ellipse(0, -205, 72, 78, 0, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.moveTo(-60, -170); ctx.lineTo(0, -120); ctx.lineTo(60, -170); ctx.fill(); }
+    ctx.fillStyle = '#f2c299'; ctx.beginPath(); ctx.arc(0, -205, 56, 0, Math.PI * 2); ctx.fill();
+    if (!girl) { ctx.fillStyle = '#2f9e44'; ctx.beginPath(); ctx.arc(0, -225, 58, Math.PI, 0); ctx.fill(); ctx.fillRect(0, -232, 80, 14); ctx.fillStyle = '#3b2a20'; ctx.fillRect(-56, -225, 112, 10); }
+    ctx.fillStyle = '#2a2a33'; ctx.beginPath(); ctx.arc(-20, -205, 7, 0, Math.PI * 2); ctx.arc(20, -205, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,120,140,.5)'; ctx.beginPath(); ctx.arc(-34, -188, 9, 0, Math.PI * 2); ctx.arc(34, -188, 9, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#7a2a2a'; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(0, -190, 16, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
+    ctx.restore();
+  };
+  const s = U * 1.2; kid(b.x + b.w * 0.3, GY + bob, s, true, G.state === 'intro' && G.dialog[G.di] && G.dialog[G.di].who === 1); kid(b.x + b.w * 0.72, GY - bob, s, false, G.state === 'intro' && G.dialog[G.di] && G.dialog[G.di].who === 2);
+}
+function drawBike() {
+  const s = bikeS(), x = G.bikeX, y = GY - 20 * s + G.bounce * 0.3, R = 66 * s, rx = x - 120 * s, fx = x + 125 * s;
+  ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  const wheel = (cx) => { ctx.strokeStyle = '#26303b'; ctx.lineWidth = 12 * s; ctx.beginPath(); ctx.arc(cx, y - R, R, 0, Math.PI * 2); ctx.stroke(); ctx.strokeStyle = '#9aa7b4'; ctx.lineWidth = 2.5 * s; for (let k = 0; k < 8; k++) { const a = G.wheel + k * Math.PI / 4; ctx.beginPath(); ctx.moveTo(cx, y - R); ctx.lineTo(cx + Math.cos(a) * R, y - R + Math.sin(a) * R); ctx.stroke(); } ctx.fillStyle = '#26303b'; ctx.beginPath(); ctx.arc(cx, y - R, 8 * s, 0, Math.PI * 2); ctx.fill(); };
+  wheel(rx); wheel(fx);
+  const pX = x - 10 * s, pY = y - R, seatX = x - 60 * s, seatY = y - 190 * s, headX = x + 95 * s, headY = y - 200 * s;
+  ctx.strokeStyle = '#e3242b'; ctx.lineWidth = 13 * s;
+  ctx.beginPath(); ctx.moveTo(rx, y - R); ctx.lineTo(pX, pY); ctx.lineTo(headX, headY); ctx.lineTo(seatX, seatY + 20 * s); ctx.lineTo(rx, y - R); ctx.moveTo(seatX, seatY + 20 * s); ctx.lineTo(pX, pY); ctx.moveTo(headX, headY); ctx.lineTo(fx, y - R); ctx.stroke();
+  ctx.fillStyle = '#26303b'; K.rr(ctx, seatX - 36 * s, seatY - 4 * s, 72 * s, 18 * s, 9 * s); ctx.fill();
+  ctx.strokeStyle = '#26303b'; ctx.lineWidth = 9 * s; ctx.beginPath(); ctx.moveTo(headX, headY); ctx.lineTo(headX - 10 * s, headY - 40 * s); ctx.lineTo(headX - 50 * s, headY - 46 * s); ctx.stroke();
+  ctx.fillStyle = '#ffc83d'; ctx.beginPath(); ctx.arc(headX - 18 * s, headY - 46 * s, 9 * s, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#26303b'; ctx.beginPath(); ctx.arc(pX, pY, 16 * s, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+  // bakul (dengan pemegang ke hendal)
+  { const b0 = basketRect(); ctx.save(); ctx.strokeStyle = '#26303b'; ctx.lineWidth = 7 * s; ctx.beginPath(); ctx.moveTo(headX - 6 * s, headY - 30 * s); ctx.lineTo(b0.x + 20 * U, b0.y + 10 * U); ctx.moveTo(headX + 4 * s, headY + 10 * s); ctx.lineTo(b0.x + 30 * U, b0.y + b0.h - 10 * U); ctx.stroke(); ctx.restore(); }
+  const b = basketRect(), glow = G.held ? 0.5 + Math.sin(G.t * 8) * 0.5 : 0;
+  ctx.save();
+  if (glow) { ctx.shadowColor = '#ffe066'; ctx.shadowBlur = 40 * U * glow; }
+  ctx.fillStyle = '#c98a44'; ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(b.x + b.w, b.y); ctx.lineTo(b.x + b.w - 18 * U, b.y + b.h); ctx.lineTo(b.x + 18 * U, b.y + b.h); ctx.closePath(); ctx.fill(); ctx.shadowBlur = 0;
+  ctx.save(); ctx.clip(); ctx.strokeStyle = 'rgba(110,60,20,.55)'; ctx.lineWidth = 3 * U; for (let yy = b.y + 14 * U; yy < b.y + b.h; yy += 18 * U) { ctx.beginPath(); ctx.moveTo(b.x, yy); ctx.lineTo(b.x + b.w, yy); ctx.stroke(); } for (let xx = b.x; xx < b.x + b.w; xx += 22 * U) { ctx.beginPath(); ctx.moveTo(xx, b.y); ctx.lineTo(xx + 6 * U, b.y + b.h); ctx.stroke(); } ctx.restore();
+  // isi bakul (gambar soalan yang betul)
+  ctx.font = `${44 * U}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  G.basket.slice(-6).forEach((e, i) => ctx.fillText(e, b.x + 30 * U + (i % 3) * (b.w - 60 * U) / 2, b.y - 8 * U - Math.floor(i / 3) * 30 * U));
+  ctx.fillStyle = '#8a5a2b'; K.rr(ctx, b.x - 8 * U, b.y - 10 * U, b.w + 16 * U, 18 * U, 9 * U); ctx.fill();
+  if (G.held) K.bigText(ctx, '⬇ BAKUL', b.cx, b.y - 70 * U, 30 * U, '#ffc83d', '#0d3f80', 7 * U);
+  ctx.restore();
+}
+function wrap(text, maxW) { const words = text.split(' '), lines = []; let ln = ''; words.forEach((w) => { const t = ln ? ln + ' ' + w : w; if (ctx.measureText(t).width > maxW && ln) { lines.push(ln); ln = w; } else ln = t; }); if (ln) lines.push(ln); return lines; }
+function drawHud() {
+  const q = curQ(); if (!q || !['play', 'done'].includes(G.state)) { if (G.state === 'ride') K.bigText(ctx, '🎉 Bakul penuh!', W / 2, H * 0.2, 80 * U, '#22b573', '#fff', 16 * U); return; }
+  const cw = Math.min(1080 * U, W - 60 * U), ch = 150 * U, cx = (W - cw) / 2, cy = 24 * U;
+  ctx.save(); ctx.fillStyle = 'rgba(255,255,255,.96)'; ctx.shadowColor = 'rgba(0,0,0,.2)'; ctx.shadowBlur = 16 * U; K.rr(ctx, cx, cy, cw, ch, 26 * U); ctx.fill(); ctx.shadowBlur = 0; ctx.lineWidth = 6 * U; ctx.strokeStyle = '#1f6fd1'; ctx.stroke();
+  ctx.font = `${100 * U}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(q.gambar || '❓', cx + 85 * U, cy + ch / 2 + 4 * U);
+  // ayat dengan tempat kosong (atau jawapan bila betul)
+  const shown = G.state === 'done' ? fullSentence(q) : q.ayat.replace(/_{2,}/, '______');
+  let px = 50 * U; ctx.font = F(px, 600); let lines = wrap(shown, cw - 220 * U); while (lines.length > 2 && px > 24 * U) { px -= 2 * U; ctx.font = F(px, 600); lines = wrap(shown, cw - 220 * U); }
+  ctx.textAlign = 'left'; ctx.fillStyle = G.state === 'done' ? '#127a4b' : '#16324f'; lines.forEach((l, i) => ctx.fillText(l, cx + 175 * U, cy + ch / 2 + (i - (lines.length - 1) / 2) * px * 1.15));
+  // nombor soalan
+  ctx.fillStyle = '#ffc83d'; K.rr(ctx, cx + cw - 150 * U, cy - 18 * U, 140 * U, 40 * U, 20 * U); ctx.fill(); ctx.fillStyle = '#0d3f80'; ctx.font = F(22 * U); ctx.textAlign = 'center'; ctx.fillText(`Soalan ${G.qi + 1}/${G.qs.length}`, cx + cw - 80 * U, cy + 2 * U);
+  ctx.restore();
+}
+function drawCard(c) {
+  const sh = Math.sin(c.shake * 30) * c.shake * 14 * U, sc = c.state === 'held' ? 1.12 : c.state === 'in' ? 0.6 : 1;
+  ctx.save(); ctx.translate(c.x + sh, c.y); ctx.scale(sc, sc); ctx.rotate(c.state === 'held' ? Math.sin(G.t * 6) * 0.04 : 0);
+  ctx.shadowColor = 'rgba(0,0,0,.28)'; ctx.shadowBlur = (c.state === 'held' ? 22 : 10) * U; ctx.shadowOffsetY = 6 * U;
+  ctx.fillStyle = '#fff'; K.rr(ctx, -c.cw / 2, -c.ch / 2, c.cw, c.ch, 22 * U); ctx.fill(); ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+  ctx.lineWidth = 7 * U; ctx.strokeStyle = c.col; ctx.stroke();
+  const px = K.fitFont(ctx, c.w, c.cw - 30 * U, 54 * U); ctx.font = F(px); ctx.fillStyle = '#c0161d'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(c.w, 0, 3 * U);
+  ctx.restore();
+}
+function drawBubble(who, txt, fill, stroke, tap) {
+  const b = charBox(), ax = b.x + b.w * (who === 1 ? 0.3 : 0.72), ay = b.y + 10 * U;
+  ctx.save(); ctx.font = F(34 * U, 600); const lines = wrap(txt, Math.max(220 * U, b.w - 60 * U)), lw = Math.max(...lines.map((l) => ctx.measureText(l).width)), bw = lw + 50 * U, bh = lines.length * 42 * U + 34 * U + (tap ? 26 * U : 0);
+  const bx = clamp(ax - bw * 0.3, 12 * U, Math.max(12 * U, b.x + b.w + 10 * U - bw)), by = Math.max(200 * U, ay - bh - 26 * U);
+  ctx.fillStyle = fill; ctx.strokeStyle = stroke; ctx.lineWidth = 5 * U; ctx.shadowColor = 'rgba(0,0,0,.2)'; ctx.shadowBlur = 14 * U;
+  K.rr(ctx, bx, by, bw, bh, 24 * U); ctx.fill(); ctx.shadowBlur = 0; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(clamp(ax, bx + 30 * U, bx + bw - 30 * U) - 16 * U, by + bh - 2 * U); ctx.lineTo(ax, by + bh + 34 * U); ctx.lineTo(clamp(ax, bx + 30 * U, bx + bw - 30 * U) + 16 * U, by + bh - 2 * U); ctx.closePath(); ctx.fill(); ctx.stroke();
+  { const nm = who === 1 ? CFG.n1 : CFG.n2; ctx.font = F(22 * U); const nw = ctx.measureText(nm).width + 28 * U; ctx.fillStyle = stroke; K.rr(ctx, bx + 18 * U, by - 18 * U, nw, 34 * U, 17 * U); ctx.fill(); ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(nm, bx + 32 * U, by); }
+  ctx.fillStyle = '#16324f'; ctx.font = F(34 * U, 600); ctx.textAlign = 'left'; lines.forEach((l, i) => ctx.fillText(l, bx + 25 * U, by + 40 * U + i * 42 * U));
+  if (tap) { ctx.fillStyle = '#6b84a3'; ctx.font = F(18 * U, 600); ctx.textAlign = 'right'; ctx.fillText(S.ctrl === 'hand' ? '✊ genggam untuk teruskan ▶' : 'klik untuk teruskan ▶', bx + bw - 18 * U, by + bh - 20 * U); }
+  ctx.restore();
+}
+
+// ====================================================================
+// MENU, SOALAN, TETAPAN
+// ====================================================================
+function syncChips() { document.querySelectorAll('#menu .chip').forEach((b) => b.classList.toggle('on', S[b.dataset.k] === b.dataset.v)); }
+document.querySelectorAll('#menu .chip').forEach((b) => (b.onclick = () => { K.ac(); SFX.click(); S[b.dataset.k] = b.dataset.v; syncChips(); }));
+function refreshSummary() { QS = loadQs(); $('qSummary').textContent = `${QS.qs.length} soalan ${QS.custom ? '(soalan sendiri)' : '(soalan asal)'}`; }
+$('btnStart').onclick = () => { SFX.click(); startGame(); };
+$('btnQ').onclick = () => { SFX.click(); renderQs(); show('qPanel'); };
+$('btnQBack').onclick = () => { hide('qPanel'); refreshSummary(); };
+function renderQs() { QS = loadQs(); $('qTable').innerHTML = '<table><tr><th>#</th><th>Gambar</th><th>Ayat</th><th>Jawapan</th><th>Pilihan salah</th></tr>' + QS.qs.map((q, i) => `<tr><td>${i + 1}</td><td>${K.esc(q.gambar || '')}</td><td>${K.esc(q.ayat)}</td><td><b>${K.esc(q.jawapan)}</b></td><td>${K.esc(q.salah.join(', '))}</td></tr>`).join('') + '</table>'; }
+const TPL_HEAD = ['Ayat (guna ___ untuk tempat kosong)', 'Jawapan', 'Pilihan Salah 1', 'Pilihan Salah 2', 'Pilihan Salah 3', 'Gambar (emoji, pilihan)'];
+$('btnTpl').onclick = async () => {
+  try { const r = await fetch('/templates/templat-penjodoh-bilangan.xlsx', { method: 'HEAD' }); if (r.ok) { const a = document.createElement('a'); a.href = '/templates/templat-penjodoh-bilangan.xlsx'; a.download = 'templat-penjodoh-bilangan.xlsx'; a.click(); return; } } catch (e) {}
+  try { const X = await K.ensureXLSX(), ws = X.utils.aoa_to_sheet([TPL_HEAD, ...DEFAULT_QS.map((q) => [q.ayat, q.jawapan, q.salah[0] || '', q.salah[1] || '', q.salah[2] || '', q.gambar])]); ws['!cols'] = [{ wch: 44 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 12 }]; const wb = X.utils.book_new(); X.utils.book_append_sheet(wb, ws, 'Soalan'); X.writeFile(wb, 'templat-penjodoh-bilangan.xlsx'); }
+  catch (e) { $('qErr').textContent = 'Templat tidak dapat dimuat turun.'; }
+};
+$('btnUp').onclick = () => $('fileIn').click();
+$('fileIn').onchange = async (e) => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return; $('qErr').textContent = 'Membaca fail…';
+  try {
+    const X = await K.ensureXLSX(), wb = X.read(await f.arrayBuffer(), { type: 'array' }), rows = X.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '' });
+    const errs = [], qs = [];
+    rows.slice(1).forEach((r, k) => {
+      const ayat = String(r[0] ?? '').trim(), jaw = String(r[1] ?? '').trim(); if (!ayat && !jaw) return;
+      const n = k + 2; if (!/_{2,}/.test(ayat)) { errs.push(`Baris ${n}: ayat mesti ada ___ untuk tempat kosong.`); return; }
+      if (!jaw) { errs.push(`Baris ${n}: jawapan kosong.`); return; }
+      const salah = [r[2], r[3], r[4]].map((x) => String(x ?? '').trim()).filter((x) => x && x.toLowerCase() !== jaw.toLowerCase());
+      if (!salah.length) { errs.push(`Baris ${n}: perlu sekurang-kurangnya satu pilihan salah.`); return; }
+      qs.push({ ayat, jawapan: jaw, salah, gambar: String(r[5] ?? '').trim() });
+    });
+    if (qs.length) K.lsSet(LS_Q, qs.slice(0, 20));
+    $('qErr').textContent = (qs.length ? `✔ ${Math.min(20, qs.length)} soalan dimuat naik.` : '✖ Tiada soalan disimpan.') + (errs.length ? '\n' + errs.join('\n') : ''); renderQs();
+  } catch (er) { $('qErr').textContent = 'Fail tidak dapat dibaca.'; }
+};
+$('btnReset').onclick = () => { K.lsSet(LS_Q, null); $('qErr').textContent = 'Soalan asal digunakan.'; renderQs(); };
+$('btnCfg').onclick = () => { SFX.click(); $('cTitle').value = CFG.title; $('cN1').value = CFG.n1; $('cN2').value = CFG.n2; prevImg(); show('cfgPanel'); };
+function prevImg() { const d = K.lsGet(LS_IMG, null); $('cPrev').style.display = d ? '' : 'none'; if (d) $('cPrev').src = d; }
+$('btnImgUp').onclick = () => $('imgIn').click();
+$('imgIn').onchange = (e) => { const f = e.target.files[0]; e.target.value = ''; if (f) uploadCharImg(f, prevImg); };
+$('btnImgX').onclick = () => { K.lsSet(LS_IMG, null); charImg = null; prevImg(); };
+$('btnCfgSave').onclick = () => { CFG.title = $('cTitle').value.trim() || 'Penjodoh Bilangan'; CFG.n1 = $('cN1').value.trim() || 'Ali'; CFG.n2 = $('cN2').value.trim() || 'Mira'; K.lsSet(LS_CFG, CFG); hide('cfgPanel'); SFX.click(); };
+$('rAgain').onclick = () => { SFX.click(); hide('result'); startGame(); };
+$('rMenu').onclick = () => { SFX.click(); goMenu(); };
+$('tHome').onclick = () => { if (confirm('Kembali ke menu?')) goMenu(); };
+$('tSound').onclick = () => { K.sound = !K.sound; $('tSound').textContent = K.sound ? '🔊' : '🔇'; };
+$('tMusic').onclick = () => { K.musicOn = !K.musicOn; $('tMusic').style.opacity = K.musicOn ? 1 : 0.4; if (K.musicOn) K.music.start(); else K.music.stop(); };
+window.__pjb = { G, S, CFG, startGame, basketRect, cur };
+
+if (window.BoboBGM) BoboBGM.mount($('bgmSlot'), 'btn alt small');
+loadCharImg(); resize(); G.bikeX = bikeX0(); refreshSummary(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

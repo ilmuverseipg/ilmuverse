@@ -136,6 +136,29 @@ wsE['!cols'] = [{ wch: 6 }, { wch: 18 }, { wch: 18 }, { wch: 22 }];
 XLSX.utils.book_append_sheet(wbE, wsE, 'Perkataan');
 XLSX.writeFile(wbE, path.join(outDir, 'templat-ejaan-bobo.xlsx'));
 
+// ------------------------------------------------------------------
+// Templat: PENJODOH BILANGAN - public/penjodoh-bilangan.html
+// Ayat (___ = tempat kosong) | Jawapan | Pilihan Salah 1-3 | Gambar (emoji)
+// ------------------------------------------------------------------
+const pjbRows = [
+  ['Ayat (guna ___ untuk tempat kosong)', 'Jawapan', 'Pilihan Salah 1', 'Pilihan Salah 2', 'Pilihan Salah 3', 'Gambar (emoji, pilihan)'],
+  ['Atuk membela tiga ___ ayam.', 'ekor', 'biji', 'buah', '', '🐔'],
+  ['Ibu membeli sepuluh ___ telur.', 'biji', 'helai', 'orang', '', '🥚'],
+  ['Ada dua ___ kereta di halaman rumah.', 'buah', 'ekor', 'batang', '', '🚗'],
+  ['Adik memegang ___ pensel.', 'sebatang', 'seekor', 'sebiji', '', '✏️'],
+  ['Kakak melipat dua ___ baju.', 'helai', 'buah', 'biji', '', '👕'],
+  ['Tiga ___ murid sedang membaca.', 'orang', 'ekor', 'helai', '', '🧒'],
+  ['Ayah membeli ___ tembikai.', 'sebiji', 'sehelai', 'seorang', '', '🍉'],
+  ['Ada ___ rumah kayu di tepi sawah.', 'sebuah', 'seekor', 'sebatang', '', '🏠'],
+  ['Dua ___ kucing tidur di atas tikar.', 'ekor', 'orang', 'buah', '', '🐱'],
+  ['Atuk membersihkan ___ meriam buluh.', 'selaras', 'sehelai', 'sebiji', '', '🎋'],
+];
+const wbP = XLSX.utils.book_new();
+const wsP = XLSX.utils.aoa_to_sheet(pjbRows);
+wsP['!cols'] = [{ wch: 44 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 12 }];
+XLSX.utils.book_append_sheet(wbP, wsP, 'Soalan');
+XLSX.writeFile(wbP, path.join(outDir, 'templat-penjodoh-bilangan.xlsx'));
+
 console.log('Templat dijana:');
 console.log(' -', path.join(outDir, 'templat-perkataan.xlsx'));
 console.log(' -', path.join(outDir, 'templat-soalan-tembak.xlsx'));
@@ -143,3 +166,4 @@ console.log(' -', path.join(outDir, 'templat-imbuhan-apitan.xlsx'));
 console.log(' -', path.join(outDir, 'templat-mixkata.xlsx'));
 console.log(' -', path.join(outDir, 'templat-kaunter-lapar.xlsx'));
 console.log(' -', path.join(outDir, 'templat-ejaan-bobo.xlsx'));
+console.log(' -', path.join(outDir, 'templat-penjodoh-bilangan.xlsx'));

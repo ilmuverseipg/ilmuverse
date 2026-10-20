@@ -7,7 +7,7 @@
    ================================================================== */
 (() => {
   'use strict';
-  const DB = 'bobo_media_v1', ST = 'files', KEY = 'bgm';
+  const DB = 'bobo_media_v1', ST = 'files', KEY = window.BOBO_BGM_KEY || 'bgm';
   const open = () => new Promise((res, rej) => {
     const r = indexedDB.open(DB, 1);
     r.onupgradeneeded = () => r.result.createObjectStore(ST);
