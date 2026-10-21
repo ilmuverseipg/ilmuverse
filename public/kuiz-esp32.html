@@ -89,9 +89,10 @@
 
 <div class="container">
   <div class="page-title">📦 Kotak Kuiz Magik — Setup Soalan</div>
-  <div class="page-subtitle">Tetapkan sehingga 3 set soalan. Kotak ambil semua set sekali sahaja semasa segerak WiFi, lepas itu boleh digunakan tanpa internet.</div>
+  <div class="page-subtitle">Tetapkan bilangan soalan dan jawapan betul di sini. Kotak ambil data ini sekali sahaja semasa segerak WiFi, lepas itu boleh digunakan tanpa internet.</div>
 
-  <div class="card">
+  <!-- Sistem kini 1 set sahaja. Tab set disorok (backend masih simpan format 3 set). -->
+  <div class="card" style="display:none">
     <div class="sek-tajuk">Pilih set</div>
     <div class="set-tabs" id="setTabs"></div>
   </div>
@@ -109,10 +110,10 @@
   </div>
 
   <div class="card">
-    <div class="sek-tajuk">Kunci jawapan semua set</div>
+    <div class="sek-tajuk">Kunci jawapan</div>
     <table class="kunci-jadual" id="kunciJadual"></table>
     <div style="margin-top:14px">
-      <button class="btn btn-success" id="btnSimpan">💾 Simpan semua set</button>
+      <button class="btn btn-success" id="btnSimpan">💾 Simpan</button>
     </div>
     <div class="status" id="status"></div>
   </div>
@@ -120,23 +121,19 @@
   <div class="card">
     <div class="sek-tajuk">Cara guna di kotak</div>
     <ol class="cara">
-      <li>Tekan <b>Simpan semua set</b> di atas.</li>
-      <li>Hidupkan kotak. Ia terus cari WiFi dan ambil soalan baharu (semua LED berkelip, kemudian hijau menyala).</li>
-      <li>Untuk mula menjawab, <b>tahan 3 saat</b>:
-        <b>D23</b> (butang 1-A) = Set 1,
-        <b>D25</b> (butang 1-B) = Set 2,
-        <b>D26</b> (butang 2-A) = Set 3.
-        Boleh tahan semasa kotak masih cari WiFi, ia terus masuk mod jawab tanpa internet.</li>
-      <li>Semasa menjawab, tahan butang set lain 3 saat untuk <b>terus tukar set</b> walaupun belum habis.</li>
-      <li>Untuk <b>reset</b> set yang sedang dijawab, tahan butang set yang sama 3 saat.</li>
-      <li>Bila masuk set, LED hijau berkelip ikut nombor set (1, 2 atau 3 biji). Kalau LED merah berkelip, set itu kosong.</li>
+      <li>Tekan <b>Simpan</b> di atas.</li>
+      <li>Hidupkan kotak. Ia terus cari WiFi dan ambil soalan baharu (semua LED berkelip, kemudian hijau menyala). Lepas itu kotak <b>terus masuk mod jawab</b>.</li>
+      <li>Tak nak tunggu WiFi? <b>Tahan D23</b> (butang 1-A) <b>3 saat</b> semasa kotak cari WiFi. Kotak terus masuk mod jawab guna soalan yang tersimpan.</li>
+      <li>Untuk <b>reset</b> (mula semula), tahan <b>D23 3 saat</b> semasa menjawab.</li>
+      <li>Bila mula atau reset, LED hijau soalan 1 berkelip 3 kali. Kalau LED merah berkelip, kotak belum ada soalan.</li>
     </ol>
   </div>
 </div>
 
 <script>
 (function () {
-  var BIL_SET = 3, MAKS = 5;
+  // BIL_SET = set yang dipapar & disunting (kini 1). BIL_SET_API = format backend (3).
+  var BIL_SET = 1, BIL_SET_API = 3, MAKS = 5;
   var PIN_SET = ['D23 (butang 1-A)', 'D25 (butang 1-B)', 'D26 (butang 2-A)'];
 
   var setTabs = document.getElementById('setTabs');
@@ -192,14 +189,15 @@
 
   function lukisBil() {
     var s = sets[aktif];
-    judulBil.textContent = '1 · Set ' + (aktif + 1) + ': bilangan soalan (maksimum 5)';
+    judulBil.textContent = BIL_SET > 1 ? ('1 · Set ' + (aktif + 1) + ': bilangan soalan (maksimum 5)') : '1 · Bilangan soalan (maksimum 5)';
     tajukInput.value = s.tajuk;
     bilRow.textContent = '';
     for (var n = 0; n <= MAKS; n++) {
       (function (n) {
         var b = document.createElement('button');
         b.type = 'button';
-        b.className = 'bil-btn' + (n === 0 ? ' tiada' : '') + (n === s.bil ? ' aktif' : '');
+        if (n === 0 && BIL_SET === 1) return;  // 1 set: mesti ada sekurang-kurangnya 1 soalan
+      b.className = 'bil-btn' + (n === 0 ? ' tiada' : '') + (n === s.bil ? ' aktif' : '');
         b.textContent = n === 0 ? 'Tiada' : String(n);
         b.title = n === 0 ? 'Set ini tidak digunakan' : (n + ' soalan');
         b.addEventListener('click', function () { s.bil = n; lukisSemua(); });
@@ -213,7 +211,9 @@
     for (var k = 0; k < BIL_SET; k++) {
       var tr = document.createElement('tr');
       var td1 = document.createElement('td');
-      td1.textContent = 'Set ' + (k + 1) + (sets[k].tajuk ? ' · ' + sets[k].tajuk : '') + ' — tahan ' + PIN_SET[k];
+      td1.textContent = BIL_SET > 1
+        ? ('Set ' + (k + 1) + (sets[k].tajuk ? ' · ' + sets[k].tajuk : '') + ' — tahan ' + PIN_SET[k])
+        : (sets[k].tajuk || 'Kuiz');
       var td2 = document.createElement('td');
       var teks = ringkasan(sets[k]);
       td2.className = 'kj' + (teks ? '' : ' kosong');
@@ -296,7 +296,8 @@
   function isiDaripada(d) {
     for (var k = 0; k < BIL_SET; k++) {
       var src = (d.sets && d.sets[k]) || { tajuk: '', soalan: [] };
-      var s = setBaru(Math.min(MAKS, (src.soalan || []).length));
+      var bilSimpan = Math.min(MAKS, (src.soalan || []).length);
+      var s = setBaru(BIL_SET === 1 && !bilSimpan ? 5 : bilSimpan);
       s.tajuk = src.tajuk || '';
       for (var i = 0; i < MAKS; i++) {
         var q = (src.soalan || [])[i] || {};
@@ -310,7 +311,7 @@
     var r = [];
     for (var k = 0; k < BIL_SET; k++) {
       var n = (d.sets && d.sets[k] && d.sets[k].soalan) ? d.sets[k].soalan.length : 0;
-      r.push('Set ' + (k + 1) + ': ' + (n ? n + ' soalan' : 'kosong'));
+      r.push((BIL_SET > 1 ? 'Set ' + (k + 1) + ': ' : '') + (n ? n + ' soalan' : 'tiada soalan'));
     }
     return r.join(', ') + ' (versi ' + d.versi + ')';
   }
@@ -334,14 +335,16 @@
       for (var i = 0; i < s.bil; i++) {
         if (s.soalan[i].betul !== 'A' && s.soalan[i].betul !== 'B') {
           aktif = k; lukisSemua();
-          setStatus('Set ' + (k + 1) + ', soalan ' + (i + 1) + ' belum ada jawapan betul (A atau B).', 'ralat');
+          setStatus((BIL_SET > 1 ? 'Set ' + (k + 1) + ', soalan ' : 'Soalan ') + (i + 1) + ' belum ada jawapan betul (A atau B).', 'ralat');
           return;
         }
       }
       hantar.push({ tajuk: s.tajuk, soalan: s.soalan.slice(0, s.bil) });
       jumlah += s.bil;
     }
-    if (!jumlah) { setStatus('Sekurang-kurangnya satu set mesti ada soalan.', 'ralat'); return; }
+    if (!jumlah) { setStatus('Sekurang-kurangnya satu soalan diperlukan.', 'ralat'); return; }
+    // Set yang tidak dipapar dihantar kosong (kotak hanya guna Set 1)
+    for (var x = BIL_SET; x < BIL_SET_API; x++) hantar.push({ tajuk: '', soalan: [] });
     setStatus('Menyimpan…');
     try {
       var r = await panggil('PUT', { sets: hantar });
