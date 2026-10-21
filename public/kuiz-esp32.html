@@ -7,14 +7,30 @@
 <link rel="stylesheet" href="/css/style.css">
 <style>
   .sek-tajuk { font-family: 'Baloo 2', sans-serif; font-size: 18px; font-weight: 700; color: var(--dark); margin-bottom: 12px; }
-  .hint { font-size: 13px; color: #9a8a91; font-weight: 600; margin-top: 8px; line-height: 1.5; }
+  .hint { font-size: 13px; color: #9a8a91; font-weight: 600; margin-top: 8px; line-height: 1.55; }
+
+  /* Tab set */
+  .set-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .set-tab {
+    border: 2px solid #eee; background: #fff; border-radius: 18px; padding: 12px 10px; cursor: pointer;
+    font-family: 'Fredoka', sans-serif; color: var(--dark); text-align: center;
+    transition: transform .15s ease, border-color .15s ease;
+  }
+  .set-tab:hover { transform: translateY(-2px); }
+  .set-tab .nama { font-family: 'Baloo 2', sans-serif; font-size: 20px; font-weight: 700; line-height: 1.1; }
+  .set-tab .pin { font-size: 12px; font-weight: 700; color: #9a8a91; margin-top: 2px; }
+  .set-tab .ringkas { font-size: 13px; font-weight: 700; margin-top: 6px; color: var(--purple); letter-spacing: .12em; min-height: 18px; }
+  .set-tab .ringkas.kosong { color: #c3b6bc; letter-spacing: 0; }
+  .set-tab.aktif { background: var(--purple); border-color: var(--purple); color: #fff; }
+  .set-tab.aktif .pin, .set-tab.aktif .ringkas, .set-tab.aktif .ringkas.kosong { color: #fff; }
 
   .bil-row { display: flex; gap: 8px; flex-wrap: wrap; }
   .bil-btn {
-    width: 52px; height: 52px; border-radius: 16px; border: 2px solid #eee; background: #fff;
+    min-width: 52px; height: 52px; padding: 0 12px; border-radius: 16px; border: 2px solid #eee; background: #fff;
     font-family: 'Fredoka', sans-serif; font-size: 22px; font-weight: 700; cursor: pointer;
     color: var(--dark); transition: transform .15s ease;
   }
+  .bil-btn.tiada { font-size: 15px; }
   .bil-btn:hover { transform: translateY(-2px); }
   .bil-btn.aktif { background: var(--purple); border-color: var(--purple); color: #fff; }
 
@@ -26,6 +42,7 @@
 
   .soalan-kad { background: #FFF7EE; border-radius: 16px; padding: 14px 16px; margin-bottom: 14px; border: 2px solid #f5e6d3; }
   .soalan-kad h3 { margin: 0 0 10px; font-family: 'Baloo 2', sans-serif; font-size: 18px; color: var(--dark); }
+  .soalan-kad h3 small { font-family: 'Fredoka', sans-serif; font-size: 12px; color: #9a8a91; font-weight: 600; margin-left: 6px; }
   .soalan-kad input[type="text"] {
     width: 100%; padding: 8px 12px; border-radius: 10px; border: 2px solid #eee; background: #fff;
     font-family: 'Fredoka', sans-serif; font-size: 14px; outline: none; margin-bottom: 8px;
@@ -39,12 +56,24 @@
   }
   .betul-btn.dipilih { background: var(--green); border-color: var(--green); color: #fff; }
   .betul-btn.kosong { border-color: #ffb3b3; }
+  .set-kosong { padding: 18px; text-align: center; border: 2px dashed #eee; border-radius: 16px; color: #9a8a91; font-weight: 600; }
 
-  .kunci-ringkas { font-family: 'Fredoka', monospace; font-size: 22px; font-weight: 700; letter-spacing: .25em; color: var(--purple); }
+  .kunci-jadual { width: 100%; border-collapse: collapse; font-family: 'Fredoka', sans-serif; }
+  .kunci-jadual td { padding: 8px 6px; border-bottom: 1px solid #f2ecef; font-size: 15px; font-weight: 600; }
+  .kunci-jadual td.kj { font-size: 20px; font-weight: 700; letter-spacing: .2em; color: var(--purple); text-align: right; white-space: nowrap; }
+  .kunci-jadual td.kj.kosong { color: #c3b6bc; font-size: 14px; letter-spacing: 0; }
   .status { margin-top: 12px; font-weight: 700; font-size: 14px; min-height: 20px; }
   .status.ok { color: #2f9e68; }
   .status.ralat { color: #d94a4a; }
-  @media (max-width: 520px) { .pilihan-grid { grid-template-columns: 1fr; } }
+
+  .cara { margin: 0; padding-left: 20px; line-height: 1.7; font-size: 14px; color: var(--dark); }
+  .cara b { color: var(--purple); }
+  @media (max-width: 520px) {
+    .pilihan-grid { grid-template-columns: 1fr; }
+    .kunci-jadual td { font-size: 13px; }
+    .kunci-jadual td.kj { font-size: 16px; }
+    .set-tab .nama { font-size: 17px; }
+  }
 </style>
 </head>
 <body>
@@ -60,12 +89,17 @@
 
 <div class="container">
   <div class="page-title">📦 Kotak Kuiz Magik — Setup Soalan</div>
-  <div class="page-subtitle">Tetapkan bilangan soalan dan jawapan betul di sini. Kotak ambil data ini sekali sahaja semasa setup (perlu WiFi), lepas itu boleh digunakan tanpa internet.</div>
+  <div class="page-subtitle">Tetapkan sehingga 3 set soalan. Kotak ambil semua set sekali sahaja semasa segerak WiFi, lepas itu boleh digunakan tanpa internet.</div>
 
   <div class="card">
-    <div class="sek-tajuk">1 · Bilangan soalan (maksimum 5)</div>
+    <div class="sek-tajuk">Pilih set</div>
+    <div class="set-tabs" id="setTabs"></div>
+  </div>
+
+  <div class="card">
+    <div class="sek-tajuk" id="judulBil">1 · Bilangan soalan</div>
     <div class="bil-row" id="bilRow"></div>
-    <input type="text" class="tajuk-input" id="tajukInput" maxlength="100" placeholder="Tajuk kuiz (pilihan), cth: Ayat Penyata">
+    <input type="text" class="tajuk-input" id="tajukInput" maxlength="100" placeholder="Tajuk set (pilihan), cth: Ayat Penyata">
   </div>
 
   <div class="card">
@@ -75,70 +109,147 @@
   </div>
 
   <div class="card">
-    <div class="sek-tajuk">Kunci jawapan</div>
-    <div class="kunci-ringkas" id="kunciRingkas">-</div>
+    <div class="sek-tajuk">Kunci jawapan semua set</div>
+    <table class="kunci-jadual" id="kunciJadual"></table>
     <div style="margin-top:14px">
-      <button class="btn btn-success" id="btnSimpan">💾 Simpan</button>
+      <button class="btn btn-success" id="btnSimpan">💾 Simpan semua set</button>
     </div>
     <div class="status" id="status"></div>
-    <div class="hint">Lepas simpan: pasang kuasa pada kotak, <b>tahan butang paling hujung (5-B) selama 5 saat</b>. LED hijau akan menyala satu demi satu mengikut bilangan soalan bila data berjaya diambil.</div>
+  </div>
+
+  <div class="card">
+    <div class="sek-tajuk">Cara guna di kotak</div>
+    <ol class="cara">
+      <li>Tekan <b>Simpan semua set</b> di atas.</li>
+      <li>Hidupkan kotak. Ia terus cari WiFi dan ambil soalan baharu (semua LED berkelip, kemudian hijau menyala).</li>
+      <li>Untuk mula menjawab, <b>tahan 3 saat</b>:
+        <b>D23</b> (butang 1-A) = Set 1,
+        <b>D25</b> (butang 1-B) = Set 2,
+        <b>D26</b> (butang 2-A) = Set 3.
+        Boleh tahan semasa kotak masih cari WiFi, ia terus masuk mod jawab tanpa internet.</li>
+      <li>Semasa menjawab, tahan butang set lain 3 saat untuk <b>terus tukar set</b> walaupun belum habis.</li>
+      <li>Untuk <b>reset</b> set yang sedang dijawab, tahan butang set yang sama 3 saat.</li>
+      <li>Bila masuk set, LED hijau berkelip ikut nombor set (1, 2 atau 3 biji). Kalau LED merah berkelip, set itu kosong.</li>
+    </ol>
   </div>
 </div>
 
 <script>
 (function () {
-  var MAKS = 5;
+  var BIL_SET = 3, MAKS = 5;
+  var PIN_SET = ['D23 (butang 1-A)', 'D25 (butang 1-B)', 'D26 (butang 2-A)'];
+
+  var setTabs = document.getElementById('setTabs');
+  var judulBil = document.getElementById('judulBil');
   var tajukInput = document.getElementById('tajukInput');
   var bilRow = document.getElementById('bilRow');
   var soalanList = document.getElementById('soalanList');
-  var kunciEl = document.getElementById('kunciRingkas');
+  var kunciJadual = document.getElementById('kunciJadual');
   var statusEl = document.getElementById('status');
 
-  var bil = 5;
-  // data[i] = { teks, pilihanA, pilihanB, betul } ; betul '' = belum pilih
-  var data = [];
-  for (var i = 0; i < MAKS; i++) data.push({ teks: '', pilihanA: '', pilihanB: '', betul: '' });
+  function soalanKosong() { return { teks: '', pilihanA: '', pilihanB: '', betul: '' }; }
+  function setBaru(bil) {
+    var s = { tajuk: '', bil: bil, soalan: [] };
+    for (var i = 0; i < MAKS; i++) s.soalan.push(soalanKosong());
+    return s;
+  }
+
+  // sets[k] = { tajuk, bil (0-5), soalan[5] }
+  var sets = [setBaru(5), setBaru(0), setBaru(0)];
+  var aktif = 0;
 
   function setStatus(teks, jenis) {
     statusEl.textContent = teks || '';
     statusEl.className = 'status' + (jenis ? ' ' + jenis : '');
   }
 
+  function ringkasan(s) {
+    if (!s.bil) return null;
+    var r = [];
+    for (var i = 0; i < s.bil; i++) r.push(s.soalan[i].betul || '?');
+    return r.join(' ');
+  }
+
+  function lukisTabs() {
+    setTabs.textContent = '';
+    for (var k = 0; k < BIL_SET; k++) {
+      (function (k) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'set-tab' + (k === aktif ? ' aktif' : '');
+        var nama = document.createElement('div'); nama.className = 'nama'; nama.textContent = 'Set ' + (k + 1);
+        var pin = document.createElement('div'); pin.className = 'pin'; pin.textContent = 'Tahan ' + PIN_SET[k].split(' ')[0];
+        var rk = document.createElement('div');
+        var teks = ringkasan(sets[k]);
+        rk.className = 'ringkas' + (teks ? '' : ' kosong');
+        rk.textContent = teks ? teks : 'Tiada soalan';
+        b.appendChild(nama); b.appendChild(pin); b.appendChild(rk);
+        b.addEventListener('click', function () { aktif = k; lukisSemua(); });
+        setTabs.appendChild(b);
+      })(k);
+    }
+  }
+
   function lukisBil() {
+    var s = sets[aktif];
+    judulBil.textContent = '1 · Set ' + (aktif + 1) + ': bilangan soalan (maksimum 5)';
+    tajukInput.value = s.tajuk;
     bilRow.textContent = '';
-    for (var n = 1; n <= MAKS; n++) {
+    for (var n = 0; n <= MAKS; n++) {
       (function (n) {
         var b = document.createElement('button');
         b.type = 'button';
-        b.className = 'bil-btn' + (n === bil ? ' aktif' : '');
-        b.textContent = String(n);
-        b.addEventListener('click', function () { bil = n; lukisBil(); lukisSoalan(); });
+        b.className = 'bil-btn' + (n === 0 ? ' tiada' : '') + (n === s.bil ? ' aktif' : '');
+        b.textContent = n === 0 ? 'Tiada' : String(n);
+        b.title = n === 0 ? 'Set ini tidak digunakan' : (n + ' soalan');
+        b.addEventListener('click', function () { s.bil = n; lukisSemua(); });
         bilRow.appendChild(b);
       })(n);
     }
   }
 
-  function kemasKunci() {
-    var s = [];
-    for (var i = 0; i < bil; i++) s.push(data[i].betul || '?');
-    kunciEl.textContent = s.join(' ');
+  function lukisKunci() {
+    kunciJadual.textContent = '';
+    for (var k = 0; k < BIL_SET; k++) {
+      var tr = document.createElement('tr');
+      var td1 = document.createElement('td');
+      td1.textContent = 'Set ' + (k + 1) + (sets[k].tajuk ? ' · ' + sets[k].tajuk : '') + ' — tahan ' + PIN_SET[k];
+      var td2 = document.createElement('td');
+      var teks = ringkasan(sets[k]);
+      td2.className = 'kj' + (teks ? '' : ' kosong');
+      td2.textContent = teks ? teks : 'tiada soalan';
+      tr.appendChild(td1); tr.appendChild(td2);
+      kunciJadual.appendChild(tr);
+    }
   }
 
   function lukisSoalan() {
+    var s = sets[aktif];
     soalanList.textContent = '';
-    for (var i = 0; i < bil; i++) {
+    if (!s.bil) {
+      var kosong = document.createElement('div');
+      kosong.className = 'set-kosong';
+      kosong.textContent = 'Set ' + (aktif + 1) + ' tidak digunakan. Pilih bilangan soalan di atas untuk isi set ini.';
+      soalanList.appendChild(kosong);
+      return;
+    }
+    for (var i = 0; i < s.bil; i++) {
       (function (i) {
+        var q = s.soalan[i];
         var kad = document.createElement('div');
         kad.className = 'soalan-kad';
 
         var h = document.createElement('h3');
         h.textContent = 'Soalan ' + (i + 1);
+        var kecil = document.createElement('small');
+        kecil.textContent = 'butang ' + (i + 1) + '-A / ' + (i + 1) + '-B';
+        h.appendChild(kecil);
         kad.appendChild(h);
 
         var t = document.createElement('input');
         t.type = 'text'; t.maxLength = 300; t.placeholder = 'Teks soalan (pilihan)';
-        t.value = data[i].teks;
-        t.addEventListener('input', function () { data[i].teks = t.value; });
+        t.value = q.teks;
+        t.addEventListener('input', function () { q.teks = t.value; });
         kad.appendChild(t);
 
         var grid = document.createElement('div');
@@ -148,13 +259,13 @@
           sel.className = 'pilihan-sel';
           var inp = document.createElement('input');
           inp.type = 'text'; inp.maxLength = 150; inp.placeholder = 'Pilihan ' + huruf + ' (pilihan)';
-          inp.value = data[i]['pilihan' + huruf];
-          inp.addEventListener('input', function () { data[i]['pilihan' + huruf] = inp.value; });
+          inp.value = q['pilihan' + huruf];
+          inp.addEventListener('input', function () { q['pilihan' + huruf] = inp.value; });
           var btn = document.createElement('button');
           btn.type = 'button';
-          btn.className = 'betul-btn' + (data[i].betul === huruf ? ' dipilih' : (data[i].betul ? '' : ' kosong'));
-          btn.textContent = data[i].betul === huruf ? ('✔ ' + huruf + ' betul') : (huruf + ' betul?');
-          btn.addEventListener('click', function () { data[i].betul = huruf; lukisSoalan(); });
+          btn.className = 'betul-btn' + (q.betul === huruf ? ' dipilih' : (q.betul ? '' : ' kosong'));
+          btn.textContent = q.betul === huruf ? ('✔ ' + huruf + ' betul') : (huruf + ' betul?');
+          btn.addEventListener('click', function () { q.betul = huruf; lukisSemua(); });
           sel.appendChild(inp);
           sel.appendChild(btn);
           grid.appendChild(sel);
@@ -163,8 +274,14 @@
         soalanList.appendChild(kad);
       })(i);
     }
-    kemasKunci();
   }
+
+  function lukisSemua() { lukisTabs(); lukisBil(); lukisSoalan(); lukisKunci(); }
+
+  tajukInput.addEventListener('input', function () {
+    sets[aktif].tajuk = tajukInput.value;
+    lukisKunci();
+  });
 
   async function panggil(method, body) {
     var opt = { method: method, credentials: 'same-origin', headers: {} };
@@ -176,46 +293,67 @@
     return { ok: res.ok, status: res.status, json: json };
   }
 
+  function isiDaripada(d) {
+    for (var k = 0; k < BIL_SET; k++) {
+      var src = (d.sets && d.sets[k]) || { tajuk: '', soalan: [] };
+      var s = setBaru(Math.min(MAKS, (src.soalan || []).length));
+      s.tajuk = src.tajuk || '';
+      for (var i = 0; i < MAKS; i++) {
+        var q = (src.soalan || [])[i] || {};
+        s.soalan[i] = { teks: q.teks || '', pilihanA: q.pilihanA || '', pilihanB: q.pilihanB || '', betul: q.betul || '' };
+      }
+      sets[k] = s;
+    }
+  }
+
+  function ringkasStatus(d) {
+    var r = [];
+    for (var k = 0; k < BIL_SET; k++) {
+      var n = (d.sets && d.sets[k] && d.sets[k].soalan) ? d.sets[k].soalan.length : 0;
+      r.push('Set ' + (k + 1) + ': ' + (n ? n + ' soalan' : 'kosong'));
+    }
+    return r.join(', ') + ' (versi ' + d.versi + ')';
+  }
+
   async function muat() {
     setStatus('Memuatkan…');
     try {
       var r = await panggil('GET');
       if (r.status === 404) { setStatus('Belum ada data disimpan. Isi borang dan tekan Simpan.', ''); return; }
       if (!r.ok) { setStatus((r.json && r.json.error) || 'Gagal memuatkan.', 'ralat'); return; }
-      var d = r.json;
-      bil = Math.min(MAKS, Math.max(1, d.soalan.length));
-      tajukInput.value = d.tajuk || '';
-      for (var i = 0; i < MAKS; i++) {
-        var s = d.soalan[i] || {};
-        data[i] = { teks: s.teks || '', pilihanA: s.pilihanA || '', pilihanB: s.pilihanB || '', betul: s.betul || '' };
-      }
-      lukisBil(); lukisSoalan();
-      setStatus('Dimuatkan: ' + d.soalan.length + ' soalan, versi ' + d.versi + '.', 'ok');
+      isiDaripada(r.json);
+      lukisSemua();
+      setStatus('Dimuatkan. ' + ringkasStatus(r.json) + '.', 'ok');
     } catch (e) { setStatus('Gagal memuatkan: ' + e.message, 'ralat'); }
   }
 
   async function simpan() {
-    for (var i = 0; i < bil; i++) {
-      if (data[i].betul !== 'A' && data[i].betul !== 'B') {
-        setStatus('Soalan ' + (i + 1) + ' belum ada jawapan betul (A atau B).', 'ralat');
-        return;
+    var hantar = [], jumlah = 0;
+    for (var k = 0; k < BIL_SET; k++) {
+      var s = sets[k];
+      for (var i = 0; i < s.bil; i++) {
+        if (s.soalan[i].betul !== 'A' && s.soalan[i].betul !== 'B') {
+          aktif = k; lukisSemua();
+          setStatus('Set ' + (k + 1) + ', soalan ' + (i + 1) + ' belum ada jawapan betul (A atau B).', 'ralat');
+          return;
+        }
       }
+      hantar.push({ tajuk: s.tajuk, soalan: s.soalan.slice(0, s.bil) });
+      jumlah += s.bil;
     }
-    var senarai = [];
-    for (var j = 0; j < bil; j++) senarai.push(data[j]);
+    if (!jumlah) { setStatus('Sekurang-kurangnya satu set mesti ada soalan.', 'ralat'); return; }
     setStatus('Menyimpan…');
     try {
-      var r = await panggil('PUT', { tajuk: tajukInput.value, soalan: senarai });
+      var r = await panggil('PUT', { sets: hantar });
       if (!r.ok) { setStatus((r.json && (r.json.detail || r.json.error)) || 'Gagal menyimpan.', 'ralat'); return; }
       var jam = new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
-      setStatus('Disimpan pada ' + jam + ': ' + r.json.soalan.length + ' soalan, versi ' + r.json.versi + '. Kotak perlu di-setup semula untuk ambil versi ini.', 'ok');
+      setStatus('Disimpan pada ' + jam + '. ' + ringkasStatus(r.json) + '. Hidupkan semula kotak (dengan WiFi) untuk ambil versi ini.', 'ok');
     } catch (e) { setStatus('Gagal menyimpan: ' + e.message, 'ralat'); }
   }
 
   document.getElementById('btnSimpan').addEventListener('click', simpan);
 
-  lukisBil();
-  lukisSoalan();
+  lukisSemua();
   muat();
 })();
 </script>

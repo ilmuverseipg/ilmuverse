@@ -1,12 +1,16 @@
 const mongoose = require('mongoose');
 
 // Model untuk ciri "Kotak Kuiz Magik" (ESP32, butang A/B, LED hijau/merah).
-// Guru tetapkan bilangan soalan (1-5) dan jawapan betul (A/B) di
-// /kuiz-esp32.html. ESP32 ambil konfigurasi ini SEKALI sahaja semasa mod
-// setup (perlu internet), simpan dalam memori flash sendiri, kemudian boleh
-// digunakan tanpa internet. Tiada kod peranti: satu konfigurasi tetap.
+// Guru tetapkan sehingga 3 SET soalan di /kuiz-esp32.html. Setiap set ada
+// 0-5 soalan (0 = set tidak digunakan) dengan jawapan betul A/B.
+// ESP32 ambil semua set SEKALI semasa segerak WiFi, simpan dalam memori flash,
+// kemudian boleh digunakan tanpa internet. Di kotak, tahan butang D23 / D25 /
+// D26 selama 3 saat untuk masuk (atau reset) Set 1 / Set 2 / Set 3.
 //
 // Koleksi berasingan ('kuizesp32configs') - tidak sentuh model/koleksi lain.
+
+const BIL_SET = 3;
+const MAKS_SOALAN = 5;
 
 const KuizSoalanSchema = new mongoose.Schema(
   {
@@ -20,24 +24,44 @@ const KuizSoalanSchema = new mongoose.Schema(
   { _id: false }
 );
 
-const KuizEsp32ConfigSchema = new mongoose.Schema(
+const KuizSetSchema = new mongoose.Schema(
   {
-    // Sistem tetap: hanya SATU konfigurasi untuk satu kotak. Medan ini sentiasa
-    // 'utama' dan unik, supaya tidak boleh wujud dua dokumen.
-    kunci: { type: String, default: 'utama', unique: true, immutable: true },
     tajuk: { type: String, default: '', trim: true, maxlength: 100 },
     soalan: {
       type: [KuizSoalanSchema],
+      default: [],
       validate: {
-        validator: (v) => Array.isArray(v) && v.length >= 1 && v.length <= 5,
-        message: 'Bilangan soalan mesti antara 1 hingga 5.',
+        validator: (v) => Array.isArray(v) && v.length <= MAKS_SOALAN,
+        message: 'Setiap set maksimum 5 soalan.',
       },
     },
-    // Naik 1 setiap kali guru simpan. ESP32 simpan nombor ini supaya guru
-    // boleh tahu peranti sudah ambil versi terkini.
+  },
+  { _id: false }
+);
+
+const KuizEsp32ConfigSchema = new mongoose.Schema(
+  {
+    // Sistem tetap: hanya SATU konfigurasi untuk satu kotak.
+    kunci: { type: String, default: 'utama', unique: true, immutable: true },
+    // 3 set soalan (indeks 0 = Set 1 / butang D23, 1 = Set 2 / D25, 2 = Set 3 / D26).
+    sets: {
+      type: [KuizSetSchema],
+      default: undefined,
+      validate: {
+        validator: (v) => v == null || (Array.isArray(v) && v.length === BIL_SET),
+        message: 'Mesti ada tepat 3 set.',
+      },
+    },
+    // Medan lama (sebelum ada 3 set). Hanya dibaca untuk dipindah ke Set 1.
+    tajuk: { type: String, default: '', trim: true, maxlength: 100 },
+    soalan: { type: [KuizSoalanSchema], default: undefined },
+    // Naik 1 setiap kali guru simpan.
     versi: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
+
+KuizEsp32ConfigSchema.statics.BIL_SET = BIL_SET;
+KuizEsp32ConfigSchema.statics.MAKS_SOALAN = MAKS_SOALAN;
 
 module.exports = mongoose.model('KuizEsp32Config', KuizEsp32ConfigSchema);
