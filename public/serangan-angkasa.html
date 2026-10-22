@@ -27,6 +27,14 @@
   .toast { position: fixed; left: 50%; top: 48%; transform: translate(-50%, -50%); font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(40px, 8vw, 96px); pointer-events: none; z-index: 8; opacity: 0; text-shadow: 0 6px 0 rgba(0,0,0,.35), 0 0 30px currentColor; white-space: nowrap; }
   .toast.show { animation: toast 1.3s ease forwards; }
   @keyframes toast { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.3); } 18% { opacity: 1; transform: translate(-50%, -50%) scale(1.12); } 30% { transform: translate(-50%, -50%) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -70%) scale(1); } }
+  .hint { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 9; background: rgba(10,8,40,.8); border: 2px solid rgba(255,216,77,.6); border-radius: 999px; padding: 8px 18px; font-weight: 700; font-size: clamp(13px, 1.7vw, 19px); white-space: nowrap; pointer-events: none; transition: opacity .4s; }
+  .hint[hidden] { display: block; opacity: 0; }
+  #handCur { position: fixed; left: 0; top: 0; width: 84px; height: 84px; margin: -42px 0 0 -42px; border-radius: 50%; z-index: 30; pointer-events: none; display: none; align-items: center; justify-content: center; font-size: 40px; background: rgba(255,255,255,.22); border: 6px solid #5ff0ff; box-shadow: 0 0 0 3px #1a1033, 0 0 22px rgba(95,240,255,.7); transition: background .1s, border-color .1s, transform .1s; }
+  #handCur.on { display: flex; }
+  #handCur.aim { border-color: #ffd84d; box-shadow: 0 0 0 3px #1a1033, 0 0 26px rgba(255,216,77,.9); }
+  #handCur.down { background: rgba(255,216,77,.5); transform: scale(.85); }
+  .big.hover { transform: scale(1.08); filter: brightness(1.15); outline: 4px solid #fff; }
+  #vid { position: fixed; width: 2px; height: 2px; opacity: 0; pointer-events: none; left: 0; top: 0; }
   .ctrl { position: fixed; right: 12px; bottom: 12px; display: flex; gap: 8px; z-index: 9; }
   .ctrl button, .ctrl a { font-family: 'Fredoka'; font-weight: 600; font-size: 15px; color: #fff; background: rgba(10,8,40,.7); border: 2px solid rgba(255,255,255,.25); border-radius: 12px; padding: 8px 12px; cursor: pointer; text-decoration: none; }
   .ctrl button:hover, .ctrl a:hover { background: rgba(60,40,160,.8); }
@@ -93,12 +101,17 @@
   </div>
 </div>
 
+<video id="vid" playsinline muted></video>
+<div id="handCur">✋</div>
+<div class="hint" id="hint" hidden></div>
 <div class="ctrl">
+  <button id="handBtn" title="Kawalan tapak tangan (H)">✋ Tangan: ON</button>
   <button id="muteBtn" title="Bunyi (M)">🔊</button>
   <button id="fsBtn" title="Skrin penuh (F)">⛶</button>
   <a href="/game-arab.html" title="Kembali ke GameBox">✕</a>
 </div>
 
+<script src="/bobo-kit.js"></script>
 <script>
 (() => {
 'use strict';
@@ -351,6 +364,7 @@ function drawMinion(sh, t) {
 // =====================================================================
 const LETTERS = ['A', 'B', 'C'], COLORS = ['#ff5d8f', '#22c55e', '#3b9bff'];
 let state = 'intro', qi = 0, score = 0, firstTry = 0, tries = 0, ships = [], particles = [], beams = [], bolts = [];
+const K = window.BoboKit; let handMode = true, handStarting = false, hintTimer = null; const cur = K ? K.makeCursor() : null;
 let pointer = { x: -999, y: -999 }, cannonAng = -Math.PI / 2, shake = 0, heroMood = 0, heroMoodT = 0, bossHurt = 0, bossHP = QUESTIONS.length, bossDead = false, bossY = 0, DT = 0;
 
 function layoutShips(animateIn) {
@@ -480,6 +494,7 @@ function nextLine() {
 let last = performance.now();
 function frame(now) {
   DT = Math.min(.05, (now - last) / 1000); last = now;
+  handTick();
   const t = now;
   ctx.save();
   if (shake > 0) { ctx.translate(rand(-shake, shake), rand(-shake, shake)); shake *= .88; if (shake < .4) shake = 0; }
@@ -554,6 +569,8 @@ function frame(now) {
     ctx.restore();
   }
   ctx.restore();
+  if (handMode && cur && K.hands.ready) drawCam();
+  syncHandCur();
   requestAnimationFrame(frame);
 }
 
@@ -594,13 +611,65 @@ function drawCannon(t) {
   ctx.restore();
 }
 
-function shipAt(x, y) {
+function shipAt(x, y, loose) {
+  if (loose) { let best = null, bd = 1e9; for (const sh of ships) { if (sh.gone || sh.flee || sh.dead) continue; const d = Math.hypot(x - sh.x, y - (sh.y + 30 * sh.s)); if (d < bd) { bd = d; best = sh; } } if (best && bd < Math.max(130 * best.s, (best.box ? best.box.w * .6 : 0))) return best; return null; }
   for (const sh of ships) {
     if (sh.gone || sh.flee || sh.dead) continue;
     if (Math.hypot(x - sh.x, y - sh.y) < 75 * sh.s) return sh;
     const b = sh.box; if (b && x >= b.x - 6 && x <= b.x + b.w + 6 && y >= b.y - 6 && y <= b.y + b.h + 6) return sh;
   }
   return null;
+}
+
+// =====================================================================
+// KAWALAN TAPAK TANGAN (kamera + MediaPipe melalui bobo-kit.js)
+//   ✋ tapak tangan terbuka = gerak penanda sasaran
+//   ✊ genggam = TEMBAK kapal / tekan butang / teruskan dialog
+// =====================================================================
+function hint(txt, ms) { const el = $('hint'); el.textContent = txt; el.hidden = false; clearTimeout(hintTimer); if (ms) hintTimer = setTimeout(() => { el.hidden = true; }, ms); }
+async function startHand() {
+  if (!K || handStarting || K.hands.ready) return;
+  handStarting = true; hint('📷 Membuka kamera… sila benarkan akses kamera.', 0);
+  const ok = await K.startHands($('vid'), 1, () => ({ W, H }));
+  handStarting = false;
+  if (!ok) { handMode = false; syncHandBtn(); hint('Kamera tidak dapat dibuka. Main guna tetikus / sentuh.', 5000); return; }
+  hint('✋ Gerak tapak tangan untuk membidik  ·  ✊ Genggam untuk TEMBAK', 6000);
+}
+function syncHandBtn() { $('handBtn').textContent = handMode ? '✋ Tangan: ON' : '🖱️ Tangan: OFF'; }
+function toggleHand() { if (!K) return; handMode = !handMode; syncHandBtn(); if (handMode) startHand(); else { cur.active = false; hint('Kawalan tetikus / sentuh', 2500); } }
+function handTick() {
+  if (!handMode || !cur || !K.hands.ready) return;
+  const h = K.hands.list[0]; if (h && h.t !== cur.seen) K.feedHand(cur, h);
+  K.updateCursor(cur, DT, true);
+  if (!cur.active) return;
+  pointer.x = cur.x; pointer.y = cur.y;
+  if (!cur.justDown) return;
+  ac();
+  // genggam di atas butang (Langkau, Mula Misi, Main Semula, GameBox)
+  const el = document.elementFromPoint(cur.x, cur.y), btn = el && el.closest('button, a');
+  if (btn && !btn.closest('.ctrl') && !btn.hidden) { btn.click(); return; }
+  if (state === 'intro') { if (!$('startBtn').hidden) $('startBtn').click(); else nextLine(); return; }
+  if (state === 'play') { const sh = shipAt(cur.x, cur.y, true); if (sh) fireAt(sh); else SFX.blip(); }
+}
+let hovBtn = null;
+function syncHandCur() {
+  const el = $('handCur'), on = !!(handMode && cur && K && K.hands.ready && cur.active);
+  el.classList.toggle('on', on);
+  let b = null;
+  if (on) {
+    el.style.transform = ''; el.style.left = cur.x + 'px'; el.style.top = cur.y + 'px';
+    el.textContent = cur.down ? '✊' : '✋'; el.classList.toggle('down', !!cur.down);
+    el.classList.toggle('aim', state === 'play' && !!shipAt(cur.x, cur.y, true));
+    const t = document.elementFromPoint(cur.x, cur.y); b = t && t.closest('.big');
+  }
+  if (b !== hovBtn) { if (hovBtn) hovBtn.classList.remove('hover'); if (b) b.classList.add('hover'); hovBtn = b; }
+}
+function drawCam() {
+  const v = K.hands.video; if (!v || !v.videoWidth) return;
+  const pw = clamp(170 * U, 110, 200), ph = pw * v.videoHeight / v.videoWidth, px = 14, py = H - ph - 14;
+  ctx.save(); rr(px, py, pw, ph, 12); ctx.clip(); ctx.translate(px + pw, py); ctx.scale(-1, 1); ctx.globalAlpha = .85; ctx.drawImage(v, 0, 0, pw, ph); ctx.restore();
+  ctx.save(); rr(px, py, pw, ph, 12); ctx.lineWidth = 4; ctx.strokeStyle = cur.active ? (cur.down ? '#ffd84d' : '#22c55e') : 'rgba(255,255,255,.6)'; ctx.stroke();
+  ctx.font = F(13, 700); ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText(cur.active ? (cur.down ? '✊ TEMBAK!' : '✋ Bidik') : 'Tunjuk tapak tangan', px + 8, py + 6); ctx.restore();
 }
 
 // =====================================================================
@@ -616,6 +685,7 @@ document.addEventListener('keydown', (e) => {
   const k = e.key.toLowerCase();
   if (k === 'm') return toggleMute();
   if (k === 'f') return toggleFS();
+  if (k === 'h') return toggleHand();
   if (state === 'intro' && (k === ' ' || k === 'enter')) { e.preventDefault(); if (!$('startBtn').hidden) $('startBtn').click(); else nextLine(); return; }
   if (state === 'play') { const i = ['1', '2', '3'].indexOf(k) >= 0 ? ['1', '2', '3'].indexOf(k) : ['a', 'b', 'c'].indexOf(k); if (i >= 0 && ships[i]) fireAt(ships[i]); }
 });
@@ -625,12 +695,14 @@ $('againBtn').addEventListener('click', () => { ac(); resetGame(); });
 function toggleMute() { muted = !muted; $('muteBtn').textContent = muted ? '🔇' : '🔊'; if (muted) try { speechSynthesis.cancel(); } catch (e) {} }
 function toggleFS() { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); }
 $('muteBtn').addEventListener('click', toggleMute);
+$('handBtn').addEventListener('click', toggleHand);
 $('fsBtn').addEventListener('click', toggleFS);
 addEventListener('resize', resize);
 
 resize();
 showLine(0);
 requestAnimationFrame(frame);
+if (!K) { handMode = false; $('handBtn').hidden = true; } else startHand();
 window.__game = { get state() { return state; }, get qi() { return qi; }, get ships() { return ships; }, get score() { return score; } };
 })();
 </script>
