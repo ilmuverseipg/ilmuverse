@@ -143,8 +143,12 @@ function noise(d, v = 0.3, freq = 1200, delay = 0) {
   s.buffer = buf; s.connect(f); f.connect(g); g.connect(master); s.start(a.currentTime + delay);
 }
 const SFX = {
-  beat(pitch) { tone(pitch, 0.075, 'sine', 0.22); },
-  thump() { tone(70, 0.16, 'sine', 0.35, 40); },
+  beat(pitch, v) { tone(pitch, 0.07, 'sine', v); },
+  // degupan jantung "dup-dup" (lub-dub): v = kekuatan bunyi
+  dupdup(v, gap) {
+    tone(100, 0.14, 'sine', v, 55); tone(200, 0.05, 'triangle', v * 0.25, 120);
+    tone(115, 0.11, 'sine', v * 0.75, 65, gap); tone(230, 0.04, 'triangle', v * 0.2, 140, gap);
+  },
   alarm() { [0, 0.18, 0.36].forEach((d) => tone(988, 0.12, 'square', 0.09, null, d)); [0.7, 0.88].forEach((d) => tone(988, 0.12, 'square', 0.09, null, d)); },
   tick() { tone(1500, 0.04, 'square', 0.07); },
   count() { tone(660, 0.22, 'square', 0.12); tone(330, 0.3, 'sine', 0.2); },
@@ -241,7 +245,11 @@ function onBeat() {
   beatFlash = 1;
   const lv = level();
   if (state === 'run' || state === 'saved' || state === 'intro' || state === 'setup' || state === 'paused') {
-    if (state !== 'paused') { SFX.beat([880, 820, 760, 700][Math.min(lv, 3)]); if (lv >= 2) SFX.thump(); }
+    if (state === 'paused' || state === 'setup') return;
+    // masa banyak: dup-dup perlahan sahaja; hampir tamat: makin kuat + bunyi "tit" monitor
+    const V = [0.07, 0.11, 0.24, 0.42][Math.min(lv, 3)], gap = clamp(60 / Math.max(bpm, 40) * 0.32, 0.12, 0.24);
+    SFX.dupdup(state === 'intro' ? 0.05 : V, gap);
+    if (lv >= 2 && state === 'run') SFX.beat(lv >= 3 ? 980 : 880, lv >= 3 ? 0.16 : 0.07);
   }
 }
 
