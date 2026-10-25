@@ -87,6 +87,14 @@
   .avrow img { width: 84px; height: 84px; border-radius: 50%; object-fit: cover; border: 4px solid #0f8a8a; background: #eefaf8; }
   .sbtn { font-family: 'Fredoka'; font-weight: 700; font-size: 16px; border: none; border-radius: 12px; padding: 9px 16px; cursor: pointer; color: #fff; background: #0f8a8a; }
   .sbtn.red { background: #e5484d; } .sbtn.grey { background: #7b8c9c; }
+  .recap img.rc { width: 1.6em; height: 1.6em; border-radius: 50%; object-fit: cover; vertical-align: middle; }
+  .imgtbl { width: 100%; border-collapse: collapse; margin: 8px 0; }
+  .imgtbl td { border-bottom: 1px solid #d6efea; padding: 6px 4px; font-weight: 700; font-size: 16px; }
+  .slot { position: relative; width: 64px; height: 64px; border-radius: 12px; border: 2px dashed #8fd8cc; background: #f4fbfa; display: inline-flex; align-items: center; justify-content: center; font-size: 34px; cursor: pointer; overflow: hidden; vertical-align: middle; }
+  .slot img { width: 100%; height: 100%; object-fit: cover; }
+  .slot.has { border-style: solid; border-color: #0f8a8a; }
+  .slot small { position: absolute; bottom: 0; left: 0; right: 0; font-size: 10px; background: rgba(15,90,104,.85); color: #fff; text-align: center; }
+  .slot .x { position: absolute; top: 0; right: 0; width: 18px; height: 18px; line-height: 16px; border-radius: 0 0 0 8px; background: #e5484d; color: #fff; font-size: 13px; text-align: center; }
 
   /* ---------- lain-lain ---------- */
   .toast { position: fixed; left: 50%; top: 44%; transform: translate(-50%, -50%); font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(44px, 8vw, 100px); pointer-events: none; z-index: 15; opacity: 0; -webkit-text-stroke: 6px #fff; paint-order: stroke fill; text-shadow: 0 6px 18px rgba(0,0,0,.25); white-space: nowrap; }
@@ -169,12 +177,17 @@
     <h2>⚙ Tetapan Guru</h2>
     <div class="note"><b>Avatar Dr. Izuddin</b> — muat naik gambar kartun anda (disimpan dalam pelayar komputer ini sahaja).</div>
     <div class="avrow"><img id="avPrev" alt="Avatar"><input type="file" id="avFile" accept="image/*"><button class="sbtn red" id="avClear">Buang avatar</button></div>
-    <div class="note"><b>Senarai kata majmuk</b> — satu baris = satu tulang: <code>perkataan pertama | perkataan kedua | emoji gambar</code>. Baris bermula dengan <code>#</code> ialah nama kumpulan/set baharu (2 hingga 6 tulang setiap set).</div>
+    <div class="note"><b>Senarai kata majmuk</b> — satu baris = satu tulang: <code>perkataan 1 | perkataan 2 | emoji kata majmuk | emoji perkataan 1 | emoji perkataan 2</code>. Baris bermula dengan <code>#</code> ialah nama kumpulan/set baharu (2 hingga 6 tulang setiap set; cadangan 5).</div>
     <textarea id="setsText" spellcheck="false"></textarea>
     <div class="err" id="setsErr"></div>
+    <div class="note" style="margin-top:14px"><b>🖼️ Gambar sendiri (pilihan)</b> — klik petak untuk muat naik gambar bagi menggantikan emoji. Simpan senarai di atas dahulu jika anda mengubahnya. Pilih set:
+      <select id="imgSet" style="font-size:16px;padding:4px 8px;border-radius:8px"></select></div>
+    <table class="imgtbl" id="imgTbl"></table>
+    <input type="file" id="imgFile" accept="image/*" hidden>
     <div class="row" style="justify-content:flex-end">
+      <button class="sbtn red" id="imgClear">Buang semua gambar</button>
       <button class="sbtn grey" id="setsReset">Kembali ke asal</button>
-      <button class="sbtn grey" id="setsClose">Batal</button>
+      <button class="sbtn grey" id="setsClose">Tutup</button>
       <button class="sbtn" id="setsSave">💾 Simpan</button>
     </div>
   </div>
@@ -197,15 +210,16 @@
 'use strict';
 // =====================================================================
 // KANDUNGAN ASAL (boleh diubah oleh guru melalui ⚙ Tetapan)
-// [perkataan pertama, perkataan kedua, emoji gambar]
+// [perkataan pertama, perkataan kedua, gambar KATA MAJMUK, gambar perkataan 1, gambar perkataan 2]
+// (guru boleh ganti mana-mana emoji dengan gambar sendiri di ⚙ Tetapan)
 // =====================================================================
 const DEFAULT_SETS = [
-  { name: 'Kumpulan 1', pairs: [['sarung', 'tangan', '🧤'], ['topeng', 'muka', '😷'], ['ubat', 'demam', '🌡️'], ['katil', 'hospital', '🛏️']] },
-  { name: 'Kumpulan 2', pairs: [['minyak', 'angin', '🧴'], ['kain', 'anduh', '🩹'], ['peti', 'ubat', '🧰'], ['sabun', 'mandi', '🧼']] },
-  { name: 'Kumpulan 3', pairs: [['sabun', 'tangan', '🧼'], ['ubat', 'titis', '💧'], ['lampu', 'suluh', '🔦'], ['pita', 'ukur', '📏']] },
-  { name: 'Kumpulan 4', pairs: [['jarum', 'suntik', '💉'], ['mesin', 'timbang', '⚖️'], ['baju', 'doktor', '🥼'], ['gigi', 'palsu', '🦷']] },
-  { name: 'Kumpulan 5', pairs: [['bilik', 'bedah', '🏥'], ['beg', 'ubat', '🛍️'], ['botol', 'susu', '🍼'], ['kotak', 'tisu', '🧻']] },
-  { name: 'Kumpulan 6', pairs: [['ubat', 'nyamuk', '🦟'], ['tong', 'sampah', '🗑️'], ['tuala', 'mandi', '🛁'], ['topi', 'keledar', '⛑️']] },
+  { name: 'Kumpulan 1', pairs: [['sarung', 'tangan', '🧤', '🧦', '✋'], ['topeng', 'muka', '😷', '🎭', '🙂'], ['ubat', 'demam', '🌡️', '💊', '🤒'], ['katil', 'hospital', '🛌', '🛏️', '🏥'], ['peti', 'ubat', '🧰', '📦', '💊']] },
+  { name: 'Kumpulan 2', pairs: [['air', 'mata', '😢', '💧', '👁️'], ['kedai', 'ubat', '🏪', '🏪', '💊'], ['doktor', 'gigi', '😁', '👨‍⚕️', '🦷'], ['ubat', 'batuk', '🧴', '💊', '🤧'], ['jam', 'tangan', '⌚', '⏰', '✋']] },
+  { name: 'Kumpulan 3', pairs: [['doktor', 'haiwan', '🩺', '👨‍⚕️', '🐱'], ['sup', 'ayam', '🍲', '🍲', '🐔'], ['bubur', 'nasi', '🥣', '🥣', '🍚'], ['air', 'kelapa', '🥥', '💧', '🌴'], ['susu', 'lembu', '🥛', '🥛', '🐄']] },
+  { name: 'Kumpulan 4', pairs: [['kereta', 'api', '🚆', '🚗', '🔥'], ['kapal', 'terbang', '✈️', '🚢', '🕊️'], ['bas', 'sekolah', '🚌', '🚌', '🏫'], ['baju', 'hujan', '🧥', '👕', '🌧️'], ['kasut', 'sukan', '👟', '👞', '🏅']] },
+  { name: 'Kumpulan 5', pairs: [['telur', 'ayam', '🍳', '🥚', '🐔'], ['pokok', 'kelapa', '🌴', '🌳', '🥥'], ['buku', 'cerita', '📖', '📕', '🧚'], ['surat', 'khabar', '📰', '✉️', '📢'], ['beg', 'sekolah', '🎒', '👜', '🏫']] },
+  { name: 'Kumpulan 6', pairs: [['bilik', 'air', '🚿', '🚪', '💧'], ['ibu', 'jari', '👍', '👩', '☝️'], ['bola', 'sepak', '🥅', '⚽', '🦵'], ['bunga', 'api', '🎆', '🌸', '🔥'], ['gigi', 'susu', '👶', '🦷', '🥛']] },
 ];
 const COLORS = ['#e5484d', '#2f80ed', '#22a06b', '#e6a100', '#8e5cf7', '#f5781f', '#0f8a8a', '#d6409f'];
 const INTRO = [
@@ -216,7 +230,7 @@ const INTRO = [
   'Kalau berbunyi <b>"klik!"</b>, tulang sembuh dan <b>kata majmuk</b> terbentuk! Jom lihat contoh dahulu.',
 ];
 const PRAISE = ['Syabas! Tulang sudah bersambung!', 'Hebat! Itu kata majmuk yang betul!', 'Bagus! Encik Tulang rasa lebih baik!', 'Tepat sekali, doktor kecil!'];
-const LS_SETS = 'st_sets_v1', LS_AV = 'st_avatar_v1', LS_RES = 'st_results_v1';
+const LS_SETS = 'st_sets_v2', LS_AV = 'st_avatar_v1', LS_RES = 'st_results_v1', LS_IMG = 'st_img_v1';
 
 // =====================================================================
 // UTILITI
@@ -235,6 +249,7 @@ const EMOJI_F = (px) => `${Math.max(1, px | 0)}px "Segoe UI Emoji","Apple Color 
 function rr(x, y, w, h, r) { r = Math.min(r, w / 2, h / 2); ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
 function circle(x, y, r) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); }
 function lsGet(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }
+const esc = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
 function fitFont(text, maxW, px, w = 700) { while (px > 9) { ctx.font = F(px, w); if (ctx.measureText(text).width <= maxW) break; px -= 1; } return px; }
 function wrap(text, maxW) { const words = text.split(' '), lines = []; let cur = ''; for (const w of words) { const t = cur ? cur + ' ' + w : w; if (ctx.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; } if (cur) lines.push(cur); return lines; }
@@ -276,6 +291,13 @@ function allPairsKey() { const s = new Set(); SETS.forEach((st) => st.pairs.forE
 let avatarImg = null;
 function loadAvatar() { const d = lsGet(LS_AV, null); avatarImg = null; $('avPrev').removeAttribute('src'); $('avPrev').hidden = !d; if (!d) return; const im = new Image(); im.onload = () => { avatarImg = im; }; im.src = d; $('avPrev').src = d; }
 let results = lsGet(LS_RES, {});
+// Gambar muat naik guru: kunci "<perkataan1> <perkataan2>#1" (perkataan 1), "#2" (perkataan 2), "#k" (kata majmuk)
+let IMGDATA = lsGet(LS_IMG, {}) || {}; const IMG = {};
+function loadImgs() { Object.keys(IMG).forEach((k) => { if (!IMGDATA[k]) delete IMG[k]; }); Object.entries(IMGDATA).forEach(([k, d]) => { if (IMG[k] && IMG[k].src === d) return; const im = new Image(); im.src = d; IMG[k] = im; }); }
+const pkey = (w1, w2, slot) => (w1 + ' ' + w2).toLowerCase() + '#' + slot;
+function picFor(w1, w2, slot, emoji) { const im = IMG[pkey(w1, w2, slot)]; return (im && im.complete && im.naturalWidth) ? { img: im } : { emoji: emoji || '' }; }
+function picHTML(w1, w2, slot, emoji, cls) { const d = IMGDATA[pkey(w1, w2, slot)]; return d ? `<img class="${cls || ''}" src="${d}" alt="">` : (emoji || ''); }
+loadImgs();
 
 // =====================================================================
 // LUKISAN: Dr. Izuddin (kartun asal / avatar muat naik)
@@ -428,6 +450,18 @@ function bonePath(side, x1, x2, cy, th) {
   }
   return shapes;
 }
+// lukis gambar (emoji atau imej muat naik) berpusat di (x,y), saiz kotak 'size'
+function drawPic(pic, x, y, size, round) {
+  if (!pic) return;
+  if (pic.img) {
+    const im = pic.img, k = Math.max(size / im.naturalWidth, size / im.naturalHeight);
+    ctx.save(); if (round) circle(x, y, size / 2); else rr(x - size / 2, y - size / 2, size, size, size * 0.18); ctx.clip();
+    ctx.fillStyle = '#fff'; ctx.fillRect(x - size / 2, y - size / 2, size, size);
+    ctx.drawImage(im, x - im.naturalWidth * k / 2, y - im.naturalHeight * k / 2, im.naturalWidth * k, im.naturalHeight * k); ctx.restore();
+  } else if (pic.emoji) {
+    ctx.save(); ctx.font = EMOJI_F(size * 0.86); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(pic.emoji, x, y + size * 0.05); ctx.restore();
+  }
+}
 function drawBone(side, x1, x2, cy, th, label, o = {}) {
   const shapes = bonePath(side, x1, x2, cy, th);
   ctx.save();
@@ -443,7 +477,8 @@ function drawBone(side, x1, x2, cy, th, label, o = {}) {
   const g = ctx.createLinearGradient(0, cy - th / 2, 0, cy + th / 2); g.addColorStop(0, o.fill1 || '#ffffff'); g.addColorStop(1, o.fill2 || '#dceef8');
   ctx.fillStyle = g; shapes.forEach((f) => { f(); ctx.fill(); });
   if (label) {
-    const kr = th * 0.36, a = side === 'L' ? x1 + kr * 1.9 : x1 + th * 0.2, b = side === 'L' ? x2 - th * 0.2 : x2 - kr * 1.9;
+    const kr = th * 0.36; let a = side === 'L' ? x1 + kr * 1.9 : x1 + th * 0.2; const b = side === 'L' ? x2 - th * 0.2 : x2 - kr * 1.9;
+    if (o.pic && (o.pic.img || o.pic.emoji)) { const ps = th * 0.66; drawPic(o.pic, a + ps * 0.62, cy, ps); a += ps * 1.25; }
     const fs = fitFont(label, (b - a) * 0.94, th * 0.46);
     ctx.font = F(fs); ctx.fillStyle = o.textCol || '#10324d'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(label, (a + b) / 2, cy + fs * 0.05);
   }
@@ -474,6 +509,7 @@ function drawBackground(t) {
 // =====================================================================
 // KEADAAN PERMAINAN
 // =====================================================================
+let reveal = null;
 let state = 'title', setIdx = 0, rows = [], pieces = [], drag = null, mistakes = 0, solved = 0, tStart = 0, tEnd = 0;
 let introIdx = 0, typing = null, introSeen = false, docMsg = '', docMsgT = 0, rowShake = [];
 let PANEL = {}, TRAY = {}, TH = 60, PIECE_LEN = 200;
@@ -510,15 +546,15 @@ function resize() {
 function startSet(i) {
   setIdx = clamp(i, 0, SETS.length - 1);
   const st = SETS[setIdx], pairs = st.pairs.slice(0, 6);
-  rows = pairs.map((p) => ({ w1: p[0], w2: p[1], emoji: p[2] || '🦴', healed: false, healT: 0, shake: 0 }));
+  rows = pairs.map((p) => ({ w1: p[0], w2: p[1], emoji: p[2] || '🦴', e1: p[3] || '', e2: p[4] || '', healed: false, healT: 0, shake: 0 }));
   const used = new Set(rows.map((r) => r.w2.toLowerCase())), all = allPairsKey();
   let extra = [];
   if (rows.length <= 4) { // satu tulang pengganggu yang TIDAK membentuk kata majmuk sah dengan mana-mana tulang
-    const cands = []; SETS.forEach((s2) => s2.pairs.forEach((p) => { const w = p[1].toLowerCase(); if (!used.has(w) && !rows.some((r) => all.has((r.w1 + ' ' + w).toLowerCase()))) cands.push(p[1]); }));
+    const cands = []; SETS.forEach((s2) => s2.pairs.forEach((p) => { const w = p[1].toLowerCase(); if (!used.has(w) && !rows.some((r) => all.has((r.w1 + ' ' + w).toLowerCase()))) cands.push({ w1: p[0], w2: p[1], e2: p[4] || '' }); }));
     if (cands.length) extra = [cands[Math.floor(Math.random() * cands.length)]];
   }
-  pieces = shuffle(rows.map((r) => r.w2).concat(extra)).map((w) => ({ w, x: W + 200, y: H / 2, hx: 0, hy: 0, placed: false, row: null, born: performance.now() + Math.random() * 400, wob: 0 }));
-  mistakes = 0; solved = 0; drag = null; tStart = performance.now(); tEnd = 0;
+  pieces = shuffle(rows.map((r) => ({ w1: r.w1, w2: r.w2, e2: r.e2 })).concat(extra)).map((q) => ({ w: q.w2, src1: q.w1, e2: q.e2, x: W + 200, y: H / 2, hx: 0, hy: 0, placed: false, row: null, born: performance.now() + Math.random() * 400, wob: 0 }));
+  mistakes = 0; solved = 0; drag = null; reveal = null; tStart = performance.now(); tEnd = 0;
   layout();
   pieces.forEach((p, k) => { p.x = p.hx + W * 0.4; p.y = p.hy; p.delay = k * 0.09; });
   $('hSet').textContent = st.name; $('hSet').style.background = setColor(setIdx);
@@ -547,7 +583,7 @@ function nearestRow(p) {
   return bd < lim ? best : null;
 }
 function grab(x, y) {
-  if (state !== 'play' || drag) return;
+  if (state !== 'play' || drag || reveal) return;
   const p = pieceAt(x, y); if (!p) return;
   drag = { p, ox: p.x - x, oy: p.y - y };
   pieces.splice(pieces.indexOf(p), 1); pieces.push(p); // bawa ke atas
@@ -564,11 +600,11 @@ function heal(r, p) {
   r.healed = true; r.healT = 0; p.placed = true; p.row = r; p.x = r.xMid; p.y = r.cy;
   solved++; updateHud(); sfx('snap'); setTimeout(() => sfx('correct'), 120);
   burst(r.xMid, r.cy, 46, ['#ffd84d', '#5ff0ff', '#ffffff', '#22c55e']);
-  toast(['KLIK! BETUL!', 'SEMBUH!', 'HEBAT!', 'TEPAT!'][solved % 4], '#0f8a8a');
   const word = `${r.w1} ${r.w2}`;
   docMsg = `${PRAISE[solved % PRAISE.length]} "${word}"`; docMsgT = 4;
-  speak(word + '!', 0.9);
-  if (solved >= rows.length) { tEnd = performance.now(); updateHud(); setTimeout(finish, 1500); }
+  speak(r.w1 + ', ' + r.w2 + '. ' + word + '!', 0.9);
+  reveal = { r, t: 0 };
+  if (solved >= rows.length) { tEnd = performance.now(); updateHud(); setTimeout(finish, 2800); }
 }
 function wrong(r, p) {
   mistakes++; updateHud(); r.shake = 1; p.wob = 1; sfx('wrong');
@@ -586,7 +622,7 @@ function finish() {
   lsSet(LS_RES, results);
   $('endTitle').textContent = 'TULANG SUDAH SEMBUH! 🎉';
   $('endText').innerHTML = `<b>${name}</b> menyambung ${n} tulang dalam <b>${fmtTime(ms)}</b> dengan <b>${mistakes}</b> kesilapan.<br>Jom baca kuat-kuat kata majmuk ini:`;
-  $('recap').innerHTML = rows.map((r) => `<span>${r.emoji} ${r.w1} ${r.w2}</span>`).join('');
+  $('recap').innerHTML = rows.map((r) => `<span>${picHTML(r.w1, r.w2, 'k', r.emoji, 'rc')} ${esc(r.w1)} ${esc(r.w2)}</span>`).join('');
   $('nextSetBtn').hidden = setIdx >= SETS.length - 1;
   $('end').hidden = false; $('hud').hidden = true;
   const sp = document.querySelectorAll('#stars span'); sp.forEach((s) => s.classList.remove('on'));
@@ -677,12 +713,13 @@ function drawRow(r, i, t) {
   ctx.save(); ctx.translate(sx, 0);
   ctx.fillStyle = '#fff'; circle(r.badgeX, r.cy, r.badgeR); ctx.fill();
   ctx.lineWidth = 5; ctx.strokeStyle = setColor(setIdx); ctx.stroke();
-  ctx.font = EMOJI_F(r.badgeR * 1.15); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(r.emoji, r.badgeX, r.cy + r.badgeR * 0.06);
+  if (r.healed) { const k = easeOutBack(clamp(r.healT / 0.5, 0, 1)); ctx.save(); ctx.translate(r.badgeX, r.cy); ctx.scale(k, k); drawPic(picFor(r.w1, r.w2, 'k', r.emoji), 0, 0, r.badgeR * 1.45, true); ctx.restore(); }
+  else { ctx.fillStyle = setColor(setIdx); ctx.font = F(r.badgeR * 1.2); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('?', r.badgeX, r.cy + r.badgeR * 0.08 + Math.sin(t / 300 + i) * 2); }
   ctx.fillStyle = setColor(setIdx); circle(r.badgeX - r.badgeR * 0.78, r.cy - r.badgeR * 0.78, r.badgeR * 0.34); ctx.fill();
   ctx.fillStyle = '#fff'; ctx.font = F(r.badgeR * 0.42); ctx.fillText(String(i + 1), r.badgeX - r.badgeR * 0.78, r.cy - r.badgeR * 0.76);
   // separuh kiri (tetap)
   const red = r.shake > 0;
-  drawBone('L', r.xL, r.xMid, r.cy, TH, r.w1, red ? { glow: 'rgba(255,80,80,.95)', glowBlur: 24, outline: '#b33939' } : r.healed ? { glow: 'rgba(110,255,170,.9)', glowBlur: 22 } : {});
+  drawBone('L', r.xL, r.xMid, r.cy, TH, r.w1, Object.assign({ pic: picFor(r.w1, r.w2, '1', r.e1) }, red ? { glow: 'rgba(255,80,80,.95)', glowBlur: 24, outline: '#b33939' } : r.healed ? { glow: 'rgba(110,255,170,.9)', glowBlur: 22 } : {}));
   if (!r.healed) {
     const near = drag && nearestRow(drag.p) === r;
     drawBone('R', r.xMid, r.xR, r.cy, TH, null, { ghost: true, ghostCol: near ? 'rgba(255,216,77,.95)' : `rgba(140,220,255,${0.45 + 0.3 * Math.sin(t / 300)})` });
@@ -719,7 +756,33 @@ function drawPiece(p, t, now) {
   ctx.save();
   if (p.wob > 0) { ctx.translate(p.x, p.y); ctx.rotate(Math.sin(t / 30) * 0.08 * p.wob); ctx.translate(-p.x, -p.y); }
   drawBone('R', p.x, p.x + PIECE_LEN, p.y + (lift ? 0 : Math.sin(t / 700 + p.hy) * 2), TH * (lift ? 1.08 : 1), p.w,
-    p.placed ? { glow: 'rgba(110,255,170,.9)', glowBlur: 22 } : lift ? { glow: 'rgba(255,216,77,.95)', glowBlur: 28, outline: '#b8860b' } : { glow: 'rgba(10,60,70,.35)', glowBlur: 10 });
+    Object.assign({ pic: picFor(p.src1, p.w, '2', p.e2) }, p.placed ? { glow: 'rgba(110,255,170,.9)', glowBlur: 22 } : lift ? { glow: 'rgba(255,216,77,.95)', glowBlur: 28, outline: '#b8860b' } : { glow: 'rgba(10,60,70,.35)', glowBlur: 10 }));
+  ctx.restore();
+}
+// kad jawapan besar selepas tulang bersambung: [gambar 1] + [gambar 2] = [GAMBAR KATA MAJMUK]
+function drawReveal(t) {
+  if (!reveal) return;
+  reveal.t += DT; const T = reveal.t, D = 2.6; if (T > D) { reveal = null; return; }
+  const r = reveal.r, a = T < 0.25 ? T / 0.25 : T > D - 0.35 ? (D - T) / 0.35 : 1, sc = easeOutBack(clamp(T / 0.45, 0, 1));
+  const cw = Math.min(PANEL.w * 0.94, 720 * U), ch = Math.min(PANEL.h * 0.8, 330 * U), cx = PANEL.x + PANEL.w / 2, cy = PANEL.y + PANEL.h / 2;
+  ctx.save(); ctx.globalAlpha = clamp(a, 0, 1);
+  ctx.fillStyle = 'rgba(5,20,30,.55)'; rr(PANEL.x, PANEL.y, PANEL.w, PANEL.h, 26 * U); ctx.fill();
+  ctx.translate(cx, cy); ctx.scale(sc, sc);
+  ctx.shadowColor = 'rgba(0,0,0,.4)'; ctx.shadowBlur = 30; ctx.fillStyle = '#fffef7'; rr(-cw / 2, -ch / 2, cw, ch, 28 * U); ctx.fill(); ctx.shadowBlur = 0;
+  ctx.lineWidth = 6; ctx.strokeStyle = '#22a06b'; ctx.stroke();
+  const small = ch * 0.34, big = ch * 0.52, y0 = -ch * 0.1;
+  const xs = [-cw * 0.36, -cw * 0.13, cw * 0.24];
+  ctx.fillStyle = '#eefaf8'; circle(xs[0], y0, small * 0.62); ctx.fill(); circle(xs[1], y0, small * 0.62); ctx.fill();
+  ctx.fillStyle = '#fff6d6'; circle(xs[2], y0, big * 0.6); ctx.fill(); ctx.lineWidth = 5; ctx.strokeStyle = '#ffd84d'; ctx.stroke();
+  drawPic(picFor(r.w1, r.w2, '1', r.e1), xs[0], y0, small, true);
+  drawPic(picFor(r.w1, r.w2, '2', r.e2), xs[1], y0, small, true);
+  const pulse = 1 + Math.sin(t / 120) * 0.04; ctx.save(); ctx.translate(xs[2], y0); ctx.scale(pulse, pulse); drawPic(picFor(r.w1, r.w2, 'k', r.emoji), 0, 0, big, true); ctx.restore();
+  ctx.fillStyle = '#0f5a68'; ctx.font = F(ch * 0.16); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('+', (xs[0] + xs[1]) / 2, y0); ctx.fillText('=', (xs[1] + xs[2]) / 2 - big * 0.12, y0);
+  ctx.font = F(ch * 0.09, 600); ctx.fillStyle = '#45606f';
+  ctx.fillText(r.w1, xs[0], y0 + small * 0.78); ctx.fillText(r.w2, xs[1], y0 + small * 0.78);
+  const fs = fitFont(`${r.w1} ${r.w2}`, cw * 0.86, ch * 0.17); ctx.font = F(fs); ctx.fillStyle = '#22a06b';
+  ctx.fillText(`${r.w1} ${r.w2}`, 0, ch * 0.36);
   ctx.restore();
 }
 function drawDocBubble(x, y, maxW, t) {
@@ -800,6 +863,7 @@ function frame(now) {
     if (state === 'play') { drawDoctor(dx, H - 6 * U, ds, t, talking(), false); drawDocBubble(dx + 105 * ds, TRAY.y + TRAY.h + 16 * U, W - (dx + 105 * ds) - 16 * U, t); }
     if (state === 'done') drawSkeleton(W * 0.86, H * 0.97, clamp(U * 0.95, .45, 1.2), t, 'happy');
     if (drag) drawPiece(drag.p, t, now);
+    drawReveal(t);
     if (state === 'play') updateHud();
   }
   // zarah
@@ -896,7 +960,7 @@ $('boardBtn').onclick = openBoard; $('endBoardBtn').onclick = openBoard;
 $('boardClose').onclick = () => { $('board').hidden = true; };
 $('boardReset').onclick = () => { if (confirm('Kosongkan semua markah kumpulan?')) { results = {}; lsSet(LS_RES, results); openBoard(); renderChips(); } };
 
-function setsToText(sets) { return sets.map((s) => '# ' + s.name + '\n' + s.pairs.map((p) => `${p[0]} | ${p[1]} | ${p[2] || ''}`).join('\n')).join('\n\n'); }
+function setsToText(sets) { return sets.map((s) => '# ' + s.name + '\n' + s.pairs.map((p) => `${p[0]} | ${p[1]} | ${p[2] || ''} | ${p[3] || ''} | ${p[4] || ''}`).join('\n')).join('\n\n'); }
 function parseSets(txt) {
   const out = []; let curSet = null;
   txt.split(/\r?\n/).forEach((line, n) => {
@@ -905,17 +969,42 @@ function parseSets(txt) {
     const parts = l.split('|').map((x) => x.trim());
     if (parts.length < 2 || !parts[0] || !parts[1]) throw new Error(`Baris ${n + 1}: perlu "perkataan pertama | perkataan kedua | emoji".`);
     if (!curSet) { curSet = { name: 'Set 1', pairs: [] }; out.push(curSet); }
-    curSet.pairs.push([parts[0], parts[1], parts[2] || '🦴']);
+    curSet.pairs.push([parts[0], parts[1], parts[2] || '🦴', parts[3] || '', parts[4] || '']);
   });
   if (!out.length) throw new Error('Tiada set ditemui.');
   out.forEach((s) => { if (s.pairs.length < 2 || s.pairs.length > 6) throw new Error(`"${s.name}" perlu 2 hingga 6 baris tulang (sekarang ${s.pairs.length}).`); });
   return out;
 }
-$('setBtn').onclick = () => { $('setsText').value = setsToText(SETS); $('setsErr').textContent = ''; $('settings').hidden = false; };
+$('setBtn').onclick = () => { $('setsText').value = setsToText(SETS); $('setsErr').textContent = ''; $('settings').hidden = false; renderImgSets(); };
+// ---- gambar sendiri ----
+let imgTarget = null;
+function renderImgSets() { const sel = $('imgSet'); sel.innerHTML = SETS.map((s, i) => `<option value="${i}">${esc(s.name)}</option>`).join(''); sel.value = String(Math.min(setIdx, SETS.length - 1)); renderImgTbl(); }
+function slotHTML(w1, w2, slot, emoji, lbl) { const d = IMGDATA[pkey(w1, w2, slot)]; return `<span class="slot${d ? ' has' : ''}" data-w1="${esc(w1)}" data-w2="${esc(w2)}" data-s="${slot}">${d ? `<img src="${d}" alt="">` : (emoji || '➕')}<small>${esc(lbl)}</small>${d ? '<span class="x" data-x="1">×</span>' : ''}</span>`; }
+function renderImgTbl() {
+  const st = SETS[+$('imgSet').value || 0]; if (!st) return;
+  $('imgTbl').innerHTML = st.pairs.map((p) => `<tr><td>${esc(p[0])} + ${esc(p[1])}</td><td>${slotHTML(p[0], p[1], '1', p[3], p[0])}</td><td>${slotHTML(p[0], p[1], '2', p[4], p[1])}</td><td>= ${slotHTML(p[0], p[1], 'k', p[2], 'jawapan')}</td></tr>`).join('');
+}
+$('imgSet').onchange = renderImgTbl;
+$('imgTbl').onclick = (e) => {
+  const sl = e.target.closest('.slot'); if (!sl) return; const key = pkey(sl.dataset.w1, sl.dataset.w2, sl.dataset.s);
+  if (e.target.dataset.x) { delete IMGDATA[key]; lsSet(LS_IMG, IMGDATA); loadImgs(); renderImgTbl(); return; }
+  imgTarget = key; $('imgFile').value = ''; $('imgFile').click();
+};
+$('imgFile').onchange = (e) => {
+  const f = e.target.files && e.target.files[0]; if (!f || !imgTarget) return; const key = imgTarget;
+  const fr = new FileReader(); fr.onload = () => { const im = new Image(); im.onload = () => {
+    const S = 320, c = document.createElement('canvas'); c.width = S; c.height = S; const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, S, S);
+    const k = Math.min(S / im.width, S / im.height); x.drawImage(im, (S - im.width * k) / 2, (S - im.height * k) / 2, im.width * k, im.height * k);
+    IMGDATA[key] = c.toDataURL('image/jpeg', 0.86);
+    if (!lsSet(LS_IMG, IMGDATA)) { delete IMGDATA[key]; $('setsErr').textContent = '⚠ Ruang simpanan penuh — buang beberapa gambar dahulu.'; return; }
+    loadImgs(); renderImgTbl();
+  }; im.src = fr.result; }; fr.readAsDataURL(f);
+};
+$('imgClear').onclick = () => { if (confirm('Buang semua gambar yang dimuat naik?')) { IMGDATA = {}; lsSet(LS_IMG, IMGDATA); loadImgs(); renderImgTbl(); } };
 $('setsClose').onclick = () => { $('settings').hidden = true; };
 $('setsReset').onclick = () => { $('setsText').value = setsToText(DEFAULT_SETS); $('setsErr').textContent = 'Senarai asal dimuatkan — tekan Simpan untuk guna.'; };
 $('setsSave').onclick = () => {
-  try { SETS = parseSets($('setsText').value); lsSet(LS_SETS, SETS); setIdx = 0; renderChips(); $('settings').hidden = true; sfx('correct'); }
+  try { SETS = parseSets($('setsText').value); lsSet(LS_SETS, SETS); setIdx = 0; renderChips(); renderImgSets(); $('setsErr').textContent = '✅ Disimpan.'; sfx('correct'); }
   catch (e) { $('setsErr').textContent = '⚠ ' + e.message; }
 };
 $('avFile').onchange = (e) => {
