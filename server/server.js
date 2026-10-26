@@ -21,6 +21,8 @@ const gameLessonsRouter = require('../routes/gameLessons');
 const kuizEsp32Router = require('../routes/kuizEsp32');
 // [KAUNTER LAPAR] Geganti WebSocket telefon guru <-> skrin laptop
 const kaunterRelay = require('../routes/kaunterRelay');
+// [SKRIN JAWAPAN] Telefon guru ambil gambar -> papar & zoom di skrin depan
+const skrinJawapan = require('../routes/skrinJawapan');
 
 const app = express();
 const server = http.createServer(app);
@@ -46,6 +48,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 // atas (public/game-arab.html, public/game-arab-admin.html).
 app.use('/api/game-lessons', gameLessonsRouter);
 app.use('/api/kuiz-esp32', kuizEsp32Router);
+skrinJawapan.pasang(app);
 
 // Root ('/') redirect ke guru.html supaya tak "Cannot GET /"
 app.get('/', (req, res) => res.redirect('/guru.html'));
@@ -279,6 +282,8 @@ wss.on('connection', (ws, req) => {
     ws.send(JSON.stringify({ jenis: 'game_state', data: gameState }));
   } else if (url.startsWith('/kaunter')) {
     kaunterRelay.sambung(ws, url);
+  } else if (url.startsWith('/skrin-jawapan')) {
+    skrinJawapan.sambung(ws, req);
   } else if (url === '/murid') {
     clients.murid.push(ws);
     console.log('[WS] Aplikasi Murid disambung');
@@ -291,6 +296,7 @@ wss.on('connection', (ws, req) => {
     try { data = JSON.parse(raw); } catch { return; }
 
     if (url.startsWith('/kaunter')) { kaunterRelay.mesej(ws, data); return; }
+    if (url.startsWith('/skrin-jawapan')) { skrinJawapan.mesej(ws, data); return; }
 
     if (url === '/esp32') {
       if (data.jenis === 'nfc_scan') await prosesNFC(data.uid);
@@ -329,6 +335,7 @@ wss.on('connection', (ws, req) => {
     else if (url === '/guru') clients.guru = clients.guru.filter(c => c !== ws);
     else if (url === '/murid') clients.murid = clients.murid.filter(c => c !== ws);
     else if (url.startsWith('/kaunter')) kaunterRelay.putus(ws);
+    else if (url.startsWith('/skrin-jawapan')) skrinJawapan.putus(ws);
     console.log(`[WS] Putus: ${url}`);
   });
 });

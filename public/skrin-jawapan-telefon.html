@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0d0b1f">
+<title>Kamera Skrin Jawapan — Ilmuverse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap">
+<style>
+  :root { --bg: #0d0b1f; --panel: #17132f; --line: rgba(255,255,255,.12); --acc: #5ff0ff; --acc2: #ffd84d; --ok: #22c55e; --bad: #ff5d6d; --pink: #ff5d8f; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: #fff; font-family: 'Fredoka', system-ui, sans-serif; overscroll-behavior: none; }
+  body { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; user-select: none; -webkit-user-select: none; }
+  [hidden] { display: none !important; }
+
+  header { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: calc(env(safe-area-inset-top) + 10px) 14px 10px; background: var(--panel); border-bottom: 1px solid var(--line); }
+  .stat { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px; min-width: 0; }
+  .stat span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dot { width: 11px; height: 11px; border-radius: 50%; background: #888; flex: none; }
+  .dot.ok { background: var(--ok); box-shadow: 0 0 10px var(--ok); }
+  .dot.wait { background: var(--acc2); animation: kelip 1s infinite; }
+  .dot.bad { background: var(--bad); }
+  @keyframes kelip { 50% { opacity: .3; } }
+  .live { font-weight: 700; font-size: 13px; letter-spacing: 1px; padding: 5px 10px; border-radius: 999px; background: var(--bad); box-shadow: 0 0 12px rgba(255,93,109,.6); white-space: nowrap; }
+  .live::before { content: '●'; margin-right: 5px; animation: kelip 1s infinite; }
+
+  main { flex: 1; position: relative; overflow: hidden; background: #000; touch-action: none; }
+  video, #semakImg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; }
+  #vw { position: absolute; inset: 0; overflow: hidden; touch-action: none; }
+  #vw img { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; pointer-events: none; }
+  #ptr { position: absolute; width: 26px; height: 26px; margin: -13px 0 0 -13px; border-radius: 50%; pointer-events: none; display: none; background: radial-gradient(circle, #fff 0 18%, #ff2d55 32%, rgba(255,45,85,.3) 65%, transparent 72%); box-shadow: 0 0 16px 6px rgba(255,45,85,.5); }
+  .zoomtag { position: absolute; left: 12px; top: 12px; background: rgba(0,0,0,.6); border-radius: 10px; padding: 4px 10px; font-weight: 600; font-size: 14px; pointer-events: none; }
+  .bantuan { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); background: rgba(0,0,0,.6); border-radius: 12px; padding: 6px 12px; font-size: 13px; white-space: nowrap; pointer-events: none; transition: opacity .6s; }
+  .grid { position: absolute; inset: 0; pointer-events: none; background-image: linear-gradient(rgba(255,255,255,.18) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.18) 1px, transparent 1px); background-size: 33.33% 33.33%; }
+  #flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+  #flash.on { animation: fl .35s ease-out; }
+  @keyframes fl { from { opacity: .8; } to { opacity: 0; } }
+
+  footer { flex: none; background: var(--panel); border-top: 1px solid var(--line); padding: 12px 14px calc(env(safe-area-inset-bottom) + 12px); }
+  .row { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+  .row + .row { margin-top: 10px; }
+  button, .btn { font: inherit; font-weight: 600; color: #fff; background: rgba(255,255,255,.08); border: 1px solid var(--line); border-radius: 16px; padding: 12px 10px; font-size: 15px; cursor: pointer; flex: 1; min-height: 52px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; }
+  button:active { transform: scale(.96); }
+  button:disabled { opacity: .45; }
+  button.on { background: rgba(255,45,85,.25); border-color: #ff2d55; }
+  .kecil { flex: 0 0 auto; min-width: 52px; font-size: 20px; padding: 10px 12px; }
+  .shutter { flex: 0 0 auto; width: 78px; height: 78px; border-radius: 50%; padding: 0; background: #fff; border: 6px solid rgba(255,255,255,.35); background-clip: padding-box; box-shadow: 0 0 0 3px #fff; }
+  .shutter:active { background: #ddd; }
+  .deploy { flex: 2; font-size: 20px; font-weight: 700; letter-spacing: 1px; background: linear-gradient(135deg, #ff5d8f, #ff9f1c); border: none; box-shadow: 0 6px 0 #a3305c; }
+  .deploy:active { box-shadow: 0 2px 0 #a3305c; transform: translateY(4px); }
+  .baru { background: linear-gradient(135deg, #7b5cff, #3b9bff); border: none; }
+  .prog { height: 6px; border-radius: 999px; background: rgba(255,255,255,.1); overflow: hidden; margin-bottom: 10px; }
+  .prog i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--acc), var(--ok)); transition: width .15s; }
+
+  /* skrin kod / mesej */
+  .tengah { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; gap: 14px; background: radial-gradient(circle at 30% 20%, rgba(123,92,255,.3), transparent 50%), var(--bg); }
+  .tengah h2 { margin: 0; font-size: 26px; }
+  .tengah p { margin: 0; color: #c9c2ee; max-width: 320px; line-height: 1.4; }
+  .kodin { font: inherit; font-size: 40px; font-weight: 700; letter-spacing: .3em; text-align: center; width: 230px; padding: 10px 0 10px .3em; border-radius: 16px; border: 2px solid var(--acc); background: rgba(95,240,255,.06); color: #fff; outline: none; }
+  .tengah button { flex: none; width: 230px; }
+  #toast { position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 64px); transform: translate(-50%, -20px); background: rgba(20,16,44,.95); border: 1px solid var(--line); padding: 10px 16px; border-radius: 14px; font-weight: 600; font-size: 14px; opacity: 0; transition: all .3s; pointer-events: none; z-index: 20; max-width: 92vw; text-align: center; }
+  #toast.on { opacity: 1; transform: translate(-50%, 0); }
+  input[type=file] { display: none; }
+</style>
+</head>
+<body>
+<header>
+  <div class="stat"><span class="dot wait" id="dot"></span><span id="statTx">Menyambung…</span></div>
+  <span class="live" id="liveTag" hidden>LIVE</span>
+</header>
+
+<main id="main">
+  <!-- 1. Masukkan kod bilik -->
+  <div class="tengah" id="pKod" hidden>
+    <div style="font-size:54px">📺</div>
+    <h2>Sambung ke Skrin Depan</h2>
+    <p>Masukkan kod bilik 4 digit yang tertera pada skrin PC / TV.</p>
+    <input class="kodin" id="kodIn" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="0000">
+    <button class="deploy" id="kodBtn">SAMBUNG</button>
+  </div>
+
+  <!-- 2. Kamera langsung -->
+  <div id="pKamera" hidden>
+    <video id="vid" playsinline muted autoplay></video>
+    <div class="grid"></div>
+    <div class="tengah" id="kamGagal" hidden>
+      <div style="font-size:54px">📷</div>
+      <h2>Kamera dalam halaman tidak dapat dibuka</h2>
+      <p id="kamGagalTx">Guna butang di bawah untuk ambil gambar dengan aplikasi kamera telefon.</p>
+      <button class="baru" id="kamCuba">🔁 Cuba Lagi</button>
+    </div>
+    <div id="flash"></div>
+  </div>
+
+  <!-- 3. Semak gambar sebelum deploy -->
+  <div id="pSemak" hidden>
+    <img id="semakImg" alt="Gambar yang diambil">
+  </div>
+
+  <!-- 4. LIVE: zoom diselaraskan ke skrin depan -->
+  <div id="pLive" hidden>
+    <div id="vw"><img id="liveImg" alt="Gambar di skrin depan"><div id="ptr"></div></div>
+    <div class="zoomtag" id="zoomTag">1.0×</div>
+    <div class="bantuan" id="bantuan">🤏 Cubit untuk zoom · ☝️ seret untuk gerak · ketik 2× untuk zoom</div>
+  </div>
+</main>
+
+<footer>
+  <div class="prog" id="prog" hidden><i id="progBar"></i></div>
+
+  <div id="fKamera" hidden>
+    <div class="row">
+      <button class="kecil" id="btnGaleri" title="Pilih dari galeri">🖼️</button>
+      <button class="kecil" id="btnTorch" title="Lampu suluh" hidden>🔦</button>
+      <button class="shutter" id="btnSnap" aria-label="Ambil gambar"></button>
+      <button class="kecil" id="btnNative" title="Aplikasi kamera telefon">📷</button>
+      <button class="kecil" id="btnKeLive" title="Kembali ke gambar LIVE" hidden>📺</button>
+    </div>
+  </div>
+
+  <div id="fSemak" hidden>
+    <div class="row">
+      <button id="btnUlang">↺ Ulang</button>
+      <button class="kecil" id="btnPutar" title="Putar 90°">⟳</button>
+      <button class="kecil" id="btnTerang" title="Mod kertas: lebih terang & jelas">✨</button>
+    </div>
+    <div class="row"><button class="deploy" id="btnDeploy">🚀 DEPLOY KE SKRIN</button></div>
+  </div>
+
+  <div id="fLive" hidden>
+    <div class="row">
+      <button id="btnPtr">🔴 Penunjuk</button>
+      <button id="btnReset">⤢ Penuh</button>
+      <button id="btnTirai">🙈 Sorok</button>
+    </div>
+    <div class="row">
+      <button class="kecil" id="btnKosong" title="Kosongkan skrin depan">🗑️</button>
+      <button class="baru" id="btnBaru" style="flex:2">📸 GAMBAR BARU</button>
+    </div>
+  </div>
+</footer>
+
+<input type="file" id="fNative" accept="image/*" capture="environment">
+<input type="file" id="fGaleri" accept="image/*">
+<div id="toast"></div>
+
+<script>
+(() => {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const getar = (ms) => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
+function toast(t, ms = 2600) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), ms); }
+
+const MAX_SISI = 2200, KUALITI = 0.86;
+let kod = (new URLSearchParams(location.search).get('bilik') || '').replace(/\D/g, '').slice(0, 6);
+let mod = '', liveV = 0, bilPaparan = 0, wsOk = false, tirai = false;
+
+// =============================================================
+// PAPARAN MOD
+// =============================================================
+function tukarMod(m) {
+  mod = m;
+  $('pKod').hidden = m !== 'kod';
+  $('pKamera').hidden = $('fKamera').hidden = m !== 'kamera';
+  $('pSemak').hidden = $('fSemak').hidden = m !== 'semak';
+  $('pLive').hidden = $('fLive').hidden = m !== 'live';
+  $('liveTag').hidden = !(liveV && (m === 'live'));
+  $('btnKeLive').hidden = !(liveV && liveImgUrl);
+  if (m === 'kamera') bukaKamera(); else tutupKamera();
+  if (m === 'live') requestAnimationFrame(() => { ukurVw(); lukis(); hantarPandangan(true); });
+}
+function statusUI(tx, cls) { $('statTx').textContent = tx; $('dot').className = 'dot ' + cls; }
+function kemasStatus() {
+  if (!kod) return statusUI('Belum disambung', 'wait');
+  if (!wsOk) return statusUI(`Kod ${kod} · menyambung…`, 'wait');
+  if (!bilPaparan) return statusUI(`Kod ${kod} · skrin depan tiada`, 'bad');
+  statusUI(`Bersambung · Skrin ${kod}`, 'ok');
+}
+
+// =============================================================
+// KAMERA LANGSUNG
+// =============================================================
+let strim = null, torchOn = false, bukaToken = 0;
+async function bukaKamera() {
+  if (strim) return;
+  const tok = ++bukaToken;
+  $('kamGagal').hidden = true;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return kameraGagal('Pelayar ini tidak menyokong kamera dalam halaman.');
+  try {
+    const s = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1440 } } });
+    if (tok !== bukaToken || mod !== 'kamera') { s.getTracks().forEach((t) => t.stop()); return; }
+    strim = s; const v = $('vid'); v.srcObject = s; await v.play().catch(() => {});
+    const tr = s.getVideoTracks()[0], cap = tr.getCapabilities ? tr.getCapabilities() : {};
+    $('btnTorch').hidden = !cap.torch;
+    try { if (cap.focusMode && cap.focusMode.includes('continuous')) await tr.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }); } catch (e) {}
+    if (torchOn && cap.torch) tr.applyConstraints({ advanced: [{ torch: true }] }).catch(() => {});
+  } catch (e) {
+    kameraGagal(e && e.name === 'NotAllowedError' ? 'Akses kamera ditolak. Benarkan kamera dalam tetapan pelayar, atau guna butang 📷 di bawah.' : 'Guna butang 📷 di bawah untuk ambil gambar dengan aplikasi kamera telefon.');
+  }
+}
+function kameraGagal(tx) { $('kamGagal').hidden = false; $('kamGagalTx').textContent = tx; $('btnSnap').disabled = true; }
+function tutupKamera() { bukaToken++; if (strim) { strim.getTracks().forEach((t) => t.stop()); strim = null; } $('vid').srcObject = null; $('btnSnap').disabled = false; }
+$('kamCuba').onclick = () => { $('btnSnap').disabled = false; tutupKamera(); bukaKamera(); };
+$('btnTorch').onclick = async () => {
+  if (!strim) return; torchOn = !torchOn; $('btnTorch').classList.toggle('on', torchOn);
+  try { await strim.getVideoTracks()[0].applyConstraints({ advanced: [{ torch: torchOn }] }); } catch (e) { toast('Lampu suluh tidak disokong'); }
+};
+
+// =============================================================
+// AMBIL & SEMAK GAMBAR
+// =============================================================
+let sumber = null, putar = 0, terang = false, blobSedia = null, semakUrl = null;
+function snap() {
+  const v = $('vid'); if (!strim || !v.videoWidth) return toast('Kamera belum sedia');
+  const c = document.createElement('canvas'); c.width = v.videoWidth; c.height = v.videoHeight;
+  c.getContext('2d').drawImage(v, 0, 0);
+  $('flash').classList.remove('on'); void $('flash').offsetWidth; $('flash').classList.add('on'); getar(40);
+  mulaSemak(c);
+}
+async function dariFail(f) {
+  if (!f) return;
+  try {
+    let src;
+    if (window.createImageBitmap) { try { src = await createImageBitmap(f, { imageOrientation: 'from-image' }); } catch (e) { src = await createImageBitmap(f); } }
+    else { src = new Image(); src.src = URL.createObjectURL(f); await src.decode(); }
+    mulaSemak(src);
+  } catch (e) { toast('Gambar tidak dapat dibaca. Cuba lagi.'); }
+}
+function mulaSemak(src) { sumber = src; putar = 0; tukarMod('semak'); jana(); }
+// Hasilkan JPEG akhir (saiz dihadkan, putaran & mod kertas)
+async function jana() {
+  if (!sumber) return;
+  const sw = sumber.width || sumber.naturalWidth, sh = sumber.height || sumber.naturalHeight;
+  const k = Math.min(1, MAX_SISI / Math.max(sw, sh)), w = Math.round(sw * k), h = Math.round(sh * k);
+  const tegak = putar % 180 !== 0, c = document.createElement('canvas');
+  c.width = tegak ? h : w; c.height = tegak ? w : h;
+  const x = c.getContext('2d');
+  x.imageSmoothingQuality = 'high';
+  if (terang) x.filter = 'contrast(1.28) brightness(1.1) saturate(1.12)';
+  x.translate(c.width / 2, c.height / 2); x.rotate(putar * Math.PI / 180); x.drawImage(sumber, -w / 2, -h / 2, w, h);
+  blobSedia = await new Promise((ok) => c.toBlob(ok, 'image/jpeg', KUALITI));
+  blobSedia.lebar = c.width; blobSedia.tinggi = c.height;
+  if (semakUrl) URL.revokeObjectURL(semakUrl);
+  semakUrl = URL.createObjectURL(blobSedia); $('semakImg').src = semakUrl;
+}
+$('btnSnap').onclick = snap;
+$('btnNative').onclick = () => $('fNative').click();
+$('btnGaleri').onclick = () => $('fGaleri').click();
+$('fNative').onchange = (e) => { dariFail(e.target.files[0]); e.target.value = ''; };
+$('fGaleri').onchange = (e) => { dariFail(e.target.files[0]); e.target.value = ''; };
+$('btnUlang').onclick = () => { sumber = null; tukarMod('kamera'); };
+$('btnPutar').onclick = () => { putar = (putar + 90) % 360; jana(); };
+$('btnTerang').onclick = () => { terang = !terang; $('btnTerang').classList.toggle('on', terang); jana(); toast(terang ? '✨ Mod kertas: ON' : 'Mod kertas: OFF', 1400); };
+$('btnKeLive').onclick = () => tukarMod('live');
+
+// =============================================================
+// DEPLOY (muat naik dengan kemajuan + cuba semula)
+// =============================================================
+let sedangDeploy = false;
+function muatNaik(blob) {
+  return new Promise((ok, no) => {
+    const x = new XMLHttpRequest();
+    x.open('POST', `/api/skrin-jawapan/${kod}/gambar`);
+    x.setRequestHeader('Content-Type', 'image/jpeg');
+    x.setRequestHeader('X-Lebar', blob.lebar); x.setRequestHeader('X-Tinggi', blob.tinggi);
+    x.timeout = 45000;
+    x.upload.onprogress = (e) => { if (e.lengthComputable) $('progBar').style.width = (e.loaded / e.total * 100) + '%'; };
+    x.onload = () => { let r = {}; try { r = JSON.parse(x.responseText); } catch (e) {} if (x.status === 200 && r.ok) ok(r); else no(Object.assign(new Error(r.mesej || 'Ralat ' + x.status), { status: x.status })); };
+    x.onerror = () => no(new Error('Rangkaian terputus')); x.ontimeout = () => no(new Error('Masa tamat'));
+    x.send(blob);
+  });
+}
+$('btnDeploy').onclick = async () => {
+  if (sedangDeploy || !blobSedia) return;
+  if (!bilPaparan && wsOk) toast('⚠️ Skrin depan belum dibuka — gambar akan dihantar bila ada.');
+  sedangDeploy = true; $('btnDeploy').disabled = true; $('btnDeploy').textContent = '⏳ Menghantar…'; $('prog').hidden = false; $('progBar').style.width = '0';
+  const blob = blobSedia;
+  for (let cubaan = 0; cubaan < 3; cubaan++) {
+    try {
+      const r = await muatNaik(blob);
+      getar([30, 40, 30]);
+      liveV = r.v; pasangLive(blob);
+      toast(r.paparan ? '✅ Dipaparkan di skrin depan!' : '✅ Dihantar. Skrin depan akan papar bila dibuka.');
+      break;
+    } catch (e) {
+      if (e.status === 401) { toast('Sesi tamat. Sila log masuk semula.', 4000); setTimeout(() => location.href = '/login.html?next=' + encodeURIComponent(location.pathname + location.search), 1500); break; }
+      if (e.status === 404 || e.status === 400 || e.status === 413 || cubaan === 2) { toast('❌ ' + e.message, 4000); break; }
+      await new Promise((r) => setTimeout(r, 800 * (cubaan + 1)));
+    }
+  }
+  sedangDeploy = false; $('btnDeploy').disabled = false; $('btnDeploy').textContent = '🚀 DEPLOY KE SKRIN'; $('prog').hidden = true;
+};
+
+// =============================================================
+// LIVE: ZOOM / GERAK / PENUNJUK  ->  selaras ke skrin depan
+// =============================================================
+const vw = $('vw'), li = $('liveImg');
+let liveImgUrl = null, iw = 1, ih = 1, VW = 1, VH = 1, z = 1, ox = 0, oy = 0, ptrOn = false, ptrPos = null;
+function pasangLive(blob) {
+  if (liveImgUrl) URL.revokeObjectURL(liveImgUrl);
+  liveImgUrl = URL.createObjectURL(blob); li.src = liveImgUrl;
+  iw = blob.lebar; ih = blob.tinggi; li.style.width = iw + 'px'; li.style.height = ih + 'px';
+  z = 1; ptrPos = null; tukarMod('live'); setBantuan();
+}
+function ukurVw() { const r = vw.getBoundingClientRect(); VW = r.width || 1; VH = r.height || 1; }
+const asas = () => Math.min(VW / iw, VH / ih);
+function hadkan() {
+  z = clamp(z, 1, 8);
+  const S = asas() * z, dw = iw * S, dh = ih * S;
+  ox = dw <= VW ? (VW - dw) / 2 : clamp(ox, VW - dw, 0);
+  oy = dh <= VH ? (VH - dh) / 2 : clamp(oy, VH - dh, 0);
+}
+function lukis() {
+  hadkan();
+  const S = asas() * z;
+  li.style.transform = `translate(${ox}px, ${oy}px) scale(${S})`;
+  $('zoomTag').textContent = z.toFixed(1) + '×';
+  const p = $('ptr');
+  if (ptrOn && ptrPos) { p.style.display = 'block'; p.style.left = (ox + ptrPos.x * iw * S) + 'px'; p.style.top = (oy + ptrPos.y * ih * S) + 'px'; } else p.style.display = 'none';
+  kotor = true;
+}
+function zoomDi(px, py, zBaru) { const S0 = asas() * z; const ix = (px - ox) / S0, iy = (py - oy) / S0; z = clamp(zBaru, 1, 8); const S1 = asas() * z; ox = px - ix * S1; oy = py - iy * S1; lukis(); }
+const keImej = (px, py) => { const S = asas() * z; return { x: clamp((px - ox) / (iw * S), 0, 1), y: clamp((py - oy) / (ih * S), 0, 1) }; };
+
+// Hantar kawasan yang kelihatan (0..1) - maksimum ~25 kali sesaat
+let kotor = false, akhirHantar = 0;
+function hantarPandangan(paksa) {
+  if (!liveV || !ws || ws.readyState !== 1) return;
+  const S = asas() * z;
+  const x0 = clamp(-ox / (iw * S), 0, 1), y0 = clamp(-oy / (ih * S), 0, 1);
+  const x1 = clamp((VW - ox) / (iw * S), 0, 1), y1 = clamp((VH - oy) / (ih * S), 0, 1);
+  const r4 = (n) => Math.round(n * 10000) / 10000;
+  ws.send(JSON.stringify({ jenis: 'pandangan', v: liveV, x0: r4(x0), y0: r4(y0), x1: r4(x1), y1: r4(y1), p: ptrOn && ptrPos ? { x: r4(ptrPos.x), y: r4(ptrPos.y) } : null }));
+  kotor = false; akhirHantar = performance.now();
+}
+(function gelung(t) { if (kotor && mod === 'live' && t - akhirHantar > 40) hantarPandangan(); requestAnimationFrame(gelung); })(0);
+
+// Gerak isyarat sentuh: cubit (2 jari), seret (1 jari), ketik 2x
+const jari = new Map(); let mulaCubit = null, akhirKetik = { t: 0, x: 0, y: 0 }, gerakJauh = false;
+const pos = (e) => { const r = vw.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+vw.addEventListener('pointerdown', (e) => {
+  vw.setPointerCapture(e.pointerId); const p = pos(e); jari.set(e.pointerId, p); gerakJauh = false;
+  if (jari.size === 2) { const [a, b] = [...jari.values()]; mulaCubit = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, z, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2, ox, oy }; }
+  else if (jari.size === 1 && ptrOn) { ptrPos = keImej(p.x, p.y); lukis(); }
+  setBantuan(true);
+});
+vw.addEventListener('pointermove', (e) => {
+  if (!jari.has(e.pointerId)) return;
+  const lama = jari.get(e.pointerId), p = pos(e); jari.set(e.pointerId, p);
+  if (Math.hypot(p.x - lama.x, p.y - lama.y) > 2) gerakJauh = true;
+  if (jari.size >= 2 && mulaCubit) {
+    const [a, b] = [...jari.values()], d = Math.hypot(a.x - b.x, a.y - b.y) || 1, mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    const S0 = asas() * mulaCubit.z, ix = (mulaCubit.mx - mulaCubit.ox) / S0, iy = (mulaCubit.my - mulaCubit.oy) / S0;
+    z = clamp(mulaCubit.z * d / mulaCubit.d, 1, 8); const S1 = asas() * z; ox = mx - ix * S1; oy = my - iy * S1; lukis();
+  } else if (jari.size === 1) {
+    if (ptrOn) { ptrPos = keImej(p.x, p.y); lukis(); }
+    else { ox += p.x - lama.x; oy += p.y - lama.y; lukis(); }
+  }
+});
+function angkat(e) {
+  if (!jari.has(e.pointerId)) return;
+  const p = jari.get(e.pointerId); jari.delete(e.pointerId);
+  if (jari.size < 2) mulaCubit = null;
+  if (jari.size === 0 && !gerakJauh && !ptrOn) {
+    const t = performance.now();
+    if (t - akhirKetik.t < 320 && Math.hypot(p.x - akhirKetik.x, p.y - akhirKetik.y) < 30) { zoomDi(p.x, p.y, z > 1.3 ? 1 : 2.5); akhirKetik.t = 0; getar(15); }
+    else akhirKetik = { t, x: p.x, y: p.y };
+  }
+}
+vw.addEventListener('pointerup', angkat); vw.addEventListener('pointercancel', angkat);
+vw.addEventListener('wheel', (e) => { e.preventDefault(); const p = pos(e); zoomDi(p.x, p.y, z * Math.exp(-e.deltaY / 400)); }, { passive: false });
+addEventListener('resize', () => { if (mod === 'live') { const S0 = asas() * z, c = keImej(VW / 2, VH / 2); ukurVw(); const S = asas() * z; ox = VW / 2 - c.x * iw * S; oy = VH / 2 - c.y * ih * S; lukis(); } });
+let bantuanT = null;
+function setBantuan(sorok) { const b = $('bantuan'); b.style.opacity = sorok ? 0 : 1; clearTimeout(bantuanT); if (!sorok) bantuanT = setTimeout(() => b.style.opacity = 0, 5000); }
+
+$('btnReset').onclick = () => { z = 1; lukis(); getar(15); };
+$('btnPtr').onclick = () => { ptrOn = !ptrOn; $('btnPtr').classList.toggle('on', ptrOn); if (!ptrOn) ptrPos = null; else toast('🔴 Sentuh & seret untuk tunjuk jawapan · 2 jari untuk zoom', 3000); lukis(); };
+$('btnTirai').onclick = () => { if (ws && ws.readyState === 1) ws.send(JSON.stringify({ jenis: 'tirai', on: !tirai })); };
+function setTirai(on) { tirai = !!on; $('btnTirai').classList.toggle('on', tirai); $('btnTirai').textContent = tirai ? '👁️ Tunjuk' : '🙈 Sorok'; }
+$('btnKosong').onclick = () => { if (!confirm('Kosongkan skrin depan? Gambar ini akan dipadam.')) return; if (ws && ws.readyState === 1) ws.send('{"jenis":"kosong"}'); };
+$('btnBaru').onclick = () => tukarMod('kamera');
+
+// =============================================================
+// WEBSOCKET (sambung semula automatik)
+// =============================================================
+let ws = null, tunda = 800, pingT = null;
+function sambung() {
+  if (!kod) return;
+  try { ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/skrin-jawapan?bilik=${kod}&peranan=telefon`); } catch (e) { return ulang(); }
+  ws.onopen = () => { wsOk = true; tunda = 800; kemasStatus(); clearInterval(pingT); pingT = setInterval(() => { try { ws.send('{"jenis":"ping"}'); } catch (e) {} }, 20000); };
+  ws.onmessage = (ev) => {
+    let d; try { d = JSON.parse(ev.data); } catch (e) { return; }
+    if (d.jenis === 'keadaan') {
+      bilPaparan = d.paparan || 0; setTirai(d.tirai); kemasStatus();
+      if (!d.gambar && liveV) { liveV = 0; if (mod === 'live') { toast('🗑️ Skrin depan dikosongkan'); tukarMod('kamera'); } }
+      else if (d.gambar && liveV && d.gambar.v !== liveV) gantiOlehLain();
+      else if (d.gambar && liveV && mod === 'live') hantarPandangan(true);
+    } else if (d.jenis === 'bilangan') { bilPaparan = d.paparan || 0; kemasStatus(); }
+    else if (d.jenis === 'gambar') { if (liveV && d.v !== liveV && !sedangDeploy) gantiOlehLain(); }
+    else if (d.jenis === 'tirai') setTirai(d.on);
+  };
+  ws.onclose = (ev) => {
+    wsOk = false; clearInterval(pingT); kemasStatus();
+    if (ev.code === 4003) { statusUI('Sesi tamat — log masuk semula', 'bad'); setTimeout(() => location.href = '/login.html?next=' + encodeURIComponent(location.pathname + location.search), 1200); return; }
+    if (ev.code === 4004) { bilPaparan = 0; statusUI(`Skrin ${kod} tiada — buka Skrin Jawapan di PC`, 'bad'); tunda = 3000; }
+    if (ev.code === 4000) { kod = ''; tukarMod('kod'); kemasStatus(); return toast('Kod bilik tidak sah'); }
+    ulang();
+  };
+  ws.onerror = () => {};
+}
+function ulang() { setTimeout(sambung, tunda); tunda = Math.min(tunda * 1.6, 6000); }
+function gantiOlehLain() { liveV = 0; if (mod === 'live') { toast('Gambar di skrin telah diganti oleh telefon lain'); tukarMod('kamera'); } }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { jagaSkrin(); if (!ws || ws.readyState > 1) { tunda = 200; sambung(); } if (mod === 'kamera') bukaKamera(); } else if (mod === 'kamera') tutupKamera(); });
+
+// elak telefon tidur semasa mengajar
+let kunciSkrin = null;
+async function jagaSkrin() { try { if ('wakeLock' in navigator && document.visibilityState === 'visible') kunciSkrin = await navigator.wakeLock.request('screen'); } catch (e) {} }
+
+// =============================================================
+// MULA
+// =============================================================
+$('kodBtn').onclick = () => {
+  const k = $('kodIn').value.replace(/\D/g, '');
+  if (k.length !== 4) return toast('Masukkan 4 digit kod');
+  kod = k; history.replaceState(null, '', '?bilik=' + kod); kemasStatus(); tukarMod('kamera'); sambung();
+};
+$('kodIn').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('kodBtn').click(); });
+jagaSkrin();
+if (kod) { tukarMod('kamera'); sambung(); } else tukarMod('kod');
+kemasStatus();
+window.__tel = { get mod() { return mod; }, get liveV() { return liveV; }, get z() { return z; }, set z(v) { z = v; lukis(); }, mulaSemak, get bilPaparan() { return bilPaparan; } };
+})();
+</script>
+</body>
+</html>

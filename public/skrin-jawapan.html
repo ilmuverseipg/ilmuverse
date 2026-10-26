@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skrin Jawapan — Ilmuverse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@700;800&display=swap">
+<style>
+  :root { --bg: #0d0b1f; --panel: rgba(22, 18, 52, .86); --line: rgba(255,255,255,.14); --acc: #5ff0ff; --acc2: #ffd84d; --ok: #22c55e; --bad: #ff5d6d; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: #fff; font-family: 'Fredoka', system-ui, sans-serif; }
+  body.idle { cursor: none; }
+
+  /* ===== pentas gambar ===== */
+  #stage { position: fixed; inset: 0; overflow: hidden; background: radial-gradient(ellipse at center, #17142e 0%, #07060f 100%); }
+  #stage img { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform, opacity; user-select: none; -webkit-user-drag: none; box-shadow: 0 10px 60px rgba(0,0,0,.6); transition: opacity .45s ease; image-rendering: auto; }
+  #stage img.masuk { opacity: 0; }
+  #ptr { position: fixed; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; pointer-events: none; z-index: 4; display: none;
+    background: radial-gradient(circle, #fff 0 18%, #ff2d55 30%, rgba(255,45,85,.35) 62%, rgba(255,45,85,0) 72%); box-shadow: 0 0 24px 8px rgba(255,45,85,.55); }
+  #ptr::after { content: ''; position: absolute; inset: -14px; border-radius: 50%; border: 3px solid rgba(255,45,85,.7); animation: denyut 1.1s ease-out infinite; }
+  @keyframes denyut { from { transform: scale(.5); opacity: 1; } to { transform: scale(1.4); opacity: 0; } }
+
+  /* ===== skrin menunggu ===== */
+  #tunggu { position: fixed; inset: 0; z-index: 6; display: flex; align-items: center; justify-content: center; padding: 3vh 4vw; transition: opacity .5s;
+    background: radial-gradient(circle at 15% 20%, rgba(123,92,255,.35), transparent 45%), radial-gradient(circle at 85% 80%, rgba(95,240,255,.22), transparent 45%), var(--bg); }
+  #tunggu.sorok { opacity: 0; pointer-events: none; }
+  .kad { display: grid; grid-template-columns: 1fr auto; gap: clamp(20px, 4vw, 64px); align-items: center; width: min(1180px, 100%); background: var(--panel); border: 2px solid var(--line); border-radius: 32px; padding: clamp(22px, 4vw, 52px); box-shadow: 0 30px 80px rgba(0,0,0,.5); }
+  .tag { display: inline-block; font-weight: 700; letter-spacing: 3px; font-size: clamp(12px, 1.3vw, 16px); color: var(--acc); background: rgba(95,240,255,.1); border: 1px solid rgba(95,240,255,.35); padding: 6px 14px; border-radius: 999px; }
+  h1 { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(36px, 5.6vw, 76px); line-height: 1; margin: 14px 0 8px; }
+  h1 span { background: linear-gradient(90deg, var(--acc), #b18cff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { color: #c9c2ee; font-size: clamp(15px, 1.7vw, 21px); margin: 0 0 20px; }
+  .langkah { list-style: none; padding: 0; margin: 0 0 22px; display: grid; gap: 10px; }
+  .langkah li { display: flex; gap: 12px; align-items: center; font-size: clamp(15px, 1.6vw, 20px); }
+  .langkah b { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, #7b5cff, #5ff0ff); color: #0d0b1f; font-weight: 700; }
+  .kodlbl { font-size: clamp(13px, 1.3vw, 16px); color: #a59cd6; letter-spacing: 2px; font-weight: 600; }
+  .kod { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(54px, 8vw, 110px); letter-spacing: .18em; line-height: 1; color: var(--acc2); text-shadow: 0 0 30px rgba(255,216,77,.35); }
+  .qrbox { text-align: center; }
+  #qr { background: #fff; padding: 14px; border-radius: 20px; display: inline-block; line-height: 0; }
+  #qr svg { width: clamp(180px, 22vw, 300px); height: auto; }
+  .url { margin-top: 10px; font-size: 13px; color: #a59cd6; word-break: break-all; max-width: 300px; }
+  .status { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: clamp(14px, 1.5vw, 18px); padding: 8px 16px; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid var(--line); }
+  .dot { width: 11px; height: 11px; border-radius: 50%; background: #888; flex: none; }
+  .dot.ok { background: var(--ok); box-shadow: 0 0 10px var(--ok); }
+  .dot.wait { background: var(--acc2); animation: kelip 1s infinite; }
+  .dot.bad { background: var(--bad); }
+  @keyframes kelip { 50% { opacity: .3; } }
+  @media (max-width: 760px) { .kad { grid-template-columns: 1fr; text-align: center; } .langkah li { justify-content: center; } }
+
+  /* ===== tirai (sorok jawapan) ===== */
+  #tirai { position: fixed; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; background: rgba(8, 6, 20, .82); backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px); opacity: 0; pointer-events: none; transition: opacity .35s; }
+  #tirai.on { opacity: 1; }
+  #tirai .ikon { font-size: clamp(60px, 10vw, 130px); }
+  #tirai .tx { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(28px, 4vw, 54px); }
+
+  /* ===== bar atas & kawalan ===== */
+  .hud { position: fixed; z-index: 7; display: flex; gap: 8px; align-items: center; transition: opacity .4s; }
+  .hud.kiri { top: 14px; left: 14px; }
+  .hud.kanan { top: 14px; right: 14px; }
+  body.idle .hud.auto { opacity: 0; pointer-events: none; }
+  .pill { background: rgba(10,8,30,.72); border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; font-weight: 600; font-size: 15px; backdrop-filter: blur(6px); display: inline-flex; align-items: center; gap: 8px; }
+  .btn { font: inherit; font-weight: 600; font-size: 15px; color: #fff; background: rgba(10,8,30,.72); border: 1px solid var(--line); border-radius: 12px; padding: 8px 14px; cursor: pointer; backdrop-filter: blur(6px); text-decoration: none; }
+  .btn:hover { background: rgba(80,60,180,.8); }
+  #toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 30px); z-index: 9; background: rgba(10,8,30,.9); border: 1px solid var(--line); padding: 10px 20px; border-radius: 14px; font-weight: 600; opacity: 0; transition: all .35s; pointer-events: none; }
+  #toast.on { opacity: 1; transform: translate(-50%, 0); }
+  #kilat { position: fixed; inset: 0; z-index: 8; background: #fff; opacity: 0; pointer-events: none; }
+  #kilat.on { animation: kilat .5s ease-out; }
+  @keyframes kilat { from { opacity: .55; } to { opacity: 0; } }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div id="ptr"></div>
+<div id="tirai"><div class="ikon">🙈</div><div class="tx">Jawapan disembunyikan sebentar…</div></div>
+<div id="kilat"></div>
+
+<div id="tunggu">
+  <div class="kad">
+    <div>
+      <span class="tag">ILMUVERSE · SKRIN DEPAN</span>
+      <h1>Skrin <span>Jawapan</span></h1>
+      <p class="sub">Tunjuk jawapan murid terus dari kamera telefon guru ke skrin ini.</p>
+      <ul class="langkah">
+        <li><b>1</b> Imbas kod QR dengan telefon guru</li>
+        <li><b>2</b> Ambil gambar jawapan murid</li>
+        <li><b>3</b> Tekan <strong>&nbsp;DEPLOY&nbsp;</strong> — gambar terus keluar di sini</li>
+        <li><b>4</b> Zoom pada telefon, skrin ini ikut sekali</li>
+      </ul>
+      <div class="kodlbl">KOD BILIK</div>
+      <div class="kod" id="kodBesar">····</div>
+      <div style="margin-top:16px"><span class="status"><span class="dot wait" id="stDot"></span><span id="stTx">Menyambung ke pelayan…</span></span></div>
+    </div>
+    <div class="qrbox"><div id="qr"></div><div class="url" id="url"></div></div>
+  </div>
+</div>
+
+<div class="hud kiri auto" id="hudKiri" hidden>
+  <span class="pill"><span class="dot" id="hDot"></span><span id="hTx">Kod ····</span></span>
+  <span class="pill" id="hVer" hidden></span>
+</div>
+<div class="hud kanan auto">
+  <button class="btn" id="btnQr" title="Tunjuk kod QR">📱 QR</button>
+  <button class="btn" id="btnBaru" title="Jana kod bilik baharu">🔄 Kod Baru</button>
+  <button class="btn" id="btnFs" title="Skrin penuh (F)">⛶</button>
+  <a class="btn" href="/guru.html" title="Kembali">✕</a>
+</div>
+<div id="toast"></div>
+
+<script>
+(() => {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const LS = 'ilmuverseSkrinJawapan.v1';
+const rnd = (n) => Array.from(crypto.getRandomValues(new Uint8Array(n)), (b) => b.toString(16).padStart(2, '0')).join('');
+const kodBaru = () => String(1000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 9000));
+
+let sesi = null;
+try { sesi = JSON.parse(localStorage.getItem(LS) || 'null'); } catch (e) {}
+if (!sesi || !/^\d{4}$/.test(sesi.kod) || !sesi.kunci) sesi = { kod: kodBaru(), kunci: rnd(16) };
+const simpan = () => { try { localStorage.setItem(LS, JSON.stringify(sesi)); } catch (e) {} };
+simpan();
+
+// ---------- paparan kod + QR ----------
+const telUrl = () => `${location.origin}/skrin-jawapan-telefon.html?bilik=${sesi.kod}`;
+function loadScript(src) { return new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
+async function lukisKod() {
+  $('kodBesar').textContent = sesi.kod; $('hTx').textContent = 'Kod ' + sesi.kod; $('url').textContent = telUrl();
+  try {
+    if (!window.qrcode) await loadScript('https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js');
+    const q = window.qrcode(0, 'M'); q.addData(telUrl()); q.make(); $('qr').innerHTML = q.createSvgTag({ cellSize: 6, margin: 1, scalable: true });
+  } catch (e) { $('qr').innerHTML = '<div style="padding:20px;color:#000;font-weight:700;line-height:1.3">Buka pada telefon:<br>' + telUrl().replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</div>'; }
+}
+
+// ---------- status ----------
+let wsOk = false, bilTel = 0;
+function status() {
+  const d = $('stDot'), h = $('hDot');
+  let cls, tx;
+  if (!wsOk) { cls = 'bad'; tx = 'Terputus — menyambung semula…'; }
+  else if (!bilTel) { cls = 'wait'; tx = 'Menunggu telefon guru…'; }
+  else { cls = 'ok'; tx = bilTel > 1 ? `${bilTel} telefon bersambung` : 'Telefon guru bersambung'; }
+  d.className = 'dot ' + cls; h.className = 'dot ' + cls; $('stTx').textContent = tx;
+}
+function toast(t, ms = 2500) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), ms); }
+
+// ---------- gambar & pandangan ----------
+const stage = $('stage');
+let img = null, iw = 0, ih = 0, verNow = 0, verLoading = 0;
+let rect = { x0: 0, y0: 0, x1: 1, y1: 1 }, cur = { ...rect }, ptr = null, ptrCur = null, lastView = 0, tertangguh = null;
+
+async function muatGambar(v, cubaan = 0) {
+  if (v <= verNow || v < verLoading) return;
+  verLoading = v;
+  try {
+    const r = await fetch(`/api/skrin-jawapan/${sesi.kod}/gambar?kunci=${sesi.kunci}&v=${v}`, { cache: 'no-store' });
+    if (r.status === 204) return;
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const vSebenar = parseInt(r.headers.get('X-Versi'), 10) || v;
+    const url = URL.createObjectURL(await r.blob());
+    const el = new Image(); el.src = url; el.draggable = false; el.alt = 'Jawapan murid';
+    await el.decode();
+    if (vSebenar < verNow) { URL.revokeObjectURL(url); return; }
+    pasangGambar(el, vSebenar);
+  } catch (e) {
+    if (cubaan < 4) setTimeout(() => muatGambar(v, cubaan + 1), 600 * (cubaan + 1));
+    else toast('Gagal memuat gambar. Cuba DEPLOY semula.');
+  } finally { if (verLoading === v) verLoading = 0; }
+}
+function pasangGambar(el, v) {
+  const lama = img; verNow = v; img = el; iw = el.naturalWidth; ih = el.naturalHeight;
+  rect = { x0: 0, y0: 0, x1: 1, y1: 1 }; ptr = null;
+  // pandangan yang tiba sebelum gambar siap dimuat (cth. selepas skrin di-refresh)
+  if (tertangguh && tertangguh.v === v) { rect = { x0: tertangguh.x0, y0: tertangguh.y0, x1: tertangguh.x1, y1: tertangguh.y1 }; ptr = tertangguh.p || null; }
+  tertangguh = null; cur = { ...rect };
+  el.className = 'masuk'; el.style.width = iw + 'px'; el.style.height = ih + 'px';
+  stage.appendChild(el); susun(true);
+  requestAnimationFrame(() => el.classList.remove('masuk'));
+  if (lama) { lama.style.opacity = '0'; setTimeout(() => { URL.revokeObjectURL(lama.src); lama.remove(); }, 500); }
+  $('kilat').classList.remove('on'); void $('kilat').offsetWidth; $('kilat').classList.add('on');
+  $('tunggu').classList.add('sorok'); $('hudKiri').hidden = false;
+  $('hVer').hidden = false; $('hVer').textContent = '📸 Gambar #' + v;
+}
+function kosongkan() {
+  if (img) { const lama = img; lama.style.opacity = '0'; setTimeout(() => { URL.revokeObjectURL(lama.src); lama.remove(); }, 500); }
+  img = null; verNow = 0; ptr = null; $('ptr').style.display = 'none';
+  $('tunggu').classList.remove('sorok'); $('hudKiri').hidden = true;
+}
+function susun(segera) {
+  if (!img) return;
+  const k = segera ? 1 : 0.3;
+  for (const key of ['x0', 'y0', 'x1', 'y1']) cur[key] += (rect[key] - cur[key]) * k;
+  const W = innerWidth, H = innerHeight, full = (rect.x1 - rect.x0) > .985 && (rect.y1 - rect.y0) > .985;
+  const pad = full ? Math.min(W, H) * .03 : 0;
+  const rw = (cur.x1 - cur.x0) * iw, rh = (cur.y1 - cur.y0) * ih;
+  const s = Math.min((W - pad * 2) / rw, (H - pad * 2) / rh);
+  const cx = (cur.x0 + cur.x1) / 2 * iw, cy = (cur.y0 + cur.y1) / 2 * ih;
+  let tx = W / 2 - cx * s, ty = H / 2 - cy * s;
+  // Isi skrin dengan gambar (jangan tunjuk ruang kosong di luar gambar bila di-zoom)
+  const dw = iw * s, dh = ih * s;
+  tx = dw <= W ? (W - dw) / 2 : Math.max(W - dw, Math.min(0, tx));
+  ty = dh <= H ? (H - dh) / 2 : Math.max(H - dh, Math.min(0, ty));
+  img.style.transform = `translate(${tx}px, ${ty}px) scale(${s})`;
+  const p = $('ptr');
+  if (ptr) {
+    if (!ptrCur) ptrCur = { ...ptr };
+    ptrCur.x += (ptr.x - ptrCur.x) * .45; ptrCur.y += (ptr.y - ptrCur.y) * .45;
+    p.style.display = 'block'; p.style.left = (tx + ptrCur.x * iw * s) + 'px'; p.style.top = (ty + ptrCur.y * ih * s) + 'px';
+  } else { p.style.display = 'none'; ptrCur = null; }
+}
+(function loop() { susun(false); requestAnimationFrame(loop); })();
+addEventListener('resize', () => susun(true));
+
+// ---------- WebSocket (sambung semula automatik) ----------
+let ws = null, tunda = 800, pingT = null;
+function sambung() {
+  try { ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/skrin-jawapan?bilik=${sesi.kod}&peranan=paparan&kunci=${sesi.kunci}`); }
+  catch (e) { return ulang(); }
+  ws.onopen = () => { wsOk = true; tunda = 800; status(); clearInterval(pingT); pingT = setInterval(() => { try { ws.send('{"jenis":"ping"}'); } catch (e) {} }, 20000); };
+  ws.onmessage = (ev) => {
+    let d; try { d = JSON.parse(ev.data); } catch (e) { return; }
+    if (d.jenis === 'keadaan') {
+      bilTel = d.telefon || 0; status();
+      if (d.gambar) { muatGambar(d.gambar.v); if (d.pandangan && d.pandangan.v === d.gambar.v) terimaPandangan(d.pandangan); }
+      else if (img) kosongkan();
+      setTirai(!!d.tirai);
+    } else if (d.jenis === 'bilangan') { const naik = (d.telefon || 0) > bilTel; bilTel = d.telefon || 0; status(); if (naik) toast('📱 Telefon guru bersambung'); }
+    else if (d.jenis === 'gambar') muatGambar(d.v);
+    else if (d.jenis === 'pandangan') terimaPandangan(d);
+    else if (d.jenis === 'tirai') setTirai(d.on);
+  };
+  ws.onclose = (ev) => {
+    wsOk = false; status(); clearInterval(pingT);
+    if (ev.code === 4001) { sesi = { kod: kodBaru(), kunci: rnd(16) }; simpan(); lukisKod(); tunda = 200; }
+    ulang();
+  };
+  ws.onerror = () => {};
+}
+function ulang() { setTimeout(sambung, tunda); tunda = Math.min(tunda * 1.7, 8000); }
+function terimaPandangan(d) {
+  if (d.v && d.v !== verNow) { if (d.v > verNow) tertangguh = d; return; }
+  rect = { x0: d.x0, y0: d.y0, x1: d.x1, y1: d.y1 }; ptr = d.p || null; lastView = Date.now();
+}
+function setTirai(on) { $('tirai').classList.toggle('on', !!on); }
+
+// ---------- kawalan ----------
+function fs() { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen().catch(() => {}); }
+$('btnFs').onclick = fs;
+$('btnQr').onclick = () => $('tunggu').classList.toggle('sorok', img ? !$('tunggu').classList.contains('sorok') : false);
+$('btnBaru').onclick = () => {
+  if (!confirm('Jana kod bilik baharu? Telefon perlu imbas QR semula.')) return;
+  sesi = { kod: kodBaru(), kunci: rnd(16) }; simpan(); kosongkan(); lukisKod();
+  try { ws.onclose = null; ws.close(); } catch (e) {} wsOk = false; status(); tunda = 300; sambung();
+};
+addEventListener('keydown', (e) => { if (e.key === 'f' || e.key === 'F') fs(); if (e.key === 'q' || e.key === 'Q') $('btnQr').click(); });
+// sorok kursor & butang bila tiada pergerakan tetikus
+let idleT = null;
+const bangun = () => { document.body.classList.remove('idle'); clearTimeout(idleT); idleT = setTimeout(() => { if (img) document.body.classList.add('idle'); }, 3500); };
+addEventListener('mousemove', bangun); bangun();
+// elak skrin tidur
+let kunciSkrin = null;
+async function jagaSkrin() { try { if ('wakeLock' in navigator && document.visibilityState === 'visible') kunciSkrin = await navigator.wakeLock.request('screen'); } catch (e) {} }
+document.addEventListener('visibilitychange', jagaSkrin); jagaSkrin();
+
+lukisKod(); status(); sambung();
+window.__skrin = { get ver() { return verNow; }, get rect() { return rect; }, get kod() { return sesi.kod; }, get bilTel() { return bilTel; } };
+})();
+</script>
+</body>
+</html>
