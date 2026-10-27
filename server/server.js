@@ -23,6 +23,8 @@ const kuizEsp32Router = require('../routes/kuizEsp32');
 const kaunterRelay = require('../routes/kaunterRelay');
 // [SKRIN JAWAPAN] Telefon guru ambil gambar -> papar & zoom di skrin depan
 const skrinJawapan = require('../routes/skrinJawapan');
+// [KAPSUL KATA MAJMUK - MOD 08] Semakan jawapan kumpulan (telefon -> TV)
+const kapsulKM = require('../routes/kapsulKataMajmuk');
 
 const app = express();
 const server = http.createServer(app);
@@ -49,6 +51,9 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use('/api/game-lessons', gameLessonsRouter);
 app.use('/api/kuiz-esp32', kuizEsp32Router);
 skrinJawapan.pasang(app);
+kapsulKM.pasang(app);
+// [STORAN] Peratus penggunaan MongoDB & RAM Render (bar atas guru.html)
+require('../routes/storan')(app);
 
 // Root ('/') redirect ke guru.html supaya tak "Cannot GET /"
 app.get('/', (req, res) => res.redirect('/guru.html'));
@@ -284,6 +289,8 @@ wss.on('connection', (ws, req) => {
     kaunterRelay.sambung(ws, url);
   } else if (url.startsWith('/skrin-jawapan')) {
     skrinJawapan.sambung(ws, req);
+  } else if (url.startsWith('/kapsul-km')) {
+    kapsulKM.sambung(ws, req);
   } else if (url === '/murid') {
     clients.murid.push(ws);
     console.log('[WS] Aplikasi Murid disambung');
@@ -297,6 +304,7 @@ wss.on('connection', (ws, req) => {
 
     if (url.startsWith('/kaunter')) { kaunterRelay.mesej(ws, data); return; }
     if (url.startsWith('/skrin-jawapan')) { skrinJawapan.mesej(ws, data); return; }
+    if (url.startsWith('/kapsul-km')) { kapsulKM.mesej(ws, data); return; }
 
     if (url === '/esp32') {
       if (data.jenis === 'nfc_scan') await prosesNFC(data.uid);
@@ -336,6 +344,7 @@ wss.on('connection', (ws, req) => {
     else if (url === '/murid') clients.murid = clients.murid.filter(c => c !== ws);
     else if (url.startsWith('/kaunter')) kaunterRelay.putus(ws);
     else if (url.startsWith('/skrin-jawapan')) skrinJawapan.putus(ws);
+    else if (url.startsWith('/kapsul-km')) kapsulKM.putus(ws);
     console.log(`[WS] Putus: ${url}`);
   });
 });

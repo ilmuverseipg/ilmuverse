@@ -56,15 +56,25 @@ html,body{height:100%;color:var(--text);font-family:'Exo 2',sans-serif;overflow-
 .topbar{height:64px;background:rgba(255,255,255,.92);border-bottom:2px solid rgba(79,142,247,0.18);display:flex;align-items:center;padding:0 20px;gap:16px;position:sticky;top:0;z-index:100;backdrop-filter:blur(18px);box-shadow:0 2px 20px rgba(79,142,247,0.1)}
 .logo-wrap{display:flex;flex-direction:column;line-height:1.15}
 .logo-kecil{font-family:'Orbitron',monospace;font-size:1.15rem;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.topbar-nav{display:flex;gap:4px;margin-left:auto}
+.topbar-nav{display:flex;gap:4px;margin-left:auto;min-width:0;overflow-x:auto;scrollbar-width:none}
+.topbar-nav::-webkit-scrollbar{display:none}
+.topbar-nav.ada-lagi{-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}
+.topbar-nav .nav-btn{flex:none}
 .nav-btn{padding:8px 16px;background:transparent;border:1px solid transparent;border-radius:8px;color:var(--text2);font-family:'Exo 2',sans-serif;font-size:.83rem;cursor:pointer;transition:.2s;letter-spacing:.5px;font-weight:600}
 .nav-btn.aktif{background:linear-gradient(135deg,rgba(79,142,247,.12),rgba(168,85,247,.08));border-color:rgba(79,142,247,.3);color:var(--accent)}
 .nav-btn:hover:not(.aktif){background:rgba(79,142,247,.06);color:var(--text)}
-.status-bar{display:flex;gap:8px;margin-left:8px}
+.status-bar{display:flex;gap:8px;margin-left:8px;flex-shrink:0;align-items:center}
 .status-chip{display:flex;align-items:center;gap:6px;padding:5px 12px;background:var(--panel2);border-radius:20px;font-size:.72rem;border:var(--card-border);box-shadow:var(--shadow)}
 .s-dot{width:8px;height:8px;border-radius:50%;background:#d1d5db;transition:.3s}
 .s-dot.on{background:var(--green);box-shadow:0 0 8px var(--green)}
 .s-dot.off{background:var(--red);box-shadow:0 0 6px var(--red)}
+/* [STORAN] cip kecil peratus storan MongoDB & RAM Render */
+.storan-wrap{display:flex;flex-direction:column;gap:3px}
+.storan-chip{display:flex;align-items:center;gap:5px;padding:1px 8px;background:var(--panel2);border-radius:20px;font-size:.66rem;font-weight:700;border:var(--card-border);box-shadow:var(--shadow);color:var(--text2);white-space:nowrap;cursor:default}
+.storan-chip .sb{width:26px;height:5px;border-radius:3px;background:rgba(0,0,0,.08);overflow:hidden}
+.storan-chip .sb i{display:block;height:100%;width:0;border-radius:3px;background:#10b981;transition:width .6s ease}
+.storan-chip[hidden]{display:none}
+.storan-chip.amaran .sb i{background:#f59e0b}.storan-chip.bahaya .sb i{background:#ef4444}
 
 /* ── HALAMAN ── */
 .halaman{display:none;padding:24px;animation:fadeIn .3s ease;max-width:1200px;margin:0 auto;width:100%}
@@ -83,6 +93,7 @@ html,body{height:100%;color:var(--text);font-family:'Exo 2',sans-serif;overflow-
 .mod-kad.m5{background:linear-gradient(135deg,rgba(255,255,255,.92) 60%,rgba(236,72,153,.1))}
 .mod-kad.m6{background:linear-gradient(135deg,rgba(255,255,255,.92) 60%,rgba(6,182,212,.1))}
 .mod-kad.m7{background:linear-gradient(135deg,rgba(255,255,255,.92) 60%,rgba(234,88,12,.1))}
+.mod-kad.m8{background:linear-gradient(135deg,rgba(255,255,255,.92) 60%,rgba(13,148,136,.13))}
 .mod-kad:hover{transform:translateY(-5px);box-shadow:var(--shadow2)}
 .mod-kad:hover::before{opacity:1}
 .mod-num{font-family:'Orbitron',monospace;font-size:2.4rem;font-weight:900;line-height:1;position:relative;z-index:1}
@@ -93,6 +104,7 @@ html,body{height:100%;color:var(--text);font-family:'Exo 2',sans-serif;overflow-
 .mod-kad.m5 .mod-num{color:var(--pink)}
 .mod-kad.m6 .mod-num{color:var(--teal)}
 .mod-kad.m7 .mod-num{color:#ea580c}
+.mod-kad.m8 .mod-num{color:#0d9488}
 .mod-tajuk{font-size:1.05rem;font-weight:700;margin:8px 0 4px;color:var(--text);position:relative;z-index:1}
 .mod-desc{font-size:.78rem;color:var(--text2);line-height:1.55;position:relative;z-index:1}
 .mod-ikon{position:absolute;right:20px;top:20px;font-size:3rem;opacity:.12;z-index:0}
@@ -499,6 +511,10 @@ textarea{resize:vertical;min-height:80px}
     <div class="status-bar">
       <div class="status-chip"><div class="s-dot off" id="statusESP"></div><span id="labelESP">NEXUS-UTAMA</span></div>
       <div class="status-chip"><div class="s-dot off" id="statusCAM"></div><span id="labelCAM">NEXUS-CAM</span></div>
+      <div class="storan-wrap">
+        <div class="storan-chip" id="stMongo" title="MongoDB Atlas — storan pangkalan data digunakan" hidden>🍃 Mongo <span class="sb"><i></i></span><span class="sv">–</span></div>
+        <div class="storan-chip" id="stRender" title="Render.com — RAM pelayan digunakan" hidden>☁️ Render <span class="sb"><i></i></span><span class="sv">–</span></div>
+      </div>
     </div>
   </div>
 
@@ -547,6 +563,12 @@ textarea{resize:vertical;min-height:80px}
         <div class="mod-num">07</div>
         <div class="mod-tajuk">Kotak Kuiz Magik</div>
         <div class="mod-desc">Kotak butang A/B dengan LED hijau dan merah. Tetapkan bilangan soalan (maksimum 5) dan jawapan betul di sini, kotak ambil sekali melalui WiFi.</div>
+      </div>
+      <div class="mod-kad m8" onclick="bunyiKlik();window.location.href='/kapsul-kata-majmuk.html'">
+        <div class="mod-ikon">💊</div>
+        <div class="mod-num">08</div>
+        <div class="mod-tajuk">Kapsul Kata Majmuk</div>
+        <div class="mod-desc">Semak jawapan kapsul setiap kumpulan. Telefon guru ambil 4 gambar, skrin TV imbas &amp; dedah BETUL / TIDAK TEPAT berserta gambar kata majmuk. Urus jawapan 6 kumpulan di sini.</div>
       </div>
     </div>
   </div>
@@ -2598,6 +2620,28 @@ window.addEventListener('load', function() {
 </script>
 </body>
 </html>
+</script>
+<script>
+/* [STORAN] Peratus storan MongoDB & RAM Render - kemas kini setiap 2 minit */
+(function(){
+  function fmt(b){return b>=1073741824?(b/1073741824).toFixed(2)+' GB':(b/1048576).toFixed(b<10485760?1:0)+' MB'}
+  function isi(id,d,label){var el=document.getElementById(id);if(!el)return;if(!d){el.hidden=true;return}
+    var p=Math.max(0,Math.min(100,d.peratus||0));el.hidden=false;
+    el.querySelector('.sv').textContent=(p<10?p.toFixed(1):Math.round(p))+'%';
+    el.querySelector('.sb i').style.width=Math.max(3,p)+'%';
+    el.classList.toggle('amaran',p>=70&&p<90);el.classList.toggle('bahaya',p>=90);
+    el.title=label+': '+fmt(d.guna)+' / '+fmt(d.kuota)+' ('+p.toFixed(1)+'%)';}
+  function muat(){fetch('/api/storan',{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(j){if(!j)return;
+    isi('stMongo',j.mongo,'MongoDB Atlas (storan data + indeks)');isi('stRender',j.render,'Render.com (RAM pelayan)');}).catch(function(){})}
+  muat();setInterval(muat,120000);
+  // bar menu atas: boleh skrol dengan roda tetikus bila butang tidak muat
+  var nav=document.querySelector('.topbar-nav');
+  if(nav){
+    var tanda=function(){nav.classList.toggle('ada-lagi',nav.scrollLeft+nav.clientWidth<nav.scrollWidth-4)};
+    nav.addEventListener('wheel',function(e){if(nav.scrollWidth>nav.clientWidth&&Math.abs(e.deltaY)>Math.abs(e.deltaX)){nav.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});
+    nav.addEventListener('scroll',tanda);window.addEventListener('resize',tanda);setTimeout(tanda,300);setInterval(tanda,3000);
+  }
+})();
 </script>
 </body>
 </html>

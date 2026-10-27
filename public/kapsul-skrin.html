@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kapsul Kata Majmuk — Skrin TV</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@600;700;800&display=swap">
+<style>
+  :root {
+    --mint: #dff5ef; --mint2: #c6ece2; --kertas: #ffffff; --teal: #0f766e; --teal2: #14a394;
+    --dakwat: #13334c; --kelabu: #5b7285; --merah: #e8434f; --hijau: #16a34a; --amber: #f6b81a;
+    --k1: #e8434f; --k2: #2f7de1; --k3: #f6b81a; --k4: #16a34a;
+    --bayang: 0 18px 40px rgba(19, 51, 76, .14), 0 3px 8px rgba(19, 51, 76, .08);
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; height: 100%; overflow: hidden; color: var(--dakwat); font-family: 'Fredoka', system-ui, sans-serif; background: var(--mint); }
+  body { background:
+      radial-gradient(circle at 12% 18%, rgba(255,255,255,.75), transparent 38%),
+      radial-gradient(circle at 88% 85%, rgba(20,163,148,.16), transparent 42%),
+      radial-gradient(rgba(15,118,110,.09) 2.2px, transparent 2.6px) 0 0 / 34px 34px,
+      var(--mint); }
+  body.idle { cursor: none; }
+
+  /* ===== garis ECG di latar ===== */
+  #ecg { position: fixed; left: 0; right: 0; bottom: 3vh; height: 12vh; z-index: 0; opacity: .22; pointer-events: none; }
+  #ecg path { fill: none; stroke: var(--teal); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 2400; stroke-dashoffset: 2400; animation: ecg 4.5s linear infinite; }
+  @keyframes ecg { to { stroke-dashoffset: 0; } }
+
+  /* ===== kepala ===== */
+  header { position: fixed; left: 0; right: 0; top: 0; z-index: 5; height: 9vh; min-height: 58px; display: flex; align-items: center; gap: 1.4vw; padding: 0 2.2vw;
+    background: var(--teal); color: #fff; box-shadow: 0 6px 24px rgba(15,118,110,.25); }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .salib { width: 5.2vh; height: 5.2vh; min-width: 34px; min-height: 34px; border-radius: 12px; background: #fff; display: grid; place-items: center; }
+  .salib::before { content: ''; width: 58%; height: 58%; background: var(--merah);
+    clip-path: polygon(35% 0, 65% 0, 65% 35%, 100% 35%, 100% 65%, 65% 65%, 65% 100%, 35% 100%, 35% 65%, 0 65%, 0 35%, 35% 35%); }
+  .logo b { display: block; font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(18px, 2.3vw, 34px); line-height: .95; }
+  .logo small { display: block; font-size: clamp(11px, 1.05vw, 16px); opacity: .85; font-weight: 600; }
+  .kanan { margin-left: auto; display: flex; align-items: center; gap: 1vw; }
+  .chipK { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(16px, 2vw, 30px); background: #fff; color: var(--teal); border-radius: 999px; padding: .2vh 1.4vw; line-height: 1.5; }
+  .titik { display: flex; gap: 6px; }
+  .titik i { width: 2.6vw; max-width: 42px; height: 1.6vh; min-height: 10px; border-radius: 999px; background: rgba(255,255,255,.28); transition: background .4s, transform .4s; }
+  .titik i.siap.b { background: #86efac; } .titik i.siap.s { background: #fda4af; }
+  .titik i.kini { background: #fff; transform: scaleY(1.35); }
+  .sambungan { display: flex; align-items: center; gap: 8px; font-size: clamp(12px, 1.1vw, 16px); font-weight: 600; background: rgba(0,0,0,.14); padding: 6px 12px; border-radius: 999px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #9ca3af; flex: none; }
+  .dot.ok { background: #4ade80; box-shadow: 0 0 10px #4ade80; } .dot.wait { background: var(--amber); animation: kelip 1s infinite; } .dot.bad { background: #fb7185; }
+  @keyframes kelip { 50% { opacity: .3; } }
+
+  /* ===== paparan ===== */
+  .v { position: fixed; left: 0; right: 0; top: 9vh; bottom: 0; z-index: 2; padding: 3vh 3vw; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    opacity: 0; visibility: hidden; transform: translateY(2vh); transition: opacity .5s ease, transform .6s cubic-bezier(.2,.9,.25,1.1), visibility 0s .5s; }
+  .v.on { opacity: 1; visibility: visible; transform: none; transition: opacity .5s ease, transform .6s cubic-bezier(.2,.9,.25,1.1), visibility 0s; }
+
+  /* bentuk kapsul */
+  .kapsul { display: inline-flex; border-radius: 999px; overflow: hidden; box-shadow: inset 0 -4px 0 rgba(0,0,0,.12), 0 6px 14px rgba(19,51,76,.15); }
+  .kapsul span { padding: .15em .9em; font-family: 'Baloo 2'; font-weight: 800; color: #fff; line-height: 1.35; }
+  .kapsul span + span { background: #fff !important; color: var(--dakwat); }
+
+  /* --- sambung (kod + QR) --- */
+  .kadQR { display: grid; grid-template-columns: 1fr auto; gap: 4vw; align-items: center; width: min(1200px, 94vw); background: var(--kertas); border-radius: 36px; padding: clamp(24px, 4vw, 56px); box-shadow: var(--bayang); position: relative; overflow: hidden; }
+  .kadQR::after { content: ''; position: absolute; right: -60px; top: -60px; width: 220px; height: 220px; border-radius: 50%; background: var(--mint); z-index: 0; }
+  .kadQR > * { position: relative; z-index: 1; }
+  .judulBesar { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(40px, 6vw, 92px); line-height: .92; margin: 0 0 14px; color: var(--teal); }
+  .judulBesar em { font-style: normal; color: var(--merah); }
+  .sub { font-size: clamp(16px, 1.7vw, 24px); color: var(--kelabu); margin: 0 0 22px; max-width: 34ch; }
+  .langkah { list-style: none; padding: 0; margin: 0 0 22px; display: grid; gap: 10px; }
+  .langkah li { display: flex; gap: 14px; align-items: center; font-size: clamp(15px, 1.6vw, 22px); font-weight: 600; }
+  .langkah b { flex: none; width: 2.4em; height: 1.35em; border-radius: 999px; display: grid; place-items: center; color: #fff; font-size: .9em; background: linear-gradient(90deg, var(--merah) 50%, var(--teal) 50%); }
+  .kodBaris { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+  .kodlbl { font-size: clamp(14px, 1.3vw, 18px); color: var(--kelabu); font-weight: 600; }
+  .kod { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(54px, 8vw, 120px); letter-spacing: .14em; line-height: 1; color: var(--dakwat); }
+  #qr { background: #fff; padding: 14px; border-radius: 22px; display: inline-block; line-height: 0; border: 4px solid var(--mint2); }
+  #qr svg { width: clamp(190px, 23vw, 320px); height: auto; }
+  .url { margin-top: 10px; font-size: 13px; color: var(--kelabu); word-break: break-all; max-width: 320px; text-align: center; }
+
+  /* --- pilih kumpulan --- */
+  .tajukV { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(34px, 4.6vw, 72px); color: var(--teal); margin: 0 0 1vh; text-align: center; line-height: 1; }
+  .subV { font-size: clamp(16px, 1.8vw, 26px); color: var(--kelabu); margin: 0 0 4vh; text-align: center; }
+  .gridK { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2.4vw; width: min(1300px, 92vw); }
+  .gk { background: var(--kertas); border-radius: 999px; display: flex; align-items: center; gap: 1.4vw; padding: 1.6vh 1.6vw; box-shadow: var(--bayang); border: 4px solid transparent; transition: transform .3s; }
+  .gk .n { width: 8vh; height: 8vh; min-width: 48px; min-height: 48px; border-radius: 50%; display: grid; place-items: center; font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(26px, 3.4vw, 50px); color: #fff; background: var(--teal); flex: none; }
+  .gk .t { font-family: 'Baloo 2'; font-weight: 700; font-size: clamp(18px, 2vw, 32px); line-height: 1.05; }
+  .gk .s { font-size: clamp(13px, 1.25vw, 19px); color: var(--kelabu); font-weight: 600; }
+  .gk.siap { border-color: var(--teal2); }
+  .gk.siap .n { background: var(--hijau); }
+
+  /* --- ambil gambar (kumpulan dipilih) --- */
+  .introK { text-align: center; }
+  .introK .besar { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(70px, 13vw, 210px); line-height: .85; color: var(--teal); }
+  .introK .nama { font-size: clamp(20px, 2.4vw, 36px); font-weight: 600; color: var(--kelabu); margin-top: 1vh; }
+  .v.on .introK .besar { animation: hentak .8s cubic-bezier(.2,1.4,.4,1) both; }
+  @keyframes hentak { from { transform: scale(.4); opacity: 0; } to { transform: none; opacity: 1; } }
+  .slot4 { display: flex; gap: 2.4vw; margin-top: 5vh; }
+  .sl { width: 17vw; height: 7.5vw; border-radius: 999px; display: flex; overflow: hidden; border: 4px dashed rgba(19,51,76,.22); background: rgba(255,255,255,.5); transition: all .5s cubic-bezier(.2,1.3,.4,1); position: relative; }
+  .sl .a, .sl .b { flex: 1; display: grid; place-items: center; font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(16px, 1.9vw, 30px); color: var(--kelabu); }
+  .sl .b { font-size: clamp(13px, 1.3vw, 20px); font-family: 'Fredoka'; font-weight: 600; }
+  .sl.ada { border: 4px solid transparent; box-shadow: var(--bayang); transform: translateY(-6px); }
+  .sl.ada .a { background: var(--kc); color: #fff; }
+  .sl.ada .b { background: #fff; color: var(--hijau); }
+  .petunjuk { margin-top: 4vh; font-size: clamp(16px, 1.8vw, 26px); color: var(--kelabu); font-weight: 600; display: flex; align-items: center; gap: 12px; }
+  .petunjuk .kam { font-size: 1.4em; animation: angguk 1.6s ease-in-out infinite; }
+  @keyframes angguk { 50% { transform: translateY(-6px) rotate(-6deg); } }
+
+  /* --- imbas --- */
+  #vImbas { justify-content: flex-start; }
+  .gridF { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr); gap: 1.8vw; width: 100%; flex: 1; min-height: 0; }
+  .kf { position: relative; background: var(--kertas); border-radius: 28px; padding: 1.2vh 1.2vh 7vh; box-shadow: var(--bayang); display: flex; min-height: 0; overflow: hidden; opacity: 0; transform: translateY(30px) scale(.95); }
+  .v.on .kf { animation: naik .7s cubic-bezier(.2,1.2,.4,1) forwards; }
+  .v.on .kf:nth-child(2) { animation-delay: .12s; } .v.on .kf:nth-child(3) { animation-delay: .24s; } .v.on .kf:nth-child(4) { animation-delay: .36s; }
+  @keyframes naik { to { opacity: 1; transform: none; } }
+  .kf .bingkai { flex: 1; border-radius: 20px; background: #eef6f4; overflow: hidden; position: relative; display: grid; place-items: center; }
+  .kf img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .kf .label { position: absolute; left: 50%; bottom: 1.4vh; transform: translateX(-50%); font-size: clamp(16px, 1.8vw, 28px); white-space: nowrap; }
+  .kf .muat { color: var(--kelabu); font-weight: 600; font-size: clamp(14px, 1.3vw, 19px); }
+  .imbasan { position: absolute; left: 0; right: 0; height: 22%; top: -22%; pointer-events: none;
+    background: linear-gradient(180deg, rgba(20,163,148,0), rgba(20,163,148,.28) 70%, rgba(20,163,148,.9) 98%, rgba(255,255,255,.95)); animation: imbas 2.2s cubic-bezier(.45,0,.55,1) infinite; }
+  .kf:nth-child(2) .imbasan { animation-delay: .35s; } .kf:nth-child(3) .imbasan { animation-delay: .7s; } .kf:nth-child(4) .imbasan { animation-delay: 1.05s; }
+  @keyframes imbas { 0% { top: -22%; } 100% { top: 100%; } }
+  .sudut::before, .sudut::after { content: ''; position: absolute; width: 18%; height: 12%; border: 5px solid var(--teal2); pointer-events: none; }
+  .sudut::before { left: 8px; top: 8px; border-right: 0; border-bottom: 0; border-radius: 14px 0 0 0; }
+  .sudut::after { right: 8px; bottom: 8px; border-left: 0; border-top: 0; border-radius: 0 0 14px 0; }
+  .baruImbas { flex: none; margin-top: 1.6vh; display: flex; align-items: center; gap: 2vw; }
+  .baruImbas .tx { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(30px, 4.2vw, 66px); color: var(--teal); letter-spacing: .04em; }
+  .baruImbas .tx i { font-style: normal; display: inline-block; animation: lompat 1.2s infinite; }
+  .baruImbas .tx i:nth-child(2) { animation-delay: .15s; } .baruImbas .tx i:nth-child(3) { animation-delay: .3s; }
+  @keyframes lompat { 0%, 60%, 100% { transform: none; opacity: 1; } 30% { transform: translateY(-.25em); opacity: .5; } }
+  .nadi { width: 14vw; height: 6vh; }
+  .nadi path { fill: none; stroke: var(--merah); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 420; animation: nadi 1.3s linear infinite; }
+  @keyframes nadi { from { stroke-dashoffset: 840; } to { stroke-dashoffset: 0; } }
+
+  /* --- dedah --- */
+  #vDedah { justify-content: flex-start; gap: 2.4vh; padding-top: 2.6vh; }
+  .atas { flex: 1; min-height: 0; width: 100%; display: grid; grid-template-columns: 1.08fr 1fr; grid-template-rows: minmax(0, 1fr); gap: 2.4vw; }
+  .atas > * { min-height: 0; }
+  .fotoBesar { position: relative; background: var(--kertas); border-radius: 30px; padding: 1.2vh; box-shadow: var(--bayang); min-height: 0; display: flex; }
+  .fotoBesar .bingkai { flex: 1; border-radius: 22px; overflow: hidden; background: #eef6f4; display: grid; place-items: center; }
+  .fotoBesar .bingkai { min-height: 0; }
+  .fotoBesar img { width: 100%; height: 100%; object-fit: contain; display: block; min-height: 0; }
+  .fotoBesar .label { position: absolute; left: 2vh; top: 2vh; font-size: clamp(18px, 2vw, 32px); }
+  .vonis { border-radius: 30px; background: var(--kertas); box-shadow: var(--bayang); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2vh 2vw; position: relative; overflow: hidden; }
+  .cop { font-family: 'Baloo 2'; font-weight: 800; line-height: .9; font-size: clamp(56px, 8.4vw, 140px); display: flex; align-items: center; gap: .18em; }
+  .cop .ik { width: 1em; height: 1em; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: .62em; flex: none; }
+  .vonis.betul { background: linear-gradient(180deg, #ecfdf3, #fff 70%); }
+  .vonis.betul .cop { color: var(--hijau); } .vonis.betul .cop .ik { background: var(--hijau); }
+  .vonis.salah { background: linear-gradient(180deg, #fff1f2, #fff 70%); }
+  .vonis.salah .cop { color: var(--merah); font-size: clamp(40px, 5.2vw, 92px); white-space: nowrap; } .vonis.salah .cop .ik { background: var(--merah); }
+  .vonis .pesan { font-size: clamp(18px, 2vw, 32px); font-weight: 600; color: var(--kelabu); margin-top: 1.6vh; }
+  .vonis .jaw { margin-top: 1.2vh; font-size: clamp(34px, 4.6vw, 76px); }
+  .vonis .jaw span { padding: .05em .6em; }
+  .vonis .cop, .vonis .pesan, .vonis .jaw { opacity: 0; }
+  .vonis.main .cop { animation: cop .7s cubic-bezier(.2,1.6,.4,1) forwards; }
+  .vonis.main .pesan { animation: naik2 .5s .45s ease forwards; }
+  .vonis.main .jaw { animation: naik2 .6s .7s cubic-bezier(.2,1.3,.4,1) forwards; }
+  @keyframes cop { 0% { opacity: 0; transform: scale(2.4) rotate(-8deg); } 60% { opacity: 1; transform: scale(.92) rotate(2deg); } 100% { opacity: 1; transform: none; } }
+  @keyframes naik2 { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+  .fotoBesar.main { animation: masukKiri .6s cubic-bezier(.2,1.1,.3,1) both; }
+  @keyframes masukKiri { from { opacity: 0; transform: translateX(-6vw) rotate(-2deg); } to { opacity: 1; transform: none; } }
+
+  .persamaan { flex: none; display: flex; align-items: flex-end; justify-content: center; gap: 1.6vw; width: 100%; }
+  .tile { display: flex; flex-direction: column; align-items: center; gap: .8vh; opacity: 0; transform: translateY(30px) scale(.7); }
+  .tile .pic { width: 16vh; height: 16vh; border-radius: 26px; background: var(--kertas); box-shadow: var(--bayang); display: grid; place-items: center; overflow: hidden; position: relative; border: 4px solid #fff; }
+  .tile .pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .tile .pic .emo { font-size: 9.5vh; line-height: 1; }
+  .tile .nm { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(20px, 2.2vw, 38px); white-space: nowrap; line-height: 1; background: #fff; border-radius: 999px; padding: .2em .8em; box-shadow: 0 4px 10px rgba(19,51,76,.1); }
+  .tile.km .pic { width: 21vh; height: 21vh; border: 5px solid var(--amber); box-shadow: 0 0 0 8px rgba(246,184,26,.25), var(--bayang); }
+  .tile.km .pic .emo { font-size: 12.5vh; }
+  .tile.km .nm { background: var(--teal); color: #fff; font-size: clamp(24px, 2.8vw, 46px); }
+  .op { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(40px, 5.6vw, 92px); color: var(--teal); align-self: center; margin-bottom: 4vh; opacity: 0; transform: scale(.3); }
+  .persamaan.main .tile, .persamaan.main .op { animation: pop .55s cubic-bezier(.2,1.6,.4,1) forwards; }
+  .persamaan.main > :nth-child(1) { animation-delay: .9s; } .persamaan.main > :nth-child(2) { animation-delay: 1.25s; }
+  .persamaan.main > :nth-child(3) { animation-delay: 1.5s; } .persamaan.main > :nth-child(4) { animation-delay: 1.85s; }
+  .persamaan.main > :nth-child(5) { animation-delay: 2.1s; }
+  @keyframes pop { to { opacity: 1; transform: none; } }
+  .persamaan.main .km .pic::after { content: ''; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.75) 48%, transparent 66%); transform: translateX(-120%); animation: kilau 1.4s 2.6s ease forwards; }
+  @keyframes kilau { to { transform: translateX(120%); } }
+
+  /* --- tamat --- */
+  .tk { text-align: center; }
+  .tk .besar { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(70px, 12vw, 200px); line-height: .9; color: var(--teal); }
+  .v.on .tk .besar { animation: hentak .9s cubic-bezier(.2,1.5,.4,1) both; }
+  .tk .kmp { font-size: clamp(22px, 2.8vw, 44px); font-weight: 600; margin-top: 1.4vh; color: var(--dakwat); }
+  .tk .skor { display: flex; gap: 1.6vw; justify-content: center; margin-top: 4vh; }
+  .tk .skor .kapsul { font-size: clamp(22px, 2.6vw, 40px); opacity: 0; transform: scale(.4); }
+  .v.on .tk .skor .kapsul { animation: pop .5s cubic-bezier(.2,1.6,.4,1) forwards; }
+  .v.on .tk .skor .kapsul:nth-child(2) { animation-delay: .15s; } .v.on .tk .skor .kapsul:nth-child(3) { animation-delay: .3s; } .v.on .tk .skor .kapsul:nth-child(4) { animation-delay: .45s; }
+  .tk .pesanan { margin-top: 4vh; font-size: clamp(18px, 2vw, 30px); color: var(--kelabu); font-weight: 600; }
+  #konfeti { position: fixed; inset: 0; z-index: 6; pointer-events: none; }
+
+  /* ===== kawalan ===== */
+  .hud { position: fixed; right: 14px; bottom: 14px; z-index: 7; display: flex; gap: 8px; transition: opacity .4s; }
+  body.idle .hud { opacity: 0; pointer-events: none; }
+  .btn { font: inherit; font-weight: 600; font-size: 15px; color: var(--dakwat); background: rgba(255,255,255,.92); border: 2px solid var(--mint2); border-radius: 12px; padding: 8px 14px; cursor: pointer; text-decoration: none; }
+  .btn:hover { border-color: var(--teal2); }
+  .btn:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+  .btn.off { opacity: .55; }
+  #bunyiNota { position: fixed; right: 2vw; top: calc(9vh + 12px); z-index: 7; background: var(--dakwat); color: #fff; border: 0; border-radius: 999px; padding: 10px 20px; font: inherit; font-weight: 600; font-size: 15px; cursor: pointer; box-shadow: var(--bayang); }
+  #toast { position: fixed; left: 50%; top: 11vh; transform: translate(-50%, -20px); z-index: 9; background: var(--dakwat); color: #fff; padding: 10px 20px; border-radius: 14px; font-weight: 600; opacity: 0; transition: all .35s; pointer-events: none; }
+  #toast.on { opacity: 1; transform: translate(-50%, 0); }
+  @media (max-width: 800px) { .kadQR { grid-template-columns: 1fr; text-align: center; } .langkah li, .kodBaris { justify-content: center; } .gridK { grid-template-columns: repeat(2, 1fr); } .gridF { grid-template-columns: repeat(2, 1fr); } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+</style>
+</head>
+<body>
+<svg id="ecg" viewBox="0 0 1600 120" preserveAspectRatio="none" aria-hidden="true"><path d="M0 70 H240 l20 -10 l20 10 H360 l14 -60 l18 100 l14 -40 H520 l18 -12 l18 12 H800 l20 -10 l20 10 H920 l14 -60 l18 100 l14 -40 H1080 l18 -12 l18 12 H1360 l20 -10 l20 10 H1600"/></svg>
+
+<header>
+  <div class="logo"><div class="salib"></div><div><b>Kapsul Kata Majmuk</b><small>Klinik Dr. Izuddin</small></div></div>
+  <div class="kanan">
+    <span class="chipK" id="hKump" hidden></span>
+    <span class="titik" id="hTitik" hidden><i></i><i></i><i></i><i></i></span>
+    <span class="sambungan"><span class="dot wait" id="stDot"></span><span id="stTx">Menyambung…</span></span>
+  </div>
+</header>
+
+<!-- 1. Sambung telefon -->
+<section class="v" id="vSambung">
+  <div class="kadQR">
+    <div>
+      <h1 class="judulBesar">Kapsul <em>Kata</em> Majmuk</h1>
+      <p class="sub">Semak jawapan kapsul setiap kumpulan terus dari telefon guru.</p>
+      <ul class="langkah">
+        <li><b>1</b> Imbas kod QR dengan telefon guru</li>
+        <li><b>2</b> Pilih kumpulan, ambil gambar 4 kapsul</li>
+        <li><b>3</b> Tekan DEPLOY, skrin ini imbas jawapan</li>
+      </ul>
+      <div class="kodBaris"><span class="kodlbl">Kod bilik</span><span class="kod" id="kodBesar">····</span></div>
+    </div>
+    <div><div id="qr"></div><div class="url" id="url"></div></div>
+  </div>
+</section>
+
+<!-- 2. Pilih kumpulan -->
+<section class="v" id="vPilih">
+  <h2 class="tajukV">Kumpulan mana seterusnya?</h2>
+  <p class="subV">Guru pilih kumpulan pada telefon.</p>
+  <div class="gridK" id="gridK"></div>
+</section>
+
+<!-- 3. Ambil gambar -->
+<section class="v" id="vAmbil">
+  <div class="introK"><div class="besar" id="aTajuk">Kumpulan 1</div><div class="nama" id="aNama"></div></div>
+  <div class="slot4" id="slot4"></div>
+  <div class="petunjuk"><span class="kam">📸</span><span id="aPetunjuk">Angkat kapsul anda. Guru sedang mengambil gambar…</span></div>
+</section>
+
+<!-- 4. Imbas -->
+<section class="v" id="vImbas">
+  <div class="gridF" id="gridF"></div>
+  <div class="baruImbas">
+    <svg class="nadi" viewBox="0 0 200 60" aria-hidden="true"><path d="M0 32 H60 l10 -8 l10 8 H96 l8 -28 l12 52 l8 -24 H200"/></svg>
+    <div class="tx">MENGIMBAS JAWAPAN<i>.</i><i>.</i><i>.</i></div>
+    <svg class="nadi" viewBox="0 0 200 60" aria-hidden="true"><path d="M0 32 H60 l10 -8 l10 8 H96 l8 -28 l12 52 l8 -24 H200"/></svg>
+  </div>
+</section>
+
+<!-- 5. Dedah -->
+<section class="v" id="vDedah">
+  <div class="atas">
+    <div class="fotoBesar" id="dFoto"><div class="bingkai"><img id="dImg" alt="Gambar kapsul kumpulan"></div><span class="label kapsul" id="dLabel"></span></div>
+    <div class="vonis" id="dVonis">
+      <div class="cop" id="dCop"></div>
+      <div class="pesan" id="dPesan"></div>
+      <div class="jaw kapsul" id="dJaw" hidden></div>
+    </div>
+  </div>
+  <div class="persamaan" id="dPers"></div>
+</section>
+
+<!-- 6. Tamat -->
+<section class="v" id="vTamat">
+  <div class="tk">
+    <div class="besar">TERIMA KASIH!</div>
+    <div class="kmp" id="tKump"></div>
+    <div class="skor" id="tSkor"></div>
+    <div class="pesanan">Jujur itu ubat terbaik. 💊</div>
+  </div>
+</section>
+
+<canvas id="konfeti"></canvas>
+<div class="hud">
+  <button class="btn" id="btnQr" title="Tunjuk kod QR (Q)">📱 QR</button>
+  <button class="btn" id="btnSuara" title="Suara bacaan">🗣️ Suara</button>
+  <button class="btn" id="btnBunyi" title="Bunyi">🔊 Bunyi</button>
+  <button class="btn" id="btnBaru" title="Jana kod bilik baharu">🔄 Kod Baru</button>
+  <button class="btn" id="btnFs" title="Skrin penuh (F)">⛶</button>
+  <a class="btn" href="/kapsul-kata-majmuk.html" title="Kembali">✕</a>
+</div>
+<button id="bunyiNota">🔊 Klik di mana-mana untuk hidupkan bunyi</button>
+<div id="toast"></div>
+
+<script>
+(() => {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const LS = 'ilmuverseKapsulSkrin.v1';
+const WARNA = ['#e8434f', '#2f7de1', '#f6b81a', '#16a34a'];
+const rnd = (n) => Array.from(crypto.getRandomValues(new Uint8Array(n)), (b) => b.toString(16).padStart(2, '0')).join('');
+const kodBaru = () => String(1000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 9000));
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const tunggu = (ms) => new Promise((r) => setTimeout(r, ms));
+
+let sesi = null, pilihan = { bunyi: true, suara: true };
+try { const j = JSON.parse(localStorage.getItem(LS) || 'null'); if (j) { sesi = j.sesi; pilihan = Object.assign(pilihan, j.pilihan || {}); } } catch (e) {}
+if (!sesi || !/^\d{4}$/.test(sesi.kod) || !sesi.kunci) sesi = { kod: kodBaru(), kunci: rnd(16) };
+const simpan = () => { try { localStorage.setItem(LS, JSON.stringify({ sesi, pilihan })); } catch (e) {} };
+simpan();
+
+// =============================================================
+// BUNYI (WebAudio, tiada fail) + SUARA
+// =============================================================
+let ac = null;
+function audio() { if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (ac && ac.state === 'suspended') ac.resume(); return ac; }
+function nada(f, mula, tempoh, jenis = 'sine', vol = .18, f2) {
+  const a = audio(); if (!a || !pilihan.bunyi) return;
+  const t = a.currentTime + mula, o = a.createOscillator(), g = a.createGain();
+  o.type = jenis; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + tempoh);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .015); g.gain.exponentialRampToValueAtTime(0.0001, t + tempoh);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t + tempoh + .05);
+}
+const SFX = {
+  masuk() { nada(300, 0, .35, 'sine', .12, 760); },
+  kumpulan() { [523, 659, 784].forEach((f, i) => nada(f, i * .09, .3, 'triangle', .14)); },
+  terima() { nada(880, 0, .12, 'sine', .12); nada(1320, .08, .16, 'sine', .1); },
+  imbas() { nada(1200, 0, .07, 'square', .035); nada(1500, .12, .07, 'square', .03); },
+  betul() { [523, 659, 784, 1047].forEach((f, i) => nada(f, i * .1, .45, 'triangle', .17)); nada(1568, .45, .5, 'sine', .08); },
+  salah() { nada(392, 0, .3, 'triangle', .16, 330); nada(294, .26, .45, 'triangle', .14, 247); },
+  pop() { nada(660, 0, .12, 'sine', .12, 990); },
+  kilau() { [1319, 1568, 2093].forEach((f, i) => nada(f, i * .07, .35, 'sine', .07)); },
+  tamat() { [523, 659, 784, 659, 784, 1047].forEach((f, i) => nada(f, i * .13, .4, 'triangle', .16)); nada(262, 0, .9, 'sine', .08); },
+};
+let suaraMs = null;
+function pilihSuara() { const v = speechSynthesis.getVoices(); suaraMs = v.find((x) => /ms[-_]MY/i.test(x.lang)) || v.find((x) => /^ms/i.test(x.lang)) || v.find((x) => /^id/i.test(x.lang)) || null; }
+if ('speechSynthesis' in window) { pilihSuara(); speechSynthesis.onvoiceschanged = pilihSuara; }
+function cakap(t) {
+  if (!pilihan.suara || !('speechSynthesis' in window)) return;
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = suaraMs ? suaraMs.lang : 'ms-MY'; if (suaraMs) u.voice = suaraMs; u.rate = .92; u.pitch = 1.05; speechSynthesis.speak(u); } catch (e) {}
+}
+function bukaBunyi() { audio(); $('bunyiNota').hidden = true; removeEventListener('pointerdown', bukaBunyi); removeEventListener('keydown', bukaBunyi); }
+addEventListener('pointerdown', bukaBunyi); addEventListener('keydown', bukaBunyi);
+function kemasButang() { $('btnBunyi').classList.toggle('off', !pilihan.bunyi); $('btnSuara').classList.toggle('off', !pilihan.suara); }
+$('btnBunyi').onclick = () => { pilihan.bunyi = !pilihan.bunyi; simpan(); kemasButang(); toast(pilihan.bunyi ? '🔊 Bunyi hidup' : '🔇 Bunyi senyap'); };
+$('btnSuara').onclick = () => { pilihan.suara = !pilihan.suara; simpan(); kemasButang(); if (!pilihan.suara) try { speechSynthesis.cancel(); } catch (e) {} toast(pilihan.suara ? '🗣️ Suara bacaan hidup' : 'Suara bacaan dimatikan'); };
+kemasButang();
+
+// =============================================================
+// KOD + QR
+// =============================================================
+const telUrl = () => `${location.origin}/kapsul-telefon.html?bilik=${sesi.kod}`;
+function loadScript(src) { return new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
+async function lukisKod() {
+  $('kodBesar').textContent = sesi.kod; $('url').textContent = telUrl();
+  try {
+    if (!window.qrcode) await loadScript('https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js');
+    const q = window.qrcode(0, 'M'); q.addData(telUrl()); q.make(); $('qr').innerHTML = q.createSvgTag({ cellSize: 6, margin: 1, scalable: true });
+  } catch (e) { $('qr').innerHTML = '<div style="padding:20px;font-weight:700;line-height:1.3">Buka pada telefon:<br>' + esc(telUrl()) + '</div>'; }
+}
+function toast(t, ms = 2500) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), ms); }
+
+// =============================================================
+// DATA JAWAPAN (MongoDB) + GAMBAR 800x800
+// =============================================================
+let setSemua = null;
+async function muatSet() {
+  try { const r = await fetch('/api/kapsul/set', { cache: 'no-store' }); if (r.status === 401) { toast('Sila log masuk semula di PC ini', 5000); return; } const j = await r.json(); if (j.ok) setSemua = j.set; } catch (e) {}
+}
+const urlGambar = (n, i, s, v) => `/api/kapsul/gambar/${n}/${i}/${s}?v=${v}`;
+function pramuatGambar(n) {
+  const set = setSemua && setSemua[n - 1]; if (!set) return;
+  set.jawapan.forEach((j, i) => ['1', '2', 'k'].forEach((s) => { const v = j['g' + s]; if (v) { const im = new Image(); im.src = urlGambar(n, i, s, v); } }));
+}
+
+// =============================================================
+// GAMBAR KAMERA (dari memori server, tidak disimpan di sini)
+// =============================================================
+let foto = [null, null, null, null]; // {v, url}
+function buangFoto() { foto.forEach((f) => f && URL.revokeObjectURL(f.url)); foto = [null, null, null, null]; }
+const sedangMuat = {};
+async function muatFoto(i, v, cubaan = 0) {
+  if (!v || (foto[i] && foto[i].v >= v)) return;
+  const k = i + ':' + v; if (sedangMuat[k] && !cubaan) return; sedangMuat[k] = 1;
+  try {
+    const r = await fetch(`/api/kapsul/${sesi.kod}/foto/${i}?kunci=${sesi.kunci}&v=${v}`, { cache: 'no-store' });
+    if (r.status === 204) return;
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const url = URL.createObjectURL(await r.blob());
+    if (S && S.foto[i] !== v) { URL.revokeObjectURL(url); return; }
+    if (foto[i]) URL.revokeObjectURL(foto[i].url);
+    foto[i] = { v, url }; pasangFoto(i);
+  } catch (e) { if (cubaan < 4) setTimeout(() => muatFoto(i, v, cubaan + 1), 700 * (cubaan + 1)); }
+  finally { delete sedangMuat[k]; }
+}
+function pasangFoto(i) {
+  const el = document.querySelector(`#gridF .kf[data-i="${i}"] .bingkai`);
+  if (el && foto[i]) el.innerHTML = `<img src="${foto[i].url}" alt="Kapsul ${i + 1}"><div class="imbasan"></div>`;
+  if (S && S.fasa === 'dedah' && S.idx === i && foto[i]) $('dImg').src = foto[i].url;
+}
+
+// =============================================================
+// PAPARAN
+// =============================================================
+let S = null, wsOk = false, bilTel = 0, paparKini = '', kunciDedah = '', paksaQR = false, kumpulanKini = 0, imbasT = null;
+function tunjuk(id) {
+  if (paparKini === id) return false;
+  document.querySelectorAll('.v').forEach((v) => v.classList.toggle('on', v.id === id));
+  paparKini = id; return true;
+}
+function status() {
+  let c, t;
+  if (!wsOk) { c = 'bad'; t = 'Terputus, menyambung semula…'; }
+  else if (!bilTel) { c = 'wait'; t = 'Kod ' + sesi.kod + ' · menunggu telefon'; }
+  else { c = 'ok'; t = 'Kod ' + sesi.kod + ' · telefon bersambung'; }
+  $('stDot').className = 'dot ' + c; $('stTx').textContent = t;
+}
+const kapsulHtml = (i) => `<span style="background:${WARNA[i]}">${i + 1}</span><span>Kapsul</span>`;
+const namaKump = (n) => (setSemua && setSemua[n - 1] && setSemua[n - 1].nama) || ('Kumpulan ' + n);
+
+function render() {
+  if (!S) return;
+  const d = S;
+  // kepala
+  $('hKump').hidden = !d.kumpulan || d.fasa === 'pilih'; $('hKump').textContent = 'Kumpulan ' + d.kumpulan;
+  $('hTitik').hidden = !(d.fasa === 'dedah' || d.fasa === 'tamat');
+  [...$('hTitik').children].forEach((el, i) => {
+    const dah = d.keputusan && (d.fasa === 'tamat' || i <= d.idx);
+    el.className = (dah ? 'siap ' + (d.keputusan[i] ? 'b' : 's') : '') + (d.fasa === 'dedah' && i === d.idx ? ' kini' : '');
+  });
+  if (d.kumpulan !== kumpulanKini) { kumpulanKini = d.kumpulan; buangFoto(); kunciDedah = ''; if (d.kumpulan) { muatSet().then(() => { pramuatGambar(d.kumpulan); render(); }); } }
+
+  if (paksaQR || (d.fasa === 'pilih' && !bilTel)) { tunjuk('vSambung'); hentiImbas(); return; }
+  if (d.fasa === 'pilih') { hentiImbas(); lukisPilih(); tunjuk('vPilih'); return; }
+  if (d.fasa === 'ambil') { hentiImbas(); lukisAmbil(); if (tunjuk('vAmbil')) { SFX.kumpulan(); cakap(namaKump(d.kumpulan) + '. Sila angkat kapsul anda.'); } return; }
+  if (d.fasa === 'imbas') { lukisImbas(); d.foto.forEach((v, i) => muatFoto(i, v)); if (tunjuk('vImbas')) { SFX.masuk(); mulaImbas(); cakap('Mengimbas jawapan.'); } return; }
+  hentiImbas();
+  if (d.fasa === 'dedah') { d.foto.forEach((v, i) => muatFoto(i, v)); tunjuk('vDedah'); dedah(); return; }
+  if (d.fasa === 'tamat') { if (tunjuk('vTamat')) tamat(); }
+}
+
+function lukisPilih() {
+  const sel = S.selesai || {};
+  $('gridK').innerHTML = [1, 2, 3, 4, 5, 6].map((n) => {
+    const s = sel[n];
+    return `<div class="gk ${s ? 'siap' : ''}"><div class="n">${s ? '✓' : n}</div><div><div class="t">${esc(namaKump(n))}</div><div class="s">${s ? `Selesai · ${s.betul}/${s.jumlah} betul` : 'Belum disemak'}</div></div></div>`;
+  }).join('');
+}
+let slotLama = [0, 0, 0, 0];
+function lukisAmbil() {
+  $('aTajuk').textContent = 'Kumpulan ' + S.kumpulan;
+  const nm = namaKump(S.kumpulan); $('aNama').textContent = nm !== 'Kumpulan ' + S.kumpulan ? nm : '';
+  const ada = S.foto.filter(Boolean).length;
+  $('slot4').innerHTML = S.foto.map((v, i) => `<div class="sl ${v ? 'ada' : ''}" style="--kc:${WARNA[i]}"><div class="a">${i + 1}</div><div class="b">${v ? '✓ Diterima' : 'Kapsul'}</div></div>`).join('');
+  S.foto.forEach((v, i) => { if (v && v !== slotLama[i]) SFX.terima(); }); slotLama = S.foto.slice();
+  $('aPetunjuk').textContent = ada === 4 ? 'Semua 4 kapsul diterima. Sedia untuk imbasan!' : `Angkat kapsul anda. Gambar diterima: ${ada}/4`;
+}
+function lukisImbas() {
+  if ($('gridF').children.length === 4 && $('gridF').dataset.k == S.kumpulan) { foto.forEach((f, i) => f && pasangFoto(i)); return; }
+  $('gridF').dataset.k = S.kumpulan;
+  $('gridF').innerHTML = [0, 1, 2, 3].map((i) => `<div class="kf" data-i="${i}"><div class="bingkai sudut"><div class="muat">Memuat gambar…</div></div><span class="label kapsul">${kapsulHtml(i)}</span></div>`).join('');
+  foto.forEach((f, i) => f && pasangFoto(i));
+}
+function mulaImbas() { hentiImbas(); imbasT = setInterval(() => { if (paparKini === 'vImbas') SFX.imbas(); }, 1100); }
+function hentiImbas() { clearInterval(imbasT); imbasT = null; }
+
+function tilePic(n, i, s, j) {
+  const v = j['g' + s], emo = j['e' + s];
+  if (v) return `<img src="${urlGambar(n, i, s, v)}" alt="">`;
+  return `<span class="emo">${esc(emo || '💊')}</span>`;
+}
+async function dedah() {
+  const d = S, k = d.kumpulan + '|' + d.idx + '|' + JSON.stringify(d.keputusan) + '|' + JSON.stringify(d.padanan);
+  if (k === kunciDedah) return; kunciDedah = k;
+  if (!setSemua) await muatSet();
+  const set = setSemua && setSemua[d.kumpulan - 1];
+  const pi = d.padanan ? d.padanan[d.idx] : d.idx;
+  const j = (set && set.jawapan[pi]) || { k1: '?', k2: '?', km: '?' };
+  const betul = !!(d.keputusan && d.keputusan[d.idx]);
+  // gambar kapsul
+  $('dLabel').innerHTML = kapsulHtml(d.idx);
+  $('dImg').src = foto[d.idx] ? foto[d.idx].url : '';
+  const fb = $('dFoto'); fb.classList.remove('main'); void fb.offsetWidth; fb.classList.add('main');
+  // vonis
+  const vo = $('dVonis'); vo.className = 'vonis ' + (betul ? 'betul' : 'salah');
+  $('dCop').innerHTML = betul ? '<span class="ik">✓</span>BETUL!' : '<span class="ik">✗</span>TIDAK TEPAT';
+  $('dPesan').textContent = betul ? 'Syabas! Jawapan kumpulan anda tepat.' : 'Jawapannya adalah';
+  $('dJaw').hidden = false; $('dJaw').innerHTML = `<span style="background:${WARNA[d.idx]}">💊</span><span>${esc(j.km)}</span>`;
+  void vo.offsetWidth; vo.classList.add('main');
+  // persamaan
+  const n = d.kumpulan;
+  $('dPers').className = 'persamaan';
+  $('dPers').innerHTML =
+    `<div class="tile"><div class="pic">${tilePic(n, pi, '1', j)}</div><div class="nm">${esc(j.k1)}</div></div>` +
+    `<div class="op">+</div>` +
+    `<div class="tile"><div class="pic">${tilePic(n, pi, '2', j)}</div><div class="nm">${esc(j.k2)}</div></div>` +
+    `<div class="op">=</div>` +
+    `<div class="tile km"><div class="pic">${tilePic(n, pi, 'k', j)}</div><div class="nm">${esc(j.km)}</div></div>`;
+  void $('dPers').offsetWidth; $('dPers').classList.add('main');
+  // bunyi & suara
+  const kini = kunciDedah;
+  SFX.masuk();
+  await tunggu(420); if (kini !== kunciDedah) return;
+  betul ? SFX.betul() : SFX.salah();
+  cakap(betul ? `Betul! ${j.km}.` : `Tidak tepat. Jawapannya adalah ${j.km}.`);
+  for (const t of [900, 1500, 2100]) { setTimeout(() => { if (kini === kunciDedah) SFX.pop(); }, t - 420); }
+  setTimeout(() => { if (kini === kunciDedah) SFX.kilau(); }, 2600 - 420);
+}
+function tamat() {
+  const d = S, b = (d.keputusan || []).filter(Boolean).length;
+  $('tKump').textContent = `${namaKump(d.kumpulan)} · ${b}/4 jawapan betul`;
+  $('tSkor').innerHTML = (d.keputusan || [false, false, false, false]).map((x, i) => `<span class="kapsul"><span style="background:${WARNA[i]}">${i + 1}</span><span style="color:${x ? 'var(--hijau)' : 'var(--merah)'}">${x ? '✓' : '✗'}</span></span>`).join('');
+  SFX.tamat(); cakap(`Terima kasih, Kumpulan ${d.kumpulan}!`); konfeti();
+}
+
+// konfeti ringkas (kapsul kecil)
+function konfeti() {
+  const c = $('konfeti'), x = c.getContext('2d'); c.width = innerWidth; c.height = innerHeight;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const P = Array.from({ length: 140 }, () => ({ x: Math.random() * c.width, y: -20 - Math.random() * c.height * .6, vx: (Math.random() - .5) * 3, vy: 2 + Math.random() * 4, r: Math.random() * 6, vr: (Math.random() - .5) * .2, w: 18 + Math.random() * 14, c: WARNA[Math.floor(Math.random() * 4)] }));
+  const mula = performance.now();
+  (function f(t) {
+    x.clearRect(0, 0, c.width, c.height);
+    P.forEach((p) => { p.x += p.vx; p.y += p.vy; p.vy += .04; p.r += p.vr; x.save(); x.translate(p.x, p.y); x.rotate(p.r);
+      x.fillStyle = p.c; x.beginPath(); x.roundRect ? x.roundRect(-p.w / 2, -p.w / 4, p.w / 2, p.w / 2, p.w / 4) : x.rect(-p.w / 2, -p.w / 4, p.w / 2, p.w / 2); x.fill();
+      x.fillStyle = '#fff'; x.beginPath(); x.roundRect ? x.roundRect(0, -p.w / 4, p.w / 2, p.w / 2, p.w / 4) : x.rect(0, -p.w / 4, p.w / 2, p.w / 2); x.fill(); x.restore(); });
+    if (t - mula < 5000 && paparKini === 'vTamat') requestAnimationFrame(f); else x.clearRect(0, 0, c.width, c.height);
+  })(mula);
+}
+
+// =============================================================
+// WEBSOCKET
+// =============================================================
+let ws = null, tunda = 800, pingT = null;
+function sambung() {
+  try { ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/kapsul-km?bilik=${sesi.kod}&peranan=paparan&kunci=${sesi.kunci}`); }
+  catch (e) { return ulang(); }
+  ws.onopen = () => { wsOk = true; tunda = 800; status(); clearInterval(pingT); pingT = setInterval(() => { try { ws.send('{"jenis":"ping"}'); } catch (e) {} }, 20000); };
+  ws.onmessage = (ev) => {
+    let d; try { d = JSON.parse(ev.data); } catch (e) { return; }
+    if (d.jenis === 'keadaan') { bilTel = d.telefon || 0; S = d; status(); render(); }
+    else if (d.jenis === 'bilangan') { const naik = (d.telefon || 0) > bilTel; bilTel = d.telefon || 0; status(); if (naik) { toast('📱 Telefon guru bersambung'); paksaQR = false; } render(); }
+    else if (d.jenis === 'foto' && S) { S.foto[d.i] = d.v; if (S.fasa === 'imbas' || S.fasa === 'dedah') muatFoto(d.i, d.v); else render(); }
+  };
+  ws.onclose = (ev) => {
+    wsOk = false; status(); clearInterval(pingT);
+    if (ev.code === 4001) { sesi = { kod: kodBaru(), kunci: rnd(16) }; simpan(); lukisKod(); tunda = 200; }
+    ulang();
+  };
+  ws.onerror = () => {};
+}
+function ulang() { setTimeout(sambung, tunda); tunda = Math.min(tunda * 1.7, 8000); }
+
+// =============================================================
+// KAWALAN
+// =============================================================
+function fs() { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen().catch(() => {}); }
+$('btnFs').onclick = fs;
+$('btnQr').onclick = () => { paksaQR = !paksaQR; paparKini = ''; render(); if (!S) tunjuk('vSambung'); };
+$('btnBaru').onclick = () => {
+  if (!confirm('Jana kod bilik baharu? Telefon perlu imbas QR semula.')) return;
+  sesi = { kod: kodBaru(), kunci: rnd(16) }; simpan(); lukisKod(); buangFoto(); S = null; bilTel = 0; paparKini = ''; tunjuk('vSambung');
+  try { ws.onclose = null; ws.close(); } catch (e) {} wsOk = false; status(); tunda = 300; sambung();
+};
+addEventListener('keydown', (e) => { if (e.key === 'f' || e.key === 'F') fs(); if (e.key === 'q' || e.key === 'Q') $('btnQr').click(); });
+let idleT = null;
+const bangun = () => { document.body.classList.remove('idle'); clearTimeout(idleT); idleT = setTimeout(() => document.body.classList.add('idle'), 4000); };
+addEventListener('mousemove', bangun); bangun();
+let kunciSkrin = null;
+async function jagaSkrin() { try { if ('wakeLock' in navigator && document.visibilityState === 'visible') kunciSkrin = await navigator.wakeLock.request('screen'); } catch (e) {} }
+document.addEventListener('visibilitychange', jagaSkrin); jagaSkrin();
+addEventListener('resize', () => { const c = $('konfeti'); c.width = innerWidth; c.height = innerHeight; });
+
+tunjuk('vSambung'); lukisKod(); status(); muatSet(); sambung();
+window.__kapsul = { get S() { return S; }, get papar() { return paparKini; }, get kod() { return sesi.kod; }, get foto() { return foto.map((f) => f && f.v); } };
+})();
+</script>
+</body>
+</html>

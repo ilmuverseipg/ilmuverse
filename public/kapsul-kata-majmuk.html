@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kapsul Kata Majmuk — Pengurusan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@700;800&display=swap">
+<style>
+  :root { --mint: #dff5ef; --mint2: #c6ece2; --teal: #0f766e; --teal2: #14a394; --dakwat: #13334c; --kelabu: #5b7285; --merah: #e8434f; --hijau: #16a34a; --amber: #f6b81a;
+    --bayang: 0 10px 26px rgba(19,51,76,.11), 0 2px 6px rgba(19,51,76,.06); }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; background: var(--mint); color: var(--dakwat); font-family: 'Fredoka', system-ui, sans-serif; }
+  body { background: radial-gradient(rgba(15,118,110,.08) 2px, transparent 2.4px) 0 0 / 28px 28px, var(--mint); min-height: 100vh; }
+  button, input { font: inherit; }
+  button { cursor: pointer; }
+  button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+
+  header { background: var(--teal); color: #fff; padding: 14px 24px; display: flex; align-items: center; gap: 14px; box-shadow: 0 4px 16px rgba(15,118,110,.25); position: sticky; top: 0; z-index: 5; }
+  .salib { width: 40px; height: 40px; border-radius: 12px; background: #fff; display: grid; place-items: center; flex: none; }
+  .salib::before { content: ''; width: 58%; height: 58%; background: var(--merah); clip-path: polygon(35% 0, 65% 0, 65% 35%, 100% 35%, 100% 65%, 65% 65%, 65% 100%, 35% 100%, 35% 65%, 0 65%, 0 35%, 35% 35%); }
+  header b { font-family: 'Baloo 2'; font-weight: 800; font-size: 24px; line-height: 1; display: block; }
+  header small { opacity: .9; font-size: 13px; }
+  header a { margin-left: auto; color: #fff; text-decoration: none; font-weight: 600; background: rgba(255,255,255,.16); padding: 8px 14px; border-radius: 10px; }
+
+  main { max-width: 1120px; margin: 0 auto; padding: 24px 20px 80px; }
+  .mula { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; margin-bottom: 26px; }
+  .kadMula { background: #fff; border-radius: 24px; padding: 20px 22px; box-shadow: var(--bayang); display: flex; gap: 16px; align-items: center; text-decoration: none; color: inherit; }
+  .kadMula .ik { font-size: 38px; width: 64px; height: 64px; border-radius: 18px; background: var(--mint); display: grid; place-items: center; flex: none; }
+  .kadMula h3 { margin: 0; font-family: 'Baloo 2'; font-weight: 800; font-size: 22px; color: var(--teal); line-height: 1.1; }
+  .kadMula p { margin: 4px 0 0; color: var(--kelabu); font-size: 14.5px; line-height: 1.45; }
+  a.kadMula { border: 3px solid var(--teal2); transition: transform .15s; }
+  a.kadMula:hover { transform: translateY(-3px); }
+
+  h2 { font-family: 'Baloo 2'; font-weight: 800; font-size: 28px; margin: 0 0 4px; color: var(--teal); }
+  .sub { color: var(--kelabu); margin: 0 0 16px; max-width: 70ch; line-height: 1.5; }
+  .tab { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .tab button { border: 3px solid transparent; background: #fff; border-radius: 999px; padding: 8px 18px; font-weight: 700; color: var(--dakwat); box-shadow: var(--bayang); }
+  .tab button.on { background: var(--teal); color: #fff; }
+
+  .panel { background: #fff; border-radius: 26px; padding: 22px; box-shadow: var(--bayang); }
+  .namaBaris { display: flex; gap: 12px; align-items: center; margin-bottom: 18px; flex-wrap: wrap; }
+  .namaBaris label { font-weight: 700; }
+  .namaBaris input { flex: 1; min-width: 200px; }
+  input[type=text] { border: 2px solid var(--mint2); border-radius: 12px; padding: 9px 12px; color: var(--dakwat); background: #fff; width: 100%; }
+  input[type=text]:focus { outline: none; border-color: var(--teal2); }
+
+  .kapsulRow { border: 2px solid var(--mint2); border-radius: 22px; padding: 14px; margin-bottom: 14px; }
+  .kapsulRow .kepala { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .kapsulRow .kp { display: inline-flex; border-radius: 999px; overflow: hidden; font-family: 'Baloo 2'; font-weight: 800; }
+  .kapsulRow .kp span { padding: 0 12px; color: #fff; } .kapsulRow .kp span + span { background: var(--mint); color: var(--dakwat); }
+  .kapsulRow .pratonton { margin-left: auto; color: var(--kelabu); font-weight: 600; font-size: 14.5px; }
+  .tiga { display: grid; grid-template-columns: 1fr auto 1fr auto 1.2fr; gap: 10px; align-items: start; }
+  .op { font-family: 'Baloo 2'; font-weight: 800; font-size: 30px; color: var(--teal); align-self: center; padding-top: 0; }
+  .slot { display: grid; grid-template-columns: 92px 1fr; gap: 10px; align-items: start; }
+  .slot.km { grid-template-columns: 112px 1fr; }
+  .gbr { width: 92px; height: 92px; border-radius: 18px; background: var(--mint); display: grid; place-items: center; overflow: hidden; font-size: 50px; position: relative; border: 3px solid #fff; box-shadow: 0 0 0 2px var(--mint2); }
+  .km .gbr { width: 112px; height: 112px; font-size: 62px; box-shadow: 0 0 0 3px var(--amber); }
+  .gbr img { width: 100%; height: 100%; object-fit: cover; }
+  .slot .lbl { font-size: 12.5px; font-weight: 700; color: var(--kelabu); margin-bottom: 3px; }
+  .slot .baris { display: flex; gap: 6px; margin-top: 6px; }
+  .slot .emo { width: 64px !important; text-align: center; }
+  .kecil { border: 2px solid var(--mint2); background: #fff; color: var(--dakwat); border-radius: 10px; padding: 6px 10px; font-weight: 600; font-size: 13.5px; white-space: nowrap; }
+  .kecil:hover { border-color: var(--teal2); }
+  .kecil.padam { color: var(--merah); }
+  .tindakan { display: flex; gap: 10px; align-items: center; margin-top: 18px; flex-wrap: wrap; }
+  .btnUtama { border: 0; border-radius: 999px; padding: 12px 26px; font-family: 'Baloo 2'; font-weight: 800; font-size: 19px; color: #fff; background: var(--teal); box-shadow: 0 5px 0 #0b5550; }
+  .btnUtama:active { transform: translateY(3px); box-shadow: 0 2px 0 #0b5550; }
+  .btnUtama:disabled { opacity: .5; }
+  .simpanTx { color: var(--kelabu); font-weight: 600; font-size: 14.5px; }
+  .simpanTx.kotor { color: #b45309; }
+  .nota { margin-top: 22px; background: #fff; border-left: 6px solid var(--teal2); border-radius: 16px; padding: 14px 18px; color: var(--kelabu); line-height: 1.55; box-shadow: var(--bayang); }
+  .nota b { color: var(--dakwat); }
+  #toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); z-index: 40; background: var(--dakwat); color: #fff; padding: 10px 18px; border-radius: 14px; font-weight: 600; opacity: 0; transition: all .3s; pointer-events: none; }
+  #toast.on { opacity: 1; transform: translate(-50%, 0); }
+  input[type=file] { display: none; }
+  @media (max-width: 900px) { .mula { grid-template-columns: 1fr; } .tiga { grid-template-columns: 1fr; } .op { text-align: center; padding: 0; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="salib"></div>
+  <div><b>Kapsul Kata Majmuk</b><small>Mod 08 · Pengurusan jawapan</small></div>
+  <a href="/guru.html">← Ilmuverse</a>
+</header>
+<main>
+  <div class="mula">
+    <a class="kadMula" href="/kapsul-skrin.html"><span class="ik">📺</span><div><h3>Buka skrin TV</h3><p>Buka di PC yang bersambung ke TV. Skrin akan tunjuk kod bilik dan QR.</p></div></a>
+    <div class="kadMula"><span class="ik">📱</span><div><h3>Telefon guru</h3><p>Imbas QR pada skrin TV dengan telefon. Pilih kumpulan, ambil 4 gambar kapsul, kemudian DEPLOY.</p></div></div>
+  </div>
+
+  <h2>Jawapan setiap kumpulan</h2>
+  <p class="sub">Setiap kumpulan ada 4 kapsul. Isi perkataan 1, perkataan 2 dan kata majmuk. Gambar boleh guna emoji, atau muat naik gambar sendiri (dipotong automatik ke 800×800).</p>
+  <div class="tab" id="tab"></div>
+  <div class="panel" id="panel"><p class="sub">Memuat…</p></div>
+
+  <div class="nota">
+    <b>Tentang storan.</b> Jawapan dan gambar 800×800 disimpan kekal dalam pangkalan data Ilmuverse. Gambar kamera murid <b>tidak disimpan</b>: ia hanya berada dalam memori pelayan semasa semakan dan dipadam bila kumpulan lain dipilih, bila kembali ke senarai kumpulan, atau selepas 30 minit tidak digunakan.
+  </div>
+</main>
+<input type="file" id="fGambar" accept="image/*">
+<div id="toast"></div>
+
+<script>
+(() => {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function toast(t, ms = 2600) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), ms); }
+const WARNA = ['#e8434f', '#2f7de1', '#f6b81a', '#16a34a'];
+const SLOT = [['1', 'Perkataan 1', 'k1', 'e1'], ['2', 'Perkataan 2', 'k2', 'e2'], ['k', 'Kata majmuk', 'km', 'ek']];
+
+let semua = null, aktif = 1, kotor = false, dbOk = true;
+
+async function muat() {
+  try {
+    const r = await fetch('/api/kapsul/set', { cache: 'no-store' });
+    if (r.status === 401) { location.href = '/login.html?next=' + encodeURIComponent(location.pathname); return; }
+    const j = await r.json(); semua = j.set; dbOk = j.db;
+  } catch (e) { $('panel').innerHTML = '<p class="sub">Tidak dapat memuat jawapan. Semak sambungan internet dan muat semula halaman.</p>'; return; }
+  lukisTab(); lukis();
+}
+function lukisTab() {
+  $('tab').innerHTML = [1, 2, 3, 4, 5, 6].map((n) => `<button data-n="${n}" class="${n === aktif ? 'on' : ''}">Kumpulan ${n}</button>`).join('');
+  $('tab').querySelectorAll('button').forEach((b) => b.onclick = () => {
+    if (kotor && !confirm('Perubahan belum disimpan. Tinggalkan?')) return;
+    aktif = +b.dataset.n; kotor = false; lukisTab(); lukis();
+  });
+}
+const urlG = (n, i, s, v) => `/api/kapsul/gambar/${n}/${i}/${s}?v=${v}`;
+function lukis() {
+  const set = semua[aktif - 1];
+  $('panel').innerHTML = `
+    ${dbOk ? '' : '<p class="sub" style="color:#b45309">Pangkalan data belum bersambung. Jawapan asal digunakan dan perubahan belum boleh disimpan.</p>'}
+    <div class="namaBaris"><label for="nama">Nama kumpulan</label><input type="text" id="nama" maxlength="40" value="${esc(set.nama)}"></div>
+    ${set.jawapan.map((j, i) => `
+      <div class="kapsulRow" data-i="${i}">
+        <div class="kepala"><span class="kp"><span style="background:${WARNA[i]}">${i + 1}</span><span>Kapsul</span></span><span class="pratonton" data-pr="${i}"></span></div>
+        <div class="tiga">
+          ${SLOT.map(([s, lbl, kk, ke], si) => `${si ? `<div class="op">${si === 1 ? '+' : '='}</div>` : ''}
+            <div class="slot ${s === 'k' ? 'km' : ''}">
+              <div class="gbr" data-g="${i}-${s}">${j['g' + s] ? `<img src="${urlG(aktif, i, s, j['g' + s])}" alt="">` : esc(j[ke] || '💊')}</div>
+              <div>
+                <div class="lbl">${lbl}</div>
+                <input type="text" data-f="${kk}" data-i="${i}" maxlength="${s === 'k' ? 80 : 40}" value="${esc(j[kk])}" placeholder="${s === 'k' ? 'cth. berus gigi' : 'perkataan'}">
+                <div class="baris">
+                  <input type="text" class="emo" data-f="${ke}" data-i="${i}" maxlength="16" value="${esc(j[ke])}" title="Emoji (jika tiada gambar)" placeholder="😀">
+                  <button class="kecil" data-up="${i}-${s}">🖼️ Gambar</button>
+                  ${j['g' + s] ? `<button class="kecil padam" data-del="${i}-${s}" title="Padam gambar">✕</button>` : ''}
+                </div>
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>`).join('')}
+    <div class="tindakan">
+      <button class="btnUtama" id="btnSimpan" ${dbOk ? '' : 'disabled'}>💾 Simpan Kumpulan ${aktif}</button>
+      <span class="simpanTx" id="simpanTx"></span>
+      <button class="kecil" id="btnAsal" style="margin-left:auto" ${dbOk ? '' : 'disabled'}>↺ Set semula ke jawapan asal</button>
+    </div>`;
+  set.jawapan.forEach((_, i) => pratonton(i));
+  $('panel').querySelectorAll('input[data-f]').forEach((inp) => inp.addEventListener('input', () => {
+    const i = +inp.dataset.i, f = inp.dataset.f, j = set.jawapan[i], lamaAuto = `${j.k1} ${j.k2}`.trim();
+    // kata majmuk ikut automatik jika guru belum ubah sendiri
+    if ((f === 'k1' || f === 'k2') && (!j.km || j.km === lamaAuto)) { j[f] = inp.value.trim(); j.km = `${j.k1} ${j.k2}`.trim(); const km = $('panel').querySelector(`input[data-f="km"][data-i="${i}"]`); if (km) km.value = j.km; }
+    else j[f] = inp.value.trim();
+    if (f[0] === 'e') { const g = $('panel').querySelector(`[data-g="${i}-${f[1] === 'k' ? 'k' : f[1]}"]`); if (g && !g.querySelector('img')) g.textContent = j[f] || '💊'; }
+    pratonton(i); tandaKotor(true);
+  }));
+  $('nama').addEventListener('input', () => { set.nama = $('nama').value.trim(); tandaKotor(true); });
+  $('panel').querySelectorAll('[data-up]').forEach((b) => b.onclick = () => { slotUp = b.dataset.up; $('fGambar').click(); });
+  $('panel').querySelectorAll('[data-del]').forEach((b) => b.onclick = () => padamGambar(b.dataset.del));
+  $('btnSimpan').onclick = simpan;
+  $('btnAsal').onclick = setAsal;
+  tandaKotor(kotor);
+}
+function pratonton(i) { const j = semua[aktif - 1].jawapan[i], el = $('panel').querySelector(`[data-pr="${i}"]`); if (el) el.textContent = `${j.k1 || '…'} + ${j.k2 || '…'} = ${j.km || '…'}`; }
+function tandaKotor(k) { kotor = k; const t = $('simpanTx'); if (!t) return; t.textContent = k ? 'Ada perubahan belum disimpan' : 'Semua perubahan disimpan'; t.classList.toggle('kotor', k); }
+addEventListener('beforeunload', (e) => { if (kotor) { e.preventDefault(); e.returnValue = ''; } });
+
+async function simpan() {
+  const set = semua[aktif - 1];
+  if (set.jawapan.some((j) => !j.k1 || !j.k2)) return toast('Isi perkataan 1 dan 2 untuk semua kapsul');
+  $('btnSimpan').disabled = true;
+  try {
+    const r = await fetch('/api/kapsul/set/' + aktif, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nama: set.nama, jawapan: set.jawapan }) });
+    const j = await r.json(); if (!r.ok || !j.ok) throw new Error(j.mesej || 'Ralat ' + r.status);
+    semua[aktif - 1] = j.set; kotor = false; lukis(); toast('✅ Kumpulan ' + aktif + ' disimpan');
+  } catch (e) { toast('❌ ' + e.message, 4000); }
+  finally { const b = $('btnSimpan'); if (b) b.disabled = false; }
+}
+async function setAsal() {
+  if (!confirm(`Set semula Kumpulan ${aktif} ke jawapan asal? Gambar yang dimuat naik untuk kumpulan ini akan dipadam.`)) return;
+  try {
+    const r = await fetch(`/api/kapsul/set/${aktif}/asal`, { method: 'POST' }); const j = await r.json();
+    if (!r.ok || !j.ok) throw new Error(j.mesej || 'Ralat ' + r.status);
+    semua[aktif - 1] = j.set; kotor = false; lukis(); toast('↺ Jawapan asal dipulihkan');
+  } catch (e) { toast('❌ ' + e.message, 4000); }
+}
+
+// ---- gambar 800x800 (potong tengah) ----
+let slotUp = '';
+async function jadi800(f) {
+  let src;
+  if (window.createImageBitmap) { try { src = await createImageBitmap(f, { imageOrientation: 'from-image' }); } catch (e) { src = await createImageBitmap(f); } }
+  else { src = new Image(); src.src = URL.createObjectURL(f); await src.decode(); }
+  const w = src.width || src.naturalWidth, h = src.height || src.naturalHeight, s = Math.min(w, h);
+  const c = document.createElement('canvas'); c.width = c.height = 800;
+  const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, 800, 800); x.imageSmoothingQuality = 'high';
+  x.drawImage(src, (w - s) / 2, (h - s) / 2, s, s, 0, 0, 800, 800);
+  return new Promise((ok) => c.toBlob(ok, 'image/jpeg', .86));
+}
+$('fGambar').onchange = async (e) => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f || !slotUp) return;
+  const [i, s] = slotUp.split('-'), g = $('panel').querySelector(`[data-g="${slotUp}"]`);
+  try {
+    if (g) g.style.opacity = .4;
+    const blob = await jadi800(f);
+    const r = await fetch(`/api/kapsul/gambar/${aktif}/${i}/${s}`, { method: 'POST', headers: { 'Content-Type': 'image/jpeg' }, body: blob });
+    const j = await r.json(); if (!r.ok || !j.ok) throw new Error(j.mesej || 'Ralat ' + r.status);
+    semua[aktif - 1].jawapan[+i]['g' + s] = j.v; const k = kotor; lukis(); tandaKotor(k); toast('🖼️ Gambar disimpan');
+  } catch (err) { toast('❌ ' + err.message, 4000); if (g) g.style.opacity = 1; }
+};
+async function padamGambar(key) {
+  const [i, s] = key.split('-');
+  if (!confirm('Padam gambar ini? Emoji akan digunakan semula.')) return;
+  try {
+    const r = await fetch(`/api/kapsul/gambar/${aktif}/${i}/${s}`, { method: 'DELETE' }); const j = await r.json();
+    if (!r.ok || !j.ok) throw new Error(j.mesej || 'Ralat ' + r.status);
+    semua[aktif - 1].jawapan[+i]['g' + s] = 0; const k = kotor; lukis(); tandaKotor(k); toast('Gambar dipadam');
+  } catch (e) { toast('❌ ' + e.message, 4000); }
+}
+muat();
+})();
+</script>
+</body>
+</html>

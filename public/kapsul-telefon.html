@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0f766e">
+<title>Kapsul Kata Majmuk — Telefon Guru</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@700;800&display=swap">
+<style>
+  :root { --mint: #dff5ef; --mint2: #c6ece2; --teal: #0f766e; --teal2: #14a394; --dakwat: #13334c; --kelabu: #5b7285; --merah: #e8434f; --hijau: #16a34a; --amber: #f6b81a;
+    --bayang: 0 10px 26px rgba(19,51,76,.13), 0 2px 6px rgba(19,51,76,.07); --atas: env(safe-area-inset-top, 0px); --bawah: env(safe-area-inset-bottom, 0px); }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; min-height: 100%; background: var(--mint); color: var(--dakwat); font-family: 'Fredoka', system-ui, sans-serif; }
+  body { padding-bottom: calc(110px + var(--bawah)); background: radial-gradient(rgba(15,118,110,.08) 2px, transparent 2.4px) 0 0 / 26px 26px, var(--mint); }
+  button { font: inherit; cursor: pointer; }
+  button:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+
+  header { position: sticky; top: 0; z-index: 5; background: var(--teal); color: #fff; padding: calc(10px + var(--atas)) 14px 10px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 16px rgba(15,118,110,.25); }
+  .salib { width: 34px; height: 34px; border-radius: 10px; background: #fff; display: grid; place-items: center; flex: none; }
+  .salib::before { content: ''; width: 58%; height: 58%; background: var(--merah); clip-path: polygon(35% 0, 65% 0, 65% 35%, 100% 35%, 100% 65%, 65% 65%, 65% 100%, 35% 100%, 35% 65%, 0 65%, 0 35%, 35% 35%); }
+  header b { font-family: 'Baloo 2'; font-weight: 800; font-size: 19px; line-height: 1; display: block; }
+  header small { font-size: 12px; opacity: .9; display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: #9ca3af; display: inline-block; flex: none; }
+  .dot.ok { background: #4ade80; box-shadow: 0 0 8px #4ade80; } .dot.wait { background: var(--amber); animation: kelip 1s infinite; } .dot.bad { background: #fb7185; }
+  @keyframes kelip { 50% { opacity: .3; } }
+  header .ikonBtn { margin-left: auto; background: rgba(255,255,255,.16); border: 0; color: #fff; border-radius: 10px; padding: 8px 10px; font-weight: 600; font-size: 14px; text-decoration: none; }
+
+  main { padding: 16px; max-width: 560px; margin: 0 auto; }
+  .v { animation: masuk .35s ease both; }
+  @keyframes masuk { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  h2 { font-family: 'Baloo 2'; font-weight: 800; font-size: 28px; margin: 4px 0 2px; color: var(--teal); line-height: 1.05; }
+  .sub { color: var(--kelabu); margin: 0 0 16px; font-size: 15px; }
+
+  /* kod */
+  .kadKod { background: #fff; border-radius: 24px; padding: 24px; box-shadow: var(--bayang); text-align: center; margin-top: 10vh; }
+  .kadKod input { width: 100%; font-family: 'Baloo 2'; font-weight: 800; font-size: 44px; letter-spacing: .3em; text-align: center; border: 3px solid var(--mint2); border-radius: 16px; padding: 8px; color: var(--dakwat); margin: 12px 0; }
+  .kadKod input:focus { outline: none; border-color: var(--teal2); }
+
+  /* butang utama */
+  .btnUtama { width: 100%; border: 0; border-radius: 999px; padding: 16px; font-family: 'Baloo 2'; font-weight: 800; font-size: 22px; color: #fff; background: var(--teal); box-shadow: 0 6px 0 #0b5550, var(--bayang); transition: transform .1s, box-shadow .1s, opacity .2s; }
+  .btnUtama:active { transform: translateY(4px); box-shadow: 0 2px 0 #0b5550; }
+  .btnUtama:disabled { opacity: .45; }
+  .btnUtama.merah { background: var(--merah); box-shadow: 0 6px 0 #a92b35, var(--bayang); }
+  .btnUtama.hijau { background: var(--hijau); box-shadow: 0 6px 0 #0f6b30, var(--bayang); }
+  .btnKedua { border: 2px solid var(--mint2); background: #fff; color: var(--dakwat); border-radius: 14px; padding: 10px 14px; font-weight: 600; font-size: 15px; }
+  .kaki { position: fixed; left: 0; right: 0; bottom: 0; z-index: 4; padding: 12px 16px calc(14px + var(--bawah)); background: linear-gradient(180deg, rgba(223,245,239,0), var(--mint) 30%); }
+  .kaki .dalam { max-width: 560px; margin: 0 auto; display: flex; gap: 10px; align-items: center; }
+
+  /* pilih kumpulan */
+  .banner { background: #fff; border-left: 6px solid var(--hijau); border-radius: 16px; padding: 12px 14px; margin-bottom: 14px; box-shadow: var(--bayang); font-weight: 600; display: flex; align-items: center; gap: 10px; }
+  .banner button { margin-left: auto; flex: none; }
+  .gridK { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .gk { border: 3px solid transparent; background: #fff; border-radius: 22px; padding: 14px; box-shadow: var(--bayang); text-align: left; display: flex; flex-direction: column; gap: 6px; color: var(--dakwat); transition: transform .12s; }
+  .gk:active { transform: scale(.96); }
+  .gk .n { width: 46px; height: 46px; border-radius: 50%; background: var(--teal); color: #fff; display: grid; place-items: center; font-family: 'Baloo 2'; font-weight: 800; font-size: 26px; }
+  .gk .t { font-family: 'Baloo 2'; font-weight: 800; font-size: 19px; line-height: 1.05; }
+  .gk .s { font-size: 13px; color: var(--kelabu); font-weight: 600; }
+  .gk.siap { border-color: var(--teal2); } .gk.siap .n { background: var(--hijau); }
+
+  /* ambil */
+  .bar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .bar h2 { margin: 0; }
+  .bar .btnKedua { flex: none; }
+  .slot4 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .sl { position: relative; border: 0; padding: 0; background: #fff; border-radius: 22px; overflow: hidden; aspect-ratio: 3 / 4; box-shadow: var(--bayang); display: flex; flex-direction: column; color: var(--dakwat); }
+  .sl .gb { flex: 1; display: grid; place-items: center; background: #eef6f4; overflow: hidden; position: relative; }
+  .sl .gb img { width: 100%; height: 100%; object-fit: cover; }
+  .sl .gb .kos { font-size: 40px; opacity: .55; }
+  .sl .lbl { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; font-weight: 700; gap: 6px; }
+  .sl .no { color: #fff; border-radius: 999px; padding: 0 10px; font-family: 'Baloo 2'; font-weight: 800; }
+  .sl .st { font-size: 12.5px; font-weight: 600; color: var(--kelabu); }
+  .sl .st.ok { color: var(--hijau); } .sl .st.gagal { color: var(--merah); }
+  .sl .prog { position: absolute; left: 0; bottom: 0; height: 5px; background: var(--teal2); width: 0; transition: width .2s; }
+  .nota { font-size: 13.5px; color: var(--kelabu); margin: 14px 2px 0; line-height: 1.45; }
+
+  /* kamera */
+  #kamera { position: fixed; inset: 0; z-index: 20; background: #000; display: flex; flex-direction: column; touch-action: none; }
+  #kamera .pentas { flex: 1; position: relative; overflow: hidden; }
+  #vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform-origin: 50% 50%; }
+  .panduan { position: absolute; left: 50%; top: 46%; width: 84%; aspect-ratio: 2.3 / 1; transform: translate(-50%, -50%); border-radius: 999px; pointer-events: none;
+    border: 3px dashed rgba(255,255,255,.95); box-shadow: 0 0 0 100vmax rgba(0,0,0,.16), 0 0 18px rgba(20,163,148,.8), inset 0 0 18px rgba(20,163,148,.5); }
+  .panduan::before { content: ''; position: absolute; left: 50%; top: 10%; bottom: 10%; border-left: 2px dashed rgba(255,255,255,.45); }
+  .kamAtas { position: absolute; left: 0; right: 0; top: 0; padding: calc(12px + var(--atas)) 14px 10px; display: flex; align-items: center; gap: 10px; background: linear-gradient(180deg, rgba(0,0,0,.55), transparent); }
+  .kamAtas .kp { font-family: 'Baloo 2'; font-weight: 800; font-size: 20px; color: #fff; display: flex; overflow: hidden; border-radius: 999px; }
+  .kamAtas .kp span { padding: 0 12px; } .kamAtas .kp span + span { background: #fff; color: var(--dakwat); }
+  .kamAtas .tt { display: flex; gap: 5px; margin-left: auto; }
+  .kamAtas .tt i { width: 22px; height: 8px; border-radius: 9px; background: rgba(255,255,255,.3); }
+  .kamAtas .tt i.ada { background: #4ade80; } .kamAtas .tt i.kini { background: #fff; }
+  .kamTip { position: absolute; left: 0; right: 0; bottom: 10px; text-align: center; color: #fff; font-size: 13.5px; font-weight: 600; text-shadow: 0 1px 4px #000; }
+  .zoomBar { position: absolute; left: 50%; bottom: 40px; transform: translateX(-50%); display: flex; gap: 6px; background: rgba(0,0,0,.45); border-radius: 999px; padding: 4px; }
+  .zoomBar button { border: 0; border-radius: 999px; background: transparent; color: #fff; font-weight: 700; font-size: 14px; width: 44px; height: 32px; }
+  .zoomBar button.on { background: #fff; color: #000; }
+  .kamBawah { padding: 14px 18px calc(18px + var(--bawah)); display: flex; align-items: center; justify-content: space-between; background: #000; }
+  .kamBawah .kecil { width: 52px; height: 52px; border-radius: 50%; border: 0; background: rgba(255,255,255,.14); color: #fff; font-size: 22px; }
+  #btnSnap { width: 78px; height: 78px; border-radius: 50%; border: 5px solid #fff; background: var(--teal2); box-shadow: 0 0 0 4px rgba(20,163,148,.4); transition: transform .1s; }
+  #btnSnap:active { transform: scale(.9); }
+  #btnSnap:disabled { opacity: .4; }
+  #kamGagal { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 30px; text-align: center; color: #fff; background: #0b2530; }
+  #kilat { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+  #kilat.on { animation: kilat .4s ease-out; }
+  @keyframes kilat { from { opacity: .8; } to { opacity: 0; } }
+
+  /* tanda & dedah */
+  .tanda { display: grid; gap: 12px; }
+  .td { background: #fff; border-radius: 20px; padding: 10px; box-shadow: var(--bayang); display: grid; grid-template-columns: 84px 1fr; gap: 12px; align-items: center; border: 3px solid transparent; transition: border-color .2s; }
+  .td.b { border-color: var(--hijau); } .td.s { border-color: var(--merah); }
+  .td .th { width: 84px; height: 84px; border-radius: 14px; overflow: hidden; background: #eef6f4; display: grid; place-items: center; border: 0; padding: 0; }
+  .td .th img { width: 100%; height: 100%; object-fit: cover; }
+  .td .k { font-size: 13px; font-weight: 700; color: var(--kelabu); display: flex; align-items: center; gap: 6px; }
+  .td .k i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .td .j { font-family: 'Baloo 2'; font-weight: 800; font-size: 22px; line-height: 1.1; margin: 2px 0 8px; }
+  .td .pil { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .td .pil button { border: 2px solid var(--mint2); background: #fff; border-radius: 12px; padding: 9px 4px; font-weight: 700; font-size: 15px; color: var(--dakwat); transition: all .15s; }
+  .td .pil button.bOn { background: var(--hijau); border-color: var(--hijau); color: #fff; }
+  .td .pil button.sOn { background: var(--merah); border-color: var(--merah); color: #fff; }
+
+  .kadD { background: #fff; border-radius: 24px; padding: 16px; box-shadow: var(--bayang); text-align: center; }
+  .kadD .ke { font-family: 'Baloo 2'; font-weight: 800; font-size: 22px; color: var(--teal); }
+  .kadD .gbD { width: 100%; aspect-ratio: 4 / 3; border-radius: 16px; overflow: hidden; background: #eef6f4; margin: 10px 0; }
+  .kadD .gbD img { width: 100%; height: 100%; object-fit: contain; }
+  .kadD .vr { font-family: 'Baloo 2'; font-weight: 800; font-size: 34px; line-height: 1; }
+  .kadD .vr.b { color: var(--hijau); } .kadD .vr.s { color: var(--merah); }
+  .kadD .jw { margin-top: 6px; font-size: 17px; color: var(--kelabu); font-weight: 600; }
+  .kadD .jw b { color: var(--dakwat); font-family: 'Baloo 2'; font-size: 22px; }
+  .titik4 { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
+  .titik4 i { width: 30px; height: 9px; border-radius: 9px; background: var(--mint2); }
+  .titik4 i.b { background: #86efac; } .titik4 i.s { background: #fda4af; } .titik4 i.kini { outline: 3px solid var(--teal); outline-offset: 1px; }
+  .pautan { display: block; margin: 14px auto 0; background: none; border: 0; color: var(--teal); font-weight: 700; font-size: 15px; text-decoration: underline; }
+
+  #lihat { position: fixed; inset: 0; z-index: 30; background: rgba(0,0,0,.92); display: grid; place-items: center; padding: 16px; }
+  #lihat img { max-width: 100%; max-height: 100%; border-radius: 12px; }
+  #toast { position: fixed; left: 50%; bottom: calc(100px + var(--bawah)); transform: translate(-50%, 20px); z-index: 40; background: var(--dakwat); color: #fff; padding: 10px 18px; border-radius: 14px; font-weight: 600; font-size: 14.5px; opacity: 0; transition: all .3s; pointer-events: none; max-width: 90vw; text-align: center; }
+  #toast.on { opacity: 1; transform: translate(-50%, 0); }
+  input[type=file] { display: none; }
+</style>
+</head>
+<body>
+<header>
+  <div class="salib"></div>
+  <div><b>Kapsul Kata Majmuk</b><small><span class="dot wait" id="dot"></span><span id="statTx">Menyambung…</span></small></div>
+  <a class="ikonBtn" href="/kapsul-kata-majmuk.html" title="Urus jawapan">⚙️</a>
+</header>
+
+<main id="utama"></main>
+<div class="kaki" id="kaki" hidden><div class="dalam" id="kakiDalam"></div></div>
+
+<!-- KAMERA -->
+<div id="kamera" hidden>
+  <div class="pentas" id="pentas">
+    <video id="vid" playsinline muted autoplay></video>
+    <div class="panduan" aria-hidden="true"></div>
+    <div class="kamAtas"><span class="kp" id="kamKp"></span><span class="tt" id="kamTt"><i></i><i></i><i></i><i></i></span></div>
+    <div class="zoomBar" id="zoomBar"><button data-z="1" class="on">1×</button><button data-z="1.5">1.5×</button><button data-z="2">2×</button><button data-z="3">3×</button></div>
+    <div class="kamTip">Letakkan kapsul dalam bingkai · cubit untuk zoom</div>
+    <div id="kamGagal" hidden><div style="font-size:46px">📷</div><div id="kamGagalTx" style="font-weight:600;line-height:1.4"></div><button class="btnKedua" id="kamCuba">Cuba lagi</button></div>
+    <div id="kilat"></div>
+  </div>
+  <div class="kamBawah">
+    <button class="kecil" id="btnTutupKam" title="Tutup kamera">✕</button>
+    <button class="kecil" id="btnGaleri" title="Pilih dari galeri">🖼️</button>
+    <button id="btnSnap" title="Ambil gambar" aria-label="Ambil gambar"></button>
+    <button class="kecil" id="btnNative" title="Guna aplikasi kamera telefon">📷</button>
+    <button class="kecil" id="btnTorch" title="Lampu suluh" hidden>🔦</button>
+  </div>
+</div>
+<div id="lihat" hidden><img id="lihatImg" alt="Gambar kapsul"></div>
+<input type="file" id="fNative" accept="image/*" capture="environment">
+<input type="file" id="fGaleri" accept="image/*">
+<div id="toast"></div>
+
+<script>
+(() => {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const getar = (ms) => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
+function toast(t, ms = 2600) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), ms); }
+const WARNA = ['#e8434f', '#2f7de1', '#f6b81a', '#16a34a'];
+const MAX_SISI = 1600, KUALITI = 0.84;
+
+let kod = (new URLSearchParams(location.search).get('bilik') || '').replace(/\D/g, '').slice(0, 6);
+let S = null, wsOk = false, bilPaparan = 0, setSemua = null, kumpulanKini = 0;
+// GAMBAR: hanya dalam memori telefon ini (tidak disimpan), dibuang bila tukar kumpulan
+let thumb = [null, null, null, null];   // object URL
+let naik = [null, null, null, null];    // {st:'naik'|'ok'|'gagal', p, blob}
+let tanda = [null, null, null, null];   // true/false/null
+let ubahTanda = false, paparLama = '';
+
+function buangGambar() { thumb.forEach((u) => u && URL.revokeObjectURL(u)); thumb = [null, null, null, null]; naik = [null, null, null, null]; tanda = [null, null, null, null]; }
+
+// =============================================================
+// DATA JAWAPAN
+// =============================================================
+async function muatSet() {
+  try { const r = await fetch('/api/kapsul/set', { cache: 'no-store' }); if (r.status === 401) return keLogMasuk(); const j = await r.json(); if (j.ok) setSemua = j.set; } catch (e) {}
+}
+const setK = (n) => setSemua && setSemua[n - 1];
+const namaKump = (n) => (setK(n) && setK(n).nama) || 'Kumpulan ' + n;
+const jawapan = (n, i) => { const s = setK(n); return (s && s.jawapan[i]) || { k1: '', k2: '', km: '—' }; };
+function keLogMasuk() { toast('Sesi tamat. Sila log masuk semula.', 4000); setTimeout(() => location.href = '/login.html?next=' + encodeURIComponent(location.pathname + location.search), 1400); }
+
+// =============================================================
+// STATUS
+// =============================================================
+function statusUI(tx, cls) { $('statTx').textContent = tx; $('dot').className = 'dot ' + cls; }
+function kemasStatus() {
+  if (!kod) return statusUI('Belum disambung', 'wait');
+  if (!wsOk) return statusUI(`Kod ${kod} · menyambung…`, 'wait');
+  if (!bilPaparan) return statusUI(`Kod ${kod} · skrin TV tiada`, 'bad');
+  statusUI(`Bersambung ke skrin TV ${kod}`, 'ok');
+}
+function hantar(o) { if (ws && ws.readyState === 1) { ws.send(JSON.stringify(o)); return true; } toast('Belum bersambung. Tunggu sebentar…'); return false; }
+
+// =============================================================
+// LUKIS PAPARAN
+// =============================================================
+function kaki(html) { $('kaki').hidden = !html; $('kakiDalam').innerHTML = html || ''; }
+function papar(nama, html, kakiHtml) {
+  const baru = nama !== paparLama; paparLama = nama;
+  $('utama').innerHTML = `<div class="${baru ? 'v' : ''}">${html}</div>`; kaki(kakiHtml);
+  if (baru) scrollTo(0, 0);
+}
+function render() {
+  if (!kod) return lukisKod();
+  if (!S) return papar('tunggu', '<div class="kadKod"><h2>Menyambung…</h2><p class="sub">Pastikan skrin TV Kapsul Kata Majmuk sudah dibuka.</p></div>');
+  if (S.kumpulan !== kumpulanKini) { kumpulanKini = S.kumpulan; buangGambar(); ubahTanda = false; }
+  // tanda dari server (cth. telefon di-refresh)
+  if (S.keputusan && tanda.every((x) => x === null)) tanda = S.keputusan.slice();
+  if (S.fasa === 'pilih' || S.fasa === 'tamat') return lukisPilih();
+  if (S.fasa === 'ambil') return lukisAmbil();
+  if (S.fasa === 'imbas' || (S.fasa === 'dedah' && ubahTanda)) return lukisTanda();
+  if (S.fasa === 'dedah') return lukisDedah();
+}
+function lukisKod() {
+  papar('kod', `<div class="kadKod"><h2>Masukkan kod bilik</h2><p class="sub">Kod 4 digit tertera pada skrin TV.</p>
+    <input id="kodIn" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="····"><button class="btnUtama" id="kodBtn">Sambung</button></div>`);
+  $('kodBtn').onclick = () => { const k = $('kodIn').value.replace(/\D/g, ''); if (k.length !== 4) return toast('Masukkan 4 digit kod'); kod = k; history.replaceState(null, '', '?bilik=' + kod); kemasStatus(); render(); sambung(); };
+  $('kodIn').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('kodBtn').click(); });
+}
+function lukisPilih() {
+  const sel = S.selesai || {}, tamat = S.fasa === 'tamat';
+  const banner = tamat ? `<div class="banner">🎉 <span>"TERIMA KASIH!" dipaparkan untuk Kumpulan ${S.kumpulan}.</span><button class="btnKedua" id="btnLihatSemula">↩ Kapsul 4</button></div>` : '';
+  papar('pilih', `${banner}<h2>Pilih kumpulan</h2><p class="sub">Ketik kumpulan yang akan disemak. Gambar lama akan dipadam.</p>
+    <div class="gridK">${[1, 2, 3, 4, 5, 6].map((n) => { const s = sel[n];
+      return `<button class="gk ${s ? 'siap' : ''}" data-n="${n}"><span class="n">${s ? '✓' : n}</span><span class="t">${esc(namaKump(n))}</span><span class="s">${s ? `Selesai · ${s.betul}/${s.jumlah} betul` : 'Belum disemak'}</span></button>`; }).join('')}</div>
+    <p class="nota">Gambar kamera hanya disimpan sementara dalam memori dan dipadam bila kumpulan lain dipilih.</p>`);
+  document.querySelectorAll('.gk').forEach((b) => b.onclick = () => {
+    const n = +b.dataset.n;
+    if (sel[n] && !confirm(`${namaKump(n)} sudah disemak. Semak semula?`)) return;
+    getar(20); hantar({ jenis: 'kumpulan', n });
+  });
+  if (tamat) $('btnLihatSemula').onclick = () => hantar({ jenis: 'sebelum' });
+}
+function lukisAmbil() {
+  const ada = S.foto.filter(Boolean).length;
+  papar('ambil', `<div class="bar"><button class="btnKedua" id="btnKembali">← Kumpulan</button><h2>${esc(namaKump(S.kumpulan))}</h2></div>
+    <p class="sub">Ambil gambar murid memegang kapsul 1 hingga 4.</p>
+    <div class="slot4">${[0, 1, 2, 3].map((i) => {
+      const u = naik[i], ok = S.foto[i];
+      const st = u && u.st === 'naik' ? `<span class="st">Menghantar…</span>` : u && u.st === 'gagal' ? `<span class="st gagal">⚠ Gagal, ketik</span>` : ok ? `<span class="st ok">✓ Dihantar</span>` : `<span class="st">Ketik 📸</span>`;
+      return `<button class="sl" data-i="${i}"><span class="gb">${thumb[i] ? `<img src="${thumb[i]}" alt="">` : `<span class="kos">📸</span>`}<span class="prog" style="width:${u && u.st === 'naik' ? u.p || 3 : 0}%"></span></span>
+        <span class="lbl"><span class="no" style="background:${WARNA[i]}">${i + 1}</span>${st}</span></button>`; }).join('')}</div>
+    <p class="nota">Ketik kotak untuk ambil atau ambil semula gambar. Skrin TV hanya tunjuk gambar selepas DEPLOY.</p>`,
+    `<button class="btnUtama" id="btnDeploy" ${ada === 4 ? '' : 'disabled'}>🚀 DEPLOY ${ada === 4 ? '' : `(${ada}/4)`}</button>`);
+  $('btnKembali').onclick = () => { if (ada && !confirm('Kembali ke senarai kumpulan? Gambar kumpulan ini akan dipadam.')) return; hantar({ jenis: 'kembali' }); };
+  document.querySelectorAll('.sl').forEach((b) => b.onclick = () => { const i = +b.dataset.i; if (naik[i] && naik[i].st === 'gagal' && naik[i].blob) return hantarFoto(i, naik[i].blob); bukaKam(i); });
+  $('btnDeploy').onclick = () => { if (S.foto.filter(Boolean).length < 4) return toast('Lengkapkan 4 gambar dahulu'); getar([30, 40, 30]); hantar({ jenis: 'deploy' }); };
+}
+function kemasSlot(i) { // kemas satu slot tanpa lukis semula semua (elak kelip)
+  if (paparLama !== 'ambil') return;
+  const u = naik[i], b = document.querySelector(`.sl[data-i="${i}"] .prog`);
+  if (b && u && u.st === 'naik') b.style.width = Math.max(3, u.p || 0) + '%';
+}
+function lukisTanda() {
+  const n = S.kumpulan, semua = tanda.every((x) => x !== null);
+  papar('tanda', `<div class="bar"><h2>Tanda jawapan</h2></div>
+    <p class="sub">Skrin TV sedang <b>mengimbas</b>. Tanda setiap kapsul, kemudian dedahkan.</p>
+    <div class="tanda">${[0, 1, 2, 3].map((i) => { const j = jawapan(n, i), t = tanda[i];
+      return `<div class="td ${t === true ? 'b' : t === false ? 's' : ''}"><button class="th" data-lihat="${i}">${thumb[i] ? `<img src="${thumb[i]}" alt="Kapsul ${i + 1}">` : '📸'}</button>
+        <div><div class="k"><i style="background:${WARNA[i]}"></i>Kapsul ${i + 1} · jawapan betul</div><div class="j">${esc(j.km)}</div>
+        <div class="pil"><button data-i="${i}" data-v="1" class="${t === true ? 'bOn' : ''}">✓ BETUL</button><button data-i="${i}" data-v="0" class="${t === false ? 'sOn' : ''}">✗ SALAH</button></div></div></div>`; }).join('')}</div>
+    <button class="pautan" id="btnAmbilSemula">📸 Ambil semula gambar</button>`,
+    `<button class="btnUtama hijau" id="btnDedah" ${semua ? '' : 'disabled'}>🔍 DEDAH JAWAPAN</button>`);
+  document.querySelectorAll('.pil button').forEach((b) => b.onclick = () => { tanda[+b.dataset.i] = b.dataset.v === '1'; getar(12); lukisTanda(); });
+  document.querySelectorAll('[data-lihat]').forEach((b) => b.onclick = () => lihat(+b.dataset.lihat));
+  $('btnAmbilSemula').onclick = () => { ubahTanda = false; hantar({ jenis: 'ambilSemula' }); };
+  $('btnDedah').onclick = () => { if (!tanda.every((x) => x !== null)) return; ubahTanda = false; getar([20, 30, 20]); hantar({ jenis: 'markah', keputusan: tanda.slice(), padanan: [0, 1, 2, 3] }); };
+}
+function lukisDedah() {
+  const i = S.idx, n = S.kumpulan, j = jawapan(n, (S.padanan || [0, 1, 2, 3])[i]), b = S.keputusan && S.keputusan[i], akhir = i === 3;
+  papar('dedah-' + i, `<div class="kadD"><div class="ke">Kapsul ${i + 1} daripada 4</div>
+      <div class="gbD">${thumb[i] ? `<img src="${thumb[i]}" alt="">` : ''}</div>
+      <div class="vr ${b ? 'b' : 's'}">${b ? '✓ BETUL' : '✗ TIDAK TEPAT'}</div>
+      <div class="jw">${b ? 'Jawapan:' : 'Jawapannya adalah'} <b>${esc(j.km)}</b></div>
+      <div class="titik4">${[0, 1, 2, 3].map((k) => `<i class="${k <= i ? (S.keputusan[k] ? 'b' : 's') : ''} ${k === i ? 'kini' : ''}"></i>`).join('')}</div></div>
+    <button class="pautan" id="btnUbah">✏️ Ubah tanda</button>`,
+    `<button class="btnKedua" id="btnSebelum" ${i === 0 ? 'disabled' : ''} style="padding:16px">◀</button><button class="btnUtama" id="btnNext">${akhir ? 'SELESAI 🎉' : 'SETERUSNYA ▶'}</button>`);
+  $('btnSebelum').onclick = () => hantar({ jenis: 'sebelum' });
+  $('btnNext').onclick = () => { getar(18); hantar({ jenis: 'seterusnya' }); };
+  $('btnUbah').onclick = () => { ubahTanda = true; render(); };
+}
+function lihat(i) { if (!thumb[i]) return; $('lihatImg').src = thumb[i]; $('lihat').hidden = false; }
+$('lihat').onclick = () => { $('lihat').hidden = true; };
+
+// gambar kecil dari server bila telefon di-refresh (memori sahaja)
+const sedangAmbil = {};
+async function ambilThumb(i, v) {
+  if (thumb[i] || !v || sedangAmbil[i]) return; sedangAmbil[i] = 1;
+  try { const r = await fetch(`/api/kapsul/${kod}/foto/${i}?v=${v}`, { cache: 'no-store' }); if (r.ok && r.status === 200) { thumb[i] = URL.createObjectURL(await r.blob()); render(); } } catch (e) {}
+  delete sedangAmbil[i];
+}
+
+// =============================================================
+// KAMERA (gambar TIDAK disimpan dalam telefon/galeri)
+// =============================================================
+let strim = null, slotKam = 0, bukaToken = 0, zoom = 1, zoomHW = null, torchOn = false;
+function bukaKam(i) {
+  slotKam = i; $('kamera').hidden = false; kemasKamUI(); history.pushState({ kam: 1 }, ''); mulaStrim();
+}
+function tutupKam(dariSejarah) {
+  bukaToken++; if (strim) { strim.getTracks().forEach((t) => t.stop()); strim = null; } $('vid').srcObject = null; $('kamera').hidden = true;
+  if (!dariSejarah && history.state && history.state.kam) history.back();
+}
+addEventListener('popstate', () => { if (!$('kamera').hidden) tutupKam(true); });
+function kemasKamUI() {
+  $('kamKp').innerHTML = `<span style="background:${WARNA[slotKam]}">${slotKam + 1}</span><span>Kapsul</span>`;
+  [...$('kamTt').children].forEach((el, k) => el.className = k === slotKam ? 'kini' : (S && S.foto[k]) || thumb[k] ? 'ada' : '');
+}
+async function mulaStrim() {
+  if (strim) return;
+  const tok = ++bukaToken; $('kamGagal').hidden = true; $('btnSnap').disabled = false;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return kamGagal('Pelayar ini tidak menyokong kamera dalam halaman. Guna butang 📷.');
+  try {
+    const s = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1440 } } });
+    if (tok !== bukaToken || $('kamera').hidden) { s.getTracks().forEach((t) => t.stop()); return; }
+    strim = s; const v = $('vid'); v.srcObject = s; await v.play().catch(() => {});
+    const tr = s.getVideoTracks()[0], cap = tr.getCapabilities ? tr.getCapabilities() : {};
+    zoomHW = cap.zoom && cap.zoom.max > 1 ? cap.zoom : null;
+    $('btnTorch').hidden = !cap.torch;
+    try { if (cap.focusMode && cap.focusMode.includes('continuous')) await tr.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }); } catch (e) {}
+    setZoom(zoom);
+  } catch (e) { kamGagal(e && e.name === 'NotAllowedError' ? 'Akses kamera ditolak. Benarkan kamera dalam tetapan pelayar, atau guna butang 📷 di bawah.' : 'Kamera tidak dapat dibuka. Guna butang 📷 untuk aplikasi kamera telefon.'); }
+}
+function kamGagal(t) { $('kamGagal').hidden = false; $('kamGagalTx').textContent = t; $('btnSnap').disabled = true; }
+$('kamCuba').onclick = () => { if (strim) { strim.getTracks().forEach((t) => t.stop()); strim = null; } mulaStrim(); };
+function setZoom(z) {
+  zoom = clamp(z, 1, 4);
+  document.querySelectorAll('#zoomBar button').forEach((b) => b.classList.toggle('on', Math.abs(+b.dataset.z - zoom) < .05));
+  if (zoomHW && strim) {
+    const hz = clamp(zoom, zoomHW.min || 1, zoomHW.max);
+    strim.getVideoTracks()[0].applyConstraints({ advanced: [{ zoom: hz }] }).catch(() => {});
+    $('vid').style.transform = hz < zoom ? `scale(${zoom / hz})` : '';
+  } else $('vid').style.transform = zoom > 1 ? `scale(${zoom})` : '';
+}
+document.querySelectorAll('#zoomBar button').forEach((b) => b.onclick = () => { setZoom(+b.dataset.z); getar(8); });
+// cubit untuk zoom
+const jari = new Map(); let mulaCubit = null;
+$('pentas').addEventListener('pointerdown', (e) => { jari.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (jari.size === 2) { const [a, b] = [...jari.values()]; mulaCubit = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, z: zoom }; } });
+$('pentas').addEventListener('pointermove', (e) => { if (!jari.has(e.pointerId)) return; jari.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (jari.size === 2 && mulaCubit) { const [a, b] = [...jari.values()]; setZoom(mulaCubit.z * (Math.hypot(a.x - b.x, a.y - b.y) || 1) / mulaCubit.d); } });
+const lepas = (e) => { jari.delete(e.pointerId); if (jari.size < 2) mulaCubit = null; };
+$('pentas').addEventListener('pointerup', lepas); $('pentas').addEventListener('pointercancel', lepas);
+$('btnTorch').onclick = async () => { if (!strim) return; torchOn = !torchOn; try { await strim.getVideoTracks()[0].applyConstraints({ advanced: [{ torch: torchOn }] }); } catch (e) { toast('Lampu suluh tidak disokong'); } };
+$('btnTutupKam').onclick = () => tutupKam();
+
+// tangkap apa yang kelihatan di skrin (ikut zoom & object-fit:cover)
+function snap() {
+  const v = $('vid'); if (!strim || !v.videoWidth) return toast('Kamera belum sedia');
+  const vw = v.videoWidth, vh = v.videoHeight;
+  const sCss = (v.style.transform.match(/scale\(([\d.]+)\)/) || [0, 1])[1] * 1;
+  // kawasan video yang kelihatan (cover)
+  const ce = $('pentas').getBoundingClientRect(), k = Math.max(ce.width / vw, ce.height / vh) * sCss;
+  const sw = Math.min(vw, ce.width / k), sh = Math.min(vh, ce.height / k), sx = (vw - sw) / 2, sy = (vh - sh) / 2;
+  const s = Math.min(1, MAX_SISI / Math.max(sw, sh)), c = document.createElement('canvas');
+  c.width = Math.round(sw * s); c.height = Math.round(sh * s);
+  const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(v, sx, sy, sw, sh, 0, 0, c.width, c.height);
+  $('kilat').classList.remove('on'); void $('kilat').offsetWidth; $('kilat').classList.add('on'); getar(35);
+  c.toBlob((b) => b && simpanSlot(slotKam, b), 'image/jpeg', KUALITI);
+}
+async function dariFail(f) {
+  if (!f) return;
+  try {
+    let src;
+    if (window.createImageBitmap) { try { src = await createImageBitmap(f, { imageOrientation: 'from-image' }); } catch (e) { src = await createImageBitmap(f); } }
+    else { src = new Image(); src.src = URL.createObjectURL(f); await src.decode(); }
+    const w = src.width || src.naturalWidth, h = src.height || src.naturalHeight, s = Math.min(1, MAX_SISI / Math.max(w, h)), c = document.createElement('canvas');
+    c.width = Math.round(w * s); c.height = Math.round(h * s); c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+    c.toBlob((b) => b && simpanSlot(slotKam, b), 'image/jpeg', KUALITI);
+  } catch (e) { toast('Gambar tidak dapat dibaca. Cuba lagi.'); }
+}
+function simpanSlot(i, blob) {
+  if (thumb[i]) URL.revokeObjectURL(thumb[i]);
+  thumb[i] = URL.createObjectURL(blob);
+  hantarFoto(i, blob);
+  // terus ke kapsul seterusnya yang belum ada gambar
+  const seterusnya = [0, 1, 2, 3].find((k) => k !== i && !thumb[k] && !(S && S.foto[k]));
+  if (seterusnya === undefined) { tutupKam(); render(); toast('✅ 4 gambar siap. Tekan DEPLOY!'); }
+  else { slotKam = seterusnya; kemasKamUI(); toast(`Kapsul ${i + 1} ✓ · seterusnya kapsul ${seterusnya + 1}`, 1600); render(); }
+}
+$('btnSnap').onclick = snap;
+$('btnNative').onclick = () => $('fNative').click();
+$('btnGaleri').onclick = () => $('fGaleri').click();
+$('fNative').onchange = (e) => { dariFail(e.target.files[0]); e.target.value = ''; };
+$('fGaleri').onchange = (e) => { dariFail(e.target.files[0]); e.target.value = ''; };
+
+// =============================================================
+// MUAT NAIK (memori server sahaja) + cuba semula
+// =============================================================
+function muatNaik(i, blob) {
+  return new Promise((ok, no) => {
+    const x = new XMLHttpRequest();
+    x.open('POST', `/api/kapsul/${kod}/foto/${i}`); x.setRequestHeader('Content-Type', 'image/jpeg'); x.timeout = 45000;
+    x.upload.onprogress = (e) => { if (e.lengthComputable && naik[i]) { naik[i].p = e.loaded / e.total * 100; kemasSlot(i); } };
+    x.onload = () => { let r = {}; try { r = JSON.parse(x.responseText); } catch (e) {} if (x.status === 200 && r.ok) ok(r); else no(Object.assign(new Error(r.mesej || 'Ralat ' + x.status), { status: x.status })); };
+    x.onerror = () => no(new Error('Rangkaian terputus')); x.ontimeout = () => no(new Error('Masa tamat'));
+    x.send(blob);
+  });
+}
+async function hantarFoto(i, blob) {
+  const tok = {}; naik[i] = { st: 'naik', p: 0, blob, tok }; render();
+  for (let cubaan = 0; cubaan < 3; cubaan++) {
+    try {
+      const r = await muatNaik(i, blob); if (!naik[i] || naik[i].tok !== tok) return;
+      naik[i] = { st: 'ok' }; if (S) S.foto[i] = r.v; render(); return;
+    } catch (e) {
+      if (!naik[i] || naik[i].tok !== tok) return;
+      if (e.status === 401) return keLogMasuk();
+      if ([400, 404, 409, 413].includes(e.status) || cubaan === 2) { naik[i] = { st: 'gagal', blob }; render(); return toast('❌ Kapsul ' + (i + 1) + ': ' + e.message, 4000); }
+      await new Promise((r) => setTimeout(r, 800 * (cubaan + 1)));
+    }
+  }
+}
+
+// =============================================================
+// WEBSOCKET
+// =============================================================
+let ws = null, tunda = 800, pingT = null;
+function sambung() {
+  if (!kod) return;
+  try { ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/kapsul-km?bilik=${kod}&peranan=telefon`); } catch (e) { return ulang(); }
+  ws.onopen = () => { wsOk = true; tunda = 800; kemasStatus(); clearInterval(pingT); pingT = setInterval(() => { try { ws.send('{"jenis":"ping"}'); } catch (e) {} }, 20000); };
+  ws.onmessage = (ev) => {
+    let d; try { d = JSON.parse(ev.data); } catch (e) { return; }
+    if (d.jenis === 'keadaan') {
+      const lama = S; S = d; bilPaparan = d.paparan || 0; kemasStatus();
+      if (!lama || lama.kumpulan !== d.kumpulan) muatSet().then(render);
+      // pelayan padam gambar (cth. tamat masa) -> lupakan juga di telefon
+      d.foto.forEach((v, i) => { if (!v && thumb[i] && !(naik[i] && naik[i].st !== 'ok')) { URL.revokeObjectURL(thumb[i]); thumb[i] = null; naik[i] = null; } else if (v && !thumb[i]) ambilThumb(i, v); });
+      if (d.fasa === 'pilih') ubahTanda = false;
+      if (d.fasa === 'dedah' && lama && lama.fasa !== 'dedah') ubahTanda = false;
+      render();
+    } else if (d.jenis === 'bilangan') { bilPaparan = d.paparan || 0; kemasStatus(); }
+    else if (d.jenis === 'ralat') toast('⚠️ ' + d.mesej, 3500);
+  };
+  ws.onclose = (ev) => {
+    wsOk = false; clearInterval(pingT); kemasStatus();
+    if (ev.code === 4003) return keLogMasuk();
+    if (ev.code === 4004) { bilPaparan = 0; statusUI(`Skrin ${kod} tiada. Buka skrin TV Kapsul di PC.`, 'bad'); tunda = 3000; }
+    if (ev.code === 4000) { kod = ''; S = null; render(); kemasStatus(); return toast('Kod bilik tidak sah'); }
+    ulang();
+  };
+  ws.onerror = () => {};
+}
+function ulang() { setTimeout(sambung, tunda); tunda = Math.min(tunda * 1.6, 6000); }
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') { jagaSkrin(); if (kod && (!ws || ws.readyState > 1)) { tunda = 200; sambung(); } if (!$('kamera').hidden) mulaStrim(); }
+  else if (strim) { bukaToken++; strim.getTracks().forEach((t) => t.stop()); strim = null; }
+});
+let kunciSkrin = null;
+async function jagaSkrin() { try { if ('wakeLock' in navigator && document.visibilityState === 'visible') kunciSkrin = await navigator.wakeLock.request('screen'); } catch (e) {} }
+
+jagaSkrin(); kemasStatus(); render(); if (kod) { muatSet(); sambung(); }
+window.__tel = { get S() { return S; }, get paparan() { return paparLama; }, simpanSlot, get thumb() { return thumb.map(Boolean); } };
+})();
+</script>
+</body>
+</html>
