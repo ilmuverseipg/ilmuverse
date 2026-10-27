@@ -64,8 +64,8 @@
   .bar h2 { margin: 0; }
   .bar .btnKedua { flex: none; }
   .slot4 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .sl { position: relative; border: 0; padding: 0; background: #fff; border-radius: 22px; overflow: hidden; aspect-ratio: 3 / 4; box-shadow: var(--bayang); display: flex; flex-direction: column; color: var(--dakwat); }
-  .sl .gb { flex: 1; display: grid; place-items: center; background: #eef6f4; overflow: hidden; position: relative; }
+  .sl { position: relative; border: 0; padding: 0; background: #fff; border-radius: 22px; overflow: hidden; box-shadow: var(--bayang); display: flex; flex-direction: column; color: var(--dakwat); }
+  .sl .gb { aspect-ratio: 4 / 3; display: grid; place-items: center; background: #eef6f4; overflow: hidden; position: relative; }
   .sl .gb img { width: 100%; height: 100%; object-fit: cover; }
   .sl .gb .kos { font-size: 40px; opacity: .55; }
   .sl .lbl { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; font-weight: 700; gap: 6px; }
@@ -79,8 +79,9 @@
   #kamera { position: fixed; inset: 0; z-index: 20; background: #000; display: flex; flex-direction: column; touch-action: none; }
   #kamera .pentas { flex: 1; position: relative; overflow: hidden; }
   #vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform-origin: 50% 50%; }
-  .panduan { position: absolute; left: 50%; top: 46%; width: 84%; aspect-ratio: 2.3 / 1; transform: translate(-50%, -50%); border-radius: 999px; pointer-events: none;
-    border: 3px dashed rgba(255,255,255,.95); box-shadow: 0 0 0 100vmax rgba(0,0,0,.16), 0 0 18px rgba(20,163,148,.8), inset 0 0 18px rgba(20,163,148,.5); }
+  .bingkaiL { position: absolute; pointer-events: none; border: 2px solid rgba(255,255,255,.75); border-radius: 14px; box-shadow: 0 0 0 100vmax rgba(0,0,0,.42); }
+  .panduan { position: absolute; left: 50%; top: 50%; width: 80%; aspect-ratio: 2.3 / 1; transform: translate(-50%, -50%); border-radius: 999px; pointer-events: none;
+    border: 3px dashed rgba(255,255,255,.95); box-shadow: 0 0 18px rgba(20,163,148,.8), inset 0 0 18px rgba(20,163,148,.5); }
   .panduan::before { content: ''; position: absolute; left: 50%; top: 10%; bottom: 10%; border-left: 2px dashed rgba(255,255,255,.45); }
   .kamAtas { position: absolute; left: 0; right: 0; top: 0; padding: calc(12px + var(--atas)) 14px 10px; display: flex; align-items: center; gap: 10px; background: linear-gradient(180deg, rgba(0,0,0,.55), transparent); }
   .kamAtas .kp { font-family: 'Baloo 2'; font-weight: 800; font-size: 20px; color: #fff; display: flex; overflow: hidden; border-radius: 999px; }
@@ -104,9 +105,9 @@
 
   /* tanda & dedah */
   .tanda { display: grid; gap: 12px; }
-  .td { background: #fff; border-radius: 20px; padding: 10px; box-shadow: var(--bayang); display: grid; grid-template-columns: 84px 1fr; gap: 12px; align-items: center; border: 3px solid transparent; transition: border-color .2s; }
+  .td { background: #fff; border-radius: 20px; padding: 10px; box-shadow: var(--bayang); display: grid; grid-template-columns: 112px 1fr; gap: 12px; align-items: center; border: 3px solid transparent; transition: border-color .2s; }
   .td.b { border-color: var(--hijau); } .td.s { border-color: var(--merah); }
-  .td .th { width: 84px; height: 84px; border-radius: 14px; overflow: hidden; background: #eef6f4; display: grid; place-items: center; border: 0; padding: 0; }
+  .td .th { width: 112px; height: 84px; border-radius: 14px; overflow: hidden; background: #eef6f4; display: grid; place-items: center; border: 0; padding: 0; }
   .td .th img { width: 100%; height: 100%; object-fit: cover; }
   .td .k { font-size: 13px; font-weight: 700; color: var(--kelabu); display: flex; align-items: center; gap: 6px; }
   .td .k i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
@@ -150,10 +151,10 @@
 <div id="kamera" hidden>
   <div class="pentas" id="pentas">
     <video id="vid" playsinline muted autoplay></video>
-    <div class="panduan" aria-hidden="true"></div>
+    <div class="bingkaiL" id="bingkaiL" aria-hidden="true"><div class="panduan"></div></div>
     <div class="kamAtas"><span class="kp" id="kamKp"></span><span class="tt" id="kamTt"><i></i><i></i><i></i><i></i></span></div>
     <div class="zoomBar" id="zoomBar"><button data-z="1" class="on">1×</button><button data-z="1.5">1.5×</button><button data-z="2">2×</button><button data-z="3">3×</button></div>
-    <div class="kamTip">Letakkan kapsul dalam bingkai · cubit untuk zoom</div>
+    <div class="kamTip">Hanya kawasan dalam bingkai diambil · cubit untuk zoom</div>
     <div id="kamGagal" hidden><div style="font-size:46px">📷</div><div id="kamGagalTx" style="font-weight:600;line-height:1.4"></div><button class="btnKedua" id="kamCuba">Cuba lagi</button></div>
     <div id="kilat"></div>
   </div>
@@ -318,7 +319,7 @@ async function ambilThumb(i, v) {
 // =============================================================
 let strim = null, slotKam = 0, bukaToken = 0, zoom = 1, zoomHW = null, torchOn = false;
 function bukaKam(i) {
-  slotKam = i; $('kamera').hidden = false; kemasKamUI(); history.pushState({ kam: 1 }, ''); mulaStrim();
+  slotKam = i; $('kamera').hidden = false; kemasKamUI(); requestAnimationFrame(letakBingkai); history.pushState({ kam: 1 }, ''); mulaStrim();
 }
 function tutupKam(dariSejarah) {
   bukaToken++; if (strim) { strim.getTracks().forEach((t) => t.stop()); strim = null; } $('vid').srcObject = null; $('kamera').hidden = true;
@@ -365,19 +366,30 @@ $('pentas').addEventListener('pointerup', lepas); $('pentas').addEventListener('
 $('btnTorch').onclick = async () => { if (!strim) return; torchOn = !torchOn; try { await strim.getVideoTracks()[0].applyConstraints({ advanced: [{ torch: torchOn }] }); } catch (e) { toast('Lampu suluh tidak disokong'); } };
 $('btnTutupKam').onclick = () => tutupKam();
 
-// tangkap apa yang kelihatan di skrin (ikut zoom & object-fit:cover)
+// Gambar sentiasa LANDSKAP 4:3 - ikut bingkai putih pada skrin kamera
+const NISBAH = 4 / 3;
+function bingkai() { // saiz & kedudukan bingkai 4:3 dalam pentas
+  const ce = $('pentas').getBoundingClientRect(), pad = 8;
+  let fw = ce.width - pad * 2, fh = fw / NISBAH;
+  const maxH = ce.height - 150; // ruang untuk butang zoom di bawah
+  if (fh > maxH) { fh = maxH; fw = fh * NISBAH; }
+  return { cw: ce.width, ch: ce.height, fw, fh, fx: (ce.width - fw) / 2, fy: Math.max(pad, (ce.height - fh) / 2 - 30) };
+}
+function letakBingkai() { if ($('kamera').hidden) return; const b = bingkai(), el = $('bingkaiL'); Object.assign(el.style, { left: b.fx + 'px', top: b.fy + 'px', width: b.fw + 'px', height: b.fh + 'px' }); }
+addEventListener('resize', letakBingkai);
 function snap() {
   const v = $('vid'); if (!strim || !v.videoWidth) return toast('Kamera belum sedia');
-  const vw = v.videoWidth, vh = v.videoHeight;
+  const vw = v.videoWidth, vh = v.videoHeight, b = bingkai();
   const sCss = (v.style.transform.match(/scale\(([\d.]+)\)/) || [0, 1])[1] * 1;
-  // kawasan video yang kelihatan (cover)
-  const ce = $('pentas').getBoundingClientRect(), k = Math.max(ce.width / vw, ce.height / vh) * sCss;
-  const sw = Math.min(vw, ce.width / k), sh = Math.min(vh, ce.height / k), sx = (vw - sw) / 2, sy = (vh - sh) / 2;
+  const k = Math.max(b.cw / vw, b.ch / vh) * sCss; // skala video (cover + zoom digital)
+  // tukar bingkai skrin -> koordinat video
+  let sx = vw / 2 + (b.fx - b.cw / 2) / k, sy = vh / 2 + (b.fy - b.ch / 2) / k, sw = b.fw / k, sh = b.fh / k;
+  sx = Math.max(0, sx); sy = Math.max(0, sy); sw = Math.min(sw, vw - sx); sh = Math.min(sh, vh - sy);
   const s = Math.min(1, MAX_SISI / Math.max(sw, sh)), c = document.createElement('canvas');
   c.width = Math.round(sw * s); c.height = Math.round(sh * s);
   const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(v, sx, sy, sw, sh, 0, 0, c.width, c.height);
   $('kilat').classList.remove('on'); void $('kilat').offsetWidth; $('kilat').classList.add('on'); getar(35);
-  c.toBlob((b) => b && simpanSlot(slotKam, b), 'image/jpeg', KUALITI);
+  c.toBlob((bl) => bl && simpanSlot(slotKam, bl), 'image/jpeg', KUALITI);
 }
 async function dariFail(f) {
   if (!f) return;
@@ -385,8 +397,11 @@ async function dariFail(f) {
     let src;
     if (window.createImageBitmap) { try { src = await createImageBitmap(f, { imageOrientation: 'from-image' }); } catch (e) { src = await createImageBitmap(f); } }
     else { src = new Image(); src.src = URL.createObjectURL(f); await src.decode(); }
-    const w = src.width || src.naturalWidth, h = src.height || src.naturalHeight, s = Math.min(1, MAX_SISI / Math.max(w, h)), c = document.createElement('canvas');
-    c.width = Math.round(w * s); c.height = Math.round(h * s); c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+    // potong tengah ke landskap 4:3
+    const w = src.width || src.naturalWidth, h = src.height || src.naturalHeight;
+    let sw = w, sh = w / NISBAH; if (sh > h) { sh = h; sw = h * NISBAH; }
+    const sx = (w - sw) / 2, sy = (h - sh) / 2, s = Math.min(1, MAX_SISI / sw), c = document.createElement('canvas');
+    c.width = Math.round(sw * s); c.height = Math.round(sh * s); c.getContext('2d').drawImage(src, sx, sy, sw, sh, 0, 0, c.width, c.height);
     c.toBlob((b) => b && simpanSlot(slotKam, b), 'image/jpeg', KUALITI);
   } catch (e) { toast('Gambar tidak dapat dibaca. Cuba lagi.'); }
 }
