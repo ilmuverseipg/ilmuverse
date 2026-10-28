@@ -74,7 +74,7 @@
     return new Promise((ok) => {
       if (tok !== tokenCakap) return ok('batal');
       const u = new SpeechSynthesisUtterance(sebutan(teks));
-      u.voice = K.suara; u.lang = K.suara.lang; u.rate = opt.rate || 0.92; u.pitch = opt.pitch || 1.05; u.volume = 1;
+      u.voice = K.suara; u.lang = K.suara.lang; u.rate = opt.rate || 1.08; u.pitch = opt.pitch || 1.05; u.volume = 1;
       let siap = false, mula = false;
       const tamat = (hasil) => { if (siap) return; siap = true; if (mula) bcakap = Math.max(0, bcakap - 1); duck(); ok(hasil); };
       u.onstart = () => { mula = true; bcakap++; duck(); };
@@ -94,7 +94,7 @@
         if (!K._amaran && K.amaran) { K._amaran = true; K.amaran('Suara Bahasa Melayu Malaysia tiada pada pelayar ini. Buka skrin TV dengan Microsoft Edge (suara "Yasmin" / "Osman").'); }
         return;
       }
-      const jeda = 160 - (Date.now() - akhirBatal); if (jeda > 0) await tidur(jeda);
+      const jeda = 120 - (Date.now() - akhirBatal); if (jeda > 0) await tidur(jeda);
       let h = await ucap(teks, opt, tok);
       if (h === 'not-allowed') { if (K.amaran && !K._amaranKlik) { K._amaranKlik = true; K.amaran('Klik sekali pada skrin TV untuk hidupkan suara.'); } return; }
       if (h === 'senyap') { if (K.amaran && !K._amaranKlik) { K._amaranKlik = true; K.amaran('Suara tidak keluar. Klik sekali pada skrin TV, dan pastikan bunyi PC tidak senyap.'); } return; }

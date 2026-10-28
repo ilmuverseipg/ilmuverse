@@ -541,8 +541,9 @@ async function dedah() {
   SFX.masuk();
   await tunggu(420); if (kini !== kunciDedah) return;
   betul ? SFX.betul() : SFX.salah();
-  cakap(betul ? `Betul! ${j.km}.` : `Tidak tepat. Jawapannya ialah ${j.km}.`);
-  cakap(`${j.k1}, tambah ${j.k2}, menjadi ${j.km}.`, false);
+  // satu ucapan sahaja (tiada jeda): "Betul! Air kosong. Air tambah kosong, jadi air kosong."
+  const persamaan = `${j.k1} tambah ${j.k2}, jadi ${j.km}.`;
+  cakap(betul ? `Betul! ${j.km}. ${persamaan}` : `Tidak tepat. Jawapannya ialah ${j.km}. ${persamaan}`);
   for (const t of [900, 1500, 2100]) { setTimeout(() => { if (kini === kunciDedah) SFX.pop(); }, t - 420); }
   setTimeout(() => { if (kini === kunciDedah) SFX.kilau(); }, 2600 - 420);
 }

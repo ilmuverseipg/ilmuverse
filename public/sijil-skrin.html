@@ -133,12 +133,12 @@
   .persamaan.main > :nth-child(4) { animation-delay: .45s; } .persamaan.main > :nth-child(5) { animation-delay: .6s; }
   @keyframes pop { to { opacity: 1; transform: none; } }
 
-  .meja { flex: 1; min-height: 0; position: relative; display: flex; flex-direction: column; justify-content: center; padding: 3vh 2vw 4vh; overflow: visible; }
+  .meja { flex: 1; min-height: 0; position: relative; display: flex; flex-direction: column; justify-content: center; padding: 3vh calc(20vh + 3vw) 4vh 2vw; overflow: visible; }
   .meja .lbl { position: absolute; left: 1.4vw; top: 1.2vh; font-weight: 700; color: var(--kelabu); font-size: clamp(14px, 1.5vw, 22px); }
   .barisKad { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1.6vh 1vw; position: relative; }
   .kad { position: relative; font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(26px, 3.2vw, 56px); line-height: 1.2; color: var(--dakwat); background: #fff; border: 3px solid var(--hijau2); border-radius: 16px; padding: .15em .55em; box-shadow: 0 6px 0 #cfe5d2, 0 10px 20px rgba(11,93,59,.12); white-space: nowrap; }
   .kad.majmuk { background: #fff8e6; border-color: var(--emas); box-shadow: 0 6px 0 #f1dca9, 0 10px 20px rgba(224,165,38,.18); }
-  .kad.goyang { animation: goyang .32s ease-in-out 3; }
+  .kad.goyang { animation: goyang .3s ease-in-out 2; }
   .kad.goyang:nth-child(even) { animation-direction: reverse; }
   @keyframes goyang { 25% { transform: rotate(-5deg) translateY(-4px); } 75% { transform: rotate(5deg) translateY(2px); } }
   .kad b.hb, .kad b.nk { color: var(--merah); display: inline-block; }
@@ -155,7 +155,7 @@
   .garisAyat { height: 4px; border-radius: 4px; background: var(--hijau2); margin: 2.4vh auto 0; width: 0; transition: width .9s cubic-bezier(.3,.9,.3,1); }
   .garisAyat.on { width: 92%; }
 
-  .cop { position: absolute; right: 1.6vw; bottom: 1.4vh; width: 21vh; height: 21vh; pointer-events: none; opacity: 0; transform: scale(2.6) rotate(-30deg); }
+  .cop { position: absolute; right: 1.2vw; top: 50%; margin-top: -9.5vh; width: 19vh; height: 19vh; pointer-events: none; opacity: 0; transform: scale(2.6) rotate(-30deg); }
   .cop.main { animation: cop .55s cubic-bezier(.3,1.5,.5,1) forwards; }
   @keyframes cop { 0% { opacity: 0; transform: scale(2.6) rotate(-30deg); } 70% { opacity: .95; transform: scale(.92) rotate(-12deg); } 100% { opacity: .9; transform: scale(1) rotate(-12deg); } }
   .cop svg { width: 100%; height: 100%; }
@@ -190,7 +190,7 @@
   #kilatKata { position: fixed; inset: 0; z-index: 8; display: grid; place-items: center; pointer-events: none; opacity: 0; }
   #kilatKata span { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(90px, 16vw, 260px); line-height: 1; color: #fff; padding: .05em .45em .02em; border-radius: .3em; background: var(--hijau2); box-shadow: 0 0 0 .08em #fff, 0 30px 80px rgba(0,0,0,.35); transform: rotate(-4deg); }
   #kilatKata.salah span { background: var(--merah); font-size: clamp(64px, 11vw, 180px); }
-  #kilatKata.on { animation: kilatKata 1.25s cubic-bezier(.2,1.4,.4,1) forwards; }
+  #kilatKata.on { animation: kilatKata 1s cubic-bezier(.2,1.4,.4,1) forwards; }
   @keyframes kilatKata { 0% { opacity: 0; transform: scale(.3); } 18% { opacity: 1; transform: scale(1.08); } 30% { transform: scale(1); } 78% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.15); } }
   .tile .pic img { width: 100%; height: 100%; object-fit: cover; border-radius: 16px; }
 
@@ -548,7 +548,7 @@ async function dedah() {
   $('dPers').innerHTML = `<div class="tile"><div class="pic">${pic(b.u1, b.e1)}</div><div class="nm">${esc(b.k1)}</div></div><div class="op">+</div>
     <div class="tile"><div class="pic">${pic(b.u2, b.e2)}</div><div class="nm">${esc(b.k2)}</div></div><div class="op">=</div>
     <div class="tile km"><div class="pic">${pic(b.uk, b.ek)}</div><div class="nm">${esc(b.km)}</div></div>`;
-  cakap(`${b.k1}, tambah ${b.k2}, menjadi ${b.km}.`);
+  cakap(`${b.k1} tambah ${b.k2}, jadi ${b.km}.`);
   void $('dPers').offsetWidth; $('dPers').classList.add('main');
   const cop = $('cop'); cop.className = 'cop'; cop.innerHTML = '';
   $('garisAyat').classList.remove('on');
@@ -560,11 +560,11 @@ async function dedah() {
   const el = [...baris.children];
   SFX.masuk();
   // 1) kad jatuh satu demi satu (susunan bercampur seperti pada sijil)
-  el.forEach((e, i) => setTimeout(() => { if (!kini()) return; e.style.opacity = ''; e.animate([{ transform: 'translateY(-60px) rotate(-8deg)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 450, easing: 'cubic-bezier(.2,1.5,.4,1)' }); SFX.jatuh(i); }, 600 + i * 120));
-  await tunggu(600 + el.length * 120 + 500); if (!kini()) return;
+  el.forEach((e, i) => setTimeout(() => { if (!kini()) return; e.style.opacity = ''; e.animate([{ transform: 'translateY(-60px) rotate(-8deg)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 450, easing: 'cubic-bezier(.2,1.5,.4,1)' }); SFX.jatuh(i); }, 250 + i * 80));
+  await tunggu(250 + el.length * 80 + 300); if (!kini()) return;
   // 2) kocak sekejap
   el.forEach((e) => e.classList.add('goyang')); SFX.kocak();
-  await tunggu(1000); if (!kini()) return;
+  await tunggu(650); if (!kini()) return;
   el.forEach((e) => e.classList.remove('goyang'));
   // 3) FLIP: susun mengikut ayat betul
   const awal = el.map((e) => e.getBoundingClientRect());
@@ -572,21 +572,21 @@ async function dedah() {
   sk.urutan.forEach((i, n) => {
     const e = el[i], a = awal[i], z = e.getBoundingClientRect();
     e.animate([{ transform: `translate(${a.left - z.left}px, ${a.top - z.top}px)` }, { transform: 'translate(0, -26px) scale(1.06)', offset: .7 }, { transform: 'none' }],
-      { duration: 750, delay: n * 140, easing: 'cubic-bezier(.3,.9,.3,1)', fill: 'backwards' });
-    setTimeout(() => kini() && SFX.susun(n), n * 140 + 400);
+      { duration: 560, delay: n * 90, easing: 'cubic-bezier(.3,.9,.3,1)', fill: 'backwards' });
+    setTimeout(() => kini() && SFX.susun(n), n * 90 + 300);
   });
-  await tunggu(750 + el.length * 140 + 200); if (!kini()) return;
+  await tunggu(560 + el.length * 90 + 120); if (!kini()) return;
   $('garisAyat').classList.add('on');
   // 4) huruf besar & noktah menyala
   const pertama = el[sk.urutan[0]], akhir = el[sk.urutan[sk.urutan.length - 1]];
   const tA = pertama.textContent, tZ = akhir.textContent;
   pertama.innerHTML = `<b class="hb">${esc(tA[0])}</b>${esc(tA.slice(1))}<span class="tag">Huruf besar</span>`;
   if (tZ.endsWith('.')) akhir.innerHTML = `${esc(tZ.slice(0, -1))}<b class="nk">.</b><span class="tag">Noktah</span>`;
-  await tunggu(250); if (!kini()) return;
+  await tunggu(120); if (!kini()) return;
   pertama.querySelector('.tag').classList.add('on'); pertama.querySelector('.hb').classList.add('nyala'); SFX.nyala();
-  await tunggu(700); if (!kini()) return;
+  await tunggu(420); if (!kini()) return;
   const nk = akhir.querySelector('.tag'); if (nk) { nk.classList.add('on'); akhir.querySelector('.nk').classList.add('nyala'); SFX.nyala(); }
-  await tunggu(900); if (!kini()) return;
+  await tunggu(500); if (!kini()) return;
   // 5) cop
   cop.innerHTML = copSvg(betul); void cop.offsetWidth; cop.classList.add('main');
   setTimeout(() => { if (!kini()) return; dentum(); const m = $('meja'); m.classList.remove('goncang'); void m.offsetWidth; m.classList.add('goncang'); }, 330);
