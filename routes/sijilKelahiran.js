@@ -10,7 +10,7 @@
 //   pilih set -> ambil (1 gambar sijil) -> semak (TV: "MENYEMAK SIJIL",
 //   guru tanda 4 bahagian pada telefon) -> dedah (bahagian 1..4: kad
 //   perkataan bercampur terbang menyusun ayat betul, cop DIDAFTARKAN /
-//   BELUM TEPAT; zoom gambar pada telefon diikut oleh TV) -> tamat.
+//   TIDAK TEPAT; zoom gambar pada telefon diikut oleh TV) -> tamat.
 //
 // Gambar kamera HANYA dalam memori (tidak ke MongoDB / cakera) dan dipadam
 // bila set lain dipilih, kembali ke senarai, bilik terbiar 30 minit atau

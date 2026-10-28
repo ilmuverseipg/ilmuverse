@@ -121,6 +121,15 @@
   .vw .zt { position: absolute; right: 8px; top: 8px; background: rgba(0,0,0,.55); color: #fff; font-weight: 700; font-size: 13px; border-radius: 999px; padding: 3px 10px; }
   .vw .bantu { position: absolute; left: 0; right: 0; bottom: 8px; text-align: center; font-size: 13px; font-weight: 600; color: #fff; text-shadow: 0 1px 3px #000; transition: opacity .5s; }
   .zumBaris { display: flex; gap: 8px; margin-top: 8px; }
+  /* gambar sijil melekat di atas semasa menanda */
+  .lekat { position: sticky; top: calc(62px + var(--atas)); z-index: 3; background: var(--kertas); padding: 6px 0 8px; margin: -6px 0 0; box-shadow: 0 10px 12px -10px rgba(11,93,59,.35); }
+  .lekat .zumBaris button { padding: 7px 10px; font-size: 14px; white-space: nowrap; }
+  .vwTanda { height: 30vh; margin-top: 0; transition: height .25s ease; }
+  #senaraiTanda .td { scroll-margin-top: calc(62px + var(--atas) + 30vh + 64px); scroll-margin-bottom: calc(110px + var(--bawah)); }
+  #senaraiTanda.kecil .td { scroll-margin-top: calc(62px + var(--atas) + 13vh + 64px); }
+  .vwTanda.kecil { height: 13vh; }
+  .tdKepala { display: flex; align-items: center; justify-content: center; gap: 10px; position: relative; }
+  .tdKepala .lihat { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); border: 0; background: #fff; border-radius: 10px; padding: 3px 9px; font-size: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
   .zumBaris button { flex: 1; }
   .titik4 { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
   .titik4 i { width: 30px; height: 9px; border-radius: 9px; background: var(--kertas2); }
@@ -245,26 +254,58 @@ function lukisAmbil() {
   $('slot').onclick = () => { if (naik && naik.st === 'gagal' && naik.blob) return hantarFoto(naik.blob); bukaKam(); };
   $('btnDeploy').onclick = () => { if (!S.foto) return toast('Ambil gambar sijil dahulu'); getar([30, 40, 30]); hantar({ jenis: 'deploy', nama: namaDraf.trim() }); };
 }
+let gambarKecil = false;
 function lukisTanda() {
-  const n = S.kumpulan, semua = tanda.every((x) => x !== null);
-  papar('tanda', `<div class="bar"><h2>Tanda jawapan</h2></div>
-    <p class="sub">Skrin TV sedang <b>menyemak sijil</b>. Bandingkan ayat murid dengan ayat betul, kemudian daftarkan.</p>
-    <div class="tanda">${[0, 1, 2, 3].map((i) => { const b = bah(n, i), t = tanda[i];
-      return `<div class="borang td ${t === true ? 'b' : t === false ? 's' : ''}"><div class="jalurHijau">KATA MAJMUK ${i + 1}</div><div class="isi">
+  const n = S.kumpulan;
+  if (paparLama === 'tanda' && $('senaraiTanda')) return kemasTanda(); // kekalkan zoom gambar
+  papar('tanda', `<div class="lekat" id="lekat">
+      <div class="vw vwTanda ${gambarKecil ? 'kecil' : ''}" id="vw">${thumb ? `<img id="li" src="${thumb}" alt="Sijil murid">` : '<div style="padding:20px;color:var(--kelabu)">Memuat gambar…</div>'}<span class="zt" id="zt">1.0×</span><span class="bantu" id="bantu">Cubit / seret untuk zoom</span></div>
+      <div class="zumBaris"><button class="btnKedua" id="btnPenuh">⤢ Penuh</button><button class="btnKedua" id="btnKecil">${gambarKecil ? '🔼 Besarkan gambar' : '🔽 Kecilkan gambar'}</button></div>
+    </div>
+    <p class="sub" style="margin-top:12px">Lihat ayat murid pada gambar, kemudian tanda. Ketik <b>🔍</b> untuk zoom ke bahagian itu.</p>
+    <div class="tanda ${gambarKecil ? 'kecil' : ''}" id="senaraiTanda">${[0, 1, 2, 3].map((i) => { const b = bah(n, i);
+      return `<div class="borang td" data-td="${i}"><div class="jalurHijau tdKepala">KATA MAJMUK ${i + 1}<button class="lihat" data-lihat="${i}" title="Zoom gambar ke bahagian ini">🔍</button></div><div class="isi">
         <div class="km">${esc(b.km)}</div><div class="ay">Ayat betul: <b>${esc(b.ayat)}</b></div>
-        <div class="pil"><button data-i="${i}" data-v="1" class="${t === true ? 'bOn' : ''}">✓ BETUL</button><button data-i="${i}" data-v="0" class="${t === false ? 'sOn' : ''}">✗ SALAH</button></div></div></div>`; }).join('')}</div>
+        <div class="pil"><button data-i="${i}" data-v="1">✓ BETUL</button><button data-i="${i}" data-v="0">✗ TIDAK TEPAT</button></div></div></div>`; }).join('')}</div>
     <button class="pautan" id="btnAmbilSemula">📸 Ambil semula gambar</button>`,
-    `<button class="btnUtama emas" id="btnDedah" ${semua ? '' : 'disabled'}>🏷️ DAFTARKAN &amp; DEDAH</button>`);
-  document.querySelectorAll('.pil button').forEach((b) => b.onclick = () => { tanda[+b.dataset.i] = b.dataset.v === '1'; getar(12); lukisTanda(); });
+    `<button class="btnUtama emas" id="btnDedah">🏷️ DAFTARKAN &amp; DEDAH</button>`);
+  document.querySelectorAll('.pil button').forEach((b) => b.onclick = () => {
+    const i = +b.dataset.i; tanda[i] = b.dataset.v === '1'; getar(12); kemasTanda();
+    // terus ke bahagian seterusnya yang belum ditanda: zoom gambar + skrol kad
+    const lagi = [1, 2, 3, 0].map((k) => (i + k) % 4).find((k) => tanda[k] === null);
+    if (lagi !== undefined) setTimeout(() => { fokusBahagian(lagi); const kad = document.querySelector(`[data-td="${lagi}"]`); if (kad) skrolKe(kad); }, 220);
+  });
+  document.querySelectorAll('[data-lihat]').forEach((b) => b.onclick = () => { fokusBahagian(+b.dataset.lihat); getar(10); });
+  $('btnKecil').onclick = () => { gambarKecil = !gambarKecil; $('vw').classList.toggle('kecil', gambarKecil); $('senaraiTanda').classList.toggle('kecil', gambarKecil); $('btnKecil').textContent = gambarKecil ? '🔼 Besarkan gambar' : '🔽 Kecilkan gambar'; setTimeout(() => { if (iw) { ukur(); lukisZ(); } }, 260); };
   $('btnAmbilSemula').onclick = () => { ubahTanda = false; hantar({ jenis: 'ambilSemula' }); };
-  $('btnDedah').onclick = () => { if (!tanda.every((x) => x !== null)) return; ubahTanda = false; getar([20, 30, 20]); hantar({ jenis: 'markah', keputusan: tanda.slice() }); };
+  $('btnDedah').onclick = () => { if (!tanda.every((x) => x !== null)) return toast('Tanda keempat-empat ayat dahulu'); ubahTanda = false; getar([20, 30, 20]); hantar({ jenis: 'markah', keputusan: tanda.slice() }); };
+  pasangZoom(); kemasTanda();
+}
+function skrolKe(kad) { // skrol kad tepat di bawah gambar yang melekat (butang tidak tertutup)
+  const atas = (document.querySelector('header').offsetHeight || 60) + ($('lekat') ? $('lekat').offsetHeight : 0) + 8;
+  scrollTo({ top: kad.getBoundingClientRect().top + scrollY - atas, behavior: 'smooth' });
+}
+function kemasTanda() {
+  document.querySelectorAll('[data-td]').forEach((el) => {
+    const t = tanda[+el.dataset.td];
+    el.classList.toggle('b', t === true); el.classList.toggle('s', t === false);
+    el.querySelector('[data-v="1"]').classList.toggle('bOn', t === true); el.querySelector('[data-v="0"]').classList.toggle('sOn', t === false);
+  });
+  const d = $('btnDedah'); if (d) d.disabled = !tanda.every((x) => x !== null);
+}
+// Anggaran kedudukan 4 bahagian pada sijil A4 (pengepala ~22% atas, bahagian 22%-92%)
+function fokusBahagian(i) {
+  if (!iw || !$('li')) return;
+  ukur(); z = clamp(VW / (iw * asas()), 1.2, 6);
+  const S0 = asas() * z, tengah = 0.22 + 0.175 * (i + 0.5);
+  ox = (VW - iw * S0) / 2; oy = VH / 2 - tengah * ih * S0; lukisZ();
 }
 function lukisDedah() {
   const i = S.idx, b = bah(S.kumpulan, i), ok = S.keputusan && S.keputusan[i], akhir = i === 3;
   const nama = 'dedah-' + i;
   if (paparLama === nama && $('vw')) return; // jangan lukis semula (kekalkan zoom)
   papar(nama, `<div class="borang kadD">
-      <div class="ke"><span>Kata Majmuk ${i + 1} / 4</span><span class="vr ${ok ? 'b' : 's'}">${ok ? '✓ BETUL' : '✗ SALAH'}</span></div>
+      <div class="ke"><span>Kata Majmuk ${i + 1} / 4</span><span class="vr ${ok ? 'b' : 's'}">${ok ? '✓ BETUL' : '✗ TIDAK TEPAT'}</span></div>
       <div class="ay">${esc(b.ayat)}</div>
       <div class="vw" id="vw">${thumb ? `<img id="li" src="${thumb}" alt="Sijil">` : '<div style="padding:20px;color:var(--kelabu)">Memuat gambar…</div>'}<span class="zt" id="zt">1.0×</span><span class="bantu" id="bantu">Cubit / seret untuk zoom, skrin TV ikut</span></div>
       <div class="zumBaris"><button class="btnKedua" id="btnPenuh">⤢ Penuh</button><button class="btnKedua" id="btnAtas">⬆ Atas</button><button class="btnKedua" id="btnBawah">⬇ Bawah</button></div>
@@ -300,8 +341,8 @@ function pasangZoom() {
     if (!jari.size && !gerak) { const t = performance.now(); if (t - ketik.t < 320 && Math.hypot(p.x - ketik.x, p.y - ketik.y) < 30) { zoomDi(p.x, p.y, z > 1.3 ? 1 : 2.5); ketik.t = 0; } else ketik = { t, x: p.x, y: p.y }; } };
   vw.addEventListener('pointerup', angkat); vw.addEventListener('pointercancel', angkat);
   $('btnPenuh').onclick = () => { z = 1; lukisZ(); getar(10); };
-  $('btnAtas').onclick = () => { z = 2; ox = (VW - iw * asas() * z) / 2; oy = 0; lukisZ(); getar(10); };
-  $('btnBawah').onclick = () => { z = 2; ox = (VW - iw * asas() * z) / 2; oy = -1e6; lukisZ(); getar(10); };
+  if ($('btnAtas')) $('btnAtas').onclick = () => { z = 2; ox = (VW - iw * asas() * z) / 2; oy = 0; lukisZ(); getar(10); };
+  if ($('btnBawah')) $('btnBawah').onclick = () => { z = 2; ox = (VW - iw * asas() * z) / 2; oy = -1e6; lukisZ(); getar(10); };
 }
 function ukur() { const r = $('vw').getBoundingClientRect(); VW = r.width || 1; VH = r.height || 1; }
 const asas = () => Math.min(VW / iw, VH / ih);

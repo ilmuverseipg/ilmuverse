@@ -282,7 +282,7 @@ function lukisTanda() {
     <div class="tanda">${[0, 1, 2, 3].map((i) => { const j = jawapan(n, i), t = tanda[i];
       return `<div class="td ${t === true ? 'b' : t === false ? 's' : ''}"><button class="th" data-lihat="${i}">${thumb[i] ? `<img src="${thumb[i]}" alt="Kapsul ${i + 1}">` : '📸'}</button>
         <div><div class="k"><i style="background:${WARNA[i]}"></i>Kapsul ${i + 1} · jawapan betul</div><div class="j">${esc(j.km)}</div>
-        <div class="pil"><button data-i="${i}" data-v="1" class="${t === true ? 'bOn' : ''}">✓ BETUL</button><button data-i="${i}" data-v="0" class="${t === false ? 'sOn' : ''}">✗ SALAH</button></div></div></div>`; }).join('')}</div>
+        <div class="pil"><button data-i="${i}" data-v="1" class="${t === true ? 'bOn' : ''}">✓ BETUL</button><button data-i="${i}" data-v="0" class="${t === false ? 'sOn' : ''}">✗ TIDAK TEPAT</button></div></div></div>`; }).join('')}</div>
     <button class="pautan" id="btnAmbilSemula">📸 Ambil semula gambar</button>`,
     `<button class="btnUtama hijau" id="btnDedah" ${semua ? '' : 'disabled'}>🔍 DEDAH JAWAPAN</button>`);
   document.querySelectorAll('.pil button').forEach((b) => b.onclick = () => { tanda[+b.dataset.i] = b.dataset.v === '1'; getar(12); lukisTanda(); });

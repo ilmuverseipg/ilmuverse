@@ -57,28 +57,52 @@
   const SEBUT = [[/\bKM\b/g, 'kata majmuk']];
   function sebutan(t) { let x = String(t || ''); SEBUT.forEach(([a, b]) => { x = x.replace(a, b); }); return x; }
 
-  let barisan = Promise.resolve(), tokenCakap = 0;
-  K.diam = () => { tokenCakap++; try { speechSynthesis.cancel(); } catch (e) {} bcakap = 0; duck(); barisan = Promise.resolve(); };
+  let barisan = Promise.resolve(), tokenCakap = 0, akhirBatal = 0, senaraiMs = [];
+  const tidur = (ms) => new Promise((r) => setTimeout(r, ms));
+  // Chrome/Edge kadang-kadang "terlepas" ucapan yang dihantar sejurus selepas
+  // cancel(); jadi beri jeda kecil selepas diam().
+  K.diam = () => { tokenCakap++; try { speechSynthesis.cancel(); } catch (e) {} akhirBatal = Date.now(); bcakap = 0; duck(); barisan = Promise.resolve(); };
+  async function tungguSuara() { // senarai suara dimuat secara async oleh pelayar
+    for (let i = 0; i < 20 && !K.adaSuara; i++) { pilihSuara(); if (K.adaSuara) break; await tidur(100); }
+    return K.adaSuara;
+  }
+  function suaraLain() { // suara Melayu Malaysia seterusnya (jika suara 'Online' gagal)
+    const vs = speechSynthesis.getVoices().filter((v) => markah(v) >= 0 && v !== K.suara).sort((a, b) => markah(b) - markah(a));
+    return vs[0] || null;
+  }
+  function ucap(teks, opt, tok) {
+    return new Promise((ok) => {
+      if (tok !== tokenCakap) return ok('batal');
+      const u = new SpeechSynthesisUtterance(sebutan(teks));
+      u.voice = K.suara; u.lang = K.suara.lang; u.rate = opt.rate || 0.92; u.pitch = opt.pitch || 1.05; u.volume = 1;
+      let siap = false, mula = false;
+      const tamat = (hasil) => { if (siap) return; siap = true; if (mula) bcakap = Math.max(0, bcakap - 1); duck(); ok(hasil); };
+      u.onstart = () => { mula = true; bcakap++; duck(); };
+      u.onend = () => tamat('ok');
+      u.onerror = (e) => tamat((e && e.error) || 'ralat');
+      setTimeout(() => tamat(mula ? 'ok' : 'senyap'), 4000 + teks.length * 160); // jaring keselamatan
+      try { speechSynthesis.resume(); speechSynthesis.speak(u); } catch (e) { tamat('ralat'); }
+    });
+  }
   // cakap(teks) -> Promise (selesai bila habis bercakap). Diatur dalam barisan.
   K.cakap = (teks, opt = {}) => {
     if (!('speechSynthesis' in window) || !teks) return Promise.resolve();
-    if (!K.adaSuara) {
-      if (!K._amaran && K.amaran) { K._amaran = true; K.amaran('Suara Bahasa Melayu Malaysia tiada pada pelayar ini. Buka skrin TV dengan Microsoft Edge untuk suara Melayu Malaysia.'); }
-      return Promise.resolve();
-    }
     const tok = tokenCakap;
-    barisan = barisan.then(() => new Promise((ok) => {
-      if (tok !== tokenCakap) return ok();
-      try {
-        const u = new SpeechSynthesisUtterance(sebutan(teks));
-        u.voice = K.suara; u.lang = K.suara.lang; u.rate = opt.rate || 0.92; u.pitch = opt.pitch || 1.05; u.volume = 1;
-        let siap = false; const tamat = () => { if (siap) return; siap = true; bcakap = Math.max(0, bcakap - 1); duck(); ok(); };
-        u.onstart = () => { bcakap++; duck(); };
-        u.onend = tamat; u.onerror = tamat;
-        setTimeout(tamat, 2500 + teks.length * 140); // jaring keselamatan
-        speechSynthesis.speak(u);
-      } catch (e) { ok(); }
-    }));
+    barisan = barisan.then(async () => {
+      if (tok !== tokenCakap) return;
+      if (!(await tungguSuara())) {
+        if (!K._amaran && K.amaran) { K._amaran = true; K.amaran('Suara Bahasa Melayu Malaysia tiada pada pelayar ini. Buka skrin TV dengan Microsoft Edge (suara "Yasmin" / "Osman").'); }
+        return;
+      }
+      const jeda = 160 - (Date.now() - akhirBatal); if (jeda > 0) await tidur(jeda);
+      let h = await ucap(teks, opt, tok);
+      if (h === 'not-allowed') { if (K.amaran && !K._amaranKlik) { K._amaranKlik = true; K.amaran('Klik sekali pada skrin TV untuk hidupkan suara.'); } return; }
+      if (h === 'senyap') { if (K.amaran && !K._amaranKlik) { K._amaranKlik = true; K.amaran('Suara tidak keluar. Klik sekali pada skrin TV, dan pastikan bunyi PC tidak senyap.'); } return; }
+      if ((h === 'synthesis-failed' || h === 'network' || h === 'voice-unavailable') && tok === tokenCakap) {
+        const lain = suaraLain(); // cuba suara Melayu Malaysia lain (contoh suara luar talian)
+        if (lain) { K.suara = lain; await tidur(120); await ucap(teks, opt, tok); }
+      }
+    });
     return barisan;
   };
 
