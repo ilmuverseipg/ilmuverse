@@ -138,12 +138,15 @@
   #vImbas .gridF { gap: .9vh .9vw; height: 100%; }
   #vImbas .kf { padding: .5vh; border-radius: 16px; }
   #vImbas .kf .bingkai { border-radius: 12px; }
-  /* tulisan MENGIMBAS terapung di tengah (celah 4 gambar) supaya gambar guna ketinggian penuh */
-  #vImbas .baruImbas { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 4; margin: 0; gap: 1vw;
-    background: rgba(255,255,255,.94); padding: .7vh 1.8vw; border-radius: 999px; box-shadow: var(--bayang); white-space: nowrap; }
-  #vImbas .baruImbas .tx { font-size: clamp(18px, 2.2vw, 38px); }
-  #vImbas .nadi { display: none; }
-  #vImbas .baruImbas { padding: .5vh 1.6vw; }
+  /* tulisan MENGIMBAS di bar atas (tengah) - tidak menindih gambar */
+  .hdImbas { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: none; white-space: nowrap;
+    font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(16px, 2.1vw, 36px); letter-spacing: .05em; color: #fff; }
+  body.fasaImbas .hdImbas { display: block; }
+  .hdImbas i { font-style: normal; display: inline-block; animation: lompat 1.2s infinite; }
+  .hdImbas i:nth-child(2) { animation-delay: .15s; } .hdImbas i:nth-child(3) { animation-delay: .3s; }
+  .hdImbas::before { content: ''; display: inline-block; width: .5em; height: .5em; margin-right: .5em; border-radius: 50%; background: #ff6b74; vertical-align: .12em; animation: kelip 1s steps(2, start) infinite; }
+  @keyframes kelip { to { visibility: hidden; } }
+  #vImbas { padding-bottom: 1.4vh; }
   .sudut::before, .sudut::after { content: ''; position: absolute; width: 18%; height: 12%; border: 5px solid var(--teal2); pointer-events: none; }
   .sudut::before { left: 8px; top: 8px; border-right: 0; border-bottom: 0; border-radius: 14px 0 0 0; }
   .sudut::after { right: 8px; bottom: 8px; border-left: 0; border-top: 0; border-radius: 0 0 14px 0; }
@@ -226,6 +229,13 @@
   #toast.on { opacity: 1; transform: translate(-50%, 0); }
   @media (max-width: 800px) { .kadQR { grid-template-columns: 1fr; text-align: center; } .langkah li, .kodBaris { justify-content: center; } .gridK { grid-template-columns: repeat(2, 1fr); } .gridF { grid-template-columns: repeat(2, minmax(0, 1fr)); } .kf { height: auto; } }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+  /* Animasi imbasan tetap jalan walaupun tetapan "kurangkan animasi" dihidupkan pada PC/TV */
+  @media (prefers-reduced-motion: reduce) {
+    .v.on .imbasSkrin .laser { animation-duration: 3s !important; animation-iteration-count: infinite !important; }
+    .v.on .imbasSkrin .bc { animation-duration: 1.4s !important; animation-iteration-count: infinite !important; }
+    body .hdImbas i { animation-duration: 1.2s !important; animation-iteration-count: infinite !important; }
+    body .hdImbas::before { animation-duration: 1s !important; animation-iteration-count: infinite !important; }
+  }
 </style>
 </head>
 <body>
@@ -233,6 +243,7 @@
 
 <header>
   <div class="logo"><div class="salib"></div><div><b>Kapsul Kata Majmuk</b><small>Klinik Dr. Izuddin</small></div></div>
+  <div class="hdImbas" id="hdImbas">MENGIMBAS JAWAPAN<i>.</i><i>.</i><i>.</i></div>
   <div class="kanan">
     <span class="chipK" id="hKump" hidden></span>
     <span class="titik" id="hTitik" hidden><i></i><i></i><i></i><i></i></span>
@@ -276,11 +287,6 @@
   <div class="zonImbas">
     <div class="gridF" id="gridF"></div>
     <div class="imbasSkrin" aria-hidden="true"><span class="laser"></span><span class="bc a"></span><span class="bc b"></span><span class="bc c"></span><span class="bc d"></span></div>
-    <div class="baruImbas">
-      <svg class="nadi" viewBox="0 0 200 60" aria-hidden="true"><path d="M0 32 H60 l10 -8 l10 8 H96 l8 -28 l12 52 l8 -24 H200"/></svg>
-      <div class="tx">MENGIMBAS JAWAPAN<i>.</i><i>.</i><i>.</i></div>
-      <svg class="nadi" viewBox="0 0 200 60" aria-hidden="true"><path d="M0 32 H60 l10 -8 l10 8 H96 l8 -28 l12 52 l8 -24 H200"/></svg>
-    </div>
   </div>
 </section>
 
@@ -433,6 +439,7 @@ let S = null, wsOk = false, bilTel = 0, paparKini = '', kunciDedah = '', paksaQR
 function tunjuk(id) {
   if (paparKini === id) return false;
   document.querySelectorAll('.v').forEach((v) => v.classList.toggle('on', v.id === id));
+  document.body.classList.toggle('fasaImbas', id === 'vImbas');
   paparKini = id; return true;
 }
 function status() {
