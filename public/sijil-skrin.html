@@ -186,6 +186,13 @@
   .copAkhir { position: absolute; right: 1.4vw; top: -1vh; width: 17vh; height: 17vh; opacity: 0; }
   .v.on .copAkhir { animation: cop .55s 1.6s cubic-bezier(.3,1.5,.5,1) forwards; }
   #konfeti { position: fixed; inset: 0; z-index: 6; pointer-events: none; }
+  /* perkataan besar BETUL! sekejap */
+  #kilatKata { position: fixed; inset: 0; z-index: 8; display: grid; place-items: center; pointer-events: none; opacity: 0; }
+  #kilatKata span { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(90px, 16vw, 260px); line-height: 1; color: #fff; padding: .05em .45em .02em; border-radius: .3em; background: var(--hijau2); box-shadow: 0 0 0 .08em #fff, 0 30px 80px rgba(0,0,0,.35); transform: rotate(-4deg); }
+  #kilatKata.salah span { background: var(--merah); font-size: clamp(64px, 11vw, 180px); }
+  #kilatKata.on { animation: kilatKata 1.25s cubic-bezier(.2,1.4,.4,1) forwards; }
+  @keyframes kilatKata { 0% { opacity: 0; transform: scale(.3); } 18% { opacity: 1; transform: scale(1.08); } 30% { transform: scale(1); } 78% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.15); } }
+  .tile .pic img { width: 100%; height: 100%; object-fit: cover; border-radius: 16px; }
 
   /* ===== kawalan ===== */
   .hud { position: fixed; right: 14px; bottom: calc(3.2vh + 10px); z-index: 7; display: flex; gap: 8px; transition: opacity .4s; }
@@ -199,6 +206,9 @@
   #toast.on { opacity: 1; transform: translate(-50%, 0); }
   @media (max-width: 800px) { .kadQR { grid-template-columns: 1fr; text-align: center; } .langkah li, .kodBaris { justify-content: center; } .gridS { grid-template-columns: repeat(2, 1fr); } }
 </style>
+<script>window.BOBO_BGM_KEY = 'km_bgm';</script>
+<script src="/bobo-bgm.js"></script>
+<script src="/km-suara.js"></script>
 </head>
 <body>
 <header>
@@ -293,8 +303,11 @@
 </section>
 
 <canvas id="konfeti"></canvas>
+<div id="kilatKata"><span></span></div>
 <div class="hud">
   <button class="btn" id="btnQr" title="Tunjuk kod QR (Q)">📱 QR</button>
+  <span id="laguSlot"></span>
+  <button class="btn" id="btnMuzik" title="Muzik latar">🎵 Muzik</button>
   <button class="btn" id="btnSuara" title="Suara bacaan">🗣️ Suara</button>
   <button class="btn" id="btnBunyi" title="Bunyi">🔊 Bunyi</button>
   <button class="btn" id="btnBaru" title="Jana kod bilik baharu">🔄 Kod Baru</button>
@@ -316,7 +329,7 @@ const tunggu = (ms) => new Promise((r) => setTimeout(r, ms));
 const ulang = (s, n) => Array(n).fill(s).join('');
 $('jalurTx').textContent = ulang('PENDAFTARAN KATA MAJMUK  ✦  ', 40);
 
-let sesi = null, pilihan = { bunyi: true, suara: true };
+let sesi = null, pilihan = { bunyi: true, suara: true, muzik: true };
 try { const j = JSON.parse(localStorage.getItem(LS) || 'null'); if (j) { sesi = j.sesi; pilihan = Object.assign(pilihan, j.pilihan || {}); } } catch (e) {}
 if (!sesi || !/^\d{4}$/.test(sesi.kod) || !sesi.kunci) sesi = { kod: kodBaru(), kunci: rnd(16) };
 const simpan = () => { try { localStorage.setItem(LS, JSON.stringify({ sesi, pilihan })); } catch (e) {} };
@@ -325,14 +338,14 @@ simpan();
 // =============================================================
 // BUNYI (WebAudio) + SUARA
 // =============================================================
-let ac = null;
-function audio() { if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (ac && ac.state === 'suspended') ac.resume(); return ac; }
+const KS = window.KMSuara;
+const audio = () => KS.audio();
 function nada(f, mula, tempoh, jenis = 'sine', vol = .18, f2) {
   const a = audio(); if (!a || !pilihan.bunyi) return;
   const t = a.currentTime + mula, o = a.createOscillator(), g = a.createGain();
   o.type = jenis; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + tempoh);
   g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .012); g.gain.exponentialRampToValueAtTime(0.0001, t + tempoh);
-  o.connect(g).connect(a.destination); o.start(t); o.stop(t + tempoh + .05);
+  o.connect(g).connect(KS.keluaran()); o.start(t); o.stop(t + tempoh + .05);
 }
 function dentum() { // bunyi cop: hentakan rendah + desir
   const a = audio(); if (!a || !pilihan.bunyi) return;
@@ -340,7 +353,7 @@ function dentum() { // bunyi cop: hentakan rendah + desir
   const buf = a.createBuffer(1, a.sampleRate * .15, a.sampleRate), d = buf.getChannelData(0);
   for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3);
   const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); f.type = 'lowpass'; f.frequency.value = 900; g.gain.value = .35;
-  s.buffer = buf; s.connect(f).connect(g).connect(a.destination); s.start();
+  s.buffer = buf; s.connect(f).connect(g).connect(KS.keluaran()); s.start();
 }
 const SFX = {
   masuk() { nada(300, 0, .35, 'sine', .12, 760); },
@@ -355,18 +368,17 @@ const SFX = {
   salah() { nada(392, .15, .3, 'triangle', .14, 330); nada(294, .4, .45, 'triangle', .12, 247); },
   tamat() { [523, 659, 784, 659, 784, 1047].forEach((f, i) => nada(f, i * .13, .4, 'triangle', .16)); nada(262, 0, .9, 'sine', .08); },
 };
-let suaraMs = null;
-function pilihSuara() { const v = speechSynthesis.getVoices(); suaraMs = v.find((x) => /ms[-_]MY/i.test(x.lang)) || v.find((x) => /^ms/i.test(x.lang)) || v.find((x) => /^id/i.test(x.lang)) || null; }
-if ('speechSynthesis' in window) { pilihSuara(); speechSynthesis.onvoiceschanged = pilihSuara; }
-function cakap(t) {
-  if (!pilihan.suara || !('speechSynthesis' in window)) return;
-  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = suaraMs ? suaraMs.lang : 'ms-MY'; if (suaraMs) u.voice = suaraMs; u.rate = .9; u.pitch = 1.05; speechSynthesis.speak(u); } catch (e) {}
-}
-function bukaBunyi() { audio(); $('bunyiNota').hidden = true; removeEventListener('pointerdown', bukaBunyi); removeEventListener('keydown', bukaBunyi); }
+// suara Bahasa Melayu Malaysia sahaja (tiada Bahasa Indonesia) - km-suara.js
+KS.amaran = (m) => toast('⚠️ ' + m, 8000);
+function cakap(t, baru = true) { if (!pilihan.suara) return Promise.resolve(); if (baru) KS.diam(); return KS.cakap(t); }
+function bukaBunyi() { audio(); KS.muzik(pilihan.muzik); $('bunyiNota').hidden = true; removeEventListener('pointerdown', bukaBunyi); removeEventListener('keydown', bukaBunyi); }
 addEventListener('pointerdown', bukaBunyi); addEventListener('keydown', bukaBunyi);
-function kemasButang() { $('btnBunyi').classList.toggle('off', !pilihan.bunyi); $('btnSuara').classList.toggle('off', !pilihan.suara); }
+function kemasButang() { $('btnBunyi').classList.toggle('off', !pilihan.bunyi); $('btnSuara').classList.toggle('off', !pilihan.suara); $('btnMuzik').classList.toggle('off', !pilihan.muzik); }
+$('btnMuzik').onclick = () => { pilihan.muzik = !pilihan.muzik; simpan(); kemasButang(); KS.muzik(pilihan.muzik); toast(pilihan.muzik ? '🎵 Muzik latar hidup' : 'Muzik latar dimatikan'); };
+if (window.BoboBGM) { BoboBGM.mount($('laguSlot'), 'btn'); BoboBGM.onChange(() => { if (ac0()) KS.muzik(pilihan.muzik); }); }
+function ac0() { return $('bunyiNota').hidden; }
 $('btnBunyi').onclick = () => { pilihan.bunyi = !pilihan.bunyi; simpan(); kemasButang(); toast(pilihan.bunyi ? '🔊 Bunyi hidup' : '🔇 Bunyi senyap'); };
-$('btnSuara').onclick = () => { pilihan.suara = !pilihan.suara; simpan(); kemasButang(); if (!pilihan.suara) try { speechSynthesis.cancel(); } catch (e) {} toast(pilihan.suara ? '🗣️ Suara bacaan hidup' : 'Suara bacaan dimatikan'); };
+$('btnSuara').onclick = () => { pilihan.suara = !pilihan.suara; simpan(); kemasButang(); if (!pilihan.suara) KS.diam(); toast(pilihan.suara ? '🗣️ Suara bacaan hidup' : 'Suara bacaan dimatikan'); };
 kemasButang();
 
 // =============================================================
@@ -531,9 +543,11 @@ async function dedah() {
   const betul = !!(d.keputusan && d.keputusan[d.idx]);
   $('dTajuk').textContent = 'KATA MAJMUK ' + (d.idx + 1);
   $('dPers').className = 'persamaan';
-  $('dPers').innerHTML = `<div class="tile"><div class="pic">${esc(b.e1 || '💊')}</div><div class="nm">${esc(b.k1)}</div></div><div class="op">+</div>
-    <div class="tile"><div class="pic">${esc(b.e2 || '💊')}</div><div class="nm">${esc(b.k2)}</div></div><div class="op">=</div>
-    <div class="tile km"><div class="pic">${esc(b.ek || '💊')}</div><div class="nm">${esc(b.km)}</div></div>`;
+  const pic = (u, e) => (u ? `<img src="${esc(u)}" alt="">` : esc(e || '💊'));
+  $('dPers').innerHTML = `<div class="tile"><div class="pic">${pic(b.u1, b.e1)}</div><div class="nm">${esc(b.k1)}</div></div><div class="op">+</div>
+    <div class="tile"><div class="pic">${pic(b.u2, b.e2)}</div><div class="nm">${esc(b.k2)}</div></div><div class="op">=</div>
+    <div class="tile km"><div class="pic">${pic(b.uk, b.ek)}</div><div class="nm">${esc(b.km)}</div></div>`;
+  cakap(`${b.k1}, tambah ${b.k2}, menjadi ${b.km}.`);
   void $('dPers').offsetWidth; $('dPers').classList.add('main');
   const cop = $('cop'); cop.className = 'cop'; cop.innerHTML = '';
   $('garisAyat').classList.remove('on');
@@ -576,9 +590,14 @@ async function dedah() {
   cop.innerHTML = copSvg(betul); void cop.offsetWidth; cop.classList.add('main');
   setTimeout(() => { if (!kini()) return; dentum(); const m = $('meja'); m.classList.remove('goncang'); void m.offsetWidth; m.classList.add('goncang'); }, 330);
   betul ? SFX.betul() : SFX.salah();
-  cakap(betul ? `Betul! ${b.ayat}` : `Belum tepat. Ayat yang betul ialah: ${b.ayat}`);
+  if (betul) kilatKata(true);
+  cakap(betul ? `Betul! ${b.ayat}` : `Belum tepat. Ayat yang betul ialah, ${b.ayat}`);
 }
 
+function kilatKata(betul) {
+  const el = $('kilatKata'); el.className = betul ? '' : 'salah'; el.firstElementChild.textContent = betul ? 'BETUL!' : 'BELUM TEPAT';
+  void el.offsetWidth; el.classList.add('on');
+}
 function tamat() {
   const d = S, kp = d.keputusan || [false, false, false, false], n = kp.filter(Boolean).length;
   $('tNama').textContent = d.murid || '—';
@@ -647,8 +666,9 @@ document.addEventListener('visibilitychange', jagaSkrin); jagaSkrin();
 addEventListener('resize', () => { const c = $('konfeti'); c.width = innerWidth; c.height = innerHeight; });
 
 tunjuk('vSambung'); lukisKod(); status(); muatSet(); sambung();
-window.__sijil = { get S() { return S; }, get papar() { return paparKini; }, get kod() { return sesi.kod; }, get foto() { return foto && foto.v; } };
+window.__sijil = { kilat: (b) => kilatKata(b), get S() { return S; }, get papar() { return paparKini; }, get kod() { return sesi.kod; }, get foto() { return foto && foto.v; } };
 })();
 </script>
+<script src="/km-amaran.js"></script>
 </body>
 </html>

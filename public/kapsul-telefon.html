@@ -442,7 +442,7 @@ async function hantarFoto(i, blob) {
     } catch (e) {
       if (!naik[i] || naik[i].tok !== tok) return;
       if (e.status === 401) return keLogMasuk();
-      if ([400, 404, 409, 413].includes(e.status) || cubaan === 2) { naik[i] = { st: 'gagal', blob }; render(); return toast('❌ Kapsul ' + (i + 1) + ': ' + e.message, 4000); }
+      if ([400, 404, 409, 413, 507].includes(e.status) || cubaan === 2) { naik[i] = { st: 'gagal', blob }; render(); return toast('❌ Kapsul ' + (i + 1) + ': ' + e.message, 4000); }
       await new Promise((r) => setTimeout(r, 800 * (cubaan + 1)));
     }
   }
@@ -490,5 +490,6 @@ jagaSkrin(); kemasStatus(); render(); if (kod) { muatSet(); sambung(); }
 window.__tel = { get S() { return S; }, get paparan() { return paparLama; }, simpanSlot, get thumb() { return thumb.map(Boolean); } };
 })();
 </script>
+<script src="/km-amaran.js"></script>
 </body>
 </html>

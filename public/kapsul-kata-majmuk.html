@@ -140,7 +140,7 @@ function lukis() {
         <div class="tiga">
           ${SLOT.map(([s, lbl, kk, ke], si) => `${si ? `<div class="op">${si === 1 ? '+' : '='}</div>` : ''}
             <div class="slot ${s === 'k' ? 'km' : ''}">
-              <div class="gbr" data-g="${i}-${s}">${j['g' + s] ? `<img src="${urlG(aktif, i, s, j['g' + s])}" alt="">` : esc(j[ke] || '💊')}</div>
+              <div class="gbr" data-g="${i}-${s}">${j['g' + s] ? `<img src="${urlG(aktif, i, s, j['g' + s])}" alt="">` : j['u' + s] ? `<img src="${esc(j['u' + s])}" alt="" title="Gambar asal">` : esc(j[ke] || '💊')}</div>
               <div>
                 <div class="lbl">${lbl}</div>
                 <input type="text" data-f="${kk}" data-i="${i}" maxlength="${s === 'k' ? 80 : 40}" value="${esc(j[kk])}" placeholder="${s === 'k' ? 'cth. berus gigi' : 'perkataan'}">
@@ -233,5 +233,6 @@ async function padamGambar(key) {
 muat();
 })();
 </script>
+<script src="/km-amaran.js"></script>
 </body>
 </html>

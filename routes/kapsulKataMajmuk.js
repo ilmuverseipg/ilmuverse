@@ -18,6 +18,8 @@
 const crypto = require('crypto');
 const express = require('express');
 const WebSocket = require('ws');
+const { urlGambar } = require('./kmGambar');
+const { ramPenuh, mongoPenuh } = require('./storan');
 const { isAuthed } = require('../middleware/siteAuth');
 const { isDemo } = require('./kapsulDemo'); // pautan demo peribadi (routes/kapsulDemo.js)
 const { KapsulSet, KapsulGambar } = require('../models/KapsulSet');
@@ -60,6 +62,10 @@ async function semuaSet() {
   }
   return out;
 }
+
+// Tambah URL gambar asal (public/img/km) untuk paparan sahaja - tidak disimpan.
+const papar = (s) => ({ ...s, jawapan: s.jawapan.map((j) => ({ ...j, u1: urlGambar(j.k1), u2: urlGambar(j.k2), uk: urlGambar(j.km) })) });
+async function semuaSetPapar() { return (await semuaSet()).map(papar); }
 
 // ------------------------------------------------------------
 // BILIK (memori sahaja)
@@ -181,6 +187,7 @@ function pasang(app) {
     const b = bilik.get(req.params.kod), i = parseInt(req.params.i, 10);
     if (!kodSah(req.params.kod) || !b || !bolehBilik(req, b)) return res.status(404).json({ ok: false, mesej: 'Skrin TV tidak dijumpai. Semak kod bilik.' });
     if (!(i >= 0 && i <= 3)) return res.status(400).json({ ok: false, mesej: 'Nombor kapsul tidak sah.' });
+    if (ramPenuh()) return res.status(507).json({ ok: false, mesej: 'Pelayan penuh (RAM). Tunggu sebentar atau tutup skrin yang tidak digunakan, kemudian cuba lagi.' });
     if (b.fasa !== 'ambil' && b.fasa !== 'imbas') return res.status(409).json({ ok: false, mesej: 'Pilih kumpulan dahulu.' });
     const type = String(req.headers['content-type'] || '').split(';')[0].trim();
     if (!JENIS.has(type) || !Buffer.isBuffer(req.body) || req.body.length < 100) return res.status(400).json({ ok: false, mesej: 'Fail gambar tidak sah.' });
@@ -200,7 +207,7 @@ function pasang(app) {
   // ---- set jawapan (MongoDB) ----
   app.get('/api/kapsul/set', bolehBaca, async (req, res) => {
     res.set('Cache-Control', 'no-store');
-    res.json({ ok: true, db: dbSedia(), set: await semuaSet() });
+    res.json({ ok: true, db: dbSedia(), set: await semuaSetPapar() });
   });
   app.put('/api/kapsul/set/:n', perluLogMasuk, express.json({ limit: '64kb' }), async (req, res) => {
     const n = parseInt(req.params.n, 10);
@@ -215,7 +222,7 @@ function pasang(app) {
     });
     const nama = bersih(req.body.nama, 40) || NAMA_ASAL[n - 1];
     await KapsulSet.findOneAndUpdate({ kumpulan: n }, { kumpulan: n, nama, jawapan }, { upsert: true, new: true, setDefaultsOnInsert: true });
-    res.json({ ok: true, set: (await semuaSet())[n - 1] });
+    res.json({ ok: true, set: (await semuaSetPapar())[n - 1] });
   });
   app.post('/api/kapsul/set/:n/asal', perluLogMasuk, async (req, res) => {
     const n = parseInt(req.params.n, 10);
@@ -223,7 +230,7 @@ function pasang(app) {
     if (!dbSedia()) return res.status(503).json({ ok: false, mesej: 'Pangkalan data belum bersambung.' });
     await KapsulSet.deleteOne({ kumpulan: n });
     await KapsulGambar.deleteMany({ kunci: new RegExp(`^${n}-`) });
-    res.json({ ok: true, set: (await semuaSet())[n - 1] });
+    res.json({ ok: true, set: (await semuaSetPapar())[n - 1] });
   });
 
   // ---- gambar 800x800 guru (MongoDB) ----
@@ -231,6 +238,7 @@ function pasang(app) {
   const sahG = (p) => { const n = parseInt(p.n, 10), i = parseInt(p.i, 10); return n >= 1 && n <= 6 && i >= 0 && i <= 3 && SLOT.has(p.s); };
   app.post('/api/kapsul/gambar/:n/:i/:s', perluLogMasuk, rawGambar, async (req, res) => {
     if (!sahG(req.params)) return res.status(400).json({ ok: false, mesej: 'Slot tidak sah.' });
+    if (await mongoPenuh()) return res.status(507).json({ ok: false, mesej: 'Storan MongoDB penuh. Padam gambar yang tidak digunakan dahulu.' });
     if (!dbSedia()) return res.status(503).json({ ok: false, mesej: 'Pangkalan data belum bersambung.' });
     const type = String(req.headers['content-type'] || '').split(';')[0].trim();
     if (!JENIS.has(type) || !Buffer.isBuffer(req.body) || req.body.length < 100) return res.status(400).json({ ok: false, mesej: 'Fail gambar tidak sah.' });

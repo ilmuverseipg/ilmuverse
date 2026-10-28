@@ -19,6 +19,8 @@
 const crypto = require('crypto');
 const express = require('express');
 const WebSocket = require('ws');
+const { urlGambar } = require('./kmGambar');
+const { ramPenuh } = require('./storan');
 const { isAuthed } = require('../middleware/siteAuth');
 const { SijilSet } = require('../models/SijilSet');
 
@@ -87,6 +89,10 @@ async function semuaSet() {
   }
   return out;
 }
+
+// Tambah URL gambar asal (public/img/km) untuk paparan sahaja - tidak disimpan.
+const papar = (s) => ({ ...s, bahagian: s.bahagian.map((j) => ({ ...j, u1: urlGambar(j.k1), u2: urlGambar(j.k2), uk: urlGambar(j.km) })) });
+async function semuaSetPapar() { return (await semuaSet()).map(papar); }
 
 // Susun kad bercampur mengikut ayat betul. Pulangkan null jika tidak padan.
 function susunKad(kadTeks, ayat) {
@@ -243,6 +249,7 @@ function pasang(app) {
     const b = bilik.get(req.params.kod);
     if (!kodSah(req.params.kod) || !b) return res.status(404).json({ ok: false, mesej: 'Skrin TV tidak dijumpai. Semak kod bilik.' });
     if (b.fasa !== 'ambil') return res.status(409).json({ ok: false, mesej: 'Pilih set dahulu.' });
+    if (ramPenuh()) return res.status(507).json({ ok: false, mesej: 'Pelayan penuh (RAM). Tunggu sebentar atau tutup skrin yang tidak digunakan, kemudian cuba lagi.' });
     const type = String(req.headers['content-type'] || '').split(';')[0].trim();
     if (!JENIS.has(type) || !Buffer.isBuffer(req.body) || req.body.length < 100) return res.status(400).json({ ok: false, mesej: 'Fail gambar tidak sah.' });
     b.vf++;
@@ -261,7 +268,7 @@ function pasang(app) {
   // ---- jawapan (MongoDB) ----
   app.get('/api/sijil/set', perluLogMasuk, async (req, res) => {
     res.set('Cache-Control', 'no-store');
-    res.json({ ok: true, db: dbSedia(), set: await semuaSet() });
+    res.json({ ok: true, db: dbSedia(), set: await semuaSetPapar() });
   });
   app.put('/api/sijil/set/:n', perluLogMasuk, express.json({ limit: '64kb' }), async (req, res) => {
     const n = parseInt(req.params.n, 10);
@@ -276,14 +283,14 @@ function pasang(app) {
     const salah = bahagian.findIndex((x) => !susunKad(x.kad, x.ayat));
     if (salah >= 0) return res.status(400).json({ ok: false, mesej: `Bahagian ${salah + 1}: kad perkataan tidak sepadan dengan ayat betul.` });
     await SijilSet.findOneAndUpdate({ kumpulan: n }, { kumpulan: n, nama: bersih(req.body.nama, 40) || namaAsal(n), bahagian }, { upsert: true, new: true, setDefaultsOnInsert: true });
-    res.json({ ok: true, set: (await semuaSet())[n - 1] });
+    res.json({ ok: true, set: (await semuaSetPapar())[n - 1] });
   });
   app.post('/api/sijil/set/:n/asal', perluLogMasuk, async (req, res) => {
     const n = parseInt(req.params.n, 10);
     if (!(n >= 1 && n <= 6)) return res.status(400).json({ ok: false });
     if (!dbSedia()) return res.status(503).json({ ok: false, mesej: 'Pangkalan data belum bersambung.' });
     await SijilSet.deleteOne({ kumpulan: n });
-    res.json({ ok: true, set: (await semuaSet())[n - 1] });
+    res.json({ ok: true, set: (await semuaSetPapar())[n - 1] });
   });
 
   app.use('/api/sijil', (err, req, res, next) => {
