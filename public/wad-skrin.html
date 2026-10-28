@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wad Kecemasan — Skrin TV</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@600;700;800&family=Share+Tech+Mono&display=swap">
+<script>window.BOBO_BGM_KEY = 'km_bgm';</script>
+<script src="/bobo-bgm.js"></script>
+<script src="/km-suara.js"></script>
+<style>
+  :root {
+    --malam: #0b1a2b; --malam2: #10243a; --panel: #142c46; --garis: rgba(140, 200, 255, .14);
+    --putih: #f4f8ff; --kabur: #9fb4cc; --ecg: #39ff88; --amber: #ffb020; --merah: #ff4d5e; --emas: #ffd23f; --biru: #48a8ff;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; height: 100%; overflow: hidden; color: var(--putih); font-family: 'Fredoka', system-ui, sans-serif; background: var(--malam); }
+  body { background:
+      radial-gradient(ellipse at 50% -10%, rgba(72,168,255,.18), transparent 55%),
+      linear-gradient(transparent 0 calc(100% - 1px), rgba(140,200,255,.05) 0) 0 0 / 100% 60px,
+      linear-gradient(90deg, transparent 0 calc(100% - 1px), rgba(140,200,255,.05) 0) 0 0 / 60px 100%,
+      var(--malam); }
+  body.idle { cursor: none; }
+  .mono { font-family: 'Share Tech Mono', ui-monospace, monospace; }
+
+  /* ===== kepala ===== */
+  header { position: fixed; left: 0; right: 0; top: 0; z-index: 5; height: 9vh; min-height: 56px; display: flex; align-items: center; gap: 1.2vw; padding: 0 2vw; background: rgba(8, 20, 34, .92); border-bottom: 2px solid var(--garis); }
+  .siren { display: flex; align-items: center; gap: 10px; background: var(--merah); color: #fff; border-radius: 12px; padding: .6vh 1.1vw; font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(16px, 2.4vh, 26px); letter-spacing: .06em; box-shadow: 0 0 24px rgba(255,77,94,.45); }
+  .siren i { width: 1.4vh; height: 1.4vh; min-width: 10px; min-height: 10px; border-radius: 50%; background: #fff; animation: siren 1s infinite; }
+  @keyframes siren { 50% { opacity: .2; } }
+  .judul b { display: block; font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(18px, 3.2vh, 34px); line-height: 1; }
+  .judul small { color: var(--kabur); font-size: clamp(11px, 1.5vh, 16px); font-weight: 600; }
+  .kanan { margin-left: auto; display: flex; align-items: center; gap: 1vw; }
+  .titik { display: flex; gap: 6px; }
+  .titik i { width: 2.6vw; max-width: 42px; height: 1.4vh; min-height: 9px; border-radius: 999px; background: rgba(255,255,255,.15); }
+  .titik i.dah { background: var(--ecg); } .titik i.kini { background: #fff; box-shadow: 0 0 10px #fff; }
+  .sambungan { display: flex; align-items: center; gap: 8px; font-size: clamp(11px, 1.5vh, 15px); font-weight: 600; background: rgba(255,255,255,.06); padding: 6px 12px; border-radius: 999px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #9ca3af; flex: none; }
+  .dot.ok { background: #4ade80; box-shadow: 0 0 10px #4ade80; } .dot.wait { background: var(--amber); animation: siren 1s infinite; } .dot.bad { background: var(--merah); }
+
+  /* ===== wad: 6 katil ===== */
+  #wad { position: fixed; left: 0; right: 0; top: 9vh; bottom: 0; padding: 2.2vh 2vw 2.4vh; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 2vh 1.6vw; transition: transform .6s cubic-bezier(.3,.9,.3,1), filter .5s; }
+  body.ada-soalan #wad { filter: blur(3px) brightness(.55); transform: scale(.97); }
+  .katil { position: relative; border-radius: 22px; background: linear-gradient(180deg, var(--panel), var(--malam2)); border: 2px solid var(--garis); padding: 1.4vh 1vw 1.2vh; display: grid; grid-template-rows: auto 1fr auto; gap: 1vh; overflow: hidden; transition: border-color .4s, box-shadow .4s, transform .4s; }
+  .katil .atas { display: flex; align-items: center; gap: .6vw; }
+  .katil .nm { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(16px, 2.6vh, 30px); line-height: 1; }
+  .katil .warna { width: 1.6vh; height: 1.6vh; border-radius: 50%; flex: none; }
+  .katil .bintang { margin-left: auto; font-size: clamp(14px, 2.4vh, 26px); color: var(--emas); letter-spacing: .05em; min-height: 1em; }
+  .tengah { display: grid; grid-template-columns: 1fr 1.25fr; gap: .8vw; min-height: 0; }
+  .pesakit { position: relative; display: grid; place-items: end center; min-height: 0; }
+  .pesakit .bantal { position: absolute; left: 8%; right: 8%; bottom: 18%; height: 30%; border-radius: 40% 40% 12px 12px; background: #e9f1fb; }
+  .pesakit .selimut { position: absolute; left: 0; right: 0; bottom: 0; height: 28%; border-radius: 14px; background: linear-gradient(180deg, #5b8def, #3f6fd1); box-shadow: inset 0 3px 0 rgba(255,255,255,.25); }
+  .pesakit .muka { position: absolute; bottom: 22%; font-size: clamp(36px, 8vh, 96px); line-height: 1; transition: transform .4s; filter: drop-shadow(0 4px 8px rgba(0,0,0,.35)); }
+  .katil.pulih .muka { animation: lompat .7s cubic-bezier(.2,1.6,.4,1); }
+  @keyframes lompat { 40% { transform: translateY(-22%) scale(1.15); } }
+  .monitor { background: #04110c; border-radius: 14px; border: 2px solid #1d3b2e; position: relative; overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
+  .monitor canvas { flex: 1; width: 100%; min-height: 0; display: block; }
+  .monitor .bacaan { display: flex; justify-content: space-between; align-items: baseline; padding: .3vh .6vw .5vh; font-size: clamp(12px, 1.9vh, 22px); color: var(--ecg); }
+  .monitor .bacaan b { font-size: 1.4em; font-weight: 400; }
+  .bar { height: 1.3vh; min-height: 8px; border-radius: 999px; background: rgba(255,255,255,.08); overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; border-radius: 999px; background: var(--merah); transition: width .9s cubic-bezier(.3,.9,.3,1), background .6s; }
+  .apung { position: absolute; left: 50%; top: 40%; transform: translateX(-50%); font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(22px, 4vh, 44px); color: var(--ecg); text-shadow: 0 0 18px rgba(57,255,136,.7); pointer-events: none; animation: apung 1.4s ease-out forwards; z-index: 3; }
+  @keyframes apung { from { opacity: 0; transform: translate(-50%, 20px); } 20% { opacity: 1; } to { opacity: 0; transform: translate(-50%, -60px); } }
+  .suntik { position: absolute; z-index: 3; font-size: clamp(30px, 6vh, 64px); left: 50%; top: 50%; pointer-events: none; animation: suntik .8s cubic-bezier(.5,0,.6,1) forwards; }
+  @keyframes suntik { from { transform: translate(-50%, -260%) rotate(-35deg) scale(1.4); opacity: 0; } 30% { opacity: 1; } 80% { transform: translate(-50%, -40%) rotate(-35deg); opacity: 1; } to { transform: translate(-50%, -30%) rotate(-35deg); opacity: 0; } }
+  /* langsir bila jawapan dikunci */
+  .langsir { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; pointer-events: none; }
+  .langsir::before, .langsir::after { content: ''; position: absolute; top: 0; bottom: 0; width: 50.5%; background: repeating-linear-gradient(90deg, #2e7d6b 0 18px, #286e5e 18px 36px); box-shadow: inset 0 -10px 20px rgba(0,0,0,.25); transition: transform .6s cubic-bezier(.4,.1,.3,1); }
+  .langsir::before { left: 0; transform: translateX(-102%); } .langsir::after { right: 0; transform: translateX(102%); }
+  .katil.kunci .langsir::before, .katil.kunci .langsir::after { transform: none; }
+  .langsir span { position: relative; z-index: 1; font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(16px, 2.8vh, 32px); background: rgba(0,0,0,.45); padding: .3em .8em; border-radius: 14px; opacity: 0; transform: scale(.6); transition: all .4s .35s cubic-bezier(.2,1.5,.4,1); text-align: center; line-height: 1.15; }
+  .katil.kunci .langsir span { opacity: 1; transform: none; }
+  .katil.audit { border-color: var(--emas); box-shadow: 0 0 0 4px rgba(255,210,63,.35), 0 0 40px rgba(255,210,63,.35); transform: scale(1.03); z-index: 2; }
+  .katil.demam { animation: demam .25s 4; border-color: var(--merah); }
+  @keyframes demam { 50% { transform: translateX(-6px); box-shadow: 0 0 30px rgba(255,77,94,.6); } }
+
+  /* ===== lapisan atas (soalan / roda / akhir / QR) ===== */
+  .lapis { position: fixed; left: 0; right: 0; top: 9vh; bottom: 0; z-index: 4; display: flex; align-items: center; justify-content: center; padding: 3vh 3vw; opacity: 0; visibility: hidden; transition: opacity .45s, visibility 0s .45s; }
+  .lapis.on { opacity: 1; visibility: visible; transition: opacity .45s, visibility 0s; }
+  .kad { background: linear-gradient(180deg, #17324f, #10243a); border: 2px solid rgba(140,200,255,.25); border-radius: 28px; box-shadow: 0 30px 80px rgba(0,0,0,.5); }
+
+  /* soalan */
+  #lSoalan .kad { width: min(1400px, 94vw); padding: 3vh 3vw; text-align: center; }
+  .labelM { display: inline-block; font-family: 'Baloo 2'; font-weight: 800; letter-spacing: .08em; color: var(--malam); background: var(--emas); border-radius: 999px; padding: .1em .9em; font-size: clamp(16px, 2.6vh, 28px); }
+  .maksud { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(30px, 6vh, 70px); line-height: 1.08; margin: 1.6vh auto 2.4vh; max-width: 26ch; }
+  .maksud::before { content: '“'; color: var(--emas); } .maksud::after { content: '”'; color: var(--emas); }
+  .picagari { width: min(820px, 70vw); height: 12vh; margin: 0 auto; }
+  .picagari .cecair { transform-origin: right center; transition: transform 1.5s cubic-bezier(.6,0,.4,1); }
+  .picagari .penolak { transition: transform 1.5s cubic-bezier(.6,0,.4,1); }
+  .picagari.suntik .cecair { transform: scaleX(.04); }
+  .picagari.suntik .penolak { transform: translateX(300px); }
+  .titisan { opacity: 0; } .picagari.suntik .titisan { animation: titis .5s 1.3s ease-out forwards; }
+  @keyframes titis { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(40px); } }
+  .persamaan { display: flex; align-items: flex-end; justify-content: center; gap: 1.6vw; margin-top: 2vh; min-height: 24vh; }
+  .tile { display: flex; flex-direction: column; align-items: center; gap: .8vh; opacity: 0; transform: translateY(20px) scale(.7); }
+  .tile .pic { width: 15vh; height: 15vh; border-radius: 22px; background: #fff; display: grid; place-items: center; overflow: hidden; font-size: 9vh; line-height: 1; }
+  .tile .pic img { width: 100%; height: 100%; object-fit: cover; }
+  .tile .nm { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(20px, 3.2vh, 38px); line-height: 1; }
+  .tile.km .pic { width: 20vh; height: 20vh; font-size: 12vh; box-shadow: 0 0 0 6px var(--emas), 0 0 40px rgba(255,210,63,.45); }
+  .tile.km .nm { background: var(--emas); color: var(--malam); border-radius: 999px; padding: .15em .7em; }
+  .op { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(36px, 6vh, 70px); color: var(--emas); align-self: center; margin-bottom: 4vh; opacity: 0; transform: scale(.3); }
+  .persamaan.main > * { animation: pop .45s cubic-bezier(.2,1.6,.4,1) forwards; }
+  .persamaan.main > :nth-child(2) { animation-delay: .12s; } .persamaan.main > :nth-child(3) { animation-delay: .24s; }
+  .persamaan.main > :nth-child(4) { animation-delay: .36s; } .persamaan.main > :nth-child(5) { animation-delay: .48s; }
+  @keyframes pop { to { opacity: 1; transform: none; } }
+  .jujur { margin-top: 2.2vh; display: flex; align-items: center; justify-content: center; gap: 1.6vw; font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(22px, 3.6vh, 42px); opacity: 0; transform: translateY(14px); transition: all .45s cubic-bezier(.2,1.4,.4,1); }
+  .jujur.on { opacity: 1; transform: none; }
+  .jujur .kj { width: 6vh; height: 8vh; border-radius: 10px; display: grid; place-items: center; font-size: 4.4vh; color: #fff; animation: angkat 1s ease-in-out infinite; }
+  .jujur .kj.h { background: #22c55e; } .jujur .kj.m { background: var(--merah); animation-delay: .5s; }
+  @keyframes angkat { 50% { transform: translateY(-10px) rotate(-6deg); } }
+
+  /* jalur ringkas di atas wad semasa rawat/audit */
+  #jalurSoalan { position: fixed; left: 50%; top: calc(9vh + 1vh); transform: translate(-50%, -150%); z-index: 4; background: rgba(8,20,34,.95); border: 2px solid var(--emas); border-radius: 999px; padding: .6vh 1.6vw; display: flex; gap: 1vw; align-items: center; font-weight: 700; font-size: clamp(14px, 2.2vh, 24px); transition: transform .5s cubic-bezier(.2,1.3,.4,1), opacity .3s; white-space: nowrap; opacity: 0; pointer-events: none; }
+  #jalurSoalan.on { transform: translate(-50%, 0); opacity: 1; }
+  #jalurSoalan b { font-family: 'Baloo 2'; color: var(--emas); }
+
+  /* roda audit */
+  #lAudit .kad { padding: 3vh 3vw; display: grid; grid-template-columns: auto 1fr; gap: 3vw; align-items: center; width: min(1300px, 92vw); }
+  .roda { width: 52vh; height: 52vh; position: relative; }
+  .roda svg { width: 100%; height: 100%; transition: transform 4.2s cubic-bezier(.12,.75,.18,1); }
+  .roda .jarum { position: absolute; left: 50%; top: -2.4vh; transform: translateX(-50%); width: 0; height: 0; border-left: 2.2vh solid transparent; border-right: 2.2vh solid transparent; border-top: 4.4vh solid var(--emas); filter: drop-shadow(0 3px 6px rgba(0,0,0,.5)); }
+  .auditTeks h2 { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(30px, 5.6vh, 64px); line-height: 1; margin: 0 0 1.4vh; color: var(--emas); }
+  .auditTeks p { font-size: clamp(18px, 2.8vh, 32px); color: var(--kabur); margin: 0; line-height: 1.3; }
+  .auditTeks .kumpulan { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(36px, 7vh, 84px); color: #fff; margin: 1vh 0; min-height: 1.1em; }
+  .hasil { margin-top: 2vh; font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(26px, 4.6vh, 54px); opacity: 0; transform: scale(.5); transition: all .45s cubic-bezier(.2,1.6,.4,1); }
+  .hasil.on { opacity: 1; transform: none; }
+  .hasil.jujur { color: var(--emas); } .hasil.tidak { color: var(--merah); }
+
+  /* akhir */
+  #lAkhir .kad { width: min(1400px, 94vw); padding: 3vh 3vw; }
+  #lAkhir h1 { text-align: center; font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(38px, 7vh, 88px); margin: 0 0 2vh; line-height: 1; background: linear-gradient(90deg, var(--ecg), var(--emas)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .papan2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3vw; }
+  .papan2 h3 { margin: 0 0 1.2vh; font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(20px, 3.4vh, 40px); }
+  .baris { display: grid; grid-template-columns: 2.2em 1fr auto; gap: .8vw; align-items: center; padding: .9vh 0; border-bottom: 1px solid var(--garis); font-size: clamp(16px, 2.6vh, 30px); font-weight: 700; opacity: 0; transform: translateX(-20px); }
+  .lapis.on .baris { animation: masuk .45s cubic-bezier(.2,1.3,.4,1) forwards; }
+  @keyframes masuk { to { opacity: 1; transform: none; } }
+  .baris .no { font-family: 'Baloo 2'; color: var(--kabur); }
+  .baris .bar { height: 1.6vh; margin-top: .6vh; }
+
+  /* QR */
+  #lQR .kad { display: grid; grid-template-columns: 1fr auto; gap: 4vw; align-items: center; width: min(1200px, 94vw); padding: clamp(24px, 4vw, 52px); }
+  #lQR h1 { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(38px, 5.6vw, 84px); line-height: .95; margin: 0 0 12px; }
+  #lQR h1 span { color: var(--merah); }
+  #lQR p { color: var(--kabur); font-size: clamp(16px, 1.7vw, 24px); margin: 0 0 18px; max-width: 36ch; }
+  .langkah { list-style: none; padding: 0; margin: 0 0 20px; display: grid; gap: 10px; }
+  .langkah li { display: flex; gap: 14px; align-items: center; font-size: clamp(15px, 1.6vw, 22px); font-weight: 600; }
+  .langkah b { flex: none; width: 1.7em; height: 1.7em; border-radius: 50%; display: grid; place-items: center; background: var(--merah); }
+  .kod { font-size: clamp(52px, 7.5vw, 110px); letter-spacing: .12em; line-height: 1; }
+  #qr { background: #fff; padding: 14px; border-radius: 18px; display: inline-block; line-height: 0; }
+  #qr svg { width: clamp(190px, 22vw, 310px); height: auto; }
+  .url { margin-top: 10px; font-size: 13px; color: var(--kabur); word-break: break-all; max-width: 320px; text-align: center; }
+
+  #kilatKata { position: fixed; inset: 0; z-index: 8; display: grid; place-items: center; pointer-events: none; opacity: 0; }
+  #kilatKata span { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(70px, 12vw, 200px); line-height: 1; color: var(--malam); padding: .05em .45em .02em; border-radius: .3em; background: var(--emas); box-shadow: 0 0 0 .08em #fff, 0 30px 80px rgba(0,0,0,.5); transform: rotate(-4deg); }
+  #kilatKata.merah span { background: var(--merah); color: #fff; font-size: clamp(54px, 8vw, 140px); }
+  #kilatKata.on { animation: kilatKata 1s cubic-bezier(.2,1.4,.4,1) forwards; }
+  @keyframes kilatKata { 0% { opacity: 0; transform: scale(.3); } 18% { opacity: 1; transform: scale(1.08); } 30% { transform: scale(1); } 78% { opacity: 1; } 100% { opacity: 0; transform: scale(1.15); } }
+  #konfeti { position: fixed; inset: 0; z-index: 7; pointer-events: none; }
+
+  .hud { position: fixed; right: 14px; bottom: 12px; z-index: 9; display: flex; gap: 8px; transition: opacity .4s; }
+  body.idle .hud { opacity: 0; pointer-events: none; }
+  .btn { font: inherit; font-weight: 600; font-size: 15px; color: var(--putih); background: rgba(16,36,58,.92); border: 2px solid var(--garis); border-radius: 12px; padding: 8px 14px; cursor: pointer; text-decoration: none; }
+  .btn:hover { border-color: var(--biru); }
+  .btn.off { opacity: .5; }
+  #bunyiNota { position: fixed; left: 50%; bottom: 7vh; transform: translateX(-50%); z-index: 9; background: var(--merah); color: #fff; border: 4px solid #fff; border-radius: 999px; padding: 16px 30px; font: inherit; font-weight: 700; font-size: clamp(16px, 1.6vw, 24px); cursor: pointer; box-shadow: 0 18px 50px rgba(0,0,0,.4); animation: denyutNota 1.6s ease-in-out infinite; }
+  @keyframes denyutNota { 50% { transform: translateX(-50%) scale(1.05); } }
+  #toast { position: fixed; left: 50%; top: 11vh; transform: translate(-50%, -20px); z-index: 10; background: #fff; color: var(--malam); padding: 10px 20px; border-radius: 14px; font-weight: 700; opacity: 0; transition: all .35s; pointer-events: none; }
+  #toast.on { opacity: 1; transform: translate(-50%, 0); }
+</style>
+</head>
+<body>
+<header>
+  <div class="siren"><i></i>WAD KECEMASAN</div>
+  <div class="judul"><b>Suntikan Kata Majmuk</b><small>Klinik Dr. Izuddin · Jujur itu ubat terbaik</small></div>
+  <div class="kanan">
+    <span class="titik" id="hTitik"></span>
+    <span class="sambungan"><span class="dot wait" id="stDot"></span><span id="stTx">Menyambung…</span></span>
+  </div>
+</header>
+
+<main id="wad"></main>
+<div id="jalurSoalan"><span>Maksud <b id="jNo">1</b></span><span id="jKm"></span></div>
+
+<section class="lapis" id="lQR">
+  <div class="kad">
+    <div>
+      <h1>Wad <span>Kecemasan</span></h1>
+      <p>Enam pesakit menunggu suntikan kata majmuk. Hanya ubat yang jujur menyembuhkan mereka.</p>
+      <ul class="langkah"><li><b>1</b> Imbas kod QR dengan telefon guru</li><li><b>2</b> Kunci jawapan kumpulan yang sudah siap</li><li><b>3</b> Dedah jawapan, angkat Kad Jujur</li></ul>
+      <div style="display:flex;gap:16px;align-items:baseline"><span style="color:var(--kabur);font-weight:600">Kod bilik</span><span class="kod mono" id="kodBesar">····</span></div>
+    </div>
+    <div><div id="qr"></div><div class="url" id="url"></div></div>
+  </div>
+</section>
+
+<section class="lapis" id="lSoalan">
+  <div class="kad">
+    <span class="labelM" id="sLabel">MAKSUD 1</span>
+    <div class="maksud" id="sMaksud"></div>
+    <svg class="picagari" id="picagari" viewBox="0 0 820 120" aria-hidden="true">
+      <rect x="40" y="38" width="560" height="44" rx="10" fill="rgba(255,255,255,.12)" stroke="#cfe6ff" stroke-width="4"/>
+      <rect class="cecair" x="300" y="44" width="296" height="32" rx="6" fill="#48a8ff"/>
+      <g class="penolak"><rect x="0" y="54" width="300" height="12" rx="6" fill="#9fb4cc"/><rect x="0" y="30" width="18" height="60" rx="6" fill="#9fb4cc"/><rect x="284" y="40" width="16" height="40" rx="4" fill="#e2ecf8"/></g>
+      <rect x="600" y="50" width="40" height="20" rx="4" fill="#cfe6ff"/>
+      <rect x="640" y="57" width="150" height="6" rx="3" fill="#e2ecf8"/>
+      <circle class="titisan" cx="800" cy="60" r="7" fill="#48a8ff"/>
+      <g stroke="#cfe6ff" stroke-width="3"><line x1="120" y1="38" x2="120" y2="54"/><line x1="200" y1="38" x2="200" y2="54"/><line x1="280" y1="38" x2="280" y2="54"/><line x1="360" y1="38" x2="360" y2="54"/><line x1="440" y1="38" x2="440" y2="54"/><line x1="520" y1="38" x2="520" y2="54"/></g>
+    </svg>
+    <div class="persamaan" id="sPers"></div>
+    <div class="jujur" id="sJujur"><span class="kj h">✓</span><span>Angkat Kad Jujur!</span><span class="kj m">✗</span><span class="mono" id="kira" style="color:var(--emas);min-width:1.4em"></span></div>
+  </div>
+</section>
+
+<section class="lapis" id="lAudit">
+  <div class="kad">
+    <div class="roda"><div class="jarum"></div><svg id="roda" viewBox="-110 -110 220 220"></svg></div>
+    <div class="auditTeks">
+      <h2>🎯 Audit Doktor Besar</h2>
+      <p>Satu kumpulan dipilih secara rawak. Guru akan menyemak poster mereka.</p>
+      <div class="kumpulan" id="aKump"></div>
+      <p id="aNota"></p>
+      <div class="hasil" id="aHasil"></div>
+    </div>
+  </div>
+</section>
+
+<section class="lapis" id="lAkhir">
+  <div class="kad">
+    <h1>Jujur Itu Ubat Terbaik!</h1>
+    <div class="papan2">
+      <div><h3>🏥 Pesakit Sembuh</h3><div id="pSembuh"></div></div>
+      <div><h3>⭐ Doktor Paling Jujur</h3><div id="pJujur"></div></div>
+    </div>
+  </div>
+</section>
+
+<div id="kilatKata"><span></span></div>
+<canvas id="konfeti"></canvas>
+<div class="hud">
+  <button class="btn" id="btnQr" title="Tunjuk kod QR (Q)">📱 QR</button>
+  <span id="laguSlot"></span>
+  <button class="btn" id="btnMuzik">🎵 Muzik</button>
+  <button class="btn" id="btnSuara">🗣️ Suara</button>
+  <button class="btn" id="btnBunyi">🔊 Bunyi</button>
+  <button class="btn" id="btnBaru" title="Jana kod bilik baharu">🔄 Kod Baru</button>
+  <button class="btn" id="btnFs" title="Skrin penuh (F)">⛶</button>
+  <a class="btn" href="/wad-kecemasan.html" title="Kembali">✕</a>
+</div>
+<button id="bunyiNota">▶ Klik sekali untuk hidupkan suara, bunyi &amp; muzik</button>
+<div id="toast"></div>
+
+<script>
+(() => {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const LS = 'ilmuverseWadSkrin.v1';
+const WARNA = ['#ff5a6a', '#48a8ff', '#3ddc84', '#ffd23f', '#b38cff', '#ff9a3d'];
+const rnd = (n) => Array.from(crypto.getRandomValues(new Uint8Array(n)), (b) => b.toString(16).padStart(2, '0')).join('');
+const kodBaru = () => String(1000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 9000));
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const tunggu = (ms) => new Promise((r) => setTimeout(r, ms));
+
+let sesi = null, pilihan = { bunyi: true, suara: true, muzik: true };
+try { const j = JSON.parse(localStorage.getItem(LS) || 'null'); if (j) { sesi = j.sesi; pilihan = Object.assign(pilihan, j.pilihan || {}); } } catch (e) {}
+if (!sesi || !/^\d{4}$/.test(sesi.kod) || !sesi.kunci) sesi = { kod: kodBaru(), kunci: rnd(16) };
+const simpan = () => { try { localStorage.setItem(LS, JSON.stringify({ sesi, pilihan })); } catch (e) {} };
+simpan();
+function toast(t, ms = 2600) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), ms); }
+
+// =============================================================
+// BUNYI + SUARA (Bahasa Melayu Malaysia) + MUZIK
+// =============================================================
+const KS = window.KMSuara;
+KS.amaran = (m) => toast('⚠️ ' + m, 8000);
+function nada(f, mula, tempoh, jenis = 'sine', vol = .16, f2) {
+  const a = KS.audio(); if (!a || !pilihan.bunyi) return;
+  const t = a.currentTime + mula, o = a.createOscillator(), g = a.createGain();
+  o.type = jenis; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + tempoh);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .012); g.gain.exponentialRampToValueAtTime(0.0001, t + tempoh);
+  o.connect(g).connect(KS.keluaran()); o.start(t); o.stop(t + tempoh + .05);
+}
+const SFX = {
+  kunci() { nada(1200, 0, .05, 'square', .06); nada(700, .05, .08, 'square', .05); nada(400, .12, .12, 'sine', .1); },
+  buka() { nada(500, 0, .08, 'sine', .08, 900); },
+  suntik() { nada(220, 0, 1.4, 'sine', .05, 520); },
+  titis() { nada(1400, 0, .1, 'sine', .1, 700); },
+  pop() { nada(660, 0, .1, 'sine', .1, 990); },
+  pulih() { [523, 784, 1047].forEach((f, i) => nada(f, i * .08, .3, 'triangle', .12)); },
+  tick() { nada(1600, 0, .03, 'square', .04); },
+  roda() { nada(880, 0, .08, 'triangle', .08); },
+  bintang() { [880, 1175, 1568, 2093].forEach((f, i) => nada(f, i * .07, .35, 'sine', .1)); },
+  demam() { nada(300, 0, .25, 'sawtooth', .06, 180); nada(250, .25, .3, 'sawtooth', .05, 150); },
+  amaran() { nada(880, 0, .18, 'square', .04); nada(660, .2, .18, 'square', .04); },
+  tamat() { [523, 659, 784, 659, 784, 1047].forEach((f, i) => nada(f, i * .12, .38, 'triangle', .14)); },
+  bip() { nada(1046, 0, .07, 'sine', .05); },
+};
+function cakap(t, baru = true) { if (!pilihan.suara) return Promise.resolve(); if (baru) KS.diam(); return KS.cakap(t); }
+function bukaBunyi() { KS.audio(); KS.muzik(pilihan.muzik); $('bunyiNota').hidden = true; removeEventListener('pointerdown', bukaBunyi); removeEventListener('keydown', bukaBunyi); }
+addEventListener('pointerdown', bukaBunyi); addEventListener('keydown', bukaBunyi);
+function kemasButang() { $('btnBunyi').classList.toggle('off', !pilihan.bunyi); $('btnSuara').classList.toggle('off', !pilihan.suara); $('btnMuzik').classList.toggle('off', !pilihan.muzik); }
+$('btnBunyi').onclick = () => { pilihan.bunyi = !pilihan.bunyi; simpan(); kemasButang(); };
+$('btnSuara').onclick = () => { pilihan.suara = !pilihan.suara; simpan(); kemasButang(); if (!pilihan.suara) KS.diam(); };
+$('btnMuzik').onclick = () => { pilihan.muzik = !pilihan.muzik; simpan(); kemasButang(); KS.muzik(pilihan.muzik); };
+if (window.BoboBGM) { BoboBGM.mount($('laguSlot'), 'btn'); BoboBGM.onChange(() => { if ($('bunyiNota').hidden) KS.muzik(pilihan.muzik); }); }
+kemasButang();
+
+// =============================================================
+// KOD + QR
+// =============================================================
+const telUrl = () => `${location.origin}/wad-telefon.html?bilik=${sesi.kod}`;
+function loadScript(src) { return new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
+async function lukisKod() {
+  $('kodBesar').textContent = sesi.kod; $('url').textContent = telUrl();
+  try { if (!window.qrcode) await loadScript('https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js'); const q = window.qrcode(0, 'M'); q.addData(telUrl()); q.make(); $('qr').innerHTML = q.createSvgTag({ cellSize: 6, margin: 1, scalable: true }); }
+  catch (e) { $('qr').innerHTML = '<div style="padding:20px;color:#000;font-weight:700">' + esc(telUrl()) + '</div>'; }
+}
+
+// =============================================================
+// DATA SOALAN
+// =============================================================
+let SET = null;
+async function muatSet() { try { const r = await fetch('/api/wad/set', { cache: 'no-store' }); if (r.status === 401) return toast('Sila log masuk semula di PC ini', 5000); const j = await r.json(); if (j.ok) SET = j.set; } catch (e) {} }
+const namaK = (g) => (SET && SET.kumpulan[g]) || 'Kumpulan ' + (g + 1);
+const soalan = (i) => (SET && SET.soalan[i]) || { maksud: '', k1: '', k2: '', km: '' };
+
+// =============================================================
+// WAD: 6 KATIL + ECG
+// =============================================================
+const MUKA = ['🤒', '🤧', '😐', '🙂', '😄', '🥳'];
+function bina() {
+  $('wad').innerHTML = WARNA.map((w, g) => `<div class="katil" id="k${g}">
+      <div class="atas"><span class="warna" style="background:${w}"></span><span class="nm" id="nm${g}">Kumpulan ${g + 1}</span><span class="bintang" id="b${g}"></span></div>
+      <div class="tengah">
+        <div class="pesakit"><div class="bantal"></div><div class="muka" id="m${g}">🤒</div><div class="selimut" style="background:linear-gradient(180deg, ${w}, ${w}cc)"></div></div>
+        <div class="monitor"><canvas id="c${g}"></canvas><div class="bacaan mono"><span>KESIHATAN</span><b id="h${g}">0%</b></div></div>
+      </div>
+      <div class="bar"><i id="br${g}"></i></div>
+      <div class="langsir"><span id="ls${g}">🔒 Jawapan dikunci</span></div>
+    </div>`).join('');
+}
+bina();
+const sihat = new Array(6).fill(0), papar = new Array(6).fill(0); // sasaran & paparan lancar
+const warnaSihat = (h) => (h >= 75 ? '#39ff88' : h >= 40 ? '#ffb020' : '#ff4d5e');
+function kemasKatil(g, kesan) {
+  const h = sihat[g];
+  $('h' + g).textContent = Math.round(h) + '%'; $('h' + g).style.color = warnaSihat(h);
+  $('br' + g).style.width = Math.max(3, h) + '%'; $('br' + g).style.background = warnaSihat(h);
+  $('m' + g).textContent = MUKA[Math.min(5, Math.round(h / 20))];
+  if (kesan === 'pulih') { const k = $('k' + g); k.classList.remove('pulih'); void k.offsetWidth; k.classList.add('pulih'); }
+}
+// ECG: lukis berterusan, kadar & warna ikut kesihatan
+const jejak = WARNA.map(() => ({ x: 0, t: Math.random() * 10, y: [] }));
+function bentukECG(p, h) { // p: 0..1 dalam satu degupan
+  const kuat = 0.25 + h / 100 * 0.75;
+  if (p < .08) return Math.sin(p / .08 * Math.PI) * .12 * kuat;
+  if (p > .16 && p < .2) return -.15 * kuat;
+  if (p >= .2 && p < .24) return 1 * kuat;
+  if (p >= .24 && p < .28) return -.35 * kuat;
+  if (p > .45 && p < .6) return Math.sin((p - .45) / .15 * Math.PI) * .22 * kuat;
+  return 0;
+}
+let akhirT = performance.now();
+function gelungECG(t) {
+  const dt = Math.min(.05, (t - akhirT) / 1000); akhirT = t;
+  for (let g = 0; g < 6; g++) {
+    papar[g] += (sihat[g] - papar[g]) * Math.min(1, dt * 2.5);
+    const c = $('c' + g); if (!c) continue;
+    const w = c.clientWidth, hgt = c.clientHeight; if (!w || !hgt) continue;
+    if (c.width !== w * 2) { c.width = w * 2; c.height = hgt * 2; jejak[g].y = new Array(c.width).fill(null); jejak[g].x = 0; }
+    const x = c.getContext('2d'), j = jejak[g], h = papar[g];
+    const bpm = 55 + h * .45, laju = c.width / 2.6; // piksel sesaat
+    const langkah = Math.max(1, Math.round(laju * dt));
+    for (let s = 0; s < langkah; s++) {
+      j.t += 1 / laju * (bpm / 60);
+      const p = j.t % 1, gegar = h < 40 ? (Math.random() - .5) * .05 : 0;
+      j.y[j.x] = bentukECG(p, h) + gegar;
+      j.x = (j.x + 1) % c.width;
+      for (let k = 1; k <= 14; k++) j.y[(j.x + k) % c.width] = null; // celah sapuan
+    }
+    x.clearRect(0, 0, c.width, c.height);
+    x.strokeStyle = 'rgba(57,255,136,.08)'; x.lineWidth = 1;
+    for (let gx = 0; gx < c.width; gx += 24) { x.beginPath(); x.moveTo(gx, 0); x.lineTo(gx, c.height); x.stroke(); }
+    x.strokeStyle = warnaSihat(h); x.lineWidth = 3.5; x.shadowColor = warnaSihat(h); x.shadowBlur = 10; x.beginPath();
+    let mula = false;
+    for (let i = 0; i < c.width; i++) { const v = j.y[i]; if (v == null) { mula = false; continue; } const yy = c.height * .58 - v * c.height * .42; if (!mula) { x.moveTo(i, yy); mula = true; } else x.lineTo(i, yy); }
+    x.stroke(); x.shadowBlur = 0;
+  }
+  requestAnimationFrame(gelungECG);
+}
+requestAnimationFrame(gelungECG);
+
+// =============================================================
+// PAPARAN MENGIKUT KEADAAN
+// =============================================================
+let S = null, wsOk = false, bilTel = 0, paksaQR = false, kunciLangkah = '', lapisKini = '';
+function lapis(id) {
+  if (lapisKini === id) return false; lapisKini = id;
+  document.querySelectorAll('.lapis').forEach((l) => l.classList.toggle('on', l.id === id));
+  document.body.classList.toggle('ada-soalan', !!id);
+  return true;
+}
+function status() {
+  let c, t;
+  if (!wsOk) { c = 'bad'; t = 'Terputus, menyambung semula…'; }
+  else if (!bilTel) { c = 'wait'; t = 'Kod ' + sesi.kod + ' · menunggu telefon'; }
+  else { c = 'ok'; t = 'Kod ' + sesi.kod + ' · telefon bersambung'; }
+  $('stDot').className = 'dot ' + c; $('stTx').textContent = t;
+}
+function kiraSihat() {
+  const n = S.bilSoalan || 4, out = new Array(6).fill(0);
+  (S.betul || []).forEach((row) => row.forEach((v, g) => { if (v) out[g] += 100 / n; }));
+  return out.map((x) => Math.min(100, x));
+}
+function render() {
+  if (!S) return;
+  for (let g = 0; g < 6; g++) {
+    $('nm' + g).textContent = namaK(g);
+    $('b' + g).textContent = '⭐'.repeat(S.bintang[g] || 0);
+    const k = $('k' + g), dikunci = S.fasa === 'sedia' && S.kunciK[g] > 0;
+    k.classList.toggle('kunci', dikunci);
+    $('ls' + g).innerHTML = `🔒 Jawapan dikunci<br><small>#${S.kunciK[g]}</small>`;
+  }
+  $('hTitik').innerHTML = S.fasa === 'sedia' ? '' : Array.from({ length: S.bilSoalan }, (_, i) => `<i class="${i < S.idx || S.fasa === 'tamat' ? 'dah' : i === S.idx ? 'kini' : ''}"></i>`).join('');
+  const kunci = `${S.fasa}|${S.idx}|${S.langkah}|${JSON.stringify(S.audit[S.idx] || null)}`;
+  const baru = kunci !== kunciLangkah; kunciLangkah = kunci;
+
+  if (paksaQR || (S.fasa === 'sedia' && !bilTel)) { lapis('lQR'); $('jalurSoalan').classList.remove('on'); return; }
+  if (S.fasa === 'sedia') {
+    lapis(''); $('jalurSoalan').classList.remove('on');
+    const h = kiraSihat(); h.forEach((v, g) => { sihat[g] = v; kemasKatil(g); });
+    return;
+  }
+  if (S.fasa === 'tamat') { if (baru) tamat(); return; }
+  // dedah
+  if (S.langkah === 'soalan') { if (baru) dedahSoalan(); return; }
+  $('jalurSoalan').classList.add('on'); $('jNo').textContent = S.idx + 1; $('jKm').textContent = soalan(S.idx).km;
+  if (S.langkah === 'rawat') { if (baru) rawat(); return; }
+  if (S.langkah === 'audit' || S.langkah === 'auditSiap') { if (baru) audit(); }
+}
+
+// ---------- 1) soalan: suntik & dedah jawapan ----------
+async function dedahSoalan() {
+  const k = kunciLangkah, kini = () => k === kunciLangkah;
+  document.querySelectorAll('.katil').forEach((el) => el.classList.remove('kunci', 'audit'));
+  $('jalurSoalan').classList.remove('on');
+  // kesihatan sebelum soalan ini (soalan semasa belum ditanda)
+  const h = kiraSihat(); h.forEach((v, g) => { sihat[g] = v; kemasKatil(g); });
+  const s = soalan(S.idx);
+  $('sLabel').textContent = `MAKSUD ${S.idx + 1} / ${S.bilSoalan}`;
+  $('sMaksud').textContent = s.maksud;
+  $('sPers').className = 'persamaan'; $('sPers').innerHTML = ''; $('sJujur').classList.remove('on'); $('kira').textContent = '';
+  const pg = $('picagari'); pg.classList.remove('suntik');
+  lapis('lSoalan');
+  SFX.amaran();
+  await cakap(`Maksud ${S.idx + 1}. ${s.maksud}.`); if (!kini()) return;
+  void pg.offsetWidth; pg.classList.add('suntik'); SFX.suntik(); setTimeout(() => kini() && SFX.titis(), 1350);
+  await tunggu(1600); if (!kini()) return;
+  const pic = (u, e) => (u ? `<img src="${esc(u)}" alt="">` : esc(e || '💊'));
+  $('sPers').innerHTML = `<div class="tile"><div class="pic">${pic(s.u1, s.e1)}</div><div class="nm">${esc(s.k1)}</div></div><div class="op">+</div>
+    <div class="tile"><div class="pic">${pic(s.u2, s.e2)}</div><div class="nm">${esc(s.k2)}</div></div><div class="op">=</div>
+    <div class="tile km"><div class="pic">${pic(s.uk, s.ek)}</div><div class="nm">${esc(s.km)}</div></div>`;
+  void $('sPers').offsetWidth; $('sPers').classList.add('main');
+  [0, 120, 240, 360, 480].forEach((d) => setTimeout(() => kini() && SFX.pop(), d));
+  await cakap(`Jawapannya, ${s.km}. ${s.k1} tambah ${s.k2}, jadi ${s.km}. Angkat Kad Jujur!`); if (!kini()) return;
+  $('sJujur').classList.add('on');
+  for (let n = 5; n >= 1; n--) { if (!kini()) return; $('kira').textContent = n; SFX.tick(); await tunggu(1000); }
+  if (kini()) $('kira').textContent = '';
+}
+
+// ---------- 2) rawat: pesakit pulih ----------
+async function rawat() {
+  const k = kunciLangkah, kini = () => k === kunciLangkah;
+  lapis('');
+  const row = S.betul[S.idx] || [], baik = [];
+  const h = kiraSihat();
+  await tunggu(350);
+  for (let g = 0; g < 6; g++) {
+    if (!kini()) return;
+    if (row[g]) {
+      baik.push(namaK(g));
+      const kat = $('k' + g), sp = document.createElement('div'); sp.className = 'suntik'; sp.textContent = '💉'; kat.appendChild(sp); setTimeout(() => sp.remove(), 900);
+      SFX.suntik();
+      await tunggu(520);
+      sihat[g] = h[g]; kemasKatil(g, 'pulih'); SFX.pulih();
+      const a = document.createElement('div'); a.className = 'apung'; a.textContent = `+${Math.round(100 / S.bilSoalan)}%`; kat.appendChild(a); setTimeout(() => a.remove(), 1400);
+      await tunggu(260);
+    } else { sihat[g] = h[g]; kemasKatil(g); }
+  }
+  if (!kini()) return;
+  cakap(baik.length === 6 ? 'Hebat! Semua pesakit semakin sembuh!' : baik.length ? `${baik.join(', ')}. Pesakit anda semakin sembuh!` : 'Belum ada pesakit yang sembuh. Teruskan berusaha!');
+}
+
+// ---------- 3) audit: roda putar ----------
+let sudutRoda = 0, putarP = Promise.resolve();
+function lukisRoda() {
+  const seg = 360 / 6, r = 100;
+  $('roda').innerHTML = WARNA.map((w, g) => {
+    const a0 = (g * seg - 90 - seg / 2) * Math.PI / 180, a1 = ((g + 1) * seg - 90 - seg / 2) * Math.PI / 180;
+    const x0 = r * Math.cos(a0), y0 = r * Math.sin(a0), x1 = r * Math.cos(a1), y1 = r * Math.sin(a1);
+    const am = (g * seg - 90) * Math.PI / 180, tx = 62 * Math.cos(am), ty = 62 * Math.sin(am);
+    return `<path d="M0 0 L${x0} ${y0} A${r} ${r} 0 0 1 ${x1} ${y1} Z" fill="${w}" stroke="#0b1a2b" stroke-width="2"/>
+      <text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" font-family="Baloo 2, sans-serif" font-weight="800" font-size="20" fill="#0b1a2b" transform="rotate(${g * seg} ${tx} ${ty})">${g + 1}</text>`;
+  }).join('') + '<circle r="16" fill="#0b1a2b" stroke="#ffd23f" stroke-width="4"/>';
+}
+lukisRoda();
+async function audit() {
+  const k = kunciLangkah, kini = () => k === kunciLangkah, a = S.audit[S.idx]; if (!a) return;
+  const sudahPutar = lapisKini === 'lAudit' && $('aKump').dataset.idx === String(S.idx);
+  lapis('lAudit');
+  if (!sudahPutar) {
+    $('aKump').dataset.idx = S.idx; $('aKump').textContent = ''; $('aNota').textContent = ''; $('aHasil').className = 'hasil';
+    document.querySelectorAll('.katil').forEach((el) => el.classList.remove('audit'));
+    putarP = (async () => {
+      cakap('Audit Doktor Besar!');
+      // putar supaya kumpulan a.g berhenti di jarum (atas)
+      const sasaran = sudutRoda - (sudutRoda % 360) + 360 * a.putaran + (360 - a.g * 60);
+      sudutRoda = sasaran; $('roda').style.transform = `rotate(${sasaran}deg)`;
+      let i = 0; const tk = setInterval(() => { SFX.roda(); if (++i > 26) clearInterval(tk); }, 150);
+      await tunggu(4300); clearInterval(tk);
+      $('aKump').textContent = namaK(a.g); $('aNota').textContent = 'Guru sedang menyemak poster kumpulan ini…';
+      $('k' + a.g).classList.add('audit'); SFX.bintang();
+      cakap(`${namaK(a.g)}. Mari kita semak.`);
+    })();
+  }
+  await putarP; if (!kini()) return;
+  if (S.langkah === 'auditSiap' && a.hasil) {
+    const hs = $('aHasil');
+    if (a.hasil === 'jujur') {
+      hs.className = 'hasil jujur on'; hs.textContent = '⭐ LENCANA JUJUR!'; $('aNota').textContent = 'Pengakuan kumpulan ini jujur.';
+      kilat('⭐ JUJUR!', false); SFX.bintang();
+      cakap(`Syabas, ${namaK(a.g)}! Anda jujur. Lencana Jujur untuk anda.`);
+    } else {
+      hs.className = 'hasil tidak on'; hs.textContent = 'Pengakuan tidak tepat'; $('aNota').textContent = 'Pesakit demam semula. Kejujuran lebih penting daripada markah.';
+      kilat('TIDAK TEPAT', true); SFX.demam();
+      cakap('Pengakuan tidak tepat. Kejujuran lebih penting daripada markah.');
+    }
+    await tunggu(2600); if (!kini()) return;
+    lapis('');
+    const h = kiraSihat(); h.forEach((v, g) => { sihat[g] = v; kemasKatil(g); });
+    $('b' + a.g).textContent = '⭐'.repeat(S.bintang[a.g] || 0);
+    const kat = $('k' + a.g); kat.classList.add('audit');
+    if (a.hasil !== 'jujur') { kat.classList.remove('demam'); void kat.offsetWidth; kat.classList.add('demam'); }
+  }
+}
+function kilat(teks, merah) { const el = $('kilatKata'); el.className = merah ? 'merah' : ''; el.firstElementChild.textContent = teks; void el.offsetWidth; el.classList.add('on'); }
+
+// ---------- 4) tamat ----------
+function tamat() {
+  $('jalurSoalan').classList.remove('on');
+  const h = kiraSihat(); h.forEach((v, g) => { sihat[g] = v; kemasKatil(g); });
+  const ikut = (arr) => arr.map((v, g) => ({ v, g })).sort((a, b) => b.v - a.v);
+  $('pSembuh').innerHTML = ikut(h).map((x, i) => `<div class="baris" style="animation-delay:${.2 + i * .12}s"><span class="no">${i + 1}</span><div><div>${esc(namaK(x.g))} ${x.v >= 100 ? '🎉' : ''}</div><div class="bar"><i style="width:${Math.max(3, x.v)}%;background:${warnaSihat(x.v)}"></i></div></div><span class="mono">${Math.round(x.v)}%</span></div>`).join('');
+  $('pJujur').innerHTML = ikut(S.bintang).map((x, i) => `<div class="baris" style="animation-delay:${.9 + i * .12}s"><span class="no">${i + 1}</span><span>${esc(namaK(x.g))}</span><span style="color:var(--emas)">${'⭐'.repeat(x.v) || '—'}</span></div>`).join('');
+  lapis('lAkhir'); SFX.tamat(); konfeti();
+  const sembuh = h.filter((v) => v >= 100).length;
+  cakap(`Jujur itu ubat terbaik! ${sembuh ? sembuh + ' pesakit sembuh sepenuhnya.' : ''} Terima kasih, semua doktor!`);
+}
+function konfeti() {
+  const c = $('konfeti'), x = c.getContext('2d'); c.width = innerWidth; c.height = innerHeight;
+  const P = Array.from({ length: 140 }, () => ({ x: Math.random() * c.width, y: -20 - Math.random() * c.height * .6, vx: (Math.random() - .5) * 3, vy: 2 + Math.random() * 4, r: Math.random() * 6, vr: (Math.random() - .5) * .25, w: 10 + Math.random() * 12, c: WARNA[Math.floor(Math.random() * 6)] }));
+  const mula = performance.now();
+  (function f(t) { x.clearRect(0, 0, c.width, c.height); P.forEach((p) => { p.x += p.vx; p.y += p.vy; p.vy += .04; p.r += p.vr; x.save(); x.translate(p.x, p.y); x.rotate(p.r); x.fillStyle = p.c; x.fillRect(-p.w / 2, -p.w / 4, p.w, p.w / 2); x.restore(); });
+    if (t - mula < 5500) requestAnimationFrame(f); else x.clearRect(0, 0, c.width, c.height); })(mula);
+}
+
+// =============================================================
+// WEBSOCKET
+// =============================================================
+let ws = null, tunda = 800, pingT = null, kunciLama = null;
+function sambung() {
+  try { ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/wad-km?bilik=${sesi.kod}&peranan=paparan&kunci=${sesi.kunci}`); } catch (e) { return ulang(); }
+  ws.onopen = () => { wsOk = true; tunda = 800; status(); clearInterval(pingT); pingT = setInterval(() => { try { ws.send('{"jenis":"ping"}'); } catch (e) {} }, 20000); };
+  ws.onmessage = (ev) => {
+    let d; try { d = JSON.parse(ev.data); } catch (e) { return; }
+    if (d.jenis === 'keadaan') {
+      bilTel = d.telefon || 0;
+      // bunyi kunci / buka kunci
+      if (kunciLama && d.fasa === 'sedia') d.kunciK.forEach((v, g) => { if (v && !kunciLama[g]) { SFX.kunci(); cakap(`${namaK(g)}, jawapan dikunci.`); } else if (!v && kunciLama[g]) SFX.buka(); });
+      kunciLama = d.kunciK.slice();
+      S = d; status(); render();
+    } else if (d.jenis === 'bilangan') { const naik = (d.telefon || 0) > bilTel; bilTel = d.telefon || 0; status(); if (naik) { toast('📱 Telefon guru bersambung'); paksaQR = false; } render(); }
+  };
+  ws.onclose = (ev) => { wsOk = false; status(); clearInterval(pingT); if (ev.code === 4001) { sesi = { kod: kodBaru(), kunci: rnd(16) }; simpan(); lukisKod(); tunda = 200; } ulang(); };
+  ws.onerror = () => {};
+}
+function ulang() { setTimeout(sambung, tunda); tunda = Math.min(tunda * 1.7, 8000); }
+
+function fs() { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen().catch(() => {}); }
+$('btnFs').onclick = fs;
+$('btnQr').onclick = () => { paksaQR = !paksaQR; lapisKini = '-'; kunciLangkah = ''; if (S) render(); else lapis('lQR'); };
+$('btnBaru').onclick = () => {
+  if (!confirm('Jana kod bilik baharu? Telefon perlu imbas QR semula.')) return;
+  sesi = { kod: kodBaru(), kunci: rnd(16) }; simpan(); lukisKod(); S = null; bilTel = 0; lapis('lQR');
+  try { ws.onclose = null; ws.close(); } catch (e) {} wsOk = false; status(); tunda = 300; sambung();
+};
+addEventListener('keydown', (e) => { if (e.key === 'f' || e.key === 'F') fs(); if (e.key === 'q' || e.key === 'Q') $('btnQr').click(); });
+let idleT = null;
+const bangun = () => { document.body.classList.remove('idle'); clearTimeout(idleT); idleT = setTimeout(() => document.body.classList.add('idle'), 4000); };
+addEventListener('mousemove', bangun); bangun();
+async function jagaSkrin() { try { if ('wakeLock' in navigator && document.visibilityState === 'visible') await navigator.wakeLock.request('screen'); } catch (e) {} }
+document.addEventListener('visibilitychange', jagaSkrin); jagaSkrin();
+
+lapis('lQR'); lukisKod(); status(); muatSet().then(render); sambung();
+window.__wad = { get S() { return S; }, get lapis() { return lapisKini; }, get kod() { return sesi.kod; }, get sihat() { return sihat.slice(); } };
+})();
+</script>
+<script src="/km-amaran.js"></script>
+</body>
+</html>

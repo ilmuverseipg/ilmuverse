@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wad Kecemasan — Pengurusan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@700;800&display=swap">
+<style>
+  :root { --malam: #0b1a2b; --panel: #142c46; --garis: rgba(140,200,255,.18); --putih: #f4f8ff; --kabur: #9fb4cc; --ecg: #39ff88; --merah: #ff4d5e; --emas: #ffd23f; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--malam); color: var(--putih); font-family: 'Fredoka', system-ui, sans-serif; min-height: 100vh; }
+  button, input { font: inherit; }
+  button { cursor: pointer; }
+  header { background: rgba(8,20,34,.96); padding: 14px 24px; display: flex; align-items: center; gap: 14px; border-bottom: 2px solid var(--garis); position: sticky; top: 0; z-index: 5; }
+  .siren { background: var(--merah); border-radius: 10px; padding: 6px 12px; font-family: 'Baloo 2'; font-weight: 800; }
+  header b { font-family: 'Baloo 2'; font-weight: 800; font-size: 24px; display: block; line-height: 1; }
+  header small { color: var(--kabur); }
+  header a { margin-left: auto; color: #fff; text-decoration: none; background: rgba(255,255,255,.1); padding: 8px 14px; border-radius: 10px; font-weight: 600; }
+  main { max-width: 1120px; margin: 0 auto; padding: 24px 20px 80px; }
+  .kad { background: var(--panel); border: 2px solid var(--garis); border-radius: 20px; padding: 20px; }
+  .mula { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .mula .kad { display: flex; gap: 16px; align-items: center; text-decoration: none; color: inherit; }
+  .mula .ik { font-size: 34px; width: 60px; height: 60px; border-radius: 16px; background: rgba(255,255,255,.06); display: grid; place-items: center; flex: none; }
+  .mula h3 { margin: 0; font-family: 'Baloo 2'; font-weight: 800; font-size: 22px; line-height: 1.1; }
+  .mula p { margin: 4px 0 0; color: var(--kabur); font-size: 14.5px; line-height: 1.45; }
+  a.kad { border-color: var(--merah); }
+  h2 { font-family: 'Baloo 2'; font-weight: 800; font-size: 26px; margin: 0 0 4px; }
+  .sub { color: var(--kabur); margin: 0 0 14px; line-height: 1.5; max-width: 75ch; }
+  input[type=text] { width: 100%; border: 2px solid var(--garis); background: var(--malam); color: var(--putih); border-radius: 12px; padding: 9px 12px; }
+  input[type=text]:focus { outline: none; border-color: var(--emas); }
+  .nama6 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 22px; }
+  .so { border: 2px solid var(--garis); border-radius: 16px; padding: 14px; margin-bottom: 12px; display: grid; gap: 10px; }
+  .so .kepala { display: flex; align-items: center; gap: 10px; }
+  .so .lbl { background: var(--emas); color: var(--malam); font-family: 'Baloo 2'; font-weight: 800; border-radius: 999px; padding: 0 10px; }
+  .so .pr { margin-left: auto; color: var(--kabur); font-weight: 600; font-size: 14px; }
+  .tiga { display: grid; grid-template-columns: 1fr auto 1fr auto 1.2fr; gap: 10px; align-items: end; }
+  .op { font-family: 'Baloo 2'; font-weight: 800; font-size: 26px; color: var(--emas); padding-bottom: 4px; }
+  .m .l { font-size: 12.5px; font-weight: 700; color: var(--kabur); margin-bottom: 3px; }
+  .m .dua { display: flex; gap: 6px; } .m .emo { width: 58px !important; text-align: center; flex: none; }
+  .kecil { border: 2px solid var(--garis); background: transparent; color: var(--putih); border-radius: 10px; padding: 7px 12px; font-weight: 600; font-size: 14px; }
+  .kecil.padam { color: #ff9aa6; }
+  .tindakan { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 16px; }
+  .btnUtama { border: 0; border-radius: 999px; padding: 12px 26px; font-family: 'Baloo 2'; font-weight: 800; font-size: 19px; color: var(--malam); background: var(--emas); }
+  .btnUtama:disabled { opacity: .5; }
+  .nota { margin-top: 22px; color: var(--kabur); line-height: 1.6; }
+  .nota b { color: var(--putih); }
+  #toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); z-index: 40; background: #fff; color: var(--malam); padding: 10px 18px; border-radius: 14px; font-weight: 700; opacity: 0; transition: all .3s; pointer-events: none; }
+  #toast.on { opacity: 1; transform: translate(-50%, 0); }
+  @media (max-width: 900px) { .mula, .tiga { grid-template-columns: 1fr; } .nama6 { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<header><span class="siren">🚨</span><div><b>Wad Kecemasan</b><small>Mod 10 · Suntikan Kata Majmuk bertema integriti</small></div><a href="/guru.html">← Ilmuverse</a></header>
+<main>
+  <div class="mula">
+    <a class="kad" href="/wad-skrin.html"><span class="ik">📺</span><div><h3>Buka skrin TV</h3><p>Wad dengan 6 katil pesakit, satu untuk setiap kumpulan. Skrin tunjuk kod bilik dan QR.</p></div></a>
+    <div class="kad"><span class="ik">📱</span><div><h3>Telefon guru</h3><p>Imbas QR pada TV. Kunci jawapan kumpulan, dedah, tanda Kad Jujur, kemudian jalankan Audit Doktor Besar.</p></div></div>
+  </div>
+  <h2>Nama kumpulan</h2>
+  <div class="nama6" id="nama6"></div>
+  <h2>Soalan (sama untuk semua kumpulan)</h2>
+  <p class="sub">Setiap soalan ialah maksud yang dicetak pada poster lengan, dan kata majmuk yang betul. Gambar diambil daripada koleksi gambar kata majmuk Ilmuverse; jika tiada, emoji digunakan.</p>
+  <div id="senarai"><p class="sub">Memuat…</p></div>
+  <div class="tindakan">
+    <button class="kecil" id="btnTambah">＋ Tambah soalan</button>
+    <button class="btnUtama" id="btnSimpan">💾 Simpan</button><span class="sub" id="simpanTx" style="margin:0"></span>
+    <button class="kecil" id="btnAsal" style="margin-left:auto">↺ Set semula ke soalan asal</button>
+  </div>
+  <div class="kad nota">
+    <b>Cara main ringkas.</b> (1) Setiap kumpulan tampal picagari pada poster lengan. Bila siap, guru <b>kunci jawapan</b> mereka di telefon. (2) Guru tekan <b>Mula dedah</b>. TV suntik dan dedahkan jawapan setiap maksud. (3) Setiap kumpulan semak poster sendiri dan angkat <b>Kad Jujur</b>: hijau ✓ atau merah ✗. Guru ketik kumpulan yang angkat ✓, dan pesakit mereka pulih. (4) <b>Audit Doktor Besar</b> (pilihan): roda pilih satu kumpulan dan guru semak poster mereka. Pengakuan jujur dapat ⭐ Lencana Jujur. Pengakuan tidak tepat menyebabkan pesakit demam semula.
+  </div>
+</main>
+<div id="toast"></div>
+<script>
+(() => {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function toast(t, ms = 2600) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), ms); }
+let SET = null, dbOk = true, kotor = false;
+async function muat() {
+  try { const r = await fetch('/api/wad/set', { cache: 'no-store' }); if (r.status === 401) { location.href = '/login.html?next=' + encodeURIComponent(location.pathname); return; } const j = await r.json(); SET = j.set; dbOk = j.db; }
+  catch (e) { $('senarai').innerHTML = '<p class="sub">Tidak dapat memuat soalan. Semak sambungan internet.</p>'; return; }
+  lukis();
+}
+const m = (i, f, lbl, ef) => `<div class="m"><div class="l">${lbl}</div><div class="dua"><input type="text" class="emo" data-i="${i}" data-f="${ef}" maxlength="16" value="${esc(SET.soalan[i][ef])}" title="Emoji"><input type="text" data-i="${i}" data-f="${f}" maxlength="${f === 'km' ? 80 : 40}" value="${esc(SET.soalan[i][f])}"></div></div>`;
+function lukis() {
+  $('nama6').innerHTML = SET.kumpulan.map((n, g) => `<input type="text" data-g="${g}" maxlength="30" value="${esc(n)}">`).join('');
+  $('senarai').innerHTML = SET.soalan.map((s, i) => `<div class="so"><div class="kepala"><span class="lbl">MAKSUD ${i + 1}</span><span class="pr" id="pr${i}"></span>${SET.soalan.length > 1 ? `<button class="kecil padam" data-buang="${i}">✕ Buang</button>` : ''}</div>
+      <div class="m"><div class="l">Maksud (seperti pada poster lengan)</div><input type="text" data-i="${i}" data-f="maksud" maxlength="140" value="${esc(s.maksud)}"></div>
+      <div class="tiga">${m(i, 'k1', 'Perkataan 1', 'e1')}<div class="op">+</div>${m(i, 'k2', 'Perkataan 2', 'e2')}<div class="op">=</div>${m(i, 'km', 'Kata majmuk', 'ek')}</div></div>`).join('');
+  SET.soalan.forEach((_, i) => pr(i));
+  document.querySelectorAll('[data-g]').forEach((el) => el.oninput = () => { SET.kumpulan[+el.dataset.g] = el.value.trim(); tandaKotor(true); });
+  document.querySelectorAll('input[data-f]').forEach((el) => el.oninput = () => {
+    const i = +el.dataset.i, f = el.dataset.f, s = SET.soalan[i], auto = `${s.k1} ${s.k2}`.trim();
+    if ((f === 'k1' || f === 'k2') && (!s.km || s.km === auto)) { s[f] = el.value.trim(); s.km = `${s.k1} ${s.k2}`.trim(); const km = document.querySelector(`input[data-f="km"][data-i="${i}"]`); if (km) km.value = s.km; }
+    else s[f] = el.value.trim();
+    pr(i); tandaKotor(true);
+  });
+  document.querySelectorAll('[data-buang]').forEach((b) => b.onclick = () => { SET.soalan.splice(+b.dataset.buang, 1); tandaKotor(true); lukis(); });
+  $('btnSimpan').disabled = !dbOk; $('btnAsal').disabled = !dbOk; $('btnTambah').disabled = SET.soalan.length >= 10;
+  if (!dbOk) $('simpanTx').textContent = 'Pangkalan data belum bersambung. Soalan asal digunakan.';
+  else tandaKotor(kotor);
+}
+function pr(i) { const s = SET.soalan[i], el = $('pr' + i); if (el) el.textContent = `${s.k1 || '…'} + ${s.k2 || '…'} = ${s.km || '…'}`; }
+function tandaKotor(k) { kotor = k; $('simpanTx').textContent = k ? 'Ada perubahan belum disimpan' : 'Semua perubahan disimpan'; $('simpanTx').style.color = k ? '#ffb020' : ''; }
+addEventListener('beforeunload', (e) => { if (kotor) { e.preventDefault(); e.returnValue = ''; } });
+$('btnTambah').onclick = () => { if (SET.soalan.length >= 10) return; SET.soalan.push({ maksud: '', k1: '', k2: '', km: '', e1: '', e2: '', ek: '' }); tandaKotor(true); lukis(); };
+$('btnSimpan').onclick = async () => {
+  if (SET.soalan.some((s) => !s.maksud || !s.k1 || !s.k2)) return toast('Isi maksud, perkataan 1 dan perkataan 2 untuk setiap soalan');
+  $('btnSimpan').disabled = true;
+  try { const r = await fetch('/api/wad/set', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(SET) }); const j = await r.json(); if (!r.ok || !j.ok) throw new Error(j.mesej || 'Ralat ' + r.status); SET = j.set; kotor = false; lukis(); toast('✅ Disimpan'); }
+  catch (e) { toast('❌ ' + e.message, 4000); } finally { $('btnSimpan').disabled = false; }
+};
+$('btnAsal').onclick = async () => {
+  if (!confirm('Set semula ke soalan asal (Set 1 Langkah 2)?')) return;
+  try { const r = await fetch('/api/wad/set/asal', { method: 'POST' }); const j = await r.json(); if (!r.ok || !j.ok) throw new Error(j.mesej || 'Ralat'); SET = j.set; kotor = false; lukis(); toast('↺ Soalan asal dipulihkan'); }
+  catch (e) { toast('❌ ' + e.message, 4000); }
+};
+muat();
+})();
+</script>
+<script src="/km-amaran.js"></script>
+</body>
+</html>
