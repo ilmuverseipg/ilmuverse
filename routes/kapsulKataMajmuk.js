@@ -19,6 +19,7 @@ const crypto = require('crypto');
 const express = require('express');
 const WebSocket = require('ws');
 const { isAuthed } = require('../middleware/siteAuth');
+const { isDemo } = require('./kapsulDemo'); // pautan demo peribadi (routes/kapsulDemo.js)
 const { KapsulSet, KapsulGambar } = require('../models/KapsulSet');
 
 const MAX_FOTO = 8 * 1024 * 1024;      // satu gambar kamera
@@ -66,8 +67,10 @@ async function semuaSet() {
 const bilik = new Map();
 const kodSah = (k) => /^\d{4,6}$/.test(String(k || ''));
 const safeEqual = (a, b) => { const x = Buffer.from(String(a || '')), y = Buffer.from(String(b || '')); return x.length === y.length && crypto.timingSafeEqual(x, y); };
+// Telefon/foto: guru log masuk -> semua bilik; kuki demo -> bilik demo sahaja.
+const bolehBilik = (req, b) => isAuthed(req) || (!!b && b.demo && isDemo(req));
 function hantar(set, obj) { const m = JSON.stringify(obj); set.forEach((w) => { if (w.readyState === WebSocket.OPEN) { try { w.send(m); } catch (e) {} } }); }
-function bilikBaru(kunci) { return { kunci, paparan: new Set(), telefon: new Set(), fasa: 'pilih', kumpulan: 0, foto: [null, null, null, null], keputusan: null, padanan: [0, 1, 2, 3], idx: 0, selesai: {}, sunyiSejak: Date.now(), versi: 0 }; }
+function bilikBaru(kunci, demo) { return { kunci, demo: !!demo, paparan: new Set(), telefon: new Set(), fasa: 'pilih', kumpulan: 0, foto: [null, null, null, null], keputusan: null, padanan: [0, 1, 2, 3], idx: 0, selesai: {}, sunyiSejak: Date.now(), versi: 0 }; }
 function padamFoto(b) { b.foto = [null, null, null, null]; }
 function keadaan(b) {
   return {
@@ -97,14 +100,15 @@ function sambung(ws, req) {
   if (peranan === 'paparan') {
     const kunci = String(q.get('kunci') || '');
     if (kunci.length < 16 || kunci.length > 64) return tutup(4000, 'kunci tidak sah');
+    const demo = q.get('demo') === '1';
     if (b && !safeEqual(b.kunci, kunci)) {
       if (b.paparan.size) return tutup(4001, 'kod sedang digunakan');
-      const s = b.selesai; b = bilikBaru(kunci); b.selesai = s; bilik.set(kod, b);
+      const s = b.selesai; b = bilikBaru(kunci, demo); b.selesai = s; bilik.set(kod, b);
     }
-    if (!b) { if (bilik.size >= MAX_BILIK) return tutup(4002, 'terlalu banyak bilik'); b = bilikBaru(kunci); bilik.set(kod, b); }
+    if (!b) { if (bilik.size >= MAX_BILIK) return tutup(4002, 'terlalu banyak bilik'); b = bilikBaru(kunci, demo); bilik.set(kod, b); }
   } else {
-    if (!isAuthed(req)) return tutup(4003, 'perlu log masuk');
-    if (!b || !b.paparan.size) return tutup(4004, 'skrin tidak dijumpai');
+    if (!isAuthed(req) && !isDemo(req)) return tutup(4003, 'perlu log masuk');
+    if (!b || !b.paparan.size || !bolehBilik(req, b)) return tutup(4004, 'skrin tidak dijumpai');
   }
   ws._kapsul = { kod, peranan };
   b[peranan].add(ws);
@@ -164,6 +168,8 @@ function putus(ws) {
 // HTTP
 // ------------------------------------------------------------
 function perluLogMasuk(req, res, next) { if (!isAuthed(req)) return res.status(401).json({ ok: false, mesej: 'Sila log masuk semula.' }); next(); }
+// Baca sahaja (senarai jawapan & gambar 800x800): guru ATAU pautan demo.
+function bolehBaca(req, res, next) { if (!isAuthed(req) && !isDemo(req)) return res.status(401).json({ ok: false, mesej: 'Sila log masuk semula.' }); next(); }
 const bersih = (s, n) => String(s == null ? '' : s).replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, n);
 
 function pasang(app) {
@@ -171,9 +177,9 @@ function pasang(app) {
   const rawGambar = express.raw({ type: [...JENIS], limit: MAX_GAMBAR });
 
   // ---- foto kamera (memori sahaja) ----
-  app.post('/api/kapsul/:kod/foto/:i', perluLogMasuk, rawFoto, (req, res) => {
+  app.post('/api/kapsul/:kod/foto/:i', bolehBaca, rawFoto, (req, res) => {
     const b = bilik.get(req.params.kod), i = parseInt(req.params.i, 10);
-    if (!kodSah(req.params.kod) || !b) return res.status(404).json({ ok: false, mesej: 'Skrin TV tidak dijumpai. Semak kod bilik.' });
+    if (!kodSah(req.params.kod) || !b || !bolehBilik(req, b)) return res.status(404).json({ ok: false, mesej: 'Skrin TV tidak dijumpai. Semak kod bilik.' });
     if (!(i >= 0 && i <= 3)) return res.status(400).json({ ok: false, mesej: 'Nombor kapsul tidak sah.' });
     if (b.fasa !== 'ambil' && b.fasa !== 'imbas') return res.status(409).json({ ok: false, mesej: 'Pilih kumpulan dahulu.' });
     const type = String(req.headers['content-type'] || '').split(';')[0].trim();
@@ -186,13 +192,13 @@ function pasang(app) {
   app.get('/api/kapsul/:kod/foto/:i', (req, res) => {
     const b = bilik.get(req.params.kod), i = parseInt(req.params.i, 10);
     // skrin TV guna kunci rahsia; telefon guru (sudah log masuk) juga boleh lihat
-    if (!b || !(safeEqual(b.kunci, req.query.kunci) || isAuthed(req)) || !(i >= 0 && i <= 3)) return res.status(404).end();
+    if (!b || !(safeEqual(b.kunci, req.query.kunci) || bolehBilik(req, b)) || !(i >= 0 && i <= 3)) return res.status(404).end();
     const f = b.foto[i]; if (!f) return res.status(204).end();
     res.set({ 'Content-Type': f.type, 'Cache-Control': 'no-store', 'X-Versi': String(f.v) }); res.send(f.buf);
   });
 
   // ---- set jawapan (MongoDB) ----
-  app.get('/api/kapsul/set', perluLogMasuk, async (req, res) => {
+  app.get('/api/kapsul/set', bolehBaca, async (req, res) => {
     res.set('Cache-Control', 'no-store');
     res.json({ ok: true, db: dbSedia(), set: await semuaSet() });
   });
@@ -245,7 +251,7 @@ function pasang(app) {
     await KapsulSet.findOneAndUpdate({ kumpulan: n }, { kumpulan: n, nama: set.nama, jawapan: set.jawapan }, { upsert: true });
     res.json({ ok: true });
   });
-  app.get('/api/kapsul/gambar/:n/:i/:s', perluLogMasuk, async (req, res) => {
+  app.get('/api/kapsul/gambar/:n/:i/:s', bolehBaca, async (req, res) => {
     if (!sahG(req.params) || !dbSedia()) return res.status(404).end();
     const g = await KapsulGambar.findOne({ kunci: kunciG(req.params) }).lean();
     if (!g) return res.status(404).end();

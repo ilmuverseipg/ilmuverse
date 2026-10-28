@@ -40,6 +40,10 @@ require('../routes/misiDetektif')(app);
 // [MAHKAMAH MASA] Timer detektif - pautan peribadi /hakim/<token>, TANPA
 // kata laluan. Lihat routes/mahkamahMasa.js.
 require('../routes/mahkamahMasa')(app);
+// [KAPSUL KATA MAJMUK DEMO] Mod 08 untuk kawan cuba - pautan peribadi
+// /kapsul-demo/<token> (TV) & /kapsul-demo/<token>/telefon, TANPA kata
+// laluan. Ubah jawapan tetap dikunci. Lihat routes/kapsulDemo.js.
+require('../routes/kapsulDemo').pasang(app);
 // [PINTU KATA LALUAN] Mesti SEBELUM static() supaya halaman .html dikunci.
 // API & WebSocket tidak dikunci - lihat middleware/siteAuth.js.
 require('../middleware/siteAuth')(app);
