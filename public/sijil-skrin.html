@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sijil Kelahiran Kata Majmuk — Skrin TV</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@600;700;800&family=Courier+Prime:wght@700&display=swap">
+<style>
+  :root {
+    --kertas: #eef6ea; --kertas2: #dcebd5; --hijau: #0b5d3b; --hijau2: #158a57; --hijau3: #2fb877; --emas: #e0a526;
+    --dakwat: #16324a; --kelabu: #5d7366; --merah: #c8283a; --putih: #ffffff;
+    --bayang: 0 18px 40px rgba(11, 93, 59, .14), 0 3px 8px rgba(11, 93, 59, .08);
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; height: 100%; overflow: hidden; color: var(--dakwat); font-family: 'Fredoka', system-ui, sans-serif; background: var(--kertas); }
+  /* kertas keselamatan: corak guilloche + berlian halus */
+  body { background:
+      repeating-radial-gradient(circle at 50% 120%, transparent 0 22px, rgba(11,93,59,.05) 22px 23px),
+      repeating-radial-gradient(circle at 50% -20%, transparent 0 22px, rgba(11,93,59,.045) 22px 23px),
+      repeating-linear-gradient(45deg, rgba(11,93,59,.025) 0 2px, transparent 2px 16px),
+      repeating-linear-gradient(-45deg, rgba(11,93,59,.025) 0 2px, transparent 2px 16px),
+      var(--kertas); }
+  body.idle { cursor: none; }
+  .mono { font-family: 'Courier Prime', ui-monospace, monospace; font-weight: 700; }
+
+  /* jalur teks keselamatan di tepi bawah */
+  #jalur { position: fixed; left: 0; right: 0; bottom: 0; height: 3.2vh; min-height: 18px; z-index: 1; overflow: hidden; background: var(--hijau); color: rgba(255,255,255,.55); font-size: clamp(9px, 1.1vh, 13px); font-weight: 700; letter-spacing: .3em; white-space: nowrap; display: flex; align-items: center; }
+  #jalur span { display: inline-block; animation: jalan 60s linear infinite; }
+  @keyframes jalan { to { transform: translateX(-50%); } }
+
+  /* ===== kepala ===== */
+  header { position: fixed; left: 0; right: 0; top: 0; z-index: 5; height: 10vh; min-height: 62px; display: flex; align-items: center; gap: 1.2vw; padding: 0 2vw;
+    background: linear-gradient(180deg, var(--hijau), #0a4f33); color: #fff; box-shadow: 0 6px 24px rgba(11,93,59,.3); border-bottom: 4px solid var(--emas); }
+  .lencana { width: 7vh; height: 7vh; min-width: 44px; min-height: 44px; border-radius: 50%; background: var(--emas); color: var(--hijau); display: grid; place-items: center; font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(11px, 1.5vh, 16px); line-height: .9; text-align: center; box-shadow: inset 0 0 0 3px #fff, inset 0 0 0 5px var(--emas); flex: none; }
+  .judul small { display: block; font-size: clamp(10px, 1.35vh, 15px); letter-spacing: .14em; opacity: .85; font-weight: 600; }
+  .judul b { display: block; font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(18px, 3.5vh, 38px); line-height: 1; }
+  .kanan { margin-left: auto; display: flex; align-items: center; gap: 1vw; }
+  .chipSet { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(16px, 2.9vh, 30px); background: #fff; color: var(--hijau); border-radius: 12px; padding: .1vh 1.1vw; line-height: 1.5; }
+  .chipNama { font-size: clamp(14px, 2.2vh, 24px); font-weight: 700; background: rgba(255,255,255,.12); border: 2px solid rgba(255,255,255,.3); border-radius: 12px; padding: .2vh 1vw; }
+  .titik { display: flex; gap: 6px; }
+  .titik i { width: 2.4vw; max-width: 40px; height: 1.5vh; min-height: 9px; border-radius: 999px; background: rgba(255,255,255,.25); transition: background .4s, transform .4s; }
+  .titik i.b { background: #7ee2a8; } .titik i.s { background: #ff9aa6; } .titik i.kini { background: #fff; transform: scaleY(1.4); }
+  .sambungan { display: flex; align-items: center; gap: 8px; font-size: clamp(11px, 1.6vh, 15px); font-weight: 600; background: rgba(0,0,0,.18); padding: 6px 12px; border-radius: 999px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #9ca3af; flex: none; }
+  .dot.ok { background: #4ade80; box-shadow: 0 0 10px #4ade80; } .dot.wait { background: var(--emas); animation: kelip 1s infinite; } .dot.bad { background: #fb7185; }
+  @keyframes kelip { 50% { opacity: .3; } }
+
+  /* ===== paparan ===== */
+  .v { position: fixed; left: 0; right: 0; top: 10vh; bottom: 3.2vh; z-index: 2; padding: 3vh 3vw; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    opacity: 0; visibility: hidden; transform: translateY(2vh); transition: opacity .5s ease, transform .6s cubic-bezier(.2,.9,.25,1.1), visibility 0s .5s; }
+  .v.on { opacity: 1; visibility: visible; transform: none; transition: opacity .5s ease, transform .6s cubic-bezier(.2,.9,.25,1.1), visibility 0s; }
+  .borang { background: var(--putih); border-radius: 22px; box-shadow: var(--bayang); border: 2px solid var(--kertas2); position: relative; }
+  .jalurHijau { background: linear-gradient(90deg, #d7efd9, #e7f6e3); color: var(--hijau); font-family: 'Baloo 2'; font-weight: 800; text-align: center; border-bottom: 2px solid var(--kertas2); }
+
+  /* --- sambung --- */
+  .kadQR { display: grid; grid-template-columns: 1fr auto; gap: 4vw; align-items: center; width: min(1200px, 94vw); padding: clamp(24px, 4vw, 52px); }
+  .kadQR h1 { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(38px, 5.6vw, 86px); line-height: .95; margin: 0 0 12px; color: var(--hijau); }
+  .kadQR p { font-size: clamp(16px, 1.7vw, 24px); color: var(--kelabu); margin: 0 0 20px; max-width: 34ch; }
+  .langkah { list-style: none; padding: 0; margin: 0 0 22px; display: grid; gap: 10px; }
+  .langkah li { display: flex; gap: 14px; align-items: center; font-size: clamp(15px, 1.6vw, 22px); font-weight: 600; }
+  .langkah b { flex: none; width: 1.7em; height: 1.7em; border-radius: 50%; display: grid; place-items: center; color: #fff; background: var(--hijau2); }
+  .kodBaris { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+  .kodlbl { font-size: clamp(14px, 1.3vw, 18px); color: var(--kelabu); font-weight: 600; }
+  .kod { font-size: clamp(52px, 7.5vw, 112px); letter-spacing: .12em; line-height: 1; color: var(--dakwat); }
+  #qr { background: #fff; padding: 14px; border-radius: 18px; display: inline-block; line-height: 0; border: 4px solid var(--kertas2); }
+  #qr svg { width: clamp(190px, 22vw, 310px); height: auto; }
+  .url { margin-top: 10px; font-size: 13px; color: var(--kelabu); word-break: break-all; max-width: 320px; text-align: center; }
+
+  /* --- pilih --- */
+  .tajukV { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(34px, 4.4vw, 70px); color: var(--hijau); margin: 0 0 1vh; text-align: center; line-height: 1; }
+  .subV { font-size: clamp(16px, 1.8vw, 26px); color: var(--kelabu); margin: 0 0 4vh; text-align: center; }
+  .gridS { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2.2vw; width: min(1300px, 92vw); }
+  .fail { overflow: hidden; }
+  .fail .jalurHijau { padding: 1vh; font-size: clamp(18px, 2.2vw, 34px); }
+  .fail .isi { padding: 1.6vh 1.4vw; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .fail .bayi { font-size: clamp(20px, 2.2vw, 34px); font-weight: 700; color: var(--hijau); }
+  .fail .ket { font-size: clamp(13px, 1.25vw, 19px); color: var(--kelabu); font-weight: 600; }
+  .fail .no { font-size: clamp(12px, 1.1vw, 16px); color: var(--kelabu); }
+
+  /* --- ambil --- */
+  .introS { text-align: center; }
+  .introS .besar { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(70px, 12vw, 190px); line-height: .85; color: var(--hijau); }
+  .introS .nama { font-size: clamp(22px, 2.8vw, 42px); font-weight: 700; color: var(--dakwat); margin-top: 1vh; min-height: 1.2em; }
+  .v.on .introS .besar { animation: hentak .8s cubic-bezier(.2,1.4,.4,1) both; }
+  @keyframes hentak { from { transform: scale(.4); opacity: 0; } to { transform: none; opacity: 1; } }
+  .a4 { margin-top: 4vh; width: 15vh; aspect-ratio: 1 / 1.414; border-radius: 10px; border: 4px dashed rgba(11,93,59,.35); background: rgba(255,255,255,.6); display: grid; place-items: center; font-size: 6vh; transition: all .5s cubic-bezier(.2,1.3,.4,1); position: relative; }
+  .a4.ada { border: 4px solid var(--hijau2); background: #fff; box-shadow: var(--bayang); transform: rotate(-3deg) translateY(-6px); }
+  .a4 .lbl { position: absolute; bottom: -4.2vh; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: clamp(14px, 1.6vw, 22px); font-weight: 700; color: var(--kelabu); }
+  .a4.ada .lbl { color: var(--hijau2); }
+  .petunjuk { margin-top: 6vh; font-size: clamp(16px, 1.8vw, 26px); color: var(--kelabu); font-weight: 600; }
+
+  /* --- semak --- */
+  #vSemak { flex-direction: row; gap: 3vw; }
+  .fotoSemak { height: 100%; aspect-ratio: 1 / 1.414; max-width: 46vw; padding: 1vh; display: flex; }
+  .fotoSemak .bingkai { flex: 1; border-radius: 14px; overflow: hidden; background: #f3f8f1; position: relative; display: grid; place-items: center; }
+  .fotoSemak img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .laser { position: absolute; left: 0; right: 0; height: 18%; top: -18%; pointer-events: none; mix-blend-mode: multiply;
+    background: linear-gradient(180deg, rgba(47,184,119,0), rgba(47,184,119,.22) 75%, rgba(21,138,87,.85) 98%, rgba(255,255,255,.9)); animation: laser 2.4s cubic-bezier(.45,0,.55,1) infinite; }
+  @keyframes laser { to { top: 100%; } }
+  .senaraiSemak { display: grid; gap: 1.8vh; width: min(40vw, 640px); }
+  .senaraiSemak h2 { font-family: 'Baloo 2'; font-weight: 800; color: var(--hijau); font-size: clamp(32px, 4vw, 64px); margin: 0 0 1vh; line-height: 1; }
+  .senaraiSemak h2 i { font-style: normal; display: inline-block; animation: lompat 1.2s infinite; }
+  .senaraiSemak h2 i:nth-child(2) { animation-delay: .15s; } .senaraiSemak h2 i:nth-child(3) { animation-delay: .3s; }
+  @keyframes lompat { 0%, 60%, 100% { transform: none; opacity: 1; } 30% { transform: translateY(-.25em); opacity: .5; } }
+  .bs { display: flex; align-items: center; gap: 1.2vw; padding: 1.6vh 1.4vw; font-size: clamp(18px, 2vw, 32px); font-weight: 700; opacity: 0; transform: translateX(30px); }
+  .v.on .bs { animation: masukKanan .5s cubic-bezier(.2,1.2,.4,1) forwards; }
+  .v.on .bs:nth-child(3) { animation-delay: .15s; } .v.on .bs:nth-child(4) { animation-delay: .3s; } .v.on .bs:nth-child(5) { animation-delay: .45s; }
+  @keyframes masukKanan { to { opacity: 1; transform: none; } }
+  .bs .pusing { width: 3.4vh; height: 3.4vh; border-radius: 50%; border: 4px solid var(--kertas2); border-top-color: var(--hijau2); animation: pusing .9s linear infinite; flex: none; }
+  @keyframes pusing { to { transform: rotate(360deg); } }
+  .bs .km { margin-left: auto; color: var(--kelabu); font-weight: 600; font-size: .8em; }
+
+  /* --- dedah --- */
+  #vDedah { flex-direction: row; align-items: stretch; gap: 2.4vw; padding-top: 2.4vh; padding-bottom: 2.4vh; }
+  .panelFoto { flex: none; height: 100%; aspect-ratio: 1 / 1.414; max-width: 36vw; padding: 1vh; display: flex; flex-direction: column; gap: .8vh; }
+  .panelFoto .zum { flex: 1; border-radius: 14px; overflow: hidden; background: #f3f8f1; position: relative; }
+  .panelFoto .zum img { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; user-select: none; }
+  .panelFoto .cap { text-align: center; font-size: clamp(12px, 1.3vw, 18px); color: var(--kelabu); font-weight: 600; }
+  .pentas { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2vh; }
+  .bahKepala { overflow: hidden; }
+  .bahKepala .jalurHijau { padding: .8vh; font-size: clamp(22px, 2.8vw, 44px); letter-spacing: .04em; }
+  .persamaan { display: flex; align-items: flex-end; justify-content: center; gap: 1.4vw; padding: 1.6vh 1vw 1.8vh; }
+  .tile { display: flex; flex-direction: column; align-items: center; gap: .6vh; opacity: 0; transform: translateY(20px) scale(.7); }
+  .tile .pic { width: 11vh; height: 11vh; border-radius: 20px; background: #f3f8f1; display: grid; place-items: center; font-size: 7vh; line-height: 1; border: 3px solid var(--kertas2); }
+  .tile .nm { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(18px, 2vw, 32px); line-height: 1; }
+  .tile.km .pic { width: 14vh; height: 14vh; font-size: 9vh; border: 4px solid var(--emas); box-shadow: 0 0 0 6px rgba(224,165,38,.2); }
+  .tile.km .nm { background: var(--hijau); color: #fff; border-radius: 999px; padding: .15em .7em; }
+  .op { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(34px, 4vw, 64px); color: var(--hijau2); align-self: center; margin-bottom: 3vh; opacity: 0; transform: scale(.3); }
+  .persamaan.main > * { animation: pop .5s cubic-bezier(.2,1.6,.4,1) forwards; }
+  .persamaan.main > :nth-child(2) { animation-delay: .15s; } .persamaan.main > :nth-child(3) { animation-delay: .3s; }
+  .persamaan.main > :nth-child(4) { animation-delay: .45s; } .persamaan.main > :nth-child(5) { animation-delay: .6s; }
+  @keyframes pop { to { opacity: 1; transform: none; } }
+
+  .meja { flex: 1; min-height: 0; position: relative; display: flex; flex-direction: column; justify-content: center; padding: 3vh 2vw 4vh; overflow: visible; }
+  .meja .lbl { position: absolute; left: 1.4vw; top: 1.2vh; font-weight: 700; color: var(--kelabu); font-size: clamp(14px, 1.5vw, 22px); }
+  .barisKad { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1.6vh 1vw; position: relative; }
+  .kad { position: relative; font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(26px, 3.2vw, 56px); line-height: 1.2; color: var(--dakwat); background: #fff; border: 3px solid var(--hijau2); border-radius: 16px; padding: .15em .55em; box-shadow: 0 6px 0 #cfe5d2, 0 10px 20px rgba(11,93,59,.12); white-space: nowrap; }
+  .kad.majmuk { background: #fff8e6; border-color: var(--emas); box-shadow: 0 6px 0 #f1dca9, 0 10px 20px rgba(224,165,38,.18); }
+  .kad.goyang { animation: goyang .32s ease-in-out 3; }
+  .kad.goyang:nth-child(even) { animation-direction: reverse; }
+  @keyframes goyang { 25% { transform: rotate(-5deg) translateY(-4px); } 75% { transform: rotate(5deg) translateY(2px); } }
+  .kad b.hb, .kad b.nk { color: var(--merah); display: inline-block; }
+  .kad b.hb.nyala, .kad b.nk.nyala { animation: nyala .9s ease-in-out 2; }
+  @keyframes nyala { 50% { transform: scale(1.45); text-shadow: 0 0 18px rgba(200,40,58,.55); } }
+  .tag { position: absolute; top: -4.6vh; left: 50%; transform: translateX(-50%) scale(.6); opacity: 0; white-space: nowrap; font-family: 'Fredoka'; font-weight: 700; font-size: clamp(12px, 1.3vw, 19px); background: var(--merah); color: #fff; padding: .25em .7em; border-radius: 999px; transition: all .35s cubic-bezier(.2,1.6,.4,1); }
+  .tag::after { content: ''; position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%); border: 6px solid transparent; border-top-color: var(--merah); border-bottom: 0; }
+  .tag.on { opacity: 1; transform: translateX(-50%) scale(1); }
+  .kad:first-child .tag { left: 1.2em; }
+  .kad:last-child .tag { top: auto; bottom: -4.6vh; left: auto; right: -.4em; transform: scale(.6); }
+  .kad:last-child .tag.on { transform: scale(1); }
+  .kad:last-child .tag::after { left: auto; right: .6em; transform: none; bottom: auto; top: -6px; border-top: 0; border-bottom: 6px solid var(--merah); }
+  .kad:first-child:last-child .tag { top: -4.6vh; bottom: auto; }
+  .garisAyat { height: 4px; border-radius: 4px; background: var(--hijau2); margin: 2.4vh auto 0; width: 0; transition: width .9s cubic-bezier(.3,.9,.3,1); }
+  .garisAyat.on { width: 92%; }
+
+  .cop { position: absolute; right: 1.6vw; bottom: 1.4vh; width: 21vh; height: 21vh; pointer-events: none; opacity: 0; transform: scale(2.6) rotate(-30deg); }
+  .cop.main { animation: cop .55s cubic-bezier(.3,1.5,.5,1) forwards; }
+  @keyframes cop { 0% { opacity: 0; transform: scale(2.6) rotate(-30deg); } 70% { opacity: .95; transform: scale(.92) rotate(-12deg); } 100% { opacity: .9; transform: scale(1) rotate(-12deg); } }
+  .cop svg { width: 100%; height: 100%; }
+  .goncang { animation: goncang .35s ease; }
+  @keyframes goncang { 20% { transform: translate(-6px, 3px); } 40% { transform: translate(5px, -4px); } 60% { transform: translate(-3px, 2px); } 80% { transform: translate(2px, -1px); } }
+
+  /* --- tamat --- */
+  #vTamat { padding-top: 2vh; }
+  .sijilAkhir { width: min(1150px, 90vw); }
+  .sijilAkhir .jalurHijau { border-radius: 20px 20px 0 0; }
+  .sijilAkhir .jalurHijau { font-size: clamp(30px, 4.2vw, 66px); padding: 1.4vh; }
+  .sijilAkhir .badan { display: grid; grid-template-columns: 1.5fr 1fr; gap: 2vw; padding: 2.6vh 3vw 3vh; align-items: center; }
+  .sijilAkhir .baris { display: flex; align-items: baseline; gap: 1vw; font-size: clamp(18px, 2vw, 30px); margin-bottom: 1vh; }
+  .sijilAkhir .baris span { color: var(--kelabu); font-weight: 600; min-width: 5.5em; }
+  .sijilAkhir .baris b { font-family: 'Baloo 2'; font-weight: 800; }
+  .senaraiKM { display: grid; grid-template-columns: 1fr 1fr; gap: 1vh 2vw; margin-top: 2vh; }
+  .senaraiKM div { display: flex; align-items: center; gap: .6vw; white-space: nowrap; font-size: clamp(18px, 2vw, 30px); font-weight: 700; opacity: 0; transform: translateY(14px); }
+  .v.on .senaraiKM div { animation: masukKanan .5s cubic-bezier(.2,1.3,.4,1) forwards; }
+  .v.on .senaraiKM div:nth-child(1) { animation-delay: .5s; } .v.on .senaraiKM div:nth-child(2) { animation-delay: .65s; }
+  .v.on .senaraiKM div:nth-child(3) { animation-delay: .8s; } .v.on .senaraiKM div:nth-child(4) { animation-delay: .95s; }
+  .senaraiKM .tk { width: 1.4em; height: 1.4em; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: .8em; flex: none; }
+  .bayiBesar { text-align: center; }
+  .bayiBesar .emo { font-size: clamp(48px, 6.5vw, 110px); line-height: 1.1; word-break: break-all; }
+  .v.on .bayiBesar .emo { animation: hentak .9s .3s cubic-bezier(.2,1.5,.4,1) both; }
+  .bayiBesar .n { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(22px, 2.6vw, 40px); color: var(--hijau); }
+  .tkBesar { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(44px, 6vw, 96px); color: var(--hijau); margin-top: 2.4vh; line-height: 1; }
+  .v.on .tkBesar { animation: hentak .8s 1.2s cubic-bezier(.2,1.5,.4,1) both; }
+  .copAkhir { position: absolute; right: 1.4vw; top: -1vh; width: 17vh; height: 17vh; opacity: 0; }
+  .v.on .copAkhir { animation: cop .55s 1.6s cubic-bezier(.3,1.5,.5,1) forwards; }
+  #konfeti { position: fixed; inset: 0; z-index: 6; pointer-events: none; }
+
+  /* ===== kawalan ===== */
+  .hud { position: fixed; right: 14px; bottom: calc(3.2vh + 10px); z-index: 7; display: flex; gap: 8px; transition: opacity .4s; }
+  body.idle .hud { opacity: 0; pointer-events: none; }
+  .btn { font: inherit; font-weight: 600; font-size: 15px; color: var(--dakwat); background: rgba(255,255,255,.94); border: 2px solid var(--kertas2); border-radius: 12px; padding: 8px 14px; cursor: pointer; text-decoration: none; }
+  .btn:hover { border-color: var(--hijau2); }
+  .btn:focus-visible { outline: 3px solid var(--hijau); outline-offset: 2px; }
+  .btn.off { opacity: .55; }
+  #bunyiNota { position: fixed; right: 2vw; top: calc(10vh + 12px); z-index: 7; background: var(--dakwat); color: #fff; border: 0; border-radius: 999px; padding: 10px 20px; font: inherit; font-weight: 600; font-size: 15px; cursor: pointer; box-shadow: var(--bayang); }
+  #toast { position: fixed; left: 50%; top: 12vh; transform: translate(-50%, -20px); z-index: 9; background: var(--dakwat); color: #fff; padding: 10px 20px; border-radius: 14px; font-weight: 600; opacity: 0; transition: all .35s; pointer-events: none; }
+  #toast.on { opacity: 1; transform: translate(-50%, 0); }
+  @media (max-width: 800px) { .kadQR { grid-template-columns: 1fr; text-align: center; } .langkah li, .kodBaris { justify-content: center; } .gridS { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<header>
+  <div class="lencana">JP<br>KM</div>
+  <div class="judul"><small>JABATAN PENDAFTARAN KATA MAJMUK</small><b>Sijil Kelahiran Kata Majmuk</b></div>
+  <div class="kanan">
+    <span class="chipNama" id="hNama" hidden></span>
+    <span class="chipSet" id="hSet" hidden></span>
+    <span class="titik" id="hTitik" hidden><i></i><i></i><i></i><i></i></span>
+    <span class="sambungan"><span class="dot wait" id="stDot"></span><span id="stTx">Menyambung…</span></span>
+  </div>
+</header>
+<div id="jalur"><span id="jalurTx"></span></div>
+
+<!-- 1. Sambung -->
+<section class="v" id="vSambung">
+  <div class="borang kadQR">
+    <div>
+      <h1>Kaunter Pendaftaran Sijil</h1>
+      <p>Semak susun ayat dalam Sijil Kelahiran Kata Majmuk terus dari telefon guru.</p>
+      <ul class="langkah">
+        <li><b>1</b> Imbas kod QR dengan telefon guru</li>
+        <li><b>2</b> Pilih set, ambil gambar sijil murid</li>
+        <li><b>3</b> Tekan DEPLOY, tanda jawapan, lihat ayat tersusun</li>
+      </ul>
+      <div class="kodBaris"><span class="kodlbl">Kod bilik</span><span class="kod mono" id="kodBesar">····</span></div>
+    </div>
+    <div><div id="qr"></div><div class="url" id="url"></div></div>
+  </div>
+</section>
+
+<!-- 2. Pilih set -->
+<section class="v" id="vPilih">
+  <h2 class="tajukV">Sijil set mana seterusnya?</h2>
+  <p class="subV">Guru pilih set pada telefon.</p>
+  <div class="gridS" id="gridS"></div>
+</section>
+
+<!-- 3. Ambil gambar -->
+<section class="v" id="vAmbil">
+  <div class="introS"><div class="besar" id="aTajuk">Set 1</div><div class="nama" id="aNama"></div></div>
+  <div class="a4" id="a4"><span id="a4Ik">📄</span><span class="lbl" id="a4Lbl">Menunggu gambar sijil</span></div>
+  <div class="petunjuk" id="aPetunjuk">Guru sedang mengambil gambar sijil…</div>
+</section>
+
+<!-- 4. Semak -->
+<section class="v" id="vSemak">
+  <div class="borang fotoSemak"><div class="bingkai" id="sBingkai"><span style="color:var(--kelabu);font-weight:600">Memuat gambar…</span></div></div>
+  <div class="senaraiSemak">
+    <h2>Menyemak sijil<i>.</i><i>.</i><i>.</i></h2>
+    <div style="color:var(--kelabu);font-weight:600;font-size:clamp(15px,1.6vw,24px)">Guru sedang menanda jawapan</div>
+    <div class="borang bs"><span class="pusing"></span>Kata Majmuk 1<span class="km">menyemak…</span></div>
+    <div class="borang bs"><span class="pusing"></span>Kata Majmuk 2<span class="km">menyemak…</span></div>
+    <div class="borang bs"><span class="pusing"></span>Kata Majmuk 3<span class="km">menyemak…</span></div>
+    <div class="borang bs"><span class="pusing"></span>Kata Majmuk 4<span class="km">menyemak…</span></div>
+  </div>
+</section>
+
+<!-- 5. Dedah -->
+<section class="v" id="vDedah">
+  <div class="borang panelFoto"><div class="zum" id="zum"><img id="zImg" alt="Sijil murid"></div><div class="cap" id="zCap">Sijil murid</div></div>
+  <div class="pentas" id="pentas">
+    <div class="borang bahKepala">
+      <div class="jalurHijau" id="dTajuk">KATA MAJMUK 1</div>
+      <div class="persamaan" id="dPers"></div>
+    </div>
+    <div class="borang meja" id="meja">
+      <span class="lbl">Susun ayat</span>
+      <div class="barisKad" id="barisKad"></div>
+      <div class="garisAyat" id="garisAyat"></div>
+      <div class="cop" id="cop"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. Tamat -->
+<section class="v" id="vTamat">
+  <div class="borang sijilAkhir">
+    <div class="jalurHijau">SIJIL DIDAFTARKAN</div>
+    <div class="badan">
+      <div>
+        <div class="baris"><span>Nama</span><b id="tNama">—</b></div>
+        <div class="baris"><span>Set</span><b id="tSet">—</b></div>
+        <div class="baris"><span>No. Daftar</span><b class="mono" id="tNo">—</b></div>
+        <div class="senaraiKM" id="tKM"></div>
+      </div>
+      <div class="bayiBesar"><div class="emo" id="tBayi">👶</div><div class="n" id="tBetul">4/4 betul</div></div>
+    </div>
+    <div class="copAkhir" id="copAkhir"></div>
+  </div>
+  <div class="tkBesar">TERIMA KASIH!</div>
+</section>
+
+<canvas id="konfeti"></canvas>
+<div class="hud">
+  <button class="btn" id="btnQr" title="Tunjuk kod QR (Q)">📱 QR</button>
+  <button class="btn" id="btnSuara" title="Suara bacaan">🗣️ Suara</button>
+  <button class="btn" id="btnBunyi" title="Bunyi">🔊 Bunyi</button>
+  <button class="btn" id="btnBaru" title="Jana kod bilik baharu">🔄 Kod Baru</button>
+  <button class="btn" id="btnFs" title="Skrin penuh (F)">⛶</button>
+  <a class="btn" href="/sijil-kelahiran.html" title="Kembali">✕</a>
+</div>
+<button id="bunyiNota">🔊 Klik di mana-mana untuk hidupkan bunyi</button>
+<div id="toast"></div>
+
+<script>
+(() => {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const LS = 'ilmuverseSijilSkrin.v1';
+const rnd = (n) => Array.from(crypto.getRandomValues(new Uint8Array(n)), (b) => b.toString(16).padStart(2, '0')).join('');
+const kodBaru = () => String(1000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 9000));
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const tunggu = (ms) => new Promise((r) => setTimeout(r, ms));
+const ulang = (s, n) => Array(n).fill(s).join('');
+$('jalurTx').textContent = ulang('PENDAFTARAN KATA MAJMUK  ✦  ', 40);
+
+let sesi = null, pilihan = { bunyi: true, suara: true };
+try { const j = JSON.parse(localStorage.getItem(LS) || 'null'); if (j) { sesi = j.sesi; pilihan = Object.assign(pilihan, j.pilihan || {}); } } catch (e) {}
+if (!sesi || !/^\d{4}$/.test(sesi.kod) || !sesi.kunci) sesi = { kod: kodBaru(), kunci: rnd(16) };
+const simpan = () => { try { localStorage.setItem(LS, JSON.stringify({ sesi, pilihan })); } catch (e) {} };
+simpan();
+
+// =============================================================
+// BUNYI (WebAudio) + SUARA
+// =============================================================
+let ac = null;
+function audio() { if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (ac && ac.state === 'suspended') ac.resume(); return ac; }
+function nada(f, mula, tempoh, jenis = 'sine', vol = .18, f2) {
+  const a = audio(); if (!a || !pilihan.bunyi) return;
+  const t = a.currentTime + mula, o = a.createOscillator(), g = a.createGain();
+  o.type = jenis; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + tempoh);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .012); g.gain.exponentialRampToValueAtTime(0.0001, t + tempoh);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t + tempoh + .05);
+}
+function dentum() { // bunyi cop: hentakan rendah + desir
+  const a = audio(); if (!a || !pilihan.bunyi) return;
+  nada(140, 0, .25, 'sine', .35, 55);
+  const buf = a.createBuffer(1, a.sampleRate * .15, a.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3);
+  const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); f.type = 'lowpass'; f.frequency.value = 900; g.gain.value = .35;
+  s.buffer = buf; s.connect(f).connect(g).connect(a.destination); s.start();
+}
+const SFX = {
+  masuk() { nada(300, 0, .35, 'sine', .12, 760); },
+  set() { [523, 659, 784].forEach((f, i) => nada(f, i * .09, .3, 'triangle', .14)); },
+  terima() { nada(880, 0, .12, 'sine', .12); nada(1320, .08, .16, 'sine', .1); },
+  imbas() { nada(1100, 0, .06, 'square', .03); },
+  jatuh(i) { nada(500 + i * 60, 0, .09, 'triangle', .1); },
+  kocak() { for (let i = 0; i < 6; i++) nada(300 + Math.random() * 500, i * .05, .05, 'square', .025); },
+  susun(i) { nada(660 + i * 90, 0, .12, 'sine', .12, 880 + i * 90); },
+  nyala() { [1319, 1568].forEach((f, i) => nada(f, i * .08, .25, 'sine', .08)); },
+  betul() { [523, 659, 784, 1047].forEach((f, i) => nada(f, .15 + i * .1, .45, 'triangle', .16)); },
+  salah() { nada(392, .15, .3, 'triangle', .14, 330); nada(294, .4, .45, 'triangle', .12, 247); },
+  tamat() { [523, 659, 784, 659, 784, 1047].forEach((f, i) => nada(f, i * .13, .4, 'triangle', .16)); nada(262, 0, .9, 'sine', .08); },
+};
+let suaraMs = null;
+function pilihSuara() { const v = speechSynthesis.getVoices(); suaraMs = v.find((x) => /ms[-_]MY/i.test(x.lang)) || v.find((x) => /^ms/i.test(x.lang)) || v.find((x) => /^id/i.test(x.lang)) || null; }
+if ('speechSynthesis' in window) { pilihSuara(); speechSynthesis.onvoiceschanged = pilihSuara; }
+function cakap(t) {
+  if (!pilihan.suara || !('speechSynthesis' in window)) return;
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = suaraMs ? suaraMs.lang : 'ms-MY'; if (suaraMs) u.voice = suaraMs; u.rate = .9; u.pitch = 1.05; speechSynthesis.speak(u); } catch (e) {}
+}
+function bukaBunyi() { audio(); $('bunyiNota').hidden = true; removeEventListener('pointerdown', bukaBunyi); removeEventListener('keydown', bukaBunyi); }
+addEventListener('pointerdown', bukaBunyi); addEventListener('keydown', bukaBunyi);
+function kemasButang() { $('btnBunyi').classList.toggle('off', !pilihan.bunyi); $('btnSuara').classList.toggle('off', !pilihan.suara); }
+$('btnBunyi').onclick = () => { pilihan.bunyi = !pilihan.bunyi; simpan(); kemasButang(); toast(pilihan.bunyi ? '🔊 Bunyi hidup' : '🔇 Bunyi senyap'); };
+$('btnSuara').onclick = () => { pilihan.suara = !pilihan.suara; simpan(); kemasButang(); if (!pilihan.suara) try { speechSynthesis.cancel(); } catch (e) {} toast(pilihan.suara ? '🗣️ Suara bacaan hidup' : 'Suara bacaan dimatikan'); };
+kemasButang();
+
+// =============================================================
+// KOD + QR
+// =============================================================
+const telUrl = () => `${location.origin}/sijil-telefon.html?bilik=${sesi.kod}`;
+function loadScript(src) { return new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
+async function lukisKod() {
+  $('kodBesar').textContent = sesi.kod; $('url').textContent = telUrl();
+  try {
+    if (!window.qrcode) await loadScript('https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js');
+    const q = window.qrcode(0, 'M'); q.addData(telUrl()); q.make(); $('qr').innerHTML = q.createSvgTag({ cellSize: 6, margin: 1, scalable: true });
+  } catch (e) { $('qr').innerHTML = '<div style="padding:20px;font-weight:700;line-height:1.3">Buka pada telefon:<br>' + esc(telUrl()) + '</div>'; }
+}
+function toast(t, ms = 2500) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), ms); }
+
+// =============================================================
+// DATA JAWAPAN
+// =============================================================
+let setSemua = null;
+async function muatSet() {
+  try { const r = await fetch('/api/sijil/set', { cache: 'no-store' }); if (r.status === 401) { toast('Sila log masuk semula di PC ini', 5000); return; } const j = await r.json(); if (j.ok) setSemua = j.set; } catch (e) {}
+}
+const bah = (n, i) => (setSemua && setSemua[n - 1] && setSemua[n - 1].bahagian[i]) || null;
+const namaSet = (n) => (setSemua && setSemua[n - 1] && setSemua[n - 1].nama) || 'Set ' + n;
+function susunKad(kadTeks, ayat) {
+  const kad = String(kadTeks || '').split('/').map((s) => s.trim()).filter(Boolean);
+  const a = String(ayat || '').trim().replace(/\s+/g, ' ');
+  const guna = new Array(kad.length).fill(false), out = [];
+  let p = 0;
+  while (p < a.length) {
+    while (a[p] === ' ') p++;
+    if (p >= a.length) break;
+    let pilih = -1;
+    kad.forEach((k, i) => { if (guna[i] || !a.startsWith(k, p)) return; const l = a[p + k.length]; if (l !== undefined && l !== ' ') return; if (pilih < 0 || k.length > kad[pilih].length) pilih = i; });
+    if (pilih < 0) return null;
+    guna[pilih] = true; out.push(pilih); p += kad[pilih].length;
+  }
+  return guna.every(Boolean) ? { kad, urutan: out } : null;
+}
+
+// =============================================================
+// GAMBAR SIJIL (memori server; tidak disimpan di sini)
+// =============================================================
+let foto = null; // {v, url, w, h}
+function buangFoto() { if (foto) URL.revokeObjectURL(foto.url); foto = null; }
+let sedang = 0;
+async function muatFoto(v, cubaan = 0) {
+  if (!v || (foto && foto.v >= v) || (sedang === v && !cubaan)) return;
+  sedang = v;
+  try {
+    const r = await fetch(`/api/sijil/${sesi.kod}/foto?kunci=${sesi.kunci}&v=${v}`, { cache: 'no-store' });
+    if (r.status === 204) return;
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const url = URL.createObjectURL(await r.blob());
+    const im = new Image(); im.src = url; await im.decode();
+    if (S && S.foto && S.foto.v !== v) { URL.revokeObjectURL(url); return; }
+    buangFoto(); foto = { v, url, w: im.naturalWidth, h: im.naturalHeight }; pasangFoto();
+  } catch (e) { if (cubaan < 4) setTimeout(() => muatFoto(v, cubaan + 1), 700 * (cubaan + 1)); }
+  finally { if (sedang === v) sedang = 0; }
+}
+function pasangFoto() {
+  if (!foto) return;
+  $('sBingkai').innerHTML = `<img src="${foto.url}" alt="Sijil murid"><div class="laser"></div>`;
+  const z = $('zImg'); z.src = foto.url; z.style.width = foto.w + 'px'; z.style.height = foto.h + 'px';
+  rect = S && S.pandangan && S.pandangan.v === foto.v ? { ...S.pandangan } : { x0: 0, y0: 0, x1: 1, y1: 1 }; cur = { ...rect };
+}
+// zoom ikut telefon (lancar)
+let rect = { x0: 0, y0: 0, x1: 1, y1: 1 }, cur = { ...rect };
+function susunZum() {
+  if (foto && paparKini === 'vDedah') {
+    for (const k of ['x0', 'y0', 'x1', 'y1']) cur[k] += (rect[k] - cur[k]) * .25;
+    const box = $('zum').getBoundingClientRect(), W = box.width, H = box.height, iw = foto.w, ih = foto.h;
+    const rw = (cur.x1 - cur.x0) * iw, rh = (cur.y1 - cur.y0) * ih, s = Math.min(W / rw, H / rh);
+    const cx = (cur.x0 + cur.x1) / 2 * iw, cy = (cur.y0 + cur.y1) / 2 * ih;
+    let tx = W / 2 - cx * s, ty = H / 2 - cy * s; const dw = iw * s, dh = ih * s;
+    tx = dw <= W ? (W - dw) / 2 : Math.max(W - dw, Math.min(0, tx)); ty = dh <= H ? (H - dh) / 2 : Math.max(H - dh, Math.min(0, ty));
+    $('zImg').style.transform = `translate(${tx}px, ${ty}px) scale(${s})`;
+    const zoom = 1 / Math.max(cur.x1 - cur.x0, cur.y1 - cur.y0);
+    $('zCap').textContent = zoom > 1.15 ? `🔍 Zoom ${zoom.toFixed(1)}× dari telefon guru` : 'Sijil murid · zoom pada telefon guru';
+  }
+  requestAnimationFrame(susunZum);
+}
+requestAnimationFrame(susunZum);
+
+// =============================================================
+// PAPARAN
+// =============================================================
+let S = null, wsOk = false, bilTel = 0, paparKini = '', kunciDedah = '', paksaQR = false, setKini = -1, imbasT = null, fotoAda = false;
+function tunjuk(id) { if (paparKini === id) return false; document.querySelectorAll('.v').forEach((v) => v.classList.toggle('on', v.id === id)); paparKini = id; return true; }
+function status() {
+  let c, t;
+  if (!wsOk) { c = 'bad'; t = 'Terputus, menyambung semula…'; }
+  else if (!bilTel) { c = 'wait'; t = 'Kod ' + sesi.kod + ' · menunggu telefon'; }
+  else { c = 'ok'; t = 'Kod ' + sesi.kod + ' · telefon bersambung'; }
+  $('stDot').className = 'dot ' + c; $('stTx').textContent = t;
+}
+const noDaftar = () => `KM-2026-${String(S.kumpulan).padStart(2, '0')}${String((S.selesai[S.kumpulan] || []).length).padStart(2, '0')}`;
+
+function render() {
+  if (!S) return;
+  const d = S;
+  $('hSet').hidden = !d.kumpulan || d.fasa === 'pilih'; $('hSet').textContent = namaSet(d.kumpulan);
+  $('hNama').hidden = !d.murid || d.fasa === 'pilih'; $('hNama').textContent = d.murid;
+  $('hTitik').hidden = !(d.fasa === 'dedah' || d.fasa === 'tamat');
+  [...$('hTitik').children].forEach((el, i) => { const dah = d.keputusan && (d.fasa === 'tamat' || i <= d.idx); el.className = (dah ? (d.keputusan[i] ? 'b' : 's') : '') + (d.fasa === 'dedah' && i === d.idx ? ' kini' : ''); });
+  if (d.kumpulan !== setKini) { setKini = d.kumpulan; kunciDedah = ''; if (d.kumpulan) muatSet().then(render); }
+  if (!d.foto && foto) buangFoto();
+  if (d.foto) muatFoto(d.foto.v);
+
+  if (paksaQR || (d.fasa === 'pilih' && !bilTel)) { tunjuk('vSambung'); hentiImbas(); return; }
+  if (d.fasa === 'pilih') { hentiImbas(); lukisPilih(); tunjuk('vPilih'); return; }
+  if (d.fasa === 'ambil') {
+    hentiImbas(); lukisAmbil();
+    if (tunjuk('vAmbil')) { SFX.set(); cakap(namaSet(d.kumpulan) + (d.murid ? '. ' + d.murid : '') + '. Sila tunjukkan sijil anda.'); }
+    return;
+  }
+  if (d.fasa === 'semak') {
+    if (tunjuk('vSemak')) { SFX.masuk(); mulaImbas(); cakap('Menyemak sijil.'); }
+    return;
+  }
+  hentiImbas();
+  if (d.fasa === 'dedah') { tunjuk('vDedah'); dedah(); return; }
+  if (d.fasa === 'tamat') { if (tunjuk('vTamat')) tamat(); }
+}
+function lukisPilih() {
+  const sel = S.selesai || {};
+  $('gridS').innerHTML = [1, 2, 3, 4, 5, 6].map((n) => {
+    const s = sel[n] || [], bayi = s.reduce((a, x) => a + x.betul, 0);
+    return `<div class="borang fail"><div class="jalurHijau">${esc(namaSet(n))}</div><div class="isi"><div><div class="ket">${s.length ? s.length + ' sijil disemak' : 'Belum disemak'}</div><div class="no mono">KM-2026-${String(n).padStart(2, '0')}··</div></div><div class="bayi">👶 ${bayi}</div></div></div>`;
+  }).join('');
+}
+function lukisAmbil() {
+  $('aTajuk').textContent = namaSet(S.kumpulan);
+  $('aNama').textContent = S.murid ? 'Sijil: ' + S.murid : '';
+  const ada = !!S.foto;
+  if (ada && !fotoAda) SFX.terima(); fotoAda = ada;
+  $('a4').classList.toggle('ada', ada); $('a4Ik').textContent = ada ? '✅' : '📄';
+  $('a4Lbl').textContent = ada ? 'Gambar sijil diterima' : 'Menunggu gambar sijil';
+  $('aPetunjuk').textContent = ada ? 'Sedia untuk disemak!' : 'Guru sedang mengambil gambar sijil…';
+}
+function mulaImbas() { hentiImbas(); imbasT = setInterval(() => { if (paparKini === 'vSemak') SFX.imbas(); }, 1200); }
+function hentiImbas() { clearInterval(imbasT); imbasT = null; }
+
+// ---------- SVG cop ----------
+function copSvg(betul) {
+  const w = betul ? '#158a57' : '#c8283a', t1 = betul ? 'DIDAFTARKAN' : 'BELUM TEPAT', ik = betul ? '✓' : '✗';
+  return `<svg viewBox="0 0 200 200" aria-hidden="true"><defs><path id="lingkar${betul ? 'B' : 'S'}" d="M100,100 m-72,0 a72,72 0 1,1 144,0 a72,72 0 1,1 -144,0"/></defs>
+    <circle cx="100" cy="100" r="94" fill="rgba(255,255,255,.55)" stroke="${w}" stroke-width="7"/><circle cx="100" cy="100" r="58" fill="none" stroke="${w}" stroke-width="3"/>
+    <text font-family="Baloo 2, sans-serif" font-weight="800" font-size="17" fill="${w}" letter-spacing="3"><textPath href="#lingkar${betul ? 'B' : 'S'}">JPKM ✦ KLINIK DOKTOR IZUDDIN ✦ JPKM ✦</textPath></text>
+    <text x="100" y="98" text-anchor="middle" font-family="Baloo 2, sans-serif" font-weight="800" font-size="46" fill="${w}">${ik}</text>
+    <text x="100" y="130" text-anchor="middle" font-family="Baloo 2, sans-serif" font-weight="800" font-size="13.5" fill="${w}">${t1}</text></svg>`;
+}
+
+// ---------- DEDAH: kad terbang menyusun ayat ----------
+async function dedah() {
+  const d = S, k = d.kumpulan + '|' + d.idx + '|' + JSON.stringify(d.keputusan);
+  if (k === kunciDedah) return; kunciDedah = k;
+  if (!setSemua) await muatSet();
+  const kini = () => kunciDedah === k;
+  const b = bah(d.kumpulan, d.idx) || { k1: '?', k2: '?', km: '?', kad: '', ayat: '' };
+  const betul = !!(d.keputusan && d.keputusan[d.idx]);
+  $('dTajuk').textContent = 'KATA MAJMUK ' + (d.idx + 1);
+  $('dPers').className = 'persamaan';
+  $('dPers').innerHTML = `<div class="tile"><div class="pic">${esc(b.e1 || '💊')}</div><div class="nm">${esc(b.k1)}</div></div><div class="op">+</div>
+    <div class="tile"><div class="pic">${esc(b.e2 || '💊')}</div><div class="nm">${esc(b.k2)}</div></div><div class="op">=</div>
+    <div class="tile km"><div class="pic">${esc(b.ek || '💊')}</div><div class="nm">${esc(b.km)}</div></div>`;
+  void $('dPers').offsetWidth; $('dPers').classList.add('main');
+  const cop = $('cop'); cop.className = 'cop'; cop.innerHTML = '';
+  $('garisAyat').classList.remove('on');
+  const sk = susunKad(b.kad, b.ayat);
+  const baris = $('barisKad');
+  if (!sk) { baris.innerHTML = `<div class="kad">${esc(b.ayat || '—')}</div>`; return; }
+  const km = (b.km || '').toLowerCase();
+  baris.innerHTML = sk.kad.map((t, i) => `<div class="kad${t.toLowerCase().replace(/\.$/, '') === km ? ' majmuk' : ''}" data-i="${i}" style="opacity:0">${esc(t)}</div>`).join('');
+  const el = [...baris.children];
+  SFX.masuk();
+  // 1) kad jatuh satu demi satu (susunan bercampur seperti pada sijil)
+  el.forEach((e, i) => setTimeout(() => { if (!kini()) return; e.style.opacity = ''; e.animate([{ transform: 'translateY(-60px) rotate(-8deg)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 450, easing: 'cubic-bezier(.2,1.5,.4,1)' }); SFX.jatuh(i); }, 600 + i * 120));
+  await tunggu(600 + el.length * 120 + 500); if (!kini()) return;
+  // 2) kocak sekejap
+  el.forEach((e) => e.classList.add('goyang')); SFX.kocak();
+  await tunggu(1000); if (!kini()) return;
+  el.forEach((e) => e.classList.remove('goyang'));
+  // 3) FLIP: susun mengikut ayat betul
+  const awal = el.map((e) => e.getBoundingClientRect());
+  sk.urutan.forEach((i) => baris.appendChild(el[i]));
+  sk.urutan.forEach((i, n) => {
+    const e = el[i], a = awal[i], z = e.getBoundingClientRect();
+    e.animate([{ transform: `translate(${a.left - z.left}px, ${a.top - z.top}px)` }, { transform: 'translate(0, -26px) scale(1.06)', offset: .7 }, { transform: 'none' }],
+      { duration: 750, delay: n * 140, easing: 'cubic-bezier(.3,.9,.3,1)', fill: 'backwards' });
+    setTimeout(() => kini() && SFX.susun(n), n * 140 + 400);
+  });
+  await tunggu(750 + el.length * 140 + 200); if (!kini()) return;
+  $('garisAyat').classList.add('on');
+  // 4) huruf besar & noktah menyala
+  const pertama = el[sk.urutan[0]], akhir = el[sk.urutan[sk.urutan.length - 1]];
+  const tA = pertama.textContent, tZ = akhir.textContent;
+  pertama.innerHTML = `<b class="hb">${esc(tA[0])}</b>${esc(tA.slice(1))}<span class="tag">Huruf besar</span>`;
+  if (tZ.endsWith('.')) akhir.innerHTML = `${esc(tZ.slice(0, -1))}<b class="nk">.</b><span class="tag">Noktah</span>`;
+  await tunggu(250); if (!kini()) return;
+  pertama.querySelector('.tag').classList.add('on'); pertama.querySelector('.hb').classList.add('nyala'); SFX.nyala();
+  await tunggu(700); if (!kini()) return;
+  const nk = akhir.querySelector('.tag'); if (nk) { nk.classList.add('on'); akhir.querySelector('.nk').classList.add('nyala'); SFX.nyala(); }
+  await tunggu(900); if (!kini()) return;
+  // 5) cop
+  cop.innerHTML = copSvg(betul); void cop.offsetWidth; cop.classList.add('main');
+  setTimeout(() => { if (!kini()) return; dentum(); const m = $('meja'); m.classList.remove('goncang'); void m.offsetWidth; m.classList.add('goncang'); }, 330);
+  betul ? SFX.betul() : SFX.salah();
+  cakap(betul ? `Betul! ${b.ayat}` : `Belum tepat. Ayat yang betul ialah: ${b.ayat}`);
+}
+
+function tamat() {
+  const d = S, kp = d.keputusan || [false, false, false, false], n = kp.filter(Boolean).length;
+  $('tNama').textContent = d.murid || '—';
+  $('tSet').textContent = namaSet(d.kumpulan);
+  $('tNo').textContent = noDaftar();
+  $('tKM').innerHTML = kp.map((x, i) => { const b = bah(d.kumpulan, i); return `<div><span class="tk" style="background:${x ? 'var(--hijau2)' : 'var(--merah)'}">${x ? '✓' : '✗'}</span>${esc(b ? b.km : 'Kata majmuk ' + (i + 1))}</div>`; }).join('');
+  $('tBayi').textContent = n ? '👶'.repeat(Math.min(n, 4)) : '🍼';
+  $('tBetul').textContent = `${n}/4 ayat betul`;
+  $('copAkhir').innerHTML = copSvg(true);
+  SFX.tamat(); setTimeout(dentum, 1900);
+  cakap(`Terima kasih${d.murid ? ', ' + d.murid : ''}! Sijil anda telah didaftarkan.`); konfeti();
+}
+function konfeti() {
+  const c = $('konfeti'), x = c.getContext('2d'); c.width = innerWidth; c.height = innerHeight;
+  const W = ['#158a57', '#2fb877', '#e0a526', '#ffffff', '#c8283a'];
+  const P = Array.from({ length: 150 }, () => ({ x: Math.random() * c.width, y: -20 - Math.random() * c.height * .6, vx: (Math.random() - .5) * 3, vy: 2 + Math.random() * 4, r: Math.random() * 6, vr: (Math.random() - .5) * .25, w: 10 + Math.random() * 12, c: W[Math.floor(Math.random() * W.length)] }));
+  const mula = performance.now();
+  (function f(t) {
+    x.clearRect(0, 0, c.width, c.height);
+    P.forEach((p) => { p.x += p.vx; p.y += p.vy; p.vy += .04; p.r += p.vr; x.save(); x.translate(p.x, p.y); x.rotate(p.r); x.fillStyle = p.c; x.fillRect(-p.w / 2, -p.w / 4, p.w, p.w / 2); x.restore(); });
+    if (t - mula < 5500 && paparKini === 'vTamat') requestAnimationFrame(f); else x.clearRect(0, 0, c.width, c.height);
+  })(mula);
+}
+
+// =============================================================
+// WEBSOCKET
+// =============================================================
+let ws = null, tunda = 800, pingT = null;
+function sambung() {
+  try { ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/sijil-km?bilik=${sesi.kod}&peranan=paparan&kunci=${sesi.kunci}`); }
+  catch (e) { return ulangSambung(); }
+  ws.onopen = () => { wsOk = true; tunda = 800; status(); clearInterval(pingT); pingT = setInterval(() => { try { ws.send('{"jenis":"ping"}'); } catch (e) {} }, 20000); };
+  ws.onmessage = (ev) => {
+    let d; try { d = JSON.parse(ev.data); } catch (e) { return; }
+    if (d.jenis === 'keadaan') { bilTel = d.telefon || 0; S = d; if (d.pandangan && foto && d.pandangan.v === foto.v) rect = { ...d.pandangan }; else if (!d.pandangan) rect = { x0: 0, y0: 0, x1: 1, y1: 1 }; status(); render(); }
+    else if (d.jenis === 'bilangan') { const naik = (d.telefon || 0) > bilTel; bilTel = d.telefon || 0; status(); if (naik) { toast('📱 Telefon guru bersambung'); paksaQR = false; } render(); }
+    else if (d.jenis === 'pandangan') { if (foto && d.v === foto.v) rect = { x0: d.x0, y0: d.y0, x1: d.x1, y1: d.y1 }; if (S) S.pandangan = d; }
+  };
+  ws.onclose = (ev) => {
+    wsOk = false; status(); clearInterval(pingT);
+    if (ev.code === 4001) { sesi = { kod: kodBaru(), kunci: rnd(16) }; simpan(); lukisKod(); tunda = 200; }
+    ulangSambung();
+  };
+  ws.onerror = () => {};
+}
+function ulangSambung() { setTimeout(sambung, tunda); tunda = Math.min(tunda * 1.7, 8000); }
+
+// =============================================================
+// KAWALAN
+// =============================================================
+function fs() { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen().catch(() => {}); }
+$('btnFs').onclick = fs;
+$('btnQr').onclick = () => { paksaQR = !paksaQR; paparKini = ''; kunciDedah = ''; render(); if (!S) tunjuk('vSambung'); };
+$('btnBaru').onclick = () => {
+  if (!confirm('Jana kod bilik baharu? Telefon perlu imbas QR semula.')) return;
+  sesi = { kod: kodBaru(), kunci: rnd(16) }; simpan(); lukisKod(); buangFoto(); S = null; bilTel = 0; paparKini = ''; tunjuk('vSambung');
+  try { ws.onclose = null; ws.close(); } catch (e) {} wsOk = false; status(); tunda = 300; sambung();
+};
+addEventListener('keydown', (e) => { if (e.key === 'f' || e.key === 'F') fs(); if (e.key === 'q' || e.key === 'Q') $('btnQr').click(); });
+let idleT = null;
+const bangun = () => { document.body.classList.remove('idle'); clearTimeout(idleT); idleT = setTimeout(() => document.body.classList.add('idle'), 4000); };
+addEventListener('mousemove', bangun); bangun();
+let kunciSkrin = null;
+async function jagaSkrin() { try { if ('wakeLock' in navigator && document.visibilityState === 'visible') kunciSkrin = await navigator.wakeLock.request('screen'); } catch (e) {} }
+document.addEventListener('visibilitychange', jagaSkrin); jagaSkrin();
+addEventListener('resize', () => { const c = $('konfeti'); c.width = innerWidth; c.height = innerHeight; });
+
+tunjuk('vSambung'); lukisKod(); status(); muatSet(); sambung();
+window.__sijil = { get S() { return S; }, get papar() { return paparKini; }, get kod() { return sesi.kod; }, get foto() { return foto && foto.v; } };
+})();
+</script>
+</body>
+</html>

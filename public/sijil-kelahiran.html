@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sijil Kelahiran Kata Majmuk — Pengurusan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@700;800&display=swap">
+<style>
+  :root { --kertas: #eef6ea; --kertas2: #dcebd5; --hijau: #0b5d3b; --hijau2: #158a57; --emas: #e0a526; --dakwat: #16324a; --kelabu: #5d7366; --merah: #c8283a;
+    --bayang: 0 10px 26px rgba(11,93,59,.11), 0 2px 6px rgba(11,93,59,.06); }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; background: var(--kertas); color: var(--dakwat); font-family: 'Fredoka', system-ui, sans-serif; }
+  body { min-height: 100vh; background: repeating-linear-gradient(45deg, rgba(11,93,59,.03) 0 2px, transparent 2px 16px), repeating-linear-gradient(-45deg, rgba(11,93,59,.03) 0 2px, transparent 2px 16px), var(--kertas); }
+  button, input { font: inherit; }
+  button { cursor: pointer; }
+  button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid var(--hijau); outline-offset: 2px; }
+  header { background: linear-gradient(180deg, var(--hijau), #0a4f33); color: #fff; padding: 14px 24px; display: flex; align-items: center; gap: 14px; position: sticky; top: 0; z-index: 5; border-bottom: 4px solid var(--emas); }
+  .lencana { width: 44px; height: 44px; border-radius: 50%; background: var(--emas); color: var(--hijau); display: grid; place-items: center; font-family: 'Baloo 2'; font-weight: 800; font-size: 12px; line-height: .9; text-align: center; box-shadow: inset 0 0 0 3px #fff; flex: none; }
+  header b { font-family: 'Baloo 2'; font-weight: 800; font-size: 24px; line-height: 1; display: block; }
+  header small { opacity: .9; font-size: 13px; }
+  header a { margin-left: auto; color: #fff; text-decoration: none; font-weight: 600; background: rgba(255,255,255,.16); padding: 8px 14px; border-radius: 10px; }
+  main { max-width: 1120px; margin: 0 auto; padding: 24px 20px 80px; }
+  .borang { background: #fff; border-radius: 20px; box-shadow: var(--bayang); border: 2px solid var(--kertas2); }
+  .mula { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; margin-bottom: 26px; }
+  .kadMula { padding: 20px 22px; display: flex; gap: 16px; align-items: center; text-decoration: none; color: inherit; }
+  .kadMula .ik { font-size: 36px; width: 62px; height: 62px; border-radius: 16px; background: var(--kertas); display: grid; place-items: center; flex: none; }
+  .kadMula h3 { margin: 0; font-family: 'Baloo 2'; font-weight: 800; font-size: 22px; color: var(--hijau); line-height: 1.1; }
+  .kadMula p { margin: 4px 0 0; color: var(--kelabu); font-size: 14.5px; line-height: 1.45; }
+  a.kadMula { border-color: var(--hijau2); transition: transform .15s; }
+  a.kadMula:hover { transform: translateY(-3px); }
+  h2 { font-family: 'Baloo 2'; font-weight: 800; font-size: 28px; margin: 0 0 4px; color: var(--hijau); }
+  .sub { color: var(--kelabu); margin: 0 0 16px; max-width: 72ch; line-height: 1.5; }
+  .tab { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .tab button { border: 2px solid var(--kertas2); background: #fff; border-radius: 12px; padding: 8px 18px; font-weight: 700; color: var(--dakwat); }
+  .tab button.on { background: var(--hijau); border-color: var(--hijau); color: #fff; }
+  .panel { padding: 22px; }
+  .namaBaris { display: flex; gap: 12px; align-items: center; margin-bottom: 18px; flex-wrap: wrap; }
+  .namaBaris label { font-weight: 700; }
+  .namaBaris input { flex: 1; min-width: 200px; }
+  input[type=text] { border: 2px solid var(--kertas2); border-radius: 12px; padding: 9px 12px; color: var(--dakwat); background: #fff; width: 100%; }
+  input[type=text]:focus { outline: none; border-color: var(--hijau2); }
+  .bah { border: 2px solid var(--kertas2); border-radius: 18px; margin-bottom: 14px; overflow: hidden; }
+  .bah .jalur { background: linear-gradient(90deg, #d7efd9, #e7f6e3); color: var(--hijau); font-family: 'Baloo 2'; font-weight: 800; padding: 6px 14px; display: flex; justify-content: space-between; align-items: center; }
+  .bah .jalur span { font-family: 'Fredoka'; font-weight: 600; font-size: 14px; color: var(--kelabu); }
+  .bah .isi { padding: 14px; display: grid; gap: 12px; }
+  .tiga { display: grid; grid-template-columns: 1fr auto 1fr auto 1.2fr; gap: 10px; align-items: end; }
+  .op { font-family: 'Baloo 2'; font-weight: 800; font-size: 28px; color: var(--hijau2); padding-bottom: 4px; }
+  .medan .lbl { font-size: 12.5px; font-weight: 700; color: var(--kelabu); margin-bottom: 3px; }
+  .medan .dua { display: flex; gap: 6px; }
+  .medan .emo { width: 62px !important; text-align: center; flex: none; }
+  .pratonton { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 34px; }
+  .kad { font-family: 'Baloo 2'; font-weight: 800; font-size: 17px; background: #fff; border: 2px solid var(--hijau2); border-radius: 10px; padding: 0 10px; }
+  .status { font-weight: 700; font-size: 14px; }
+  .status.ok { color: var(--hijau2); } .status.salah { color: var(--merah); }
+  .tindakan { display: flex; gap: 10px; align-items: center; margin-top: 18px; flex-wrap: wrap; }
+  .btnUtama { border: 0; border-radius: 999px; padding: 12px 26px; font-family: 'Baloo 2'; font-weight: 800; font-size: 19px; color: #fff; background: var(--hijau2); box-shadow: 0 5px 0 var(--hijau); }
+  .btnUtama:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--hijau); }
+  .btnUtama:disabled { opacity: .5; }
+  .kecil { border: 2px solid var(--kertas2); background: #fff; color: var(--dakwat); border-radius: 10px; padding: 7px 12px; font-weight: 600; font-size: 14px; }
+  .simpanTx { color: var(--kelabu); font-weight: 600; font-size: 14.5px; }
+  .simpanTx.kotor { color: #b45309; }
+  .nota { margin-top: 22px; border-left: 6px solid var(--hijau2); padding: 14px 18px; color: var(--kelabu); line-height: 1.55; }
+  .nota b { color: var(--dakwat); }
+  #toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); z-index: 40; background: var(--dakwat); color: #fff; padding: 10px 18px; border-radius: 14px; font-weight: 600; opacity: 0; transition: all .3s; pointer-events: none; }
+  #toast.on { opacity: 1; transform: translate(-50%, 0); }
+  @media (max-width: 900px) { .mula { grid-template-columns: 1fr; } .tiga { grid-template-columns: 1fr; } .op { text-align: center; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="lencana">JP<br>KM</div>
+  <div><b>Sijil Kelahiran Kata Majmuk</b><small>Mod 09 · Pengurusan jawapan susun ayat</small></div>
+  <a href="/guru.html">← Ilmuverse</a>
+</header>
+<main>
+  <div class="mula">
+    <a class="borang kadMula" href="/sijil-skrin.html"><span class="ik">📺</span><div><h3>Buka skrin TV</h3><p>Buka di PC yang bersambung ke TV. Skrin akan tunjuk kod bilik dan QR.</p></div></a>
+    <div class="borang kadMula"><span class="ik">📱</span><div><h3>Telefon guru</h3><p>Imbas QR pada skrin TV. Pilih set, ambil gambar sijil, DEPLOY, kemudian tanda 4 ayat.</p></div></div>
+  </div>
+  <h2>Jawapan setiap set</h2>
+  <p class="sub">Setiap set ada 4 kata majmuk. <b>Kad perkataan</b> mesti sama susunan seperti yang dicetak pada sijil, dipisahkan dengan garis miring ( / ). Kad ini akan "terbang" menyusun diri menjadi <b>ayat betul</b> di skrin TV.</p>
+  <div class="tab" id="tab"></div>
+  <div class="borang panel" id="panel"><p class="sub">Memuat…</p></div>
+  <div class="borang nota"><b>Tentang storan.</b> Jawapan disimpan dalam pangkalan data Ilmuverse. Gambar sijil murid <b>tidak disimpan</b>: ia hanya dalam memori pelayan semasa semakan dan dipadam bila set lain dipilih atau selepas 30 minit tidak digunakan.</div>
+</main>
+<div id="toast"></div>
+<script>
+(() => {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function toast(t, ms = 2600) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), ms); }
+let semua = null, aktif = 1, kotor = false, dbOk = true;
+
+function susunKad(kadTeks, ayat) {
+  const kad = String(kadTeks || '').split('/').map((s) => s.trim()).filter(Boolean);
+  const a = String(ayat || '').trim().replace(/\s+/g, ' ');
+  const guna = new Array(kad.length).fill(false), out = []; let p = 0;
+  while (p < a.length) {
+    while (a[p] === ' ') p++; if (p >= a.length) break;
+    let pilih = -1;
+    kad.forEach((k, i) => { if (guna[i] || !a.startsWith(k, p)) return; const l = a[p + k.length]; if (l !== undefined && l !== ' ') return; if (pilih < 0 || k.length > kad[pilih].length) pilih = i; });
+    if (pilih < 0) return null; guna[pilih] = true; out.push(kad[pilih]); p += kad[pilih].length;
+  }
+  return kad.length && guna.every(Boolean) ? { kad, betul: out } : null;
+}
+async function muat() {
+  try {
+    const r = await fetch('/api/sijil/set', { cache: 'no-store' });
+    if (r.status === 401) { location.href = '/login.html?next=' + encodeURIComponent(location.pathname); return; }
+    const j = await r.json(); semua = j.set; dbOk = j.db;
+  } catch (e) { $('panel').innerHTML = '<p class="sub">Tidak dapat memuat jawapan. Semak sambungan internet dan muat semula halaman.</p>'; return; }
+  lukisTab(); lukis();
+}
+function lukisTab() {
+  $('tab').innerHTML = [1, 2, 3, 4, 5, 6].map((n) => `<button data-n="${n}" class="${n === aktif ? 'on' : ''}">Set ${n}</button>`).join('');
+  $('tab').querySelectorAll('button').forEach((b) => b.onclick = () => { if (kotor && !confirm('Perubahan belum disimpan. Tinggalkan?')) return; aktif = +b.dataset.n; kotor = false; lukisTab(); lukis(); });
+}
+function medan(i, f, lbl, ph, max) { return `<div class="medan"><div class="lbl">${lbl}</div><input type="text" data-i="${i}" data-f="${f}" maxlength="${max}" placeholder="${ph}" value="${esc(semua[aktif - 1].bahagian[i][f])}"></div>`; }
+function medanKata(i, fk, fe, lbl) {
+  const b = semua[aktif - 1].bahagian[i];
+  return `<div class="medan"><div class="lbl">${lbl}</div><div class="dua"><input type="text" class="emo" data-i="${i}" data-f="${fe}" maxlength="16" value="${esc(b[fe])}" title="Emoji"><input type="text" data-i="${i}" data-f="${fk}" maxlength="${fk === 'km' ? 80 : 40}" value="${esc(b[fk])}"></div></div>`;
+}
+function lukis() {
+  const set = semua[aktif - 1];
+  $('panel').innerHTML = `${dbOk ? '' : '<p class="sub" style="color:#b45309">Pangkalan data belum bersambung. Jawapan asal digunakan dan perubahan belum boleh disimpan.</p>'}
+    <div class="namaBaris"><label for="nama">Nama set</label><input type="text" id="nama" maxlength="40" value="${esc(set.nama)}"></div>
+    ${set.bahagian.map((b, i) => `<div class="bah"><div class="jalur">KATA MAJMUK ${i + 1}<span id="st${i}"></span></div><div class="isi">
+      <div class="tiga">${medanKata(i, 'k1', 'e1', 'Perkataan 1')}<div class="op">+</div>${medanKata(i, 'k2', 'e2', 'Perkataan 2')}<div class="op">=</div>${medanKata(i, 'km', 'ek', 'Kata majmuk')}</div>
+      ${medan(i, 'kad', 'Kad perkataan (susunan bercampur pada sijil, pisahkan dengan / )', 'cth. memakai / sarung tangan. / Doktor / itu', 200)}
+      ${medan(i, 'ayat', 'Ayat betul', 'cth. Doktor itu memakai sarung tangan.', 200)}
+      <div class="pratonton" id="pr${i}"></div></div></div>`).join('')}
+    <div class="tindakan"><button class="btnUtama" id="btnSimpan" ${dbOk ? '' : 'disabled'}>💾 Simpan Set ${aktif}</button><span class="simpanTx" id="simpanTx"></span>
+      <button class="kecil" id="btnAsal" style="margin-left:auto" ${dbOk ? '' : 'disabled'}>↺ Set semula ke jawapan asal</button></div>`;
+  set.bahagian.forEach((_, i) => semak(i));
+  $('panel').querySelectorAll('input[data-f]').forEach((inp) => inp.addEventListener('input', () => {
+    const i = +inp.dataset.i, f = inp.dataset.f, b = set.bahagian[i], auto = `${b.k1} ${b.k2}`.trim();
+    if ((f === 'k1' || f === 'k2') && (!b.km || b.km === auto)) { b[f] = inp.value.trim(); b.km = `${b.k1} ${b.k2}`.trim(); const km = $('panel').querySelector(`input[data-f="km"][data-i="${i}"]`); if (km) km.value = b.km; }
+    else b[f] = inp.value.trim();
+    semak(i); tandaKotor(true);
+  }));
+  $('nama').addEventListener('input', () => { set.nama = $('nama').value.trim(); tandaKotor(true); });
+  $('btnSimpan').onclick = simpan; $('btnAsal').onclick = setAsal; tandaKotor(kotor);
+}
+function semak(i) {
+  const b = semua[aktif - 1].bahagian[i], r = susunKad(b.kad, b.ayat), st = $('st' + i), pr = $('pr' + i);
+  if (r) { st.className = 'status ok'; st.textContent = '✓ Kad sepadan dengan ayat'; pr.innerHTML = '<b style="color:var(--kelabu);font-size:13px">Susunan betul:</b> ' + r.betul.map((k) => `<span class="kad">${esc(k)}</span>`).join(''); }
+  else { st.className = 'status salah'; st.textContent = '✗ Kad tidak sepadan dengan ayat'; pr.innerHTML = '<span style="color:var(--kelabu);font-size:13.5px">Pastikan setiap perkataan dalam ayat betul ada dalam kad, termasuk huruf besar dan noktah.</span>'; }
+  return !!r;
+}
+function tandaKotor(k) { kotor = k; const t = $('simpanTx'); if (!t) return; t.textContent = k ? 'Ada perubahan belum disimpan' : 'Semua perubahan disimpan'; t.classList.toggle('kotor', k); }
+addEventListener('beforeunload', (e) => { if (kotor) { e.preventDefault(); e.returnValue = ''; } });
+async function simpan() {
+  const set = semua[aktif - 1];
+  const salah = set.bahagian.findIndex((b) => !susunKad(b.kad, b.ayat));
+  if (salah >= 0) return toast(`Kata majmuk ${salah + 1}: kad tidak sepadan dengan ayat`);
+  $('btnSimpan').disabled = true;
+  try {
+    const r = await fetch('/api/sijil/set/' + aktif, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nama: set.nama, bahagian: set.bahagian }) });
+    const j = await r.json(); if (!r.ok || !j.ok) throw new Error(j.mesej || 'Ralat ' + r.status);
+    semua[aktif - 1] = j.set; kotor = false; lukis(); toast('✅ Set ' + aktif + ' disimpan');
+  } catch (e) { toast('❌ ' + e.message, 4000); }
+  finally { const b = $('btnSimpan'); if (b) b.disabled = false; }
+}
+async function setAsal() {
+  if (!confirm(`Set semula Set ${aktif} ke jawapan asal?`)) return;
+  try { const r = await fetch(`/api/sijil/set/${aktif}/asal`, { method: 'POST' }); const j = await r.json(); if (!r.ok || !j.ok) throw new Error(j.mesej || 'Ralat ' + r.status); semua[aktif - 1] = j.set; kotor = false; lukis(); toast('↺ Jawapan asal dipulihkan'); }
+  catch (e) { toast('❌ ' + e.message, 4000); }
+}
+muat();
+})();
+</script>
+</body>
+</html>

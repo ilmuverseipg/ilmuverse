@@ -25,6 +25,8 @@ const kaunterRelay = require('../routes/kaunterRelay');
 const skrinJawapan = require('../routes/skrinJawapan');
 // [KAPSUL KATA MAJMUK - MOD 08] Semakan jawapan kumpulan (telefon -> TV)
 const kapsulKM = require('../routes/kapsulKataMajmuk');
+// [SIJIL KELAHIRAN KATA MAJMUK - MOD 09] Semakan susun ayat (telefon -> TV)
+const sijilKM = require('../routes/sijilKelahiran');
 
 const app = express();
 const server = http.createServer(app);
@@ -56,6 +58,7 @@ app.use('/api/game-lessons', gameLessonsRouter);
 app.use('/api/kuiz-esp32', kuizEsp32Router);
 skrinJawapan.pasang(app);
 kapsulKM.pasang(app);
+sijilKM.pasang(app);
 // [STORAN] Peratus penggunaan MongoDB & RAM Render (bar atas guru.html)
 require('../routes/storan')(app);
 
@@ -295,6 +298,8 @@ wss.on('connection', (ws, req) => {
     skrinJawapan.sambung(ws, req);
   } else if (url.startsWith('/kapsul-km')) {
     kapsulKM.sambung(ws, req);
+  } else if (url.startsWith('/sijil-km')) {
+    sijilKM.sambung(ws, req);
   } else if (url === '/murid') {
     clients.murid.push(ws);
     console.log('[WS] Aplikasi Murid disambung');
@@ -309,6 +314,7 @@ wss.on('connection', (ws, req) => {
     if (url.startsWith('/kaunter')) { kaunterRelay.mesej(ws, data); return; }
     if (url.startsWith('/skrin-jawapan')) { skrinJawapan.mesej(ws, data); return; }
     if (url.startsWith('/kapsul-km')) { kapsulKM.mesej(ws, data); return; }
+    if (url.startsWith('/sijil-km')) { sijilKM.mesej(ws, data); return; }
 
     if (url === '/esp32') {
       if (data.jenis === 'nfc_scan') await prosesNFC(data.uid);
@@ -349,6 +355,7 @@ wss.on('connection', (ws, req) => {
     else if (url.startsWith('/kaunter')) kaunterRelay.putus(ws);
     else if (url.startsWith('/skrin-jawapan')) skrinJawapan.putus(ws);
     else if (url.startsWith('/kapsul-km')) kapsulKM.putus(ws);
+    else if (url.startsWith('/sijil-km')) sijilKM.putus(ws);
     console.log(`[WS] Putus: ${url}`);
   });
 });
