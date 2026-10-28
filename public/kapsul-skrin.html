@@ -114,28 +114,36 @@
   .kf img { width: 100%; height: 100%; object-fit: contain; display: block; }
   .kf .label { position: absolute; left: 2vh; top: 2vh; z-index: 2; font-size: clamp(16px, 1.7vw, 26px); white-space: nowrap; }
   .kf .muat { color: var(--kelabu); font-weight: 600; font-size: clamp(14px, 1.3vw, 19px); }
-  /* Animasi imbasan: lapisan TELUS di atas gambar - garis laser nipis, bucu
-     pengimbas & cip kecil. Gambar murid tidak dikaburkan / ditutup. */
-  .imbasan { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
-  .imbasan .laser { position: absolute; left: 0; right: 0; top: 0; height: 3px; opacity: 0;
-    background: linear-gradient(90deg, transparent, #8ff7ea 10%, #fff 50%, #8ff7ea 90%, transparent);
-    box-shadow: 0 0 8px 2px rgba(20,163,148,.9), 0 0 22px 5px rgba(20,163,148,.35);
-    animation: laser 2.6s cubic-bezier(.45,0,.55,1) infinite; }
-  .imbasan .laser::before { content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 7vh;
-    background: linear-gradient(180deg, rgba(20,163,148,0), rgba(20,163,148,.12)); }
-  @keyframes laser { 0% { top: 0; opacity: 0; } 8% { opacity: 1; } 92% { opacity: 1; } 100% { top: calc(100% - 3px); opacity: 0; } }
-  .kf:nth-child(2) .laser { animation-delay: .4s; } .kf:nth-child(3) .laser { animation-delay: .8s; } .kf:nth-child(4) .laser { animation-delay: 1.2s; }
-  .imbasan .bc { position: absolute; width: 12%; height: 16%; border: 4px solid var(--teal2); filter: drop-shadow(0 0 4px rgba(20,163,148,.7)); animation: bucu 1.3s ease-in-out infinite; }
-  .imbasan .bc.a { left: 8px; top: 8px; border-right: 0; border-bottom: 0; border-radius: 12px 0 0 0; }
-  .imbasan .bc.b { right: 8px; top: 8px; border-left: 0; border-bottom: 0; border-radius: 0 12px 0 0; }
-  .imbasan .bc.c { left: 8px; bottom: 8px; border-right: 0; border-top: 0; border-radius: 0 0 0 12px; }
-  .imbasan .bc.d { right: 8px; bottom: 8px; border-left: 0; border-top: 0; border-radius: 0 0 12px 0; }
-  @keyframes bucu { 0%, 100% { opacity: .45; transform: scale(1); } 50% { opacity: 1; transform: scale(.94); } }
-  .imbasan .bc.a { transform-origin: 0 0; } .imbasan .bc.b { transform-origin: 100% 0; } .imbasan .bc.c { transform-origin: 0 100%; } .imbasan .bc.d { transform-origin: 100% 100%; }
-  .imbasan .cip { position: absolute; right: 14px; bottom: 14px; display: flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px;
-    background: rgba(255,255,255,.82); color: var(--teal); font-weight: 700; font-size: clamp(11px, 1vw, 15px); letter-spacing: .08em; box-shadow: 0 2px 6px rgba(19,51,76,.15); }
-  .imbasan .cip i { width: .6em; height: .6em; border-radius: 50%; background: var(--merah); animation: kelip 1s steps(2, start) infinite; }
-  @keyframes kelip { to { visibility: hidden; } }
+  /* Animasi imbasan SATU SKRIN: satu garis laser nipis menyapu seluruh
+     kawasan 4 gambar + bucu pengimbas besar di tepi skrin. Lapisan TELUS -
+     gambar murid tidak dikaburkan / ditutup. */
+  .zonImbas { position: relative; flex: 1; min-height: 0; width: 100%; display: flex; }
+  .imbasSkrin { position: absolute; inset: -.6vh -1vw; pointer-events: none; z-index: 3; }
+  .imbasSkrin .laser { position: absolute; left: 0; right: 0; top: 0; height: 4px; opacity: 0;
+    background: linear-gradient(90deg, transparent, #8ff7ea 6%, #fff 50%, #8ff7ea 94%, transparent);
+    box-shadow: 0 0 10px 3px rgba(20,163,148,.9), 0 0 30px 8px rgba(20,163,148,.35); }
+  .imbasSkrin .laser::before { content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 12vh;
+    background: linear-gradient(180deg, rgba(20,163,148,0), rgba(20,163,148,.10)); }
+  .v.on .imbasSkrin .laser { animation: laser 3s cubic-bezier(.45,0,.55,1) infinite; }
+  @keyframes laser { 0% { top: 0; opacity: 0; } 6% { opacity: 1; } 94% { opacity: 1; } 100% { top: calc(100% - 4px); opacity: 0; } }
+  .imbasSkrin .bc { position: absolute; width: 6vw; height: 9vh; border: 5px solid var(--teal2); filter: drop-shadow(0 0 5px rgba(20,163,148,.7)); }
+  .v.on .imbasSkrin .bc { animation: bucu 1.4s ease-in-out infinite; }
+  .imbasSkrin .bc.a { left: 0; top: 0; border-right: 0; border-bottom: 0; border-radius: 16px 0 0 0; transform-origin: 0 0; }
+  .imbasSkrin .bc.b { right: 0; top: 0; border-left: 0; border-bottom: 0; border-radius: 0 16px 0 0; transform-origin: 100% 0; }
+  .imbasSkrin .bc.c { left: 0; bottom: 0; border-right: 0; border-top: 0; border-radius: 0 0 0 16px; transform-origin: 0 100%; }
+  .imbasSkrin .bc.d { right: 0; bottom: 0; border-left: 0; border-top: 0; border-radius: 0 0 16px 0; transform-origin: 100% 100%; }
+  @keyframes bucu { 0%, 100% { opacity: .45; transform: scale(1); } 50% { opacity: 1; transform: scale(.93); } }
+  /* gambar lebih besar: kurangkan ruang kosong di skrin imbas */
+  #vImbas { padding: 1.4vh 1.6vw 1vh; }
+  #vImbas .gridF { gap: .9vh .9vw; height: 100%; }
+  #vImbas .kf { padding: .5vh; border-radius: 16px; }
+  #vImbas .kf .bingkai { border-radius: 12px; }
+  /* tulisan MENGIMBAS terapung di tengah (celah 4 gambar) supaya gambar guna ketinggian penuh */
+  #vImbas .baruImbas { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 4; margin: 0; gap: 1vw;
+    background: rgba(255,255,255,.94); padding: .7vh 1.8vw; border-radius: 999px; box-shadow: var(--bayang); white-space: nowrap; }
+  #vImbas .baruImbas .tx { font-size: clamp(18px, 2.2vw, 38px); }
+  #vImbas .nadi { display: none; }
+  #vImbas .baruImbas { padding: .5vh 1.6vw; }
   .sudut::before, .sudut::after { content: ''; position: absolute; width: 18%; height: 12%; border: 5px solid var(--teal2); pointer-events: none; }
   .sudut::before { left: 8px; top: 8px; border-right: 0; border-bottom: 0; border-radius: 14px 0 0 0; }
   .sudut::after { right: 8px; bottom: 8px; border-left: 0; border-top: 0; border-radius: 0 0 14px 0; }
@@ -265,11 +273,14 @@
 
 <!-- 4. Imbas -->
 <section class="v" id="vImbas">
-  <div class="gridF" id="gridF"></div>
-  <div class="baruImbas">
-    <svg class="nadi" viewBox="0 0 200 60" aria-hidden="true"><path d="M0 32 H60 l10 -8 l10 8 H96 l8 -28 l12 52 l8 -24 H200"/></svg>
-    <div class="tx">MENGIMBAS JAWAPAN<i>.</i><i>.</i><i>.</i></div>
-    <svg class="nadi" viewBox="0 0 200 60" aria-hidden="true"><path d="M0 32 H60 l10 -8 l10 8 H96 l8 -28 l12 52 l8 -24 H200"/></svg>
+  <div class="zonImbas">
+    <div class="gridF" id="gridF"></div>
+    <div class="imbasSkrin" aria-hidden="true"><span class="laser"></span><span class="bc a"></span><span class="bc b"></span><span class="bc c"></span><span class="bc d"></span></div>
+    <div class="baruImbas">
+      <svg class="nadi" viewBox="0 0 200 60" aria-hidden="true"><path d="M0 32 H60 l10 -8 l10 8 H96 l8 -28 l12 52 l8 -24 H200"/></svg>
+      <div class="tx">MENGIMBAS JAWAPAN<i>.</i><i>.</i><i>.</i></div>
+      <svg class="nadi" viewBox="0 0 200 60" aria-hidden="true"><path d="M0 32 H60 l10 -8 l10 8 H96 l8 -28 l12 52 l8 -24 H200"/></svg>
+    </div>
   </div>
 </section>
 
@@ -411,10 +422,7 @@ async function muatFoto(i, v, cubaan = 0) {
 }
 function pasangFoto(i) {
   const el = document.querySelector(`#gridF .kf[data-i="${i}"] .bingkai`);
-  if (el && foto[i]) {
-    el.classList.remove('sudut'); // bucu diganti bucu pengimbas yang berdenyut
-    el.innerHTML = `<img src="${foto[i].url}" alt="Kapsul ${i + 1}"><div class="imbasan"><span class="laser"></span><span class="bc a"></span><span class="bc b"></span><span class="bc c"></span><span class="bc d"></span><span class="cip"><i></i>MENGIMBAS</span></div>`;
-  }
+  if (el && foto[i]) el.innerHTML = `<img src="${foto[i].url}" alt="Kapsul ${i + 1}">`;
   if (S && S.fasa === 'dedah' && S.idx === i && foto[i]) $('dImg').src = foto[i].url;
 }
 
