@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#0b1a2b">
-<title>Wad Kecemasan — Telefon Guru</title>
+<title>Semak &amp; Suntik — Telefon Guru</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@700;800&display=swap">
 <style>
@@ -63,7 +63,7 @@
 <body>
 <header>
   <span class="siren">🚨</span>
-  <div><b>Wad Kecemasan</b><small><span class="dot wait" id="dot"></span><span id="statTx">Menyambung…</span></small></div>
+  <div><b>Semak &amp; Suntik</b><small><span class="dot wait" id="dot"></span><span id="statTx">Menyambung…</span></small></div>
   <a href="/wad-kecemasan.html" title="Urus soalan">⚙️</a>
 </header>
 <main id="utama"></main>
@@ -101,7 +101,7 @@ function papar(nama, html, kakiHtml) {
 
 function render() {
   if (!kod) return lukisKod();
-  if (!S) return papar('tunggu', '<div class="kad kadKod"><h2>Menyambung…</h2><p class="sub">Pastikan skrin TV Wad Kecemasan sudah dibuka.</p></div>');
+  if (!S) return papar('tunggu', '<div class="kad kadKod"><h2>Menyambung…</h2><p class="sub">Pastikan skrin TV Semak &amp; Suntik sudah dibuka.</p></div>');
   if (S.fasa === 'sedia') return lukisSedia();
   if (S.fasa === 'tamat') return lukisTamat();
   if (S.langkah === 'soalan') return lukisTanda();
@@ -184,7 +184,7 @@ function sambung() {
   ws.onclose = (ev) => {
     wsOk = false; clearInterval(pingT); kemasStatus();
     if (ev.code === 4003) return keLogMasuk();
-    if (ev.code === 4004) { bilPaparan = 0; statusUI(`Skrin ${kod} tiada. Buka skrin TV Wad Kecemasan di PC.`, 'bad'); tunda = 3000; }
+    if (ev.code === 4004) { bilPaparan = 0; statusUI(`Skrin ${kod} tiada. Buka skrin TV Semak & Suntik di PC.`, 'bad'); tunda = 3000; }
     if (ev.code === 4000) { kod = ''; S = null; render(); return toast('Kod bilik tidak sah'); }
     ulang();
   };

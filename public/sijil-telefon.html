@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#0b5d3b">
-<title>Sijil Kelahiran Kata Majmuk — Telefon Guru</title>
+<title>Semak &amp; Cop Sijil — Telefon Guru</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@700;800&display=swap">
 <style>
@@ -143,7 +143,7 @@
 <body>
 <header>
   <div class="lencana">JP<br>KM</div>
-  <div><b>Sijil Kelahiran Kata Majmuk</b><small><span class="dot wait" id="dot"></span><span id="statTx">Menyambung…</span></small></div>
+  <div><b>Semak &amp; Cop Sijil</b><small><span class="dot wait" id="dot"></span><span id="statTx">Menyambung…</span></small></div>
   <a class="ikonBtn" href="/sijil-kelahiran.html" title="Urus jawapan">⚙️</a>
 </header>
 <main id="utama"></main>
@@ -214,7 +214,7 @@ function papar(nama, html, kakiHtml) {
 }
 function render() {
   if (!kod) return lukisKod();
-  if (!S) return papar('tunggu', '<div class="borang kadKod"><h2>Menyambung…</h2><p class="sub">Pastikan skrin TV Sijil Kelahiran sudah dibuka.</p></div>');
+  if (!S) return papar('tunggu', '<div class="borang kadKod"><h2>Menyambung…</h2><p class="sub">Pastikan skrin TV Semak &amp; Cop Sijil sudah dibuka.</p></div>');
   if (S.kumpulan !== setKini) { setKini = S.kumpulan; buangGambar(); ubahTanda = false; namaDraf = S.murid || ''; }
   if (S.keputusan && tanda.every((x) => x === null)) tanda = S.keputusan.slice();
   if (S.fasa === 'pilih' || S.fasa === 'tamat') return lukisPilih();
