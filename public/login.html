@@ -107,7 +107,7 @@
 <div class="stars" id="stars" aria-hidden="true"></div>
 
 <main class="card" id="card">
-  <div class="avatar-wrap" id="avatarWrap" role="button" tabindex="0" aria-pressed="false" aria-label="Klinik Kata Majmuk" title="Klinik Kata Majmuk">
+  <div class="avatar-wrap" id="avatarWrap" role="button" tabindex="0" aria-label="Masuk Klinik Kata Majmuk" title="Klinik Kata Majmuk">
     <svg id="avatar" viewBox="0 0 200 175">
       <defs>
         <linearGradient id="fur" x1="0" y1="0" x2="0" y2="1">
@@ -316,30 +316,22 @@
     setTimeout(() => refreshFace(), 1600);
   });
 
-  // ===== Klinik Kata Majmuk: tekan avatar untuk terus ke hub kata majmuk selepas log masuk =====
-  const KM = '/kata-majmuk.html';
-  const nextAsal = new URLSearchParams(location.search).get('next');
-  function modKM() { return new URLSearchParams(location.search).get('next') === KM; }
-  function kemasKM() {
-    const on = modKM();
-    document.body.classList.toggle('km', on);
-    $('kmTag').hidden = !on;
-    $('sub').textContent = on ? 'Masukkan kata laluan untuk ke Klinik Kata Majmuk' : 'Masukkan kata laluan untuk masuk';
-    wrap.setAttribute('aria-pressed', on ? 'true' : 'false');
-  }
-  function togolKM() {
-    const q = new URLSearchParams(location.search);
-    if (modKM()) { if (nextAsal && nextAsal !== KM) q.set('next', nextAsal); else q.delete('next'); }
-    else q.set('next', KM);
-    const qs = q.toString();
-    history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
-    kemasKM();
+  // ===== Klinik Kata Majmuk: tekan avatar -> terus ke hub kata majmuk TANPA kata laluan =====
+  // (Server hanya buka halaman sistem kata majmuk melalui laluan ini - lihat /km-masuk di siteAuth.js.)
+  function masukKM() {
+    if (wrap.dataset.pergi) return;
+    wrap.dataset.pergi = '1';
+    document.body.classList.add('km');
+    $('kmTag').hidden = false;
+    $('sub').textContent = 'Membuka Klinik Kata Majmuk…';
+    setPaws('rest'); setMouth('happy'); lookIdle();
     wrap.classList.remove('happy'); void wrap.offsetWidth; wrap.classList.add('happy');
-    setMouth(modKM() ? 'happy' : 'smile'); pw.focus();
+    const next = new URLSearchParams(location.search).get('next');
+    setTimeout(() => { location.href = '/km-masuk' + (next ? '?next=' + encodeURIComponent(next) : ''); }, 450);
   }
-  wrap.addEventListener('click', togolKM);
-  wrap.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); togolKM(); } });
-  kemasKM();
+  wrap.addEventListener('click', masukKM);
+  wrap.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); masukKM(); } });
+  window.addEventListener('pageshow', () => { delete wrap.dataset.pergi; document.body.classList.remove('km'); $('kmTag').hidden = true; $('sub').textContent = 'Masukkan kata laluan untuk masuk'; });
 
   refreshFace();
   pw.focus();

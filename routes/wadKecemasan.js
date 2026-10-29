@@ -20,7 +20,7 @@
 const crypto = require('crypto');
 const express = require('express');
 const WebSocket = require('ws');
-const { isAuthed } = require('../middleware/siteAuth');
+const { isKMAuthed: isAuthed } = require('../middleware/siteAuth'); // kata laluan ATAU avatar Klinik Kata Majmuk
 const { urlGambar } = require('./kmGambar');
 const { WadSet } = require('../models/WadSet');
 

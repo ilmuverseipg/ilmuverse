@@ -47,6 +47,38 @@ function isAuthed(req) {
   return safeEqual(v.slice(i + 1), sign(t));
 }
 
+// ============================================================
+// LALUAN KLINIK KATA MAJMUK (tanpa kata laluan)
+// ------------------------------------------------------------
+// Tekan avatar di halaman log masuk -> GET /km-masuk -> kuki 'ilmuverse_km'
+// (kuki sesi, had 12 jam). Kuki ini HANYA membuka halaman & API sistem kata
+// majmuk di bawah. Halaman lain Ilmuverse tetap perlu kata laluan.
+// ============================================================
+const KM_COOKIE = 'ilmuverse_km';
+const KM_PAGES = new Set([
+  '/kata-majmuk.html',
+  '/kapsul-skrin.html', '/kapsul-telefon.html', '/kapsul-kata-majmuk.html',
+  '/sijil-skrin.html', '/sijil-telefon.html', '/sijil-kelahiran.html',
+  '/wad-skrin.html', '/wad-telefon.html', '/wad-kecemasan.html',
+  '/pemasa-jantung.html', '/sambung-tulang.html',
+]);
+function signKM(issued) { return crypto.createHmac('sha256', SECRET).update('km:' + issued).digest('hex'); }
+function makeKMToken() { const t = Date.now().toString(36); return t + '.' + signKM(t); }
+function isKMCookie(req) {
+  const v = readCookie(req, KM_COOKIE), i = v.indexOf('.');
+  if (i < 1) return false;
+  const t = v.slice(0, i), issued = parseInt(t, 36);
+  if (!Number.isFinite(issued) || Date.now() - issued > SESSION_MS || issued > Date.now() + 60000) return false;
+  return safeEqual(v.slice(i + 1), signKM(t));
+}
+// Untuk route sistem kata majmuk: log masuk penuh ATAU masuk melalui avatar.
+function isKMAuthed(req) { return isAuthed(req) || isKMCookie(req); }
+function kmNext(n) {
+  if (typeof n !== 'string' || !/^\/(?!\/)[^\s\\]*$/.test(n)) return '/kata-majmuk.html';
+  const p = n.split(/[?#]/)[0];
+  return KM_PAGES.has(p) ? n : '/kata-majmuk.html';
+}
+
 // Adakah permintaan ini "masuk dari luar" (bukan klik pautan dalam laman)?
 // Pelayar moden hantar Sec-Fetch-Site: 'same-origin' bila navigasi datang
 // dari halaman Ilmuverse sendiri; 'none' = taip alamat / bookmark / tab baharu;
@@ -94,8 +126,16 @@ function siteAuth(app) {
     res.json({ ok: true, next: safeNext(req.body && req.body.next) });
   });
 
+  app.get('/km-masuk', (req, res) => {
+    const secure = req.secure || req.headers['x-forwarded-proto'] === 'https';
+    res.cookie(KM_COOKIE, makeKMToken(), { httpOnly: true, sameSite: 'lax', secure, path: '/' }); // kuki sesi
+    res.set('Cache-Control', 'no-store');
+    res.redirect(kmNext(req.query.next));
+  });
+
   app.get('/logout', (req, res) => {
     res.clearCookie(COOKIE, { path: '/' });
+    res.clearCookie(KM_COOKIE, { path: '/' });
     res.redirect('/login.html');
   });
 
@@ -113,6 +153,7 @@ function siteAuth(app) {
     if (!isPage) return next();
     res.set('Cache-Control', 'no-store'); // jangan simpan halaman dalam cache pelayar
     if (isAuthed(req) && !isFreshEntry(req)) return next();
+    if (KM_PAGES.has(p) && isKMCookie(req)) return next();
     res.redirect('/login.html?next=' + encodeURIComponent(req.originalUrl));
   });
 }
@@ -120,3 +161,5 @@ function siteAuth(app) {
 module.exports = siteAuth;
 // Dieksport supaya route API yang perlu dikunci (cth. routes/kuizEsp32.js) boleh semak kuki log masuk.
 module.exports.isAuthed = isAuthed;
+// Route sistem kata majmuk (Kapsul, Sijil, Wad) guna ini: kata laluan ATAU avatar Klinik Kata Majmuk.
+module.exports.isKMAuthed = isKMAuthed;

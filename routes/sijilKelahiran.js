@@ -21,7 +21,7 @@ const express = require('express');
 const WebSocket = require('ws');
 const { urlGambar } = require('./kmGambar');
 const { ramPenuh } = require('./storan');
-const { isAuthed } = require('../middleware/siteAuth');
+const { isKMAuthed: isAuthed } = require('../middleware/siteAuth'); // kata laluan ATAU avatar Klinik Kata Majmuk
 const { SijilSet } = require('../models/SijilSet');
 
 const MAX_FOTO = 10 * 1024 * 1024;

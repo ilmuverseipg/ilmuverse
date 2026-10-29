@@ -14,7 +14,7 @@
 // menolak muat naik bila storan atau RAM pelayan penuh (HTTP 507).
 // ============================================================
 const mongoose = require('mongoose');
-const { isAuthed } = require('../middleware/siteAuth');
+const { isKMAuthed: isAuthed } = require('../middleware/siteAuth');
 
 const MB = 1024 * 1024;
 const KUOTA_MONGO = (parseFloat(process.env.MONGO_KUOTA_MB) || 512) * MB;

@@ -20,7 +20,7 @@ const express = require('express');
 const WebSocket = require('ws');
 const { urlGambar } = require('./kmGambar');
 const { ramPenuh, mongoPenuh } = require('./storan');
-const { isAuthed } = require('../middleware/siteAuth');
+const { isKMAuthed: isAuthed } = require('../middleware/siteAuth'); // kata laluan ATAU avatar Klinik Kata Majmuk
 const { isDemo } = require('./kapsulDemo'); // pautan demo peribadi (routes/kapsulDemo.js)
 const { KapsulSet, KapsulGambar } = require('../models/KapsulSet');
 
