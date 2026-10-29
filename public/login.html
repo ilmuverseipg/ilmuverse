@@ -46,6 +46,14 @@
   /* ===== AVATAR ===== */
   .avatar-wrap { width: 190px; height: 165px; margin: -78px auto 4px; }
   .avatar-wrap.happy { animation: hop .6s ease; }
+  .avatar-wrap { cursor: pointer; border-radius: 50%; -webkit-tap-highlight-color: transparent; }
+  .avatar-wrap:focus-visible { outline: 3px dashed #14a394; outline-offset: 4px; }
+  #kmSalib { display: none; }
+  body.km #kmSalib { display: inline; }
+  body.km #bintang { display: none; }
+  .km-tag { display: inline-flex; align-items: center; gap: 6px; margin: -8px 0 14px; padding: 5px 12px; border-radius: 999px;
+    background: #e6f7f3; color: #0f766e; font-weight: 600; font-size: 14px; border: 1px solid #b9e6db; }
+  .km-tag[hidden] { display: none; }
   @keyframes hop { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-18px); } }
   #avatar { width: 100%; height: 100%; overflow: visible; }
   #head { transition: transform .25s ease; transform-origin: 100px 110px; }
@@ -99,7 +107,7 @@
 <div class="stars" id="stars" aria-hidden="true"></div>
 
 <main class="card" id="card">
-  <div class="avatar-wrap" id="avatarWrap" aria-hidden="true">
+  <div class="avatar-wrap" id="avatarWrap" role="button" tabindex="0" aria-pressed="false" aria-label="Klinik Kata Majmuk" title="Klinik Kata Majmuk">
     <svg id="avatar" viewBox="0 0 200 175">
       <defs>
         <linearGradient id="fur" x1="0" y1="0" x2="0" y2="1">
@@ -117,7 +125,8 @@
           <circle cx="152" cy="48" r="22" fill="url(#fur)"/><circle cx="152" cy="48" r="11" fill="#FFD1E3"/>
           <!-- antena bintang -->
           <line x1="100" y1="34" x2="100" y2="14" stroke="#B48CF5" stroke-width="4" stroke-linecap="round"/>
-          <path d="M100 2 l3.5 7 7.5 1 -5.5 5 1.5 7.5 -7 -3.8 -7 3.8 1.5 -7.5 -5.5 -5 7.5 -1z" fill="#FFD75C"/>
+          <path id="bintang" d="M100 2 l3.5 7 7.5 1 -5.5 5 1.5 7.5 -7 -3.8 -7 3.8 1.5 -7.5 -5.5 -5 7.5 -1z" fill="#FFD75C"/>
+          <g id="kmSalib"><circle cx="100" cy="11" r="11" fill="#fff" stroke="#e8434f" stroke-width="2"/><rect x="97" y="3" width="6" height="16" rx="1.5" fill="#e8434f"/><rect x="92" y="8" width="16" height="6" rx="1.5" fill="#e8434f"/></g>
           <!-- kepala -->
           <ellipse cx="100" cy="102" rx="74" ry="68" fill="url(#fur)"/>
           <ellipse cx="100" cy="116" rx="52" ry="40" fill="#FFF1F7" opacity=".55"/>
@@ -149,7 +158,8 @@
   </div>
 
   <h1>ILMUVERSE</h1>
-  <p class="sub">Masukkan kata laluan untuk masuk</p>
+  <p class="sub" id="sub">Masukkan kata laluan untuk masuk</p>
+  <div class="km-tag" id="kmTag" hidden>💊 Klinik Kata Majmuk</div>
 
   <form id="form" autocomplete="on">
     <div class="field">
@@ -305,6 +315,31 @@
     pw.select();
     setTimeout(() => refreshFace(), 1600);
   });
+
+  // ===== Klinik Kata Majmuk: tekan avatar untuk terus ke hub kata majmuk selepas log masuk =====
+  const KM = '/kata-majmuk.html';
+  const nextAsal = new URLSearchParams(location.search).get('next');
+  function modKM() { return new URLSearchParams(location.search).get('next') === KM; }
+  function kemasKM() {
+    const on = modKM();
+    document.body.classList.toggle('km', on);
+    $('kmTag').hidden = !on;
+    $('sub').textContent = on ? 'Masukkan kata laluan untuk ke Klinik Kata Majmuk' : 'Masukkan kata laluan untuk masuk';
+    wrap.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+  function togolKM() {
+    const q = new URLSearchParams(location.search);
+    if (modKM()) { if (nextAsal && nextAsal !== KM) q.set('next', nextAsal); else q.delete('next'); }
+    else q.set('next', KM);
+    const qs = q.toString();
+    history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
+    kemasKM();
+    wrap.classList.remove('happy'); void wrap.offsetWidth; wrap.classList.add('happy');
+    setMouth(modKM() ? 'happy' : 'smile'); pw.focus();
+  }
+  wrap.addEventListener('click', togolKM);
+  wrap.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); togolKM(); } });
+  kemasKM();
 
   refreshFace();
   pw.focus();

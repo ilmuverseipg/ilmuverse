@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Klinik Kata Majmuk — Ilmuverse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Fredoka:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --latar: #eaf7f3; --latar2: #d7efe8; --kad: #ffffff; --dakwat: #13334c; --kelabu: #5b7285;
+    --teal: #0f766e; --teal2: #14a394; --merah: #e8434f; --garis: rgba(19,51,76,.10);
+    --bayang: 0 10px 26px rgba(19,51,76,.10), 0 2px 6px rgba(19,51,76,.06);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; color: var(--dakwat); font-family: 'Fredoka', system-ui, sans-serif;
+    background:
+      radial-gradient(circle at 12% 0%, #ffffff 0, transparent 42%),
+      radial-gradient(circle at 100% 100%, var(--latar2) 0, transparent 45%),
+      var(--latar);
+  }
+  .bekas { max-width: 1080px; margin: 0 auto; padding: 22px 16px 40px; }
+
+  /* ===== Kepala klinik ===== */
+  header { display: flex; align-items: center; gap: 16px; padding: 18px 22px; border-radius: 22px;
+    background: linear-gradient(120deg, var(--teal) 0%, #0b5f58 100%); color: #fff; box-shadow: var(--bayang); position: relative; overflow: hidden; }
+  header::after { content: ''; position: absolute; right: -40px; top: -40px; width: 200px; height: 200px; border-radius: 50%;
+    background: rgba(255,255,255,.07); }
+  .salib { width: 58px; height: 58px; flex: none; border-radius: 16px; background: #fff; display: grid; place-items: center; }
+  .salib i { position: relative; width: 34px; height: 34px; }
+  .salib i::before, .salib i::after { content: ''; position: absolute; background: var(--merah); border-radius: 4px; }
+  .salib i::before { left: 12px; top: 0; width: 10px; height: 34px; }
+  .salib i::after { top: 12px; left: 0; width: 34px; height: 10px; }
+  .jdl small { display: block; font-size: 13px; letter-spacing: 2.5px; opacity: .85; font-weight: 500; }
+  .jdl h1 { margin: 2px 0 0; font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: clamp(26px, 4vw, 38px); line-height: 1.05; }
+  .jdl p { margin: 4px 0 0; font-size: 15px; opacity: .92; }
+  .ekg { margin-left: auto; width: 170px; height: 46px; flex: none; position: relative; z-index: 1; }
+  .ekg path { fill: none; stroke: #9ff3e4; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 340; stroke-dashoffset: 340; animation: ekg 2.4s linear infinite; }
+  @keyframes ekg { to { stroke-dashoffset: -340; } }
+
+  /* ===== Bahagian langkah ===== */
+  .langkah { margin-top: 26px; }
+  .langkah h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; font-size: 17px; font-weight: 600; color: var(--kelabu); }
+  .langkah h2 b { font-family: 'Baloo 2', sans-serif; font-weight: 800; color: #fff; background: var(--dakwat); border-radius: 999px;
+    padding: 2px 12px 0; font-size: 15px; letter-spacing: .5px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+
+  .kad { --w: var(--teal2); background: var(--kad); border-radius: 20px; padding: 18px 18px 16px; box-shadow: var(--bayang);
+    border: 1px solid var(--garis); display: flex; flex-direction: column; gap: 12px; position: relative; overflow: hidden;
+    transition: transform .18s ease, box-shadow .18s ease; }
+  .kad::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--w); }
+  .kad:hover { transform: translateY(-3px); box-shadow: 0 16px 34px rgba(19,51,76,.14), 0 3px 8px rgba(19,51,76,.08); }
+  .atas { display: flex; gap: 14px; align-items: flex-start; }
+  .ikon { width: 54px; height: 54px; flex: none; border-radius: 15px; display: grid; place-items: center; font-size: 28px;
+    background: color-mix(in srgb, var(--w) 16%, #fff); }
+  .kad h3 { margin: 2px 0 3px; font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 22px; line-height: 1.1; }
+  .kad p { margin: 0; font-size: 14.5px; line-height: 1.45; color: var(--kelabu); }
+  .butang { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; }
+  .btn { display: inline-flex; align-items: center; gap: 7px; text-decoration: none; font-weight: 600; font-size: 15px;
+    padding: 10px 15px; border-radius: 12px; color: #fff; background: var(--w); transition: filter .15s ease, transform .15s ease; }
+  .btn:hover { filter: brightness(1.07); }
+  .btn:active { transform: scale(.97); }
+  .btn.kedua { background: color-mix(in srgb, var(--w) 12%, #fff); color: var(--dakwat); border: 1px solid color-mix(in srgb, var(--w) 35%, #fff); }
+  .btn:focus-visible { outline: 3px solid var(--dakwat); outline-offset: 2px; }
+
+  .w-kapsul { --w: #e8434f; } .w-tulang { --w: #14a394; } .w-suntik { --w: #2f80ed; }
+  .w-sijil { --w: #16a34a; } .w-jantung { --w: #ff4d6d; }
+
+  footer { margin-top: 30px; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; justify-content: space-between;
+    font-size: 14px; color: var(--kelabu); }
+  footer .tip { background: #fff; border: 1px dashed rgba(19,51,76,.22); border-radius: 12px; padding: 9px 13px; }
+  footer a { color: var(--kelabu); }
+
+  @media (max-width: 640px) {
+    header { flex-wrap: wrap; padding: 16px; }
+    .ekg { display: none; }
+    .grid { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) { .ekg path { animation: none; stroke-dashoffset: 0; } .kad { transition: none; } }
+</style>
+</head>
+<body>
+<div class="bekas">
+  <header>
+    <div class="salib" aria-hidden="true"><i></i></div>
+    <div class="jdl">
+      <small>KLINIK DR. IZUDDIN</small>
+      <h1>Kata Majmuk</h1>
+      <p>Jujur Itu Ubat Terbaik · semua sistem dalam satu tempat</p>
+    </div>
+    <svg class="ekg" viewBox="0 0 170 46" aria-hidden="true">
+      <path d="M2 26 H46 L54 26 L60 8 L68 42 L76 18 L82 26 H112 L118 22 L124 26 H168"/>
+    </svg>
+  </header>
+
+  <section class="langkah">
+    <h2><b>LANGKAH 1</b> Mengenal pasti kata majmuk</h2>
+    <div class="grid">
+      <article class="kad w-kapsul">
+        <div class="atas">
+          <div class="ikon" aria-hidden="true">💊</div>
+          <div>
+            <h3>Semak Pantas Kapsul</h3>
+            <p>Misi Farmasi Jujur. Telefon guru ambil gambar kapsul, skrin TV dedah BETUL / TIDAK TEPAT berserta gambar kata majmuk.</p>
+          </div>
+        </div>
+        <div class="butang">
+          <a class="btn" href="/kapsul-skrin.html">📺 Buka skrin TV</a>
+          <a class="btn kedua" href="/kapsul-kata-majmuk.html">⚙️ Urus jawapan</a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="langkah">
+    <h2><b>LANGKAH 2</b> Menjelaskan maksud kata majmuk</h2>
+    <div class="grid">
+      <article class="kad w-tulang">
+        <div class="atas">
+          <div class="ikon" aria-hidden="true">🦴</div>
+          <div>
+            <h3>Sambung Tulang</h3>
+            <p>Kuiz AR kawalan tangan. Murid sambung tulang perkataan pertama dengan perkataan kedua menjadi kata majmuk bergambar.</p>
+          </div>
+        </div>
+        <div class="butang">
+          <a class="btn" href="/sambung-tulang.html">▶ Main</a>
+        </div>
+      </article>
+      <article class="kad w-suntik">
+        <div class="atas">
+          <div class="ikon" aria-hidden="true">💉</div>
+          <div>
+            <h3>Semak &amp; Suntik</h3>
+            <p>Suntikan Kata Majmuk bertema integriti. Kunci jawapan, dedah, angkat Kad Jujur, rawat pesakit dan Audit Doktor Besar.</p>
+          </div>
+        </div>
+        <div class="butang">
+          <a class="btn" href="/wad-skrin.html">📺 Buka skrin TV</a>
+          <a class="btn kedua" href="/wad-kecemasan.html">⚙️ Urus soalan</a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="langkah">
+    <h2><b>LANGKAH 3</b> Menggunakan kata majmuk dalam ayat</h2>
+    <div class="grid">
+      <article class="kad w-sijil">
+        <div class="atas">
+          <div class="ikon" aria-hidden="true">📜</div>
+          <div>
+            <h3>Semak &amp; Cop Sijil</h3>
+            <p>Sijil Kelahiran Kata Majmuk. Skrin TV susun kad perkataan menjadi ayat yang betul dan cop DIDAFTARKAN.</p>
+          </div>
+        </div>
+        <div class="butang">
+          <a class="btn" href="/sijil-skrin.html">📺 Buka skrin TV</a>
+          <a class="btn kedua" href="/sijil-kelahiran.html">⚙️ Urus jawapan</a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="langkah">
+    <h2><b>ALAT KELAS</b> Sepanjang pengajaran</h2>
+    <div class="grid">
+      <article class="kad w-jantung">
+        <div class="atas">
+          <div class="ikon" aria-hidden="true">💓</div>
+          <div>
+            <h3>Pemasa Jantung</h3>
+            <p>Pemasa tugasan kumpulan gaya monitor ECG. Guru mulakan setiap kali kumpulan mula menjawab.</p>
+          </div>
+        </div>
+        <div class="butang">
+          <a class="btn" href="/pemasa-jantung.html">▶ Buka pemasa</a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <footer>
+    <span class="tip">📱 Telefon guru: imbas kod QR pada skrin TV untuk menyambung.</span>
+    <a href="/logout">Log keluar</a>
+  </footer>
+</div>
+<script src="/km-hub.js"></script>
+<script src="/km-amaran.js"></script>
+</body>
+</html>

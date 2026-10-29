@@ -201,7 +201,7 @@
   <button id="handBtn" title="Kawalan tangan (H)">✋ Tangan: ON</button>
   <button id="muteBtn" title="Bunyi (M)">🔊</button>
   <button id="fsBtn" title="Skrin penuh (F)">⛶</button>
-  <a href="/game-arab.html" title="Kembali ke GameBox">✕</a>
+  <a href="/game-arab.html" title="Kembali ke GameBox" data-km-balik="">✕</a>
 </div>
 
 <script src="/bobo-kit.js"></script>
@@ -1040,5 +1040,6 @@ if (!K) { handMode = false; $('handBtn').hidden = true; } else startHand();
 window.__game = { get state() { return state; }, get rows() { return rows; }, get pieces() { return pieces; }, get PIECE_LEN() { return PIECE_LEN; }, get TH() { return TH; }, get mistakes() { return mistakes; }, get solved() { return solved; } };
 })();
 </script>
+<script src="/km-hub.js"></script>
 </body>
 </html>
