@@ -29,6 +29,10 @@ const kapsulKM = require('../routes/kapsulKataMajmuk');
 const sijilKM = require('../routes/sijilKelahiran');
 // [WAD KECEMASAN - MOD 10] Suntikan Kata Majmuk bertema integriti (telefon -> TV)
 const wadKM = require('../routes/wadKecemasan');
+// [PEMASA JANTUNG] 6 pesakit = 6 kumpulan, dikawal dari telefon
+const jantungKM = require('../routes/pemasaJantung');
+// [KLINIK KATA MAJMUK] satu QR: TV memuatkan semua langkah, telefon tukar langkah
+const klinikKM = require('../routes/klinikKM');
 
 const app = express();
 const server = http.createServer(app);
@@ -305,6 +309,10 @@ wss.on('connection', (ws, req) => {
     sijilKM.sambung(ws, req);
   } else if (url.startsWith('/wad-km')) {
     wadKM.sambung(ws, req);
+  } else if (url.startsWith('/jantung-km')) {
+    jantungKM.sambung(ws, req);
+  } else if (url.startsWith('/klinik-km')) {
+    klinikKM.sambung(ws, req);
   } else if (url === '/murid') {
     clients.murid.push(ws);
     console.log('[WS] Aplikasi Murid disambung');
@@ -321,6 +329,8 @@ wss.on('connection', (ws, req) => {
     if (url.startsWith('/kapsul-km')) { kapsulKM.mesej(ws, data); return; }
     if (url.startsWith('/sijil-km')) { sijilKM.mesej(ws, data); return; }
     if (url.startsWith('/wad-km')) { wadKM.mesej(ws, data); return; }
+    if (url.startsWith('/jantung-km')) { jantungKM.mesej(ws, data); return; }
+    if (url.startsWith('/klinik-km')) { klinikKM.mesej(ws, data); return; }
 
     if (url === '/esp32') {
       if (data.jenis === 'nfc_scan') await prosesNFC(data.uid);
@@ -363,6 +373,8 @@ wss.on('connection', (ws, req) => {
     else if (url.startsWith('/kapsul-km')) kapsulKM.putus(ws);
     else if (url.startsWith('/sijil-km')) sijilKM.putus(ws);
     else if (url.startsWith('/wad-km')) wadKM.putus(ws);
+    else if (url.startsWith('/jantung-km')) jantungKM.putus(ws);
+    else if (url.startsWith('/klinik-km')) klinikKM.putus(ws);
     console.log(`[WS] Putus: ${url}`);
   });
 });

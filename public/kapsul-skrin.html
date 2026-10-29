@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@600;700;800&display=swap">
 <style>
+  /* mod embed (Klinik satu QR): tiada QR / kod baru / nota bunyi - telefon sudah bersambung melalui klinik */
+  html.embed #qr, html.embed #url, html.embed #btnQr, html.embed #btnBaru, html.embed #bunyiNota, html.embed .kodBaris { display: none !important; }
   :root {
     --mint: #dff5ef; --mint2: #c6ece2; --kertas: #ffffff; --teal: #0f766e; --teal2: #14a394;
     --dakwat: #13334c; --kelabu: #5b7285; --merah: #e8434f; --hijau: #16a34a; --amber: #f6b81a;
@@ -345,7 +347,12 @@ const tunggu = (ms) => new Promise((r) => setTimeout(r, ms));
 let sesi = null, pilihan = { bunyi: true, suara: true, muzik: true };
 try { const j = JSON.parse(localStorage.getItem(LS) || 'null'); if (j) { sesi = j.sesi; pilihan = Object.assign(pilihan, j.pilihan || {}); } } catch (e) {}
 if (!sesi || !/^\d{4}$/.test(sesi.kod) || !sesi.kunci) sesi = { kod: kodBaru(), kunci: rnd(16) };
-const simpan = () => { try { localStorage.setItem(LS, JSON.stringify({ sesi, pilihan })); } catch (e) {} };
+// Mod embed (Klinik satu QR): kod & kunci bilik datang dari skrin Klinik.
+const EMBED = new URLSearchParams(location.search).get('embed') === '1';
+const sesiAsal = sesi;
+{ const q = new URLSearchParams(location.search), k = (q.get('bilik') || '').replace(/\D/g, ''), c = q.get('kunci') || ''; if (/^\d{4,6}$/.test(k) && c.length >= 16) sesi = { kod: k, kunci: c, luar: true }; }
+if (EMBED) document.documentElement.classList.add('embed');
+const simpan = () => { try { localStorage.setItem(LS, JSON.stringify({ sesi: sesi.luar ? sesiAsal : sesi, pilihan })); } catch (e) {} };
 simpan();
 
 // =============================================================
@@ -375,6 +382,7 @@ const SFX = {
 KS.amaran = (m) => toast('⚠️ ' + m, 8000);
 function cakap(t, baru = true) { if (!pilihan.suara) return Promise.resolve(); if (baru) KS.diam(); return KS.cakap(t); }
 function bukaBunyi() { audio(); KS.muzik(pilihan.muzik); $('bunyiNota').hidden = true; removeEventListener('pointerdown', bukaBunyi); removeEventListener('keydown', bukaBunyi); }
+window.__embed = { tunjuk(on) { try { if (on) { bukaBunyi(); KS.muzik(pilihan.muzik); } else { KS.muzik(false); KS.diam(); } } catch (e) {} } };
 addEventListener('pointerdown', bukaBunyi); addEventListener('keydown', bukaBunyi);
 function kemasButang() { $('btnBunyi').classList.toggle('off', !pilihan.bunyi); $('btnSuara').classList.toggle('off', !pilihan.suara); $('btnMuzik').classList.toggle('off', !pilihan.muzik); }
 $('btnMuzik').onclick = () => { pilihan.muzik = !pilihan.muzik; simpan(); kemasButang(); KS.muzik(pilihan.muzik); toast(pilihan.muzik ? '🎵 Muzik latar hidup' : 'Muzik latar dimatikan'); };
@@ -468,7 +476,7 @@ function render() {
   });
   if (d.kumpulan !== kumpulanKini) { kumpulanKini = d.kumpulan; buangFoto(); kunciDedah = ''; if (d.kumpulan) { muatSet().then(() => { pramuatGambar(d.kumpulan); render(); }); } }
 
-  if (paksaQR || (d.fasa === 'pilih' && !bilTel)) { tunjuk('vSambung'); hentiImbas(); return; }
+  if (paksaQR || (!EMBED && d.fasa === 'pilih' && !bilTel)) { tunjuk('vSambung'); hentiImbas(); return; }
   if (d.fasa === 'pilih') { hentiImbas(); lukisPilih(); tunjuk('vPilih'); return; }
   if (d.fasa === 'ambil') { hentiImbas(); lukisAmbil(); if (tunjuk('vAmbil')) { SFX.kumpulan(); cakap(namaKump(d.kumpulan) + '. Sila angkat kapsul anda.'); } return; }
   if (d.fasa === 'imbas') { lukisImbas(); d.foto.forEach((v, i) => muatFoto(i, v)); if (tunjuk('vImbas')) { SFX.masuk(); mulaImbas(); cakap('Mengimbas jawapan.'); } return; }
@@ -585,7 +593,7 @@ function sambung() {
   };
   ws.onclose = (ev) => {
     wsOk = false; status(); clearInterval(pingT);
-    if (ev.code === 4001) { sesi = { kod: kodBaru(), kunci: rnd(16) }; simpan(); lukisKod(); tunda = 200; }
+    if (ev.code === 4001 && !sesi.luar) { sesi = { kod: kodBaru(), kunci: rnd(16) }; simpan(); lukisKod(); tunda = 200; }
     ulang();
   };
   ws.onerror = () => {};

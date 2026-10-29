@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@700;800&display=swap">
 <style>
+  html.embed header { display: none !important; }
   :root { --kertas: #eef6ea; --kertas2: #dcebd5; --hijau: #0b5d3b; --hijau2: #158a57; --emas: #e0a526; --dakwat: #16324a; --kelabu: #5d7366; --merah: #c8283a;
     --bayang: 0 10px 26px rgba(11,93,59,.13), 0 2px 6px rgba(11,93,59,.07); --atas: env(safe-area-inset-top, 0px); --bawah: env(safe-area-inset-bottom, 0px); }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -172,6 +173,7 @@
 <div id="toast"></div>
 
 <script>
+if (new URLSearchParams(location.search).get('embed') === '1') document.documentElement.classList.add('embed');
 (() => {
 'use strict';
 const $ = (id) => document.getElementById(id);
@@ -192,7 +194,7 @@ async function muatSet() {
 }
 const namaSet = (n) => (setSemua && setSemua[n - 1] && setSemua[n - 1].nama) || 'Set ' + n;
 const bah = (n, i) => (setSemua && setSemua[n - 1] && setSemua[n - 1].bahagian[i]) || { km: '—', ayat: '' };
-function keLogMasuk() { toast('Sesi tamat. Sila log masuk semula.', 4000); setTimeout(() => location.href = '/login.html?next=' + encodeURIComponent(location.pathname + location.search), 1400); }
+function keLogMasuk() { toast('Sesi tamat. Membuka semula…', 3000); setTimeout(() => location.href = '/km-masuk?next=' + encodeURIComponent(location.pathname + location.search), 1400); }
 
 function statusUI(tx, cls) { $('statTx').textContent = tx; $('dot').className = 'dot ' + cls; }
 function kemasStatus() {

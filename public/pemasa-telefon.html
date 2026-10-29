@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0b1a2b">
+<title>Pemasa Jantung — Telefon Guru</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@800;900&family=Fredoka:wght@500;600;700&family=Baloo+2:wght@700;800&display=swap">
+<style>
+  :root { --malam: #0b1a2b; --panel: #142c46; --garis: rgba(140,200,255,.18); --putih: #f4f8ff; --kabur: #9fb4cc; --ecg: #39ff88; --merah: #ff4d5e; --emas: #ffd23f; --hijau: #22c55e;
+    --atas: env(safe-area-inset-top, 0px); --bawah: env(safe-area-inset-bottom, 0px); }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; min-height: 100%; background: var(--malam); color: var(--putih); font-family: 'Fredoka', system-ui, sans-serif; }
+  body { padding-bottom: calc(150px + var(--bawah)); }
+  body.embed { padding-bottom: calc(150px + var(--bawah)); }
+  button, input { font: inherit; }
+  button { cursor: pointer; }
+  header { position: sticky; top: 0; z-index: 5; background: rgba(8,20,34,.96); padding: calc(10px + var(--atas)) 14px 10px; display: flex; align-items: center; gap: 10px; border-bottom: 2px solid var(--garis); }
+  body.embed header { display: none; }
+  .ikon { background: var(--merah); border-radius: 10px; padding: 4px 10px; font-size: 16px; }
+  header b { font-family: 'Baloo 2'; font-weight: 800; font-size: 18px; display: block; line-height: 1; }
+  header small { font-size: 12px; color: var(--kabur); display: flex; gap: 6px; align-items: center; margin-top: 2px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: #9ca3af; display: inline-block; }
+  .dot.ok { background: #4ade80; } .dot.wait { background: #ffb020; } .dot.bad { background: var(--merah); }
+  main { padding: 14px 16px; max-width: 560px; margin: 0 auto; }
+  .kad { background: var(--panel); border: 2px solid var(--garis); border-radius: 18px; padding: 14px; margin-bottom: 12px; }
+  .lbl { font-weight: 700; color: var(--kabur); font-size: 14px; margin-bottom: 6px; display: block; }
+  input[type=text] { width: 100%; font-weight: 600; font-size: 18px; color: #fff; background: var(--malam); border: 2px solid var(--garis); border-radius: 12px; padding: 10px 12px; outline: none; }
+  input[type=text]:focus { border-color: var(--ecg); }
+  .stepper { display: grid; grid-template-columns: 64px 1fr 64px; align-items: center; gap: 10px; }
+  .stepper button { height: 64px; border-radius: 16px; border: 2px solid var(--garis); background: var(--malam); color: #fff; font-size: 26px; font-weight: 700; }
+  .stepper button:active { transform: scale(.95); }
+  .masaBesar { text-align: center; font-family: 'Orbitron'; font-weight: 900; font-size: 52px; letter-spacing: 2px; line-height: 1; }
+  .chips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+  .chips button { border: 2px solid var(--garis); background: var(--malam); color: var(--putih); border-radius: 999px; padding: 9px 4px; font-weight: 700; font-size: 15px; }
+  .chips button.on { background: var(--ecg); color: var(--malam); border-color: var(--ecg); }
+  .papan { text-align: center; padding: 14px 10px 12px; border-radius: 20px; border: 3px solid var(--w, var(--ecg)); background: #0e2236; margin-bottom: 12px; transition: border-color .3s; }
+  .papan .st { font-family: 'Orbitron'; font-weight: 900; font-size: 13px; letter-spacing: 2px; color: var(--w, var(--ecg)); }
+  .papan .mb { font-family: 'Orbitron'; font-weight: 900; font-size: 64px; line-height: 1.05; font-variant-numeric: tabular-nums; }
+  .papan .tg { color: var(--emas); font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .papan .bar { height: 8px; border-radius: 99px; background: rgba(255,255,255,.08); margin-top: 10px; overflow: hidden; }
+  .papan .bar i { display: block; height: 100%; background: var(--w, var(--ecg)); }
+  h3 { font-family: 'Baloo 2'; font-weight: 800; font-size: 19px; margin: 4px 0 8px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .gk { border: 3px solid var(--garis); background: var(--panel); color: var(--putih); border-radius: 18px; padding: 14px 12px; text-align: left; display: flex; flex-direction: column; gap: 4px; min-height: 84px; transition: transform .1s, background .2s, border-color .2s; }
+  .gk:active { transform: scale(.96); }
+  .gk:disabled { opacity: .5; }
+  .gk .n { font-family: 'Baloo 2'; font-weight: 800; font-size: 19px; line-height: 1.05; display: flex; align-items: center; gap: 8px; }
+  .gk .n i { width: 13px; height: 13px; border-radius: 50%; flex: none; }
+  .gk .s { font-size: 13.5px; color: var(--kabur); font-weight: 600; }
+  .gk.on { background: #12452f; border-color: var(--hijau); }
+  .gk.on .s { color: #b8f5cf; font-weight: 700; }
+  .gk.mati { background: #3a1520; border-color: #7a2335; }
+  .kaki { position: fixed; left: 0; right: 0; bottom: 0; z-index: 4; padding: 12px 16px calc(14px + var(--bawah)); background: linear-gradient(180deg, rgba(11,26,43,0), var(--malam) 26%); }
+  .kaki .dalam { max-width: 560px; margin: 0 auto; display: grid; gap: 10px; }
+  .dua { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .btnUtama { width: 100%; border: 0; border-radius: 999px; padding: 18px; font-family: 'Baloo 2'; font-weight: 800; font-size: 24px; color: #fff; background: var(--hijau); box-shadow: 0 6px 0 #15803d; }
+  .btnUtama:active { transform: translateY(4px); box-shadow: 0 2px 0 #15803d; }
+  .btnUtama.stop { background: var(--merah); box-shadow: 0 6px 0 #a82534; }
+  .btnUtama:disabled { opacity: .45; }
+  .btnKedua { width: 100%; border: 2px solid var(--garis); background: var(--panel); color: var(--putih); border-radius: 14px; padding: 13px; font-weight: 700; font-size: 16px; }
+  .sub { color: var(--kabur); font-size: 14.5px; line-height: 1.4; margin: 0 0 12px; }
+  .kadKod { padding: 24px; text-align: center; margin-top: 10vh; }
+  .kadKod input { width: 100%; font-family: 'Baloo 2'; font-weight: 800; font-size: 44px; letter-spacing: .3em; text-align: center; border: 3px solid var(--garis); background: var(--malam); color: #fff; border-radius: 16px; padding: 8px; margin: 12px 0; }
+  .hasilB { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--garis); font-weight: 700; }
+  .hasilB i { width: 12px; height: 12px; border-radius: 50%; } .hasilB span { flex: 1; } .hasilB em { font-style: normal; color: var(--kabur); font-family: 'Orbitron'; font-size: 13px; }
+  #toast { position: fixed; left: 50%; bottom: calc(160px + var(--bawah)); transform: translate(-50%, 20px); z-index: 40; background: #fff; color: var(--malam); padding: 10px 18px; border-radius: 14px; font-weight: 700; font-size: 14.5px; opacity: 0; transition: all .3s; pointer-events: none; max-width: 90vw; text-align: center; }
+  #toast.on { opacity: 1; transform: translate(-50%, 0); }
+</style>
+</head>
+<body>
+<header>
+  <span class="ikon">💓</span>
+  <div><b>Pemasa Jantung</b><small><span class="dot wait" id="dot"></span><span id="statTx">Menyambung…</span></small></div>
+</header>
+<main id="utama"></main>
+<div class="kaki" id="kaki" hidden><div class="dalam" id="kakiDalam"></div></div>
+<div id="toast"></div>
+<script>
+(() => {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const Q = new URLSearchParams(location.search);
+if (Q.get('embed') === '1') document.body.classList.add('embed');
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const getar = (ms) => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
+function toast(t, ms = 2400) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), ms); }
+const fmt = (ms) => { const s = Math.max(0, Math.ceil(ms / 1000)); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
+const WARNA = ['#ff5a6a', '#48a8ff', '#3ddc84', '#ffd23f', '#b38cff', '#ff9a3d'];
+const PRESET = [30, 60, 120, 180, 300, 600];
+let NAMA = ['Kumpulan 1', 'Kumpulan 2', 'Kumpulan 3', 'Kumpulan 4', 'Kumpulan 5', 'Kumpulan 6'];
+fetch('/api/wad/set', { cache: 'no-store' }).then((r) => r.ok ? r.json() : null).then((j) => { if (j && j.ok && j.set && j.set.kumpulan) { NAMA = j.set.kumpulan.slice(0, 6); paparLama = ''; render(); } }).catch(() => {});
+
+let kod = (Q.get('bilik') || '').replace(/\D/g, '').slice(0, 6);
+let S = null, beza = 0, wsOk = false, bilPaparan = 0, paparLama = '', tempohDraf = null, tugasDraf = null;
+const kini = () => Date.now() + beza;
+function baki() {
+  if (!S) return 0;
+  if (S.fasa === 'jalan') return Math.max(0, S.tamatPada - Math.max(kini(), S.mulaPada));
+  if (S.fasa === 'tamat') return 0;
+  if (S.fasa === 'jeda') return S.baki;
+  return S.tempoh * 1000;
+}
+function statusUI(tx, c) { $('statTx').textContent = tx; $('dot').className = 'dot ' + c; }
+function kemasStatus() {
+  if (!kod) return statusUI('Belum disambung', 'wait');
+  if (!wsOk) return statusUI(`Kod ${kod} · menyambung…`, 'wait');
+  if (!bilPaparan) return statusUI(`Kod ${kod} · skrin TV tiada`, 'bad');
+  statusUI(`Bersambung ke skrin TV ${kod}`, 'ok');
+}
+function hantar(o) { if (ws && ws.readyState === 1) { ws.send(JSON.stringify(o)); return true; } toast('Belum bersambung. Tunggu sebentar…'); return false; }
+function papar(nama, html, kakiHtml) {
+  const baru = nama !== paparLama; paparLama = nama;
+  $('utama').innerHTML = html;
+  $('kaki').hidden = !kakiHtml; $('kakiDalam').innerHTML = kakiHtml || '';
+  if (baru) scrollTo(0, 0);
+}
+
+// ---------- paparan ----------
+function render() {
+  if (!kod) return lukisKod();
+  if (!S) return papar('tunggu', '<div class="kad kadKod"><h3>Menyambung…</h3><p class="sub">Pastikan skrin TV Pemasa Jantung sudah dibuka.</p></div>');
+  if (S.fasa === 'sedia') return lukisSedia();
+  if (S.fasa === 'tamat') return lukisTamat();
+  return lukisJalan();
+}
+function lukisKod() {
+  papar('kod', `<div class="kad kadKod"><h3>Masukkan kod bilik</h3><p class="sub">Kod 4 digit tertera pada skrin TV.</p><input id="inKod" inputmode="numeric" maxlength="6" placeholder="0000"><button class="btnUtama" id="btnKod">Sambung</button></div>`);
+  $('btnKod').onclick = () => { const v = $('inKod').value.replace(/\D/g, ''); if (v.length < 4) return toast('Kod 4 digit'); kod = v; history.replaceState(null, '', '?bilik=' + kod + (Q.get('embed') ? '&embed=1' : '')); sambung(); render(); };
+}
+let tetapT = null;
+function hantarTetap() { clearTimeout(tetapT); tetapT = setTimeout(() => { hantar({ jenis: 'tetap', tugasan: tugasDraf != null ? tugasDraf : S.tugasan, tempoh: tempohDraf != null ? tempohDraf : S.tempoh }); }, 300); }
+function lukisSedia() {
+  const t = tempohDraf != null ? tempohDraf : S.tempoh;
+  const fokus = document.activeElement && document.activeElement.id === 'inTugas';
+  if (paparLama === 'sedia' && fokus) { kemasMasaSedia(t); return; }
+  papar('sedia', `
+    <div class="kad"><span class="lbl">📝 Tugasan</span><input type="text" id="inTugas" maxlength="60" value="${esc(tugasDraf != null ? tugasDraf : S.tugasan)}"></div>
+    <div class="kad"><span class="lbl">⏱ Masa</span>
+      <div class="stepper"><button id="kurang" aria-label="Kurang 30 saat">−</button><div class="masaBesar" id="masaSedia">${fmt(t * 1000)}</div><button id="tambah" aria-label="Tambah 30 saat">+</button></div>
+      <div class="chips" id="chips">${PRESET.map((p) => `<button data-t="${p}" class="${p === t ? 'on' : ''}">${p < 60 ? p + ' saat' : p / 60 + ' minit'}</button>`).join('')}</div>
+    </div>
+    <p class="sub">Selepas GO, tekan nama kumpulan bila kumpulan itu siap. Pesakit kumpulan yang tidak siap bila masa tamat akan meninggal.</p>`,
+    `<button class="btnUtama" id="btnGo">▶ GO</button>`);
+  $('inTugas').oninput = (e) => { tugasDraf = e.target.value; hantarTetap(); };
+  const ubah = (nilai) => { tempohDraf = Math.max(10, Math.min(5999, nilai)); kemasMasaSedia(tempohDraf); hantarTetap(); getar(8); };
+  $('kurang').onclick = () => ubah((tempohDraf != null ? tempohDraf : S.tempoh) - 30);
+  $('tambah').onclick = () => ubah((tempohDraf != null ? tempohDraf : S.tempoh) + 30);
+  $('chips').onclick = (e) => { const b = e.target.closest('button'); if (b) ubah(+b.dataset.t); };
+  $('btnGo').onclick = () => { clearTimeout(tetapT); getar([20, 30, 20]); hantar({ jenis: 'tetap', tugasan: tugasDraf != null ? tugasDraf : S.tugasan, tempoh: tempohDraf != null ? tempohDraf : S.tempoh }); hantar({ jenis: 'mula' }); tempohDraf = null; tugasDraf = null; };
+}
+function kemasMasaSedia(t) {
+  const el = $('masaSedia'); if (el) el.textContent = fmt(t * 1000);
+  document.querySelectorAll('#chips button').forEach((b) => b.classList.toggle('on', +b.dataset.t === t));
+}
+function lukisJalan() {
+  const intro = S.fasa === 'jalan' && kini() < S.mulaPada;
+  const kunci = `jalan|${S.fasa}|${intro}|${S.selamat.join(',')}|${S.pusingan}`;
+  if (kunci === paparLama) return;
+  const n = S.selamat.filter((x) => x != null).length;
+  papar(kunci, `
+    <div class="papan" id="papan"><div class="st" id="stTx">${intro ? 'BERMULA…' : S.fasa === 'jeda' ? '⏸ JEDA' : 'MASA TINGGAL'}</div><div class="mb" id="mb">${fmt(baki())}</div>
+      <div class="tg">${S.tugasan ? '📝 ' + esc(S.tugasan) : ''}</div><div class="bar"><i id="barI"></i></div></div>
+    <h3>Tekan kumpulan yang sudah siap (${n}/6 selamat)</h3>
+    <div class="grid">${NAMA.map((nm, g) => { const v = S.selamat[g]; return `<button class="gk ${v != null ? 'on' : ''}" data-g="${g}" ${intro ? 'disabled' : ''}><span class="n"><i style="background:${WARNA[g]}"></i>${esc(nm)}</span><span class="s">${v != null ? `✅ Selamat · ${fmt(v)}` : 'Tekan bila siap'}</span></button>`; }).join('')}</div>
+    <p class="sub" style="margin-top:12px">Tersalah tekan? Tekan kumpulan itu sekali lagi untuk batal.</p>`,
+    `<button class="btnUtama ${S.fasa === 'jeda' ? '' : 'stop'}" id="btnGoStop" ${intro ? 'disabled' : ''}>${S.fasa === 'jeda' ? '▶ GO' : '⏸ STOP'}</button>
+     <div class="dua"><button class="btnKedua" id="btnTambah">➕ 30 saat</button><button class="btnKedua" id="btnHenti">⏹ Henti</button></div>`);
+  document.querySelectorAll('.gk').forEach((b) => b.onclick = () => { getar(15); hantar({ jenis: 'selamat', g: +b.dataset.g }); });
+  $('btnGoStop').onclick = () => { getar(20); hantar({ jenis: S.fasa === 'jeda' ? 'mula' : 'jeda' }); };
+  $('btnTambah').onclick = () => { getar(10); hantar({ jenis: 'tambah', saat: 30 }); toast('➕ 30 saat'); };
+  $('btnHenti').onclick = () => { if (confirm('Hentikan pemasa dan kembali ke tetapan?')) hantar({ jenis: 'semula' }); };
+}
+function lukisTamat() {
+  const sejak = kini() - S.tamatSejak, sedia = sejak >= 4000;
+  const kunci = `tamat|${S.pusingan}|${sedia}`;
+  if (kunci === paparLama) return;
+  const ok = [], rip = [];
+  S.selamat.forEach((v, g) => (v != null ? ok : rip).push({ g, v }));
+  ok.sort((a, b) => a.v - b.v);
+  papar(kunci, `
+    <div class="papan" style="--w:${S.semuaSelamat ? 'var(--ecg)' : 'var(--merah)'}"><div class="st">${S.semuaSelamat ? 'SEMUA SELAMAT' : 'MASA TAMAT'}</div><div class="mb">${S.semuaSelamat ? '🎉' : '00:00'}</div></div>
+    <div class="kad"><h3>✅ Selamat (${ok.length})</h3>${ok.map((x) => `<div class="hasilB"><i style="background:${WARNA[x.g]}"></i><span>${esc(NAMA[x.g])}</span><em>${fmt(x.v)}</em></div>`).join('') || '<p class="sub">Tiada.</p>'}</div>
+    <div class="kad"><h3>💔 Meninggal (${rip.length})</h3>${rip.map((x) => `<div class="hasilB"><i style="background:${WARNA[x.g]}"></i><span>${esc(NAMA[x.g])}</span></div>`).join('') || '<p class="sub">Tiada. Syabas!</p>'}</div>`,
+    sedia ? `<button class="btnUtama" id="btnSemula">🔁 MULA SEMULA</button>` : `<button class="btnUtama" disabled>Animasi di TV…</button>`);
+  if (sedia) $('btnSemula').onclick = () => { getar(20); hantar({ jenis: 'semula' }); };
+}
+// kemas kini masa langsung
+const LVW = ['#39ff88', '#ffd84d', '#ff9f1c', '#ff3b5c'];
+setInterval(() => {
+  if (!S) return;
+  if (S.fasa === 'jalan' || S.fasa === 'jeda') {
+    const intro = S.fasa === 'jalan' && kini() < S.mulaPada;
+    if (paparLama.indexOf(`|${intro}|`) < 0) { paparLama = ''; render(); return; }
+    const ms = baki(), f = S.jumlah ? ms / S.jumlah : 1, lv = ms <= 10000 ? 3 : (f <= .25 || ms <= 30000) ? 2 : f <= .5 ? 1 : 0;
+    const lagi = S.mulaPada - kini();
+    const mb = $('mb'); if (mb) mb.textContent = intro ? (lagi > 3000 ? 'SEDIA' : String(Math.ceil(lagi / 1000))) : fmt(ms);
+    const p = $('papan'); if (p) p.style.setProperty('--w', LVW[lv]);
+    const bi = $('barI'); if (bi) bi.style.width = (S.jumlah ? Math.min(1, ms / S.jumlah) * 100 : 0) + '%';
+  } else if (S.fasa === 'tamat') lukisTamat();
+}, 250);
+
+// ---------- WebSocket ----------
+let ws = null, tunda = 800, pingT = null;
+function keLogMasuk() { toast('Sesi tamat. Membuka semula…', 3000); setTimeout(() => location.href = '/km-masuk?next=' + encodeURIComponent(location.pathname + location.search), 1200); }
+function sambung() {
+  if (!kod) return;
+  try { ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/jantung-km?bilik=${kod}&peranan=telefon`); } catch (e) { return ulang(); }
+  ws.onopen = () => { wsOk = true; tunda = 800; kemasStatus(); clearInterval(pingT); pingT = setInterval(() => { try { ws.send('{"jenis":"ping"}'); } catch (e) {} }, 20000); };
+  ws.onmessage = (ev) => {
+    let d; try { d = JSON.parse(ev.data); } catch (e) { return; }
+    if (d.kini) beza = d.kini - Date.now();
+    if (d.jenis === 'keadaan') {
+      const fasaLama = S && S.fasa; S = d; bilPaparan = d.paparan || 0; kemasStatus();
+      if (S.fasa !== 'sedia') { tempohDraf = null; tugasDraf = null; }
+      if (S.fasa === 'sedia' && fasaLama === 'sedia' && paparLama === 'sedia') { if (tempohDraf == null) kemasMasaSedia(S.tempoh); return; }
+      render();
+    } else if (d.jenis === 'bilangan') { bilPaparan = d.paparan || 0; kemasStatus(); }
+  };
+  ws.onclose = (ev) => {
+    wsOk = false; clearInterval(pingT); kemasStatus();
+    if (ev.code === 4003) return keLogMasuk();
+    if (ev.code === 4004) { bilPaparan = 0; statusUI(`Skrin ${kod} tiada. Buka skrin TV Pemasa Jantung di PC.`, 'bad'); tunda = 3000; }
+    if (ev.code === 4000) { kod = ''; S = null; render(); return toast('Kod bilik tidak sah'); }
+    ulang();
+  };
+  ws.onerror = () => {};
+}
+function ulang() { setTimeout(sambung, tunda); tunda = Math.min(tunda * 1.6, 6000); }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && kod && (!ws || ws.readyState > 1)) { tunda = 200; sambung(); } });
+kemasStatus(); render(); if (kod) sambung();
+window.__tel = { get S() { return S; }, get paparan() { return paparLama; } };
+})();
+</script>
+</body>
+</html>

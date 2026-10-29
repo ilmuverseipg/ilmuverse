@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@700;800&display=swap">
 <style>
+  html.embed header { display: none !important; }
   :root { --malam: #0b1a2b; --panel: #142c46; --garis: rgba(140,200,255,.18); --putih: #f4f8ff; --kabur: #9fb4cc; --ecg: #39ff88; --merah: #ff4d5e; --emas: #ffd23f; --hijau: #22c55e;
     --atas: env(safe-area-inset-top, 0px); --bawah: env(safe-area-inset-bottom, 0px); }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -70,6 +71,7 @@
 <div class="kaki" id="kaki" hidden><div class="dalam" id="kakiDalam"></div></div>
 <div id="toast"></div>
 <script>
+if (new URLSearchParams(location.search).get('embed') === '1') document.documentElement.classList.add('embed');
 (() => {
 'use strict';
 const $ = (id) => document.getElementById(id);
@@ -83,7 +85,7 @@ let S = null, SET = null, wsOk = false, bilPaparan = 0, paparLama = '', tanda = 
 async function muatSet() { try { const r = await fetch('/api/wad/set', { cache: 'no-store' }); if (r.status === 401) return keLogMasuk(); const j = await r.json(); if (j.ok) SET = j.set; } catch (e) {} }
 const namaK = (g) => (SET && SET.kumpulan[g]) || 'Kumpulan ' + (g + 1);
 const soalan = (i) => (SET && SET.soalan[i]) || { maksud: '…', km: '…' };
-function keLogMasuk() { toast('Sesi tamat. Sila log masuk semula.', 4000); setTimeout(() => location.href = '/login.html?next=' + encodeURIComponent(location.pathname + location.search), 1400); }
+function keLogMasuk() { toast('Sesi tamat. Membuka semula…', 3000); setTimeout(() => location.href = '/km-masuk?next=' + encodeURIComponent(location.pathname + location.search), 1400); }
 function statusUI(tx, c) { $('statTx').textContent = tx; $('dot').className = 'dot ' + c; }
 function kemasStatus() {
   if (!kod) return statusUI('Belum disambung', 'wait');

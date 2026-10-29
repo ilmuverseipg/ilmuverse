@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Klinik Kata Majmuk — Skrin TV</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Fredoka:wght@500;600;700&display=swap">
+<style>
+  :root { --teal: #0f766e; --teal2: #14a394; --dakwat: #13334c; --kabur: #5b7285; --merah: #e8434f; --latar: #eaf7f3; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; font-family: 'Fredoka', system-ui, sans-serif; color: var(--dakwat); background: #03080f; }
+  [hidden] { display: none !important; }
+  iframe.sis { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; display: none; background: #03080f; }
+  iframe.sis.on { display: block; }
+
+  /* ===== skrin utama ===== */
+  #utama { position: fixed; inset: 0; overflow: auto; padding: 3.2vh 3vw; color: var(--dakwat);
+    background: radial-gradient(circle at 10% 0%, #fff 0, transparent 40%), radial-gradient(circle at 100% 100%, #d7efe8 0, transparent 45%), var(--latar); }
+  .tajuk { display: flex; align-items: center; gap: 1.6vw; }
+  .salib { width: 9vh; height: 9vh; flex: none; border-radius: 2.4vh; background: #fff; box-shadow: 0 1vh 3vh rgba(19,51,76,.12); display: grid; place-items: center; }
+  .salib i { position: relative; width: 5.4vh; height: 5.4vh; }
+  .salib i::before, .salib i::after { content: ''; position: absolute; background: var(--merah); border-radius: .6vh; }
+  .salib i::before { left: 1.9vh; top: 0; width: 1.6vh; height: 5.4vh; } .salib i::after { top: 1.9vh; left: 0; width: 5.4vh; height: 1.6vh; }
+  .tajuk small { display: block; letter-spacing: .4vh; font-weight: 600; color: var(--teal); font-size: 2vh; }
+  .tajuk h1 { margin: 0; font-family: 'Baloo 2'; font-weight: 800; font-size: 7vh; line-height: 1; }
+  .tajuk p { margin: .6vh 0 0; color: var(--kabur); font-size: 2.3vh; }
+  .badan { display: grid; grid-template-columns: 1.5fr 1fr; gap: 3vw; margin-top: 3.4vh; align-items: start; }
+  .langkahL { display: grid; gap: 1.4vh; }
+  .lk { display: flex; align-items: center; gap: 1.4vw; background: #fff; border-radius: 2.2vh; padding: 1.6vh 1.6vw; box-shadow: 0 1vh 2.6vh rgba(19,51,76,.09); border: 2px solid transparent; cursor: pointer; transition: transform .15s, border-color .15s; }
+  .lk:hover { transform: translateY(-2px); border-color: var(--teal2); }
+  .lk .ik { width: 7vh; height: 7vh; border-radius: 1.8vh; display: grid; place-items: center; font-size: 4vh; flex: none; background: color-mix(in srgb, var(--w) 16%, #fff); }
+  .lk .tg { font-family: 'Baloo 2'; font-weight: 800; font-size: 3.2vh; line-height: 1.05; }
+  .lk .tg small { display: block; font-family: 'Fredoka'; font-weight: 600; font-size: 1.8vh; color: var(--w); letter-spacing: .15vh; }
+  .lk .ds { color: var(--kabur); font-size: 1.9vh; margin-top: .3vh; }
+  .qrK { background: #fff; border-radius: 3vh; padding: 3vh 2vw; text-align: center; box-shadow: 0 1.4vh 4vh rgba(19,51,76,.12); }
+  .qrK h2 { margin: 0 0 .6vh; font-family: 'Baloo 2'; font-weight: 800; font-size: 4vh; }
+  .qrK p { margin: 0 0 1.8vh; color: var(--kabur); font-size: 2.1vh; }
+  #qr { display: inline-block; line-height: 0; padding: 1.2vh; border-radius: 2vh; border: 3px solid #e3efeb; }
+  #qr svg { width: 34vh; height: 34vh; }
+  .kod { font-family: 'Baloo 2'; font-weight: 800; font-size: 6vh; letter-spacing: 1.2vh; color: var(--teal); margin-top: 1vh; }
+  .sambungOk { display: inline-flex; align-items: center; gap: .8vw; margin-top: 1.4vh; padding: 1vh 1.6vw; border-radius: 99px; background: #e6f7f3; color: var(--teal); font-weight: 700; font-size: 2.2vh; }
+  .sambungOk i { width: 1.4vh; height: 1.4vh; border-radius: 50%; background: #9ca3af; }
+  .sambungOk.ok i { background: #16a34a; box-shadow: 0 0 0 .5vh rgba(22,163,74,.2); }
+
+  /* ===== jalur kecil (bila sistem dipaparkan) ===== */
+  #jalur { position: fixed; left: 1vw; bottom: 1.4vh; z-index: 50; display: flex; align-items: center; gap: .6vw; padding: .6vh .6vw .6vh 1vw; border-radius: 99px;
+    background: rgba(8,20,34,.82); color: #fff; font-weight: 700; font-size: 1.7vh; backdrop-filter: blur(6px); transition: opacity .4s; }
+  body.idle #jalur { opacity: 0; }
+  #jalur .d { width: 1.1vh; height: 1.1vh; border-radius: 50%; background: #ffb020; } #jalur .d.ok { background: #4ade80; }
+  #jalur button { font: inherit; color: #fff; background: rgba(255,255,255,.12); border: 0; border-radius: 99px; padding: .6vh 1vw; cursor: pointer; }
+  #jalur button:hover { background: rgba(255,255,255,.24); }
+
+  /* ===== buka bunyi ===== */
+  #mula { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: rgba(3,20,26,.6); backdrop-filter: blur(4px); }
+  #mula button { font-family: 'Baloo 2'; font-weight: 800; font-size: 4.4vh; color: #fff; background: linear-gradient(135deg, var(--teal2), var(--teal)); border: .5vh solid #fff; border-radius: 99px; padding: 2.2vh 4vw; cursor: pointer; box-shadow: 0 2vh 6vh rgba(0,0,0,.35); animation: denyut 1.6s ease-in-out infinite; }
+  #mula p { color: #fff; text-align: center; font-size: 2.2vh; margin: 2vh 0 0; font-weight: 600; }
+  @keyframes denyut { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+  #toast { position: fixed; left: 50%; top: 2vh; transform: translate(-50%, -160%); z-index: 70; background: #13334c; color: #fff; font-weight: 700; font-size: 2.2vh; padding: 1vh 2vw; border-radius: 99px; transition: transform .3s; }
+  #toast.on { transform: translate(-50%, 0); }
+</style>
+</head>
+<body>
+<section id="utama">
+  <div class="tajuk">
+    <div class="salib" aria-hidden="true"><i></i></div>
+    <div><small>KLINIK DR. IZUDDIN</small><h1>Kata Majmuk</h1><p>Jujur Itu Ubat Terbaik · imbas QR sekali, kawal semua langkah dari telefon</p></div>
+  </div>
+  <div class="badan">
+    <div class="langkahL" id="senarai"></div>
+    <div class="qrK">
+      <h2>📱 Imbas sekali sahaja</h2>
+      <p>Buka kamera telefon guru dan imbas kod ini.</p>
+      <div id="qr"></div>
+      <div class="kod" id="kodBesar">····</div>
+      <div class="sambungOk" id="sambungOk"><i></i><span id="sambungTx">Menunggu telefon guru…</span></div>
+    </div>
+  </div>
+</section>
+
+<div id="bingkai"></div>
+
+<div id="jalur" hidden>
+  <span class="d" id="dot"></span><span id="jalurTx"></span>
+  <button id="btnMenu" title="Menu utama">🏠 Menu</button>
+  <button id="btnFs" title="Skrin penuh">⛶</button>
+</div>
+<div id="mula"><div><button id="btnMula">▶ MULA KELAS</button><p>Klik sekali untuk hidupkan bunyi, suara &amp; muzik</p></div></div>
+<div id="toast"></div>
+
+<script>
+(() => {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const LS = 'ilmuverseKlinikTV.v1';
+const rnd = (n) => Array.from(crypto.getRandomValues(new Uint8Array(n)), (b) => b.toString(16).padStart(2, '0')).join('');
+const kodBaru = () => String(1000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 9000));
+function toast(t, ms = 2600) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), ms); }
+
+let sesi = null;
+try { sesi = JSON.parse(localStorage.getItem(LS) || 'null'); } catch (e) {}
+if (!sesi || !/^\d{4}$/.test(sesi.kod) || !sesi.kunci) sesi = { kod: kodBaru(), kunci: rnd(16) };
+const simpan = () => { try { localStorage.setItem(LS, JSON.stringify(sesi)); } catch (e) {} };
+simpan();
+
+// Langkah ikut RPH. 'url' = skrin TV setiap sistem (dimuat dalam iframe, kod bilik sama).
+const q = () => `embed=1&bilik=${sesi.kod}&kunci=${sesi.kunci}`;
+const LANGKAH = [
+  { id: 'jantung', ik: '💓', w: '#ff4d6d', lbl: 'ALAT KELAS', nama: 'Pemasa Jantung', ds: '6 pesakit, 6 kumpulan. Tekan kumpulan yang siap.', url: () => `/pemasa-jantung.html?${q()}` },
+  { id: 'kapsul', ik: '💊', w: '#e8434f', lbl: 'LANGKAH 1', nama: 'Semak Pantas Kapsul', ds: 'Misi Farmasi Jujur. Gambar kapsul, TV dedah BETUL / TIDAK TEPAT.', url: () => `/kapsul-skrin.html?${q()}` },
+  { id: 'tulang', ik: '🦴', w: '#14a394', lbl: 'LANGKAH 2', nama: 'Sambung Tulang', ds: 'Kuiz AR kawalan tangan di depan kamera.', url: () => '/sambung-tulang.html', malas: true },
+  { id: 'suntik', ik: '💉', w: '#2f80ed', lbl: 'LANGKAH 2', nama: 'Semak & Suntik', ds: 'Kunci jawapan, dedah, Kad Jujur, rawat & audit.', url: () => `/wad-skrin.html?${q()}` },
+  { id: 'sijil', ik: '📜', w: '#16a34a', lbl: 'LANGKAH 3', nama: 'Semak & Cop Sijil', ds: 'Susun ayat dan cop DIDAFTARKAN.', url: () => `/sijil-skrin.html?${q()}` },
+];
+const FR = {};
+function binaFrame(L) {
+  const f = document.createElement('iframe'); f.className = 'sis'; f.title = L.nama;
+  f.setAttribute('allow', 'camera; microphone; autoplay; fullscreen');
+  f.src = L.url(); $('bingkai').appendChild(f); FR[L.id] = f;
+  f.addEventListener('load', () => { if (aktif === L.id && dibuka) tunjukFrame(L.id, true); });
+  return f;
+}
+// Muat semua sistem dari awal (supaya bilik wujud bila telefon bertukar langkah). Sambung Tulang dimuat bila dipilih (kamera).
+LANGKAH.forEach((L) => { if (!L.malas) binaFrame(L); });
+
+$('senarai').innerHTML = LANGKAH.map((L) => `<div class="lk" data-id="${L.id}" style="--w:${L.w}"><div class="ik">${L.ik}</div><div><div class="tg"><small>${L.lbl}</small>${L.nama}</div><div class="ds">${L.ds}</div></div></div>`).join('');
+$('senarai').onclick = (e) => { const el = e.target.closest('.lk'); if (el) pilih(el.dataset.id); };
+
+// ---------- QR satu kali ----------
+const telUrl = () => `${location.origin}/km-masuk?next=${encodeURIComponent('/klinik-telefon.html?bilik=' + sesi.kod)}`;
+function loadScript(src) { return new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
+async function lukisKod() {
+  $('kodBesar').textContent = sesi.kod;
+  try { if (!window.qrcode) await loadScript('https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js'); const qr = window.qrcode(0, 'M'); qr.addData(telUrl()); qr.make(); $('qr').innerHTML = qr.createSvgTag({ cellSize: 6, margin: 1, scalable: true }); }
+  catch (e) { $('qr').innerHTML = '<div style="padding:20px;font-weight:700;line-height:1.4">Buka ilmuverse.my di telefon,<br>tekan avatar, kemudian masukkan kod ' + sesi.kod + '</div>'; }
+}
+
+// ---------- tukar langkah ----------
+let aktif = 'utama', dibuka = false, bilTel = 0, wsOk = false;
+function tunjukFrame(id, on) { const f = FR[id]; try { f && f.contentWindow && f.contentWindow.__embed && f.contentWindow.__embed.tunjuk(on); } catch (e) {} }
+function paparkan(id) {
+  const lama = aktif; aktif = id;
+  const L = LANGKAH.find((x) => x.id === id);
+  if (L && L.malas && !FR[id]) binaFrame(L);
+  Object.keys(FR).forEach((k) => FR[k].classList.toggle('on', k === id));
+  $('utama').hidden = id !== 'utama';
+  $('jalur').hidden = id === 'utama';
+  $('jalurTx').textContent = L ? `${L.ik} ${L.nama}` : '';
+  // senyapkan sistem lama, hidupkan sistem baharu
+  if (lama !== id) { if (FR[lama]) tunjukFrame(lama, false); }
+  if (dibuka && FR[id]) tunjukFrame(id, true);
+  // tutup kamera Sambung Tulang bila keluar
+  if (lama === 'tulang' && id !== 'tulang' && FR.tulang) { FR.tulang.remove(); delete FR.tulang; }
+  if (L) { try { FR[id].focus(); } catch (e) {} }
+}
+function pilih(id) { if (!hantar({ jenis: 'pilih', aktif: id })) paparkan(id); }
+
+$('btnMula').onclick = () => {
+  dibuka = true; $('mula').hidden = true;
+  // Satu klik di sini membuka bunyi untuk semua sistem (iframe asal yang sama).
+  Object.keys(FR).forEach((k) => tunjukFrame(k, k === aktif));
+};
+$('btnMenu').onclick = () => pilih('utama');
+$('btnFs').onclick = () => { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen().catch(() => {}); };
+let idleT = null;
+const bangun = () => { document.body.classList.remove('idle'); clearTimeout(idleT); idleT = setTimeout(() => document.body.classList.add('idle'), 3500); };
+addEventListener('pointermove', bangun); bangun();
+
+function kemasSambung() {
+  $('dot').classList.toggle('ok', wsOk && bilTel > 0);
+  $('sambungOk').classList.toggle('ok', bilTel > 0);
+  $('sambungTx').textContent = !wsOk ? 'Menyambung ke pelayan…' : bilTel > 0 ? `Telefon guru bersambung (${bilTel}). Pilih langkah di telefon.` : 'Menunggu telefon guru…';
+}
+
+// ---------- WebSocket klinik ----------
+let ws = null, tunda = 800, pingT = null;
+function hantar(o) { if (ws && ws.readyState === 1) { ws.send(JSON.stringify(o)); return true; } return false; }
+function sambung() {
+  try { ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/klinik-km?bilik=${sesi.kod}&peranan=paparan&kunci=${sesi.kunci}`); } catch (e) { return ulang(); }
+  ws.onopen = () => { wsOk = true; tunda = 800; kemasSambung(); clearInterval(pingT); pingT = setInterval(() => hantar({ jenis: 'ping' }), 20000); };
+  ws.onmessage = (ev) => {
+    let d; try { d = JSON.parse(ev.data); } catch (e) { return; }
+    if (d.jenis === 'keadaan') {
+      const naik = (d.telefon || 0) > bilTel; bilTel = d.telefon || 0; kemasSambung();
+      if (naik) toast('📱 Telefon guru bersambung');
+      if (d.aktif !== aktif) paparkan(d.aktif);
+    }
+  };
+  ws.onclose = (ev) => {
+    wsOk = false; kemasSambung(); clearInterval(pingT);
+    if (ev.code === 4001) { sesi = { kod: kodBaru(), kunci: rnd(16) }; simpan(); location.reload(); return; }
+    ulang();
+  };
+  ws.onerror = () => {};
+}
+function ulang() { setTimeout(sambung, tunda); tunda = Math.min(tunda * 1.7, 8000); }
+
+lukisKod(); kemasSambung(); paparkan('utama'); sambung();
+window.__klinik = { get aktif() { return aktif; }, get sesi() { return sesi; }, FR };
+})();
+</script>
+</body>
+</html>

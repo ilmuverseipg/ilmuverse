@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@700;800&display=swap">
 <style>
+  html.embed header { display: none !important; }
   :root { --mint: #dff5ef; --mint2: #c6ece2; --teal: #0f766e; --teal2: #14a394; --dakwat: #13334c; --kelabu: #5b7285; --merah: #e8434f; --hijau: #16a34a; --amber: #f6b81a;
     --bayang: 0 10px 26px rgba(19,51,76,.13), 0 2px 6px rgba(19,51,76,.07); --atas: env(safe-area-inset-top, 0px); --bawah: env(safe-area-inset-bottom, 0px); }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -172,6 +173,7 @@
 <div id="toast"></div>
 
 <script>
+if (new URLSearchParams(location.search).get('embed') === '1') document.documentElement.classList.add('embed');
 (() => {
 'use strict';
 const $ = (id) => document.getElementById(id);
@@ -201,7 +203,7 @@ async function muatSet() {
 const setK = (n) => setSemua && setSemua[n - 1];
 const namaKump = (n) => (setK(n) && setK(n).nama) || 'Kumpulan ' + n;
 const jawapan = (n, i) => { const s = setK(n); return (s && s.jawapan[i]) || { k1: '', k2: '', km: '—' }; };
-function keLogMasuk() { toast('Sesi tamat. Sila log masuk semula.', 4000); setTimeout(() => location.href = '/login.html?next=' + encodeURIComponent(location.pathname + location.search), 1400); }
+function keLogMasuk() { toast('Sesi tamat. Membuka semula…', 3000); setTimeout(() => location.href = '/km-masuk?next=' + encodeURIComponent(location.pathname + location.search), 1400); }
 
 // =============================================================
 // STATUS

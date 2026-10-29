@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0b1a2b">
+<title>Klinik Kata Majmuk — Telefon Guru</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@700;800&display=swap">
+<style>
+  :root { --malam: #0b1a2b; --panel: #142c46; --garis: rgba(140,200,255,.18); --putih: #f4f8ff; --kabur: #9fb4cc; --hijau: #22c55e; --merah: #ff4d5e;
+    --atas: env(safe-area-inset-top, 0px); --bawah: env(safe-area-inset-bottom, 0px); --tinggiKepala: 56px; --tinggiNav: 66px; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--malam); color: var(--putih); font-family: 'Fredoka', system-ui, sans-serif; }
+  button { font: inherit; cursor: pointer; }
+  header { position: fixed; top: 0; left: 0; right: 0; z-index: 5; height: calc(var(--tinggiKepala) + var(--atas)); padding: var(--atas) 14px 0; display: flex; align-items: center; gap: 10px;
+    background: rgba(8,20,34,.98); border-bottom: 2px solid var(--garis); }
+  .salib { width: 34px; height: 34px; border-radius: 10px; background: #fff; display: grid; place-items: center; flex: none; }
+  .salib i { position: relative; width: 18px; height: 18px; }
+  .salib i::before, .salib i::after { content: ''; position: absolute; background: var(--merah); border-radius: 2px; }
+  .salib i::before { left: 6px; top: 0; width: 6px; height: 18px; } .salib i::after { top: 6px; left: 0; width: 18px; height: 6px; }
+  header .t { flex: 1; min-width: 0; }
+  header b { font-family: 'Baloo 2'; font-weight: 800; font-size: 18px; display: block; line-height: 1.05; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  header small { font-size: 12px; color: var(--kabur); display: flex; gap: 6px; align-items: center; margin-top: 2px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: #9ca3af; display: inline-block; flex: none; }
+  .dot.ok { background: #4ade80; } .dot.wait { background: #ffb020; } .dot.bad { background: var(--merah); }
+
+  .isi { position: fixed; left: 0; right: 0; top: calc(var(--tinggiKepala) + var(--atas)); bottom: calc(var(--tinggiNav) + var(--bawah)); }
+  .isi iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: none; background: var(--malam); }
+  .isi iframe.on { display: block; }
+  .panel { position: absolute; inset: 0; overflow: auto; padding: 16px; display: none; }
+  .panel.on { display: block; }
+  .panel h2 { font-family: 'Baloo 2'; font-weight: 800; font-size: 24px; margin: 4px 0 4px; }
+  .panel .sub { color: var(--kabur); margin: 0 0 14px; font-size: 14.5px; line-height: 1.4; }
+  .kadL { width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; border: 2px solid var(--garis); background: var(--panel); color: var(--putih); border-radius: 18px; padding: 14px; margin-bottom: 10px; transition: transform .1s; }
+  .kadL:active { transform: scale(.97); }
+  .kadL .ik { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; font-size: 28px; flex: none; background: color-mix(in srgb, var(--w) 22%, var(--malam)); }
+  .kadL .tg { font-family: 'Baloo 2'; font-weight: 800; font-size: 20px; line-height: 1.05; }
+  .kadL .tg small { display: block; font-family: 'Fredoka'; font-weight: 700; font-size: 11.5px; letter-spacing: 1px; color: var(--w); }
+  .kadL .ds { color: var(--kabur); font-size: 13px; margin-top: 2px; }
+  .kadL .on { margin-left: auto; font-size: 12px; font-weight: 700; color: #4ade80; white-space: nowrap; }
+  .tulangK { background: var(--panel); border: 2px solid var(--garis); border-radius: 18px; padding: 16px; margin-bottom: 12px; }
+  .tulangK ol { margin: 8px 0 0; padding-left: 20px; line-height: 1.6; color: var(--putih); }
+
+  nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; height: calc(var(--tinggiNav) + var(--bawah)); padding: 0 4px var(--bawah); display: grid; grid-template-columns: repeat(6, 1fr);
+    background: rgba(8,20,34,.98); border-top: 2px solid var(--garis); }
+  nav button { border: 0; background: transparent; color: var(--kabur); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 10.5px; font-weight: 700; border-radius: 12px; margin: 5px 1px; padding: 0; line-height: 1.1; }
+  nav button span { font-size: 23px; line-height: 1; transition: transform .15s; }
+  nav button.on { color: #fff; background: color-mix(in srgb, var(--w, #14a394) 30%, transparent); }
+  nav button.on span { transform: scale(1.12); }
+  #toast { position: fixed; left: 50%; top: calc(70px + var(--atas)); transform: translate(-50%, -10px); z-index: 40; background: #fff; color: var(--malam); padding: 10px 18px; border-radius: 14px; font-weight: 700; font-size: 14.5px; opacity: 0; transition: all .3s; pointer-events: none; max-width: 90vw; text-align: center; }
+  #toast.on { opacity: 1; transform: translate(-50%, 0); }
+  .kodK { max-width: 420px; margin: 12vh auto 0; text-align: center; background: var(--panel); border: 2px solid var(--garis); border-radius: 18px; padding: 22px; }
+  .kodK input { width: 100%; font-family: 'Baloo 2'; font-weight: 800; font-size: 44px; letter-spacing: .3em; text-align: center; border: 3px solid var(--garis); background: var(--malam); color: #fff; border-radius: 16px; padding: 8px; margin: 12px 0; }
+  .btnUtama { width: 100%; border: 0; border-radius: 999px; padding: 16px; font-family: 'Baloo 2'; font-weight: 800; font-size: 20px; color: #fff; background: var(--hijau); box-shadow: 0 6px 0 #15803d; }
+</style>
+</head>
+<body>
+<header>
+  <div class="salib" aria-hidden="true"><i></i></div>
+  <div class="t"><b id="tajuk">Klinik Kata Majmuk</b><small><span class="dot wait" id="dot"></span><span id="statTx">Menyambung…</span></small></div>
+</header>
+<div class="isi" id="isi">
+  <div class="panel on" id="pMenu"></div>
+  <div class="panel" id="pTulang"></div>
+</div>
+<nav id="nav"></nav>
+<div id="toast"></div>
+<script>
+(() => {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const getar = (ms) => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
+function toast(t, ms = 2200) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), ms); }
+let kod = (new URLSearchParams(location.search).get('bilik') || '').replace(/\D/g, '').slice(0, 6);
+
+const LANGKAH = [
+  { id: 'utama', ik: '🏠', pendek: 'Menu', nama: 'Klinik Kata Majmuk', w: '#14a394' },
+  { id: 'jantung', ik: '💓', pendek: 'Pemasa', nama: 'Pemasa Jantung', lbl: 'ALAT KELAS', ds: 'Set masa, GO / STOP, tekan kumpulan yang siap.', w: '#ff4d6d', url: () => `/pemasa-telefon.html?embed=1&bilik=${kod}` },
+  { id: 'kapsul', ik: '💊', pendek: 'Kapsul', nama: 'Semak Pantas Kapsul', lbl: 'LANGKAH 1', ds: 'Ambil gambar kapsul, tanda BETUL / TIDAK TEPAT.', w: '#e8434f', url: () => `/kapsul-telefon.html?embed=1&bilik=${kod}` },
+  { id: 'tulang', ik: '🦴', pendek: 'Tulang', nama: 'Sambung Tulang', lbl: 'LANGKAH 2', ds: 'Dimainkan di TV dengan tangan.', w: '#14a394' },
+  { id: 'suntik', ik: '💉', pendek: 'Suntik', nama: 'Semak & Suntik', lbl: 'LANGKAH 2', ds: 'Kunci, dedah, Kad Jujur, rawat & audit.', w: '#2f80ed', url: () => `/wad-telefon.html?embed=1&bilik=${kod}` },
+  { id: 'sijil', ik: '📜', pendek: 'Sijil', nama: 'Semak & Cop Sijil', lbl: 'LANGKAH 3', ds: 'Ambil gambar sijil, semak susun ayat.', w: '#16a34a', url: () => `/sijil-telefon.html?embed=1&bilik=${kod}` },
+];
+const L = (id) => LANGKAH.find((x) => x.id === id);
+
+// bar navigasi bawah (ibu jari)
+$('nav').innerHTML = LANGKAH.map((x) => `<button data-id="${x.id}" style="--w:${x.w}" aria-label="${x.nama}"><span>${x.ik}</span>${x.pendek}</button>`).join('');
+$('nav').onclick = (e) => { const b = e.target.closest('button'); if (b) { getar(10); pilih(b.dataset.id); } };
+
+// menu utama
+function lukisMenu() {
+  $('pMenu').innerHTML = `<h2>Pilih langkah</h2><p class="sub">Telefon ini sudah bersambung ke TV. Tekan langkah, TV terus bertukar. Tidak perlu imbas QR lagi.</p>
+    ${LANGKAH.filter((x) => x.id !== 'utama').map((x) => `<button class="kadL" data-id="${x.id}" style="--w:${x.w}"><span class="ik">${x.ik}</span><span><span class="tg"><small>${x.lbl}</small>${x.nama}</span><span class="ds" style="display:block">${x.ds}</span></span>${aktif === x.id ? '<span class="on">● di TV</span>' : ''}</button>`).join('')}`;
+  $('pMenu').querySelectorAll('.kadL').forEach((b) => b.onclick = () => { getar(10); pilih(b.dataset.id); });
+}
+$('pTulang').innerHTML = `<h2>🦴 Sambung Tulang</h2><p class="sub">Permainan ini dimainkan di TV menggunakan tangan murid. Telefon tidak perlu buat apa-apa.</p>
+  <div class="tulangK"><b>Cara main (di PC / TV)</b><ol>
+    <li>Pilih kumpulan dan tekan <b>▶ MULA</b> di TV.</li>
+    <li>Benarkan kamera bila diminta.</li>
+    <li><b>Genggam</b> tangan di atas separuh tulang untuk mengambilnya.</li>
+    <li>Bawa ke tulang patah yang sepadan, kemudian <b>buka</b> tangan.</li>
+    <li>Tekan <b>▶ Kumpulan Seterusnya</b> untuk kumpulan lain.</li></ol></div>
+  <button class="btnUtama" id="btnKeMenu">🏠 Kembali ke menu</button>`;
+$('btnKeMenu').onclick = () => pilih('utama');
+
+// iframe sistem (dimuat bila pertama kali dibuka, kekal bersambung selepas itu)
+const FR = {};
+let aktif = 'utama';
+function paparkan(id) {
+  aktif = id;
+  const x = L(id) || L('utama');
+  if (x.url && !FR[id]) { const f = document.createElement('iframe'); f.title = x.nama; f.setAttribute('allow', 'camera; autoplay'); f.src = x.url(); $('isi').appendChild(f); FR[id] = f; }
+  Object.keys(FR).forEach((k) => FR[k].classList.toggle('on', k === id));
+  $('pMenu').classList.toggle('on', id === 'utama');
+  $('pTulang').classList.toggle('on', id === 'tulang');
+  document.querySelectorAll('#nav button').forEach((b) => b.classList.toggle('on', b.dataset.id === id));
+  $('tajuk').textContent = x.id === 'utama' ? 'Klinik Kata Majmuk' : `${x.ik} ${x.nama}`;
+  if (id === 'utama') lukisMenu();
+}
+function pilih(id) {
+  if (id === aktif) return;
+  paparkan(id); // terus tukar di telefon, TV ikut
+  if (!hantar({ jenis: 'pilih', aktif: id })) toast('Belum bersambung ke TV…');
+}
+
+// ---------- status ----------
+let wsOk = false, bilTV = 0;
+function statusUI(tx, c) { $('statTx').textContent = tx; $('dot').className = 'dot ' + c; }
+function kemasStatus() {
+  if (!wsOk) return statusUI(`Kod ${kod} · menyambung…`, 'wait');
+  if (!bilTV) return statusUI(`Skrin TV ${kod} tiada. Buka Klinik di PC.`, 'bad');
+  statusUI(`Bersambung ke TV ${kod}`, 'ok');
+}
+
+// ---------- WebSocket klinik ----------
+let ws = null, tunda = 800, pingT = null;
+function hantar(o) { if (ws && ws.readyState === 1) { ws.send(JSON.stringify(o)); return true; } return false; }
+function sambung() {
+  try { ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/klinik-km?bilik=${kod}&peranan=telefon`); } catch (e) { return ulang(); }
+  ws.onopen = () => { wsOk = true; tunda = 800; kemasStatus(); clearInterval(pingT); pingT = setInterval(() => hantar({ jenis: 'ping' }), 20000); };
+  ws.onmessage = (ev) => {
+    let d; try { d = JSON.parse(ev.data); } catch (e) { return; }
+    if (d.jenis === 'keadaan') { bilTV = d.paparan || 0; kemasStatus(); if (d.aktif !== aktif) paparkan(d.aktif); else if (aktif === 'utama') lukisMenu(); }
+  };
+  ws.onclose = (ev) => {
+    wsOk = false; clearInterval(pingT); kemasStatus();
+    if (ev.code === 4003) { location.href = '/km-masuk?next=' + encodeURIComponent(location.pathname + location.search); return; }
+    if (ev.code === 4004) { bilTV = 0; statusUI(`Skrin TV ${kod} tiada. Buka Klinik di PC.`, 'bad'); tunda = 3000; }
+    ulang();
+  };
+  ws.onerror = () => {};
+}
+function ulang() { setTimeout(sambung, tunda); tunda = Math.min(tunda * 1.6, 6000); }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && kod && (!ws || ws.readyState > 1)) { tunda = 200; sambung(); } });
+
+if (!kod) {
+  $('pMenu').innerHTML = `<div class="kodK"><h2>Masukkan kod bilik</h2><p class="sub">Kod 4 digit tertera pada skrin TV Klinik.</p><input id="inKod" inputmode="numeric" maxlength="6" placeholder="0000"><button class="btnUtama" id="btnKod">Sambung</button></div>`;
+  $('nav').hidden = true; statusUI('Belum disambung', 'wait');
+  $('btnKod').onclick = () => { const v = $('inKod').value.replace(/\D/g, ''); if (v.length < 4) return toast('Kod 4 digit'); location.search = '?bilik=' + v; };
+} else { paparkan('utama'); kemasStatus(); sambung(); }
+window.__klinikTel = { get aktif() { return aktif; }, FR };
+})();
+</script>
+</body>
+</html>

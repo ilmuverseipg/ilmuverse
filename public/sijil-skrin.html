@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@600;700;800&family=Courier+Prime:wght@700&display=swap">
 <style>
+  /* mod embed (Klinik satu QR): tiada QR / kod baru / nota bunyi - telefon sudah bersambung melalui klinik */
+  html.embed #qr, html.embed #url, html.embed #btnQr, html.embed #btnBaru, html.embed #bunyiNota, html.embed .kodBaris { display: none !important; }
   :root {
     --kertas: #eef6ea; --kertas2: #dcebd5; --hijau: #0b5d3b; --hijau2: #158a57; --hijau3: #2fb877; --emas: #e0a526;
     --dakwat: #16324a; --kelabu: #5d7366; --merah: #c8283a; --putih: #ffffff;
@@ -333,7 +335,12 @@ $('jalurTx').textContent = ulang('PENDAFTARAN KATA MAJMUK  ✦  ', 40);
 let sesi = null, pilihan = { bunyi: true, suara: true, muzik: true };
 try { const j = JSON.parse(localStorage.getItem(LS) || 'null'); if (j) { sesi = j.sesi; pilihan = Object.assign(pilihan, j.pilihan || {}); } } catch (e) {}
 if (!sesi || !/^\d{4}$/.test(sesi.kod) || !sesi.kunci) sesi = { kod: kodBaru(), kunci: rnd(16) };
-const simpan = () => { try { localStorage.setItem(LS, JSON.stringify({ sesi, pilihan })); } catch (e) {} };
+// Mod embed (Klinik satu QR): kod & kunci bilik datang dari skrin Klinik.
+const EMBED = new URLSearchParams(location.search).get('embed') === '1';
+const sesiAsal = sesi;
+{ const q = new URLSearchParams(location.search), k = (q.get('bilik') || '').replace(/\D/g, ''), c = q.get('kunci') || ''; if (/^\d{4,6}$/.test(k) && c.length >= 16) sesi = { kod: k, kunci: c, luar: true }; }
+if (EMBED) document.documentElement.classList.add('embed');
+const simpan = () => { try { localStorage.setItem(LS, JSON.stringify({ sesi: sesi.luar ? sesiAsal : sesi, pilihan })); } catch (e) {} };
 simpan();
 
 // =============================================================
@@ -373,6 +380,7 @@ const SFX = {
 KS.amaran = (m) => toast('⚠️ ' + m, 8000);
 function cakap(t, baru = true) { if (!pilihan.suara) return Promise.resolve(); if (baru) KS.diam(); return KS.cakap(t); }
 function bukaBunyi() { audio(); KS.muzik(pilihan.muzik); $('bunyiNota').hidden = true; removeEventListener('pointerdown', bukaBunyi); removeEventListener('keydown', bukaBunyi); }
+window.__embed = { tunjuk(on) { try { if (on) { bukaBunyi(); KS.muzik(pilihan.muzik); } else { KS.muzik(false); KS.diam(); } } catch (e) {} } };
 addEventListener('pointerdown', bukaBunyi); addEventListener('keydown', bukaBunyi);
 function kemasButang() { $('btnBunyi').classList.toggle('off', !pilihan.bunyi); $('btnSuara').classList.toggle('off', !pilihan.suara); $('btnMuzik').classList.toggle('off', !pilihan.muzik); }
 $('btnMuzik').onclick = () => { pilihan.muzik = !pilihan.muzik; simpan(); kemasButang(); KS.muzik(pilihan.muzik); toast(pilihan.muzik ? '🎵 Muzik latar hidup' : 'Muzik latar dimatikan'); };
@@ -490,7 +498,7 @@ function render() {
   if (!d.foto && foto) buangFoto();
   if (d.foto) muatFoto(d.foto.v);
 
-  if (paksaQR || (d.fasa === 'pilih' && !bilTel)) { tunjuk('vSambung'); hentiImbas(); return; }
+  if (paksaQR || (!EMBED && d.fasa === 'pilih' && !bilTel)) { tunjuk('vSambung'); hentiImbas(); return; }
   if (d.fasa === 'pilih') { hentiImbas(); lukisPilih(); tunjuk('vPilih'); return; }
   if (d.fasa === 'ambil') {
     hentiImbas(); lukisAmbil();
@@ -639,7 +647,7 @@ function sambung() {
   };
   ws.onclose = (ev) => {
     wsOk = false; status(); clearInterval(pingT);
-    if (ev.code === 4001) { sesi = { kod: kodBaru(), kunci: rnd(16) }; simpan(); lukisKod(); tunda = 200; }
+    if (ev.code === 4001 && !sesi.luar) { sesi = { kod: kodBaru(), kunci: rnd(16) }; simpan(); lukisKod(); tunda = 200; }
     ulangSambung();
   };
   ws.onerror = () => {};

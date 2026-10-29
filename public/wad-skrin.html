@@ -10,6 +10,8 @@
 <script src="/bobo-bgm.js"></script>
 <script src="/km-suara.js"></script>
 <style>
+  /* mod embed (Klinik satu QR): tiada QR / kod baru / nota bunyi - telefon sudah bersambung melalui klinik */
+  html.embed #qr, html.embed #url, html.embed #btnQr, html.embed #btnBaru, html.embed #bunyiNota, html.embed .kodBaris { display: none !important; }
   :root {
     --malam: #0b1a2b; --malam2: #10243a; --panel: #142c46; --garis: rgba(140, 200, 255, .14);
     --putih: #f4f8ff; --kabur: #9fb4cc; --ecg: #39ff88; --amber: #ffb020; --merah: #ff4d5e; --emas: #ffd23f; --biru: #48a8ff;
@@ -265,7 +267,12 @@ const tunggu = (ms) => new Promise((r) => setTimeout(r, ms));
 let sesi = null, pilihan = { bunyi: true, suara: true, muzik: true };
 try { const j = JSON.parse(localStorage.getItem(LS) || 'null'); if (j) { sesi = j.sesi; pilihan = Object.assign(pilihan, j.pilihan || {}); } } catch (e) {}
 if (!sesi || !/^\d{4}$/.test(sesi.kod) || !sesi.kunci) sesi = { kod: kodBaru(), kunci: rnd(16) };
-const simpan = () => { try { localStorage.setItem(LS, JSON.stringify({ sesi, pilihan })); } catch (e) {} };
+// Mod embed (Klinik satu QR): kod & kunci bilik datang dari skrin Klinik.
+const EMBED = new URLSearchParams(location.search).get('embed') === '1';
+const sesiAsal = sesi;
+{ const q = new URLSearchParams(location.search), k = (q.get('bilik') || '').replace(/\D/g, ''), c = q.get('kunci') || ''; if (/^\d{4,6}$/.test(k) && c.length >= 16) sesi = { kod: k, kunci: c, luar: true }; }
+if (EMBED) document.documentElement.classList.add('embed');
+const simpan = () => { try { localStorage.setItem(LS, JSON.stringify({ sesi: sesi.luar ? sesiAsal : sesi, pilihan })); } catch (e) {} };
 simpan();
 function toast(t, ms = 2600) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), ms); }
 
@@ -298,6 +305,7 @@ const SFX = {
 };
 function cakap(t, baru = true) { if (!pilihan.suara) return Promise.resolve(); if (baru) KS.diam(); return KS.cakap(t); }
 function bukaBunyi() { KS.audio(); KS.muzik(pilihan.muzik); $('bunyiNota').hidden = true; removeEventListener('pointerdown', bukaBunyi); removeEventListener('keydown', bukaBunyi); }
+window.__embed = { tunjuk(on) { try { if (on) { bukaBunyi(); KS.muzik(pilihan.muzik); } else { KS.muzik(false); KS.diam(); } } catch (e) {} } };
 addEventListener('pointerdown', bukaBunyi); addEventListener('keydown', bukaBunyi);
 function kemasButang() { $('btnBunyi').classList.toggle('off', !pilihan.bunyi); $('btnSuara').classList.toggle('off', !pilihan.suara); $('btnMuzik').classList.toggle('off', !pilihan.muzik); }
 $('btnBunyi').onclick = () => { pilihan.bunyi = !pilihan.bunyi; simpan(); kemasButang(); };
@@ -426,7 +434,7 @@ function render() {
   const kunci = `${S.fasa}|${S.idx}|${S.langkah}|${JSON.stringify(S.audit[S.idx] || null)}`;
   const baru = kunci !== kunciLangkah; kunciLangkah = kunci;
 
-  if (paksaQR || (S.fasa === 'sedia' && !bilTel)) { lapis('lQR'); $('jalurSoalan').classList.remove('on'); return; }
+  if (paksaQR || (!EMBED && S.fasa === 'sedia' && !bilTel)) { lapis('lQR'); $('jalurSoalan').classList.remove('on'); return; }
   if (S.fasa === 'sedia') {
     lapis(''); $('jalurSoalan').classList.remove('on');
     const h = kiraSihat(); h.forEach((v, g) => { sihat[g] = v; kemasKatil(g); });
@@ -582,7 +590,7 @@ function sambung() {
       S = d; status(); render();
     } else if (d.jenis === 'bilangan') { const naik = (d.telefon || 0) > bilTel; bilTel = d.telefon || 0; status(); if (naik) { toast('📱 Telefon guru bersambung'); paksaQR = false; } render(); }
   };
-  ws.onclose = (ev) => { wsOk = false; status(); clearInterval(pingT); if (ev.code === 4001) { sesi = { kod: kodBaru(), kunci: rnd(16) }; simpan(); lukisKod(); tunda = 200; } ulang(); };
+  ws.onclose = (ev) => { wsOk = false; status(); clearInterval(pingT); if (ev.code === 4001 && !sesi.luar) { sesi = { kod: kodBaru(), kunci: rnd(16) }; simpan(); lukisKod(); tunda = 200; } ulang(); };
   ws.onerror = () => {};
 }
 function ulang() { setTimeout(sambung, tunda); tunda = Math.min(tunda * 1.7, 8000); }

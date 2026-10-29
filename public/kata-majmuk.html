@@ -68,6 +68,15 @@
   .w-kapsul { --w: #e8434f; } .w-tulang { --w: #14a394; } .w-suntik { --w: #2f80ed; }
   .w-sijil { --w: #16a34a; } .w-jantung { --w: #ff4d6d; }
 
+  .mulaKelas { margin-top: 18px; display: flex; align-items: center; gap: 16px; padding: 18px 20px; border-radius: 20px; text-decoration: none; color: #fff;
+    background: linear-gradient(120deg, #e8434f, #c2185b); box-shadow: 0 12px 30px rgba(232,67,79,.28); transition: transform .18s ease, box-shadow .18s ease; }
+  .mulaKelas:hover { transform: translateY(-3px); box-shadow: 0 18px 38px rgba(232,67,79,.34); }
+  .mulaKelas:focus-visible { outline: 3px solid var(--dakwat); outline-offset: 3px; }
+  .mk-ik { width: 58px; height: 58px; flex: none; border-radius: 16px; background: rgba(255,255,255,.18); display: grid; place-items: center; font-size: 30px; }
+  .mk-t { flex: 1; min-width: 0; }
+  .mk-t b { display: block; font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 24px; line-height: 1.1; }
+  .mk-t span { display: block; font-size: 14.5px; line-height: 1.45; opacity: .95; margin-top: 3px; }
+  .mk-go { font-size: 40px; line-height: 1; opacity: .9; }
   footer { margin-top: 30px; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; justify-content: space-between;
     font-size: 14px; color: var(--kelabu); }
   footer .tip { background: #fff; border: 1px dashed rgba(19,51,76,.22); border-radius: 12px; padding: 9px 13px; }
@@ -94,6 +103,12 @@
       <path d="M2 26 H46 L54 26 L60 8 L68 42 L76 18 L82 26 H112 L118 22 L124 26 H168"/>
     </svg>
   </header>
+
+  <a class="mulaKelas" href="/klinik-tv.html">
+    <span class="mk-ik" aria-hidden="true">📺</span>
+    <span class="mk-t"><b>▶ Mula Kelas · Satu QR</b><span>Buka di PC yang bersambung ke TV. Imbas QR sekali dengan telefon, kemudian kawal semua langkah (Pemasa, Kapsul, Tulang, Suntik, Sijil) dari telefon.</span></span>
+    <span class="mk-go" aria-hidden="true">›</span>
+  </a>
 
   <section class="langkah">
     <h2><b>LANGKAH 1</b> Mengenal pasti kata majmuk</h2>
@@ -172,7 +187,7 @@
           <div class="ikon" aria-hidden="true">💓</div>
           <div>
             <h3>Pemasa Jantung</h3>
-            <p>Pemasa tugasan kumpulan gaya monitor ECG. Guru mulakan setiap kali kumpulan mula menjawab.</p>
+            <p>6 pesakit untuk 6 kumpulan. Kawal dari telefon: set masa, GO / STOP, tekan kumpulan yang siap. Pesakit yang tidak sempat diselamatkan akan flatline.</p>
           </div>
         </div>
         <div class="butang">
