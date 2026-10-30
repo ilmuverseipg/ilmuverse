@@ -56,6 +56,19 @@
   #mula button { font-family: 'Baloo 2'; font-weight: 800; font-size: 4.4vh; color: #fff; background: linear-gradient(135deg, var(--teal2), var(--teal)); border: .5vh solid #fff; border-radius: 99px; padding: 2.2vh 4vw; cursor: pointer; box-shadow: 0 2vh 6vh rgba(0,0,0,.35); animation: denyut 1.6s ease-in-out infinite; }
   #mula p { color: #fff; text-align: center; font-size: 2.2vh; margin: 2vh 0 0; font-weight: 600; }
   @keyframes denyut { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+  /* ===== tajuk sistem (3 saat) ===== */
+  #lTajuk { position: fixed; inset: 0; z-index: 57; display: grid; place-items: center; background: radial-gradient(circle at 50% 45%, var(--wt, #0d9488) 0%, #04121c 72%); color: #fff; text-align: center; transition: opacity .45s; }
+  #lTajuk.keluar { opacity: 0; }
+  #lTajuk .tk { animation: masukT .6s cubic-bezier(.2,1.4,.4,1) both; }
+  #lTajuk .ik { font-size: 16vh; line-height: 1; filter: drop-shadow(0 1.5vh 3vh rgba(0,0,0,.45)); animation: lompatT 1s .2s ease-in-out infinite alternate; }
+  #lTajuk .jen { margin-top: 2.4vh; font-weight: 800; font-size: 3.2vh; letter-spacing: .9vh; color: #ffd23f; }
+  #lTajuk .nm { font-family: 'Baloo 2'; font-weight: 800; font-size: 11vh; line-height: 1.05; margin-top: .6vh; text-shadow: 0 1vh 3vh rgba(0,0,0,.45); }
+  #lTajuk .lb { display: inline-block; margin-top: 2.2vh; padding: .8vh 2vw; border-radius: 99px; background: rgba(255,255,255,.16); border: .25vh solid rgba(255,255,255,.4); font-weight: 800; font-size: 2.4vh; letter-spacing: .3vh; }
+  #lTajuk .bar { width: min(560px, 50vw); height: 1vh; margin: 4vh auto 0; border-radius: 99px; background: rgba(255,255,255,.18); overflow: hidden; }
+  #lTajuk .bar i { display: block; height: 100%; width: 100%; background: #ffd23f; transform-origin: left; animation: barT 3s linear both; }
+  @keyframes masukT { from { transform: scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes lompatT { from { transform: translateY(0) rotate(-4deg); } to { transform: translateY(-1.6vh) rotate(4deg); } }
+  @keyframes barT { from { transform: scaleX(0); } to { transform: scaleX(1); } }
   /* ===== papan mata selepas aktiviti ===== */
   #lPapan { position: fixed; inset: 0; z-index: 55; display: grid; place-items: center; padding: 3vh 3vw; background: rgba(3,12,22,.78); backdrop-filter: blur(5px); }
   .pkad { width: min(1300px, 94vw); background: linear-gradient(180deg, #0e2a42, #071a2b); color: #f4f8ff; border: .4vh solid #ffd23f; border-radius: 3.2vh; padding: 3vh 2.6vw; box-shadow: 0 0 7vh rgba(255,210,63,.35); animation: masukP .55s cubic-bezier(.2,1.3,.4,1) both; }
@@ -106,6 +119,7 @@
   <button id="btnFs" title="Skrin penuh">⛶</button>
 </div>
 <div id="mula"><div><button id="btnMula">▶ MULA KELAS</button><p>Klik sekali untuk hidupkan bunyi, suara &amp; muzik</p></div></div>
+<section id="lTajuk" hidden></section>
 <section id="lPapan" hidden><div class="pkad" id="pkad"></div></section>
 <div id="toast"></div>
 <script src="/km-suara.js"></script>
@@ -129,13 +143,13 @@ simpan();
 // Langkah ikut RPH. 'url' = skrin TV setiap sistem (dimuat dalam iframe, kod bilik sama).
 const q = () => `embed=1&bilik=${sesi.kod}&kunci=${sesi.kunci}`;
 const LANGKAH = [
-  { id: 'jantung', ik: '💓', w: '#ff4d6d', lbl: 'ALAT KELAS', nama: 'Pemasa Jantung', ds: '6 pesakit, 6 kumpulan. Tekan kumpulan yang siap.', url: () => `/pemasa-jantung.html?${q()}` },
-  { id: 'kapsul', ik: '💊', w: '#e8434f', lbl: 'LANGKAH 1', nama: 'Semak Pantas Kapsul', ds: 'Misi Farmasi Jujur. Gambar kapsul, TV dedah BETUL / TIDAK TEPAT.', url: () => `/kapsul-skrin.html?${q()}` },
-  { id: 'makmal', ik: '🧪', w: '#14a394', lbl: 'LANGKAH 2', nama: 'Makmal Racik Ubat', ds: 'Genggam & cantum perkataan / gambar jadi kata majmuk (kawalan tangan).', url: () => '/makmal-ubat.html?embed=1', malas: true },
-  { id: 'galeri', ik: '📸', w: '#0d9488', lbl: 'LANGKAH 2', nama: 'Semakan Kedua · Galeri Bukti', ds: 'Gambar semua lembaran, jawapan, maksud, kemudian cop BETUL / TIDAK TEPAT.', url: () => `/galeri-skrin.html?${q()}` },
-  { id: 'suntik', ik: '💉', w: '#2f80ed', lbl: 'LANGKAH 2', nama: 'Semak & Suntik', ds: 'Kunci jawapan, dedah, Kad Jujur, rawat & audit.', url: () => `/wad-skrin.html?${q()}` },
-  { id: 'sijil', ik: '📜', w: '#16a34a', lbl: 'LANGKAH 3', nama: 'Semak & Cop Sijil', ds: 'Susun ayat dan cop DIDAFTARKAN.', url: () => `/sijil-skrin.html?${q()}` },
-  { id: 'mata', ik: '🏆', w: '#d4a106', lbl: 'PAPAN MATA', nama: 'Papan Mata Kumpulan', ds: 'Mata 6 kumpulan & pemenang (3 terbaik).', url: () => '/papan-mata.html?embed=1' },
+  { id: 'jantung', jen: 'SISTEM PEMASA', ik: '💓', w: '#ff4d6d', lbl: 'ALAT KELAS', nama: 'Pemasa Jantung', ds: '6 pesakit, 6 kumpulan. Tekan kumpulan yang siap.', url: () => `/pemasa-jantung.html?${q()}` },
+  { id: 'kapsul', jen: 'SISTEM SEMAKAN', ik: '💊', w: '#e8434f', lbl: 'LANGKAH 1', nama: 'Semak Pantas Kapsul', ds: 'Misi Imbasan X-Ray Kata Majmuk. Gambar kapsul, TV dedah BETUL / TIDAK TEPAT.', url: () => `/kapsul-skrin.html?${q()}` },
+  { id: 'makmal', jen: 'PERMAINAN KAWALAN TANGAN', ik: '🧪', w: '#14a394', lbl: 'LANGKAH 2', nama: 'Makmal Racik Ubat', ds: 'Genggam & cantum perkataan / gambar jadi kata majmuk (kawalan tangan).', url: () => '/makmal-ubat.html?embed=1', malas: true },
+  { id: 'galeri', jen: 'SISTEM SEMAKAN', ik: '📸', w: '#0d9488', lbl: 'LANGKAH 2', nama: 'Galeri Bukti', ds: 'Gambar semua lembaran, jawapan, maksud, kemudian cop BETUL / TIDAK TEPAT.', url: () => `/galeri-skrin.html?${q()}` },
+  { id: 'suntik', jen: 'SISTEM SEMAKAN', ik: '💉', w: '#2f80ed', lbl: 'LANGKAH 2', nama: 'Semak & Suntik', ds: 'Kunci jawapan, dedah, Kad Jujur, rawat & audit.', url: () => `/wad-skrin.html?${q()}` },
+  { id: 'sijil', jen: 'SISTEM SEMAKAN', ik: '📜', w: '#16a34a', lbl: 'LANGKAH 3', nama: 'Semak & Cop Sijil', ds: 'Susun ayat dan cop DIDAFTARKAN.', url: () => `/sijil-skrin.html?${q()}` },
+  { id: 'mata', jen: 'SISTEM MATA', ik: '🏆', w: '#d4a106', lbl: 'PAPAN MATA', nama: 'Papan Mata Kumpulan', ds: 'Mata 6 kumpulan & pemenang (3 terbaik).', url: () => '/papan-mata.html?embed=1' },
 ];
 const FR = {};
 function binaFrame(L) {
@@ -163,6 +177,18 @@ async function lukisKod() {
 // ---------- tukar langkah ----------
 let aktif = 'utama', dibuka = false, bilTel = 0, wsOk = false;
 function tunjukFrame(id, on) { const f = FR[id]; try { f && f.contentWindow && f.contentWindow.__embed && f.contentWindow.__embed.tunjuk(on); } catch (e) {} }
+// skrin tajuk 3 saat setiap kali sistem dibuka
+let tajukT = [];
+function nadaT(f, m, t, v) { try { const a = KMSuara.audio(); if (!a || !dibuka) return; const o = a.createOscillator(), g = a.createGain(), s = a.currentTime + m; o.type = 'triangle'; o.frequency.setValueAtTime(f, s); g.gain.setValueAtTime(.0001, s); g.gain.exponentialRampToValueAtTime(v, s + .02); g.gain.exponentialRampToValueAtTime(.0001, s + t); o.connect(g).connect(KMSuara.keluaran()); o.start(s); o.stop(s + t + .05); } catch (e) {} }
+function tunjukTajuk(L) {
+  const el = $('lTajuk'); tajukT.forEach(clearTimeout); tajukT = [];
+  if (!L) { el.hidden = true; return; }
+  el.style.setProperty('--wt', L.w);
+  el.innerHTML = `<div class="tk"><div class="ik">${L.ik}</div><div class="jen">${L.jen || ''}</div><div class="nm">${L.nama}</div><div class="lb">${L.lbl}</div><div class="bar"><i></i></div></div>`;
+  el.classList.remove('keluar'); el.hidden = false;
+  [523, 659, 784, 1047].forEach((f, i) => nadaT(f, i * .09, .35, .12));
+  tajukT.push(setTimeout(() => el.classList.add('keluar'), 2600), setTimeout(() => { el.hidden = true; el.classList.remove('keluar'); }, 3050));
+}
 function paparkan(id) {
   const lama = aktif; aktif = id;
   const L = LANGKAH.find((x) => x.id === id);
@@ -173,7 +199,9 @@ function paparkan(id) {
   $('jalurTx').textContent = L ? `${L.ik} ${L.nama}` : '';
   // senyapkan sistem lama, hidupkan sistem baharu
   if (lama !== id) { if (FR[lama]) tunjukFrame(lama, false); }
-  if (dibuka && FR[id]) tunjukFrame(id, true);
+  if (lama !== id) tunjukTajuk(L);
+  // sistem baharu mula bersuara selepas skrin tajuk
+  if (dibuka && FR[id]) { if (lama !== id && L) tajukT.push(setTimeout(() => { if (aktif === id) tunjukFrame(id, true); }, 3000)); else tunjukFrame(id, true); }
   // tutup kamera Sambung Tulang bila keluar
   if (lama === 'makmal' && id !== 'makmal' && FR.makmal) { FR.makmal.remove(); delete FR.makmal; } // tutup kamera
   if (L) { try { FR[id].focus(); } catch (e) {} }

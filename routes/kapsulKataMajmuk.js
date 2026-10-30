@@ -35,7 +35,7 @@ const JENIS = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const SLOT = new Set(['1', '2', 'k']);
 
 // ------------------------------------------------------------
-// JAWAPAN ASAL (Langkah 1 "Misi Farmasi Jujur" - 6 set x 4 kapsul)
+// JAWAPAN ASAL (Langkah 1 "Misi Imbasan X-Ray Kata Majmuk" - 6 set x 4 kapsul)
 // [perkataan 1, perkataan 2, emoji 1, emoji 2, emoji kata majmuk]
 // ------------------------------------------------------------
 const ASAL = [

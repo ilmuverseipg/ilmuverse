@@ -114,8 +114,8 @@ function mesej(ws, d) {
       if (i < 2) b.langkah = LANGKAH[i + 1];
       else if (b.idx < b.bilSoalan - 1) { b.idx++; b.langkah = 'jawapan'; }
       else { b.mata = kiraMata(b); b.fasa = 'tamat';
-        kelas.rekod(`semakKedua:${b.kod}:${b.pusingan}`, 'Semakan Kedua · Galeri Bukti', b.mata);
-        klinik.papan(b.kod, { label: 'Semakan Kedua · Galeri Bukti', ik: '📸', tambah: b.mata, nota: '1 mata untuk setiap jawapan BETUL', tunda: 6000 }); }
+        kelas.rekod(`semakKedua:${b.kod}:${b.pusingan}`, 'Galeri Bukti', b.mata);
+        klinik.papan(b.kod, { label: 'Galeri Bukti', ik: '📸', tambah: b.mata, nota: '1 mata untuk setiap jawapan BETUL', tunda: 6000 }); }
       siar(b); break;
     }
     case 'sebelum': {
