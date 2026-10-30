@@ -131,7 +131,7 @@ const q = () => `embed=1&bilik=${sesi.kod}&kunci=${sesi.kunci}`;
 const LANGKAH = [
   { id: 'jantung', ik: '💓', w: '#ff4d6d', lbl: 'ALAT KELAS', nama: 'Pemasa Jantung', ds: '6 pesakit, 6 kumpulan. Tekan kumpulan yang siap.', url: () => `/pemasa-jantung.html?${q()}` },
   { id: 'kapsul', ik: '💊', w: '#e8434f', lbl: 'LANGKAH 1', nama: 'Semak Pantas Kapsul', ds: 'Misi Farmasi Jujur. Gambar kapsul, TV dedah BETUL / TIDAK TEPAT.', url: () => `/kapsul-skrin.html?${q()}` },
-  { id: 'tulang', ik: '🦴', w: '#14a394', lbl: 'LANGKAH 2', nama: 'Sambung Tulang', ds: 'Kuiz AR kawalan tangan di depan kamera.', url: () => '/sambung-tulang.html', malas: true },
+  { id: 'makmal', ik: '🧪', w: '#14a394', lbl: 'LANGKAH 2', nama: 'Makmal Ubat Ajaib', ds: 'Genggam & cantum perkataan / gambar jadi kata majmuk (kawalan tangan).', url: () => '/makmal-ubat.html?embed=1', malas: true },
   { id: 'galeri', ik: '📸', w: '#0d9488', lbl: 'LANGKAH 2', nama: 'Semak Sendiri · Galeri Bukti', ds: 'Kumpulan semak sendiri, TV papar bukti semua lembaran & audit rawak.', url: () => `/galeri-skrin.html?${q()}` },
   { id: 'suntik', ik: '💉', w: '#2f80ed', lbl: 'LANGKAH 2', nama: 'Semak & Suntik', ds: 'Kunci jawapan, dedah, Kad Jujur, rawat & audit.', url: () => `/wad-skrin.html?${q()}` },
   { id: 'sijil', ik: '📜', w: '#16a34a', lbl: 'LANGKAH 3', nama: 'Semak & Cop Sijil', ds: 'Susun ayat dan cop DIDAFTARKAN.', url: () => `/sijil-skrin.html?${q()}` },
@@ -175,7 +175,7 @@ function paparkan(id) {
   if (lama !== id) { if (FR[lama]) tunjukFrame(lama, false); }
   if (dibuka && FR[id]) tunjukFrame(id, true);
   // tutup kamera Sambung Tulang bila keluar
-  if (lama === 'tulang' && id !== 'tulang' && FR.tulang) { FR.tulang.remove(); delete FR.tulang; }
+  if (lama === 'makmal' && id !== 'makmal' && FR.makmal) { FR.makmal.remove(); delete FR.makmal; } // tutup kamera
   if (L) { try { FR[id].focus(); } catch (e) {} }
 }
 function pilih(id) { if (!hantar({ jenis: 'pilih', aktif: id })) paparkan(id); }
@@ -213,6 +213,8 @@ function sambung() {
       urusPapan(d.papan);
     } else if (d.jenis === 'kelas') {
       muatKelasSemua();
+    } else if (d.jenis === 'perintah') {
+      try { const w = FR[d.sasaran] && FR[d.sasaran].contentWindow; if (w && w.__perintah) w.__perintah(d.arahan); } catch (e) {}
     } else if (d.jenis === 'podium') {
       paparkan('mata');
       const cuba = (n) => { const w = FR.mata && FR.mata.contentWindow; if (w && w.__papan) w.__papan.podium(); else if (n < 30) setTimeout(() => cuba(n + 1), 200); };

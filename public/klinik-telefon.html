@@ -94,7 +94,7 @@ const LANGKAH = [
   { id: 'utama', ik: '🏠', pendek: 'Menu', nama: 'Klinik Kata Majmuk', w: '#14a394' },
   { id: 'jantung', ik: '💓', pendek: 'Pemasa', nama: 'Pemasa Jantung', lbl: 'ALAT KELAS', ds: 'Set masa, GO / STOP, tekan kumpulan yang siap.', w: '#ff4d6d', url: () => `/pemasa-telefon.html?embed=1&bilik=${kod}` },
   { id: 'kapsul', ik: '💊', pendek: 'Kapsul', nama: 'Semak Pantas Kapsul', lbl: 'LANGKAH 1', ds: 'Ambil gambar kapsul, tanda BETUL / TIDAK TEPAT.', w: '#e8434f', url: () => `/kapsul-telefon.html?embed=1&bilik=${kod}` },
-  { id: 'tulang', ik: '🦴', pendek: 'Tulang', nama: 'Sambung Tulang', lbl: 'LANGKAH 2', ds: 'Dimainkan di TV dengan tangan.', w: '#14a394' },
+  { id: 'makmal', ik: '🧪', pendek: 'Makmal', nama: 'Makmal Ubat Ajaib', lbl: 'LANGKAH 2', ds: 'Permainan tangan di TV: cantum perkataan & gambar. Kawal mula / seterusnya dari sini.', w: '#14a394' },
   { id: 'galeri', ik: '📸', pendek: 'Semak', nama: 'Semak Sendiri · Galeri Bukti', lbl: 'LANGKAH 2', ds: 'Dedah jawapan, gambar lembaran, isytihar markah, audit rawak.', w: '#0d9488', url: () => `/galeri-telefon.html?embed=1&bilik=${kod}` },
   { id: 'suntik', nav: false, ik: '💉', pendek: 'Suntik', nama: 'Semak & Suntik', lbl: 'LANGKAH 2', ds: 'Kunci, dedah, Kad Jujur, rawat & audit.', w: '#2f80ed', url: () => `/wad-telefon.html?embed=1&bilik=${kod}` },
   { id: 'sijil', ik: '📜', pendek: 'Sijil', nama: 'Semak & Cop Sijil', lbl: 'LANGKAH 3', ds: 'Ambil gambar sijil, semak susun ayat.', w: '#16a34a', url: () => `/sijil-telefon.html?embed=1&bilik=${kod}` },
@@ -112,14 +112,16 @@ function lukisMenu() {
     ${LANGKAH.filter((x) => x.id !== 'utama').map((x) => `<button class="kadL" data-id="${x.id}" style="--w:${x.w}"><span class="ik">${x.ik}</span><span><span class="tg"><small>${x.lbl}</small>${x.nama}</span><span class="ds" style="display:block">${x.ds}</span></span>${aktif === x.id ? '<span class="on">● di TV</span>' : ''}</button>`).join('')}`;
   $('pMenu').querySelectorAll('.kadL').forEach((b) => b.onclick = () => { getar(10); pilih(b.dataset.id); });
 }
-$('pTulang').innerHTML = `<h2>🦴 Sambung Tulang</h2><p class="sub">Permainan ini dimainkan di TV menggunakan tangan murid. Telefon tidak perlu buat apa-apa.</p>
-  <div class="tulangK"><b>Cara main (di PC / TV)</b><ol>
-    <li>Pilih kumpulan dan tekan <b>▶ MULA</b> di TV.</li>
-    <li>Benarkan kamera bila diminta.</li>
-    <li><b>Genggam</b> tangan di atas separuh tulang untuk mengambilnya.</li>
-    <li>Bawa ke tulang patah yang sepadan, kemudian <b>buka</b> tangan.</li>
-    <li>Tekan <b>▶ Kumpulan Seterusnya</b> untuk kumpulan lain.</li></ol></div>
-  <button class="btnUtama" id="btnKeMenu">🏠 Kembali ke menu</button>`;
+$('pTulang').innerHTML = `<h2>🧪 Makmal Ubat Ajaib</h2><p class="sub">Murid bermain di depan TV dengan tangan: ✋ gerak · ✊ genggam kepingan · 🖐️ lepas di mesin ubat. 3 soalan cantum perkataan + 2 soalan cantum gambar.</p>
+  <div class="tulangK" style="display:grid;gap:10px">
+    <button class="btnUtama" data-a="mula">▶ Mula / Teruskan</button>
+    <button class="btnKedua2" data-a="langkau">⏭ Soalan seterusnya</button>
+    <button class="btnKedua2" data-a="ulang">🔁 Main semula dari soalan 1</button>
+    <button class="btnKedua2" data-a="tajuk">🏠 Skrin tajuk</button>
+  </div>
+  <p class="sub">Tukar soalan atau muat naik gambar: tekan ⚙️ pada skrin TV (guna tetikus di PC).</p>
+  <button class="btnKedua2" id="btnKeMenu">↩ Kembali ke menu Klinik</button>`;
+$('pTulang').querySelectorAll('[data-a]').forEach((b) => b.onclick = () => { getar(15); if (!hantar({ jenis: 'perintah', sasaran: 'makmal', arahan: b.dataset.a })) toast('Belum bersambung ke TV…'); });
 $('btnKeMenu').onclick = () => pilih('utama');
 
 // iframe sistem (dimuat bila pertama kali dibuka, kekal bersambung selepas itu)
@@ -131,7 +133,7 @@ function paparkan(id) {
   if (x.url && !FR[id]) { const f = document.createElement('iframe'); f.title = x.nama; f.setAttribute('allow', 'camera; autoplay'); f.src = x.url(); $('isi').appendChild(f); FR[id] = f; }
   Object.keys(FR).forEach((k) => FR[k].classList.toggle('on', k === id));
   $('pMenu').classList.toggle('on', id === 'utama');
-  $('pTulang').classList.toggle('on', id === 'tulang');
+  $('pTulang').classList.toggle('on', id === 'makmal');
   document.querySelectorAll('#nav button').forEach((b) => b.classList.toggle('on', b.dataset.id === id));
   $('tajuk').textContent = x.id === 'utama' ? 'Klinik Kata Majmuk' : `${x.ik} ${x.nama}`;
   if (id === 'utama') lukisMenu();

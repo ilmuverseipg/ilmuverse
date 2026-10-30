@@ -37,6 +37,8 @@ const klinikKM = require('../routes/klinikKM');
 const kelasKM = require('../routes/kelasKM');
 // [SEMAK SENDIRI · GALERI BUKTI] Langkah 2 Suntikan: kumpulan semak sendiri, TV papar bukti
 const galeriKM = require('../routes/semakSendiri');
+// [MAKMAL UBAT AJAIB] Langkah 2 Aktiviti 1: permainan genggam tangan (cantum perkataan / gambar)
+const makmalUbat = require('../routes/makmalUbat');
 
 const app = express();
 const server = http.createServer(app);
@@ -72,6 +74,7 @@ sijilKM.pasang(app);
 wadKM.pasang(app);
 kelasKM.pasang(app);
 galeriKM.pasang(app);
+makmalUbat.pasang(app);
 // [STORAN] Peratus penggunaan MongoDB & RAM Render (bar atas guru.html)
 require('../routes/storan')(app);
 

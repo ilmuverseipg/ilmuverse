@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Makmal Ubat Ajaib — Klinik Dr. Izuddin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Fredoka:wght@500;600;700&display=swap">
+<script>window.BOBO_BGM_KEY = 'km_bgm';</script>
+<script src="/km-suara.js"></script>
+<style>
+  :root { --teal: #0f766e; --teal2: #14b8a6; --mint: #dff7f0; --dakwat: #13334c; --kelabu: #5b7285; --merah: #e8434f; --hijau: #16a34a; --emas: #f6b81a; --ungu: #8b5cf6;
+    --bayang: 0 1.4vh 3.4vh rgba(19,51,76,.16), 0 .3vh .8vh rgba(19,51,76,.08); }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; height: 100%; overflow: hidden; font-family: 'Fredoka', system-ui, sans-serif; color: var(--dakwat); user-select: none; -webkit-user-select: none; touch-action: none; }
+  body { background:
+      linear-gradient(transparent 96%, rgba(15,118,110,.06) 96%) 0 0 / 6vh 6vh,
+      linear-gradient(90deg, transparent 96%, rgba(15,118,110,.06) 96%) 0 0 / 6vh 6vh,
+      radial-gradient(circle at 15% 10%, #fff 0, transparent 45%), linear-gradient(180deg, #e9fbf6 0%, #cfeee6 100%); }
+  /* rak makmal hiasan */
+  .rak { position: fixed; top: 9vh; height: 11vh; width: 22vw; border-bottom: 1.2vh solid #b98b5e; display: flex; align-items: flex-end; justify-content: space-around; font-size: 6vh; opacity: .55; pointer-events: none; }
+  .rak.kiri { left: 1vw; } .rak.kanan { right: 1vw; }
+  .rak span { animation: goyang 4s ease-in-out infinite; } .rak span:nth-child(2) { animation-delay: -1.3s; } .rak span:nth-child(3) { animation-delay: -2.6s; }
+  @keyframes goyang { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+
+  /* bar atas */
+  .atas { position: fixed; left: 0; right: 0; top: 0; height: 8vh; z-index: 10; display: flex; align-items: center; gap: 1vw; padding: 0 1.6vw; background: linear-gradient(90deg, var(--teal), #0b5f58); color: #fff; box-shadow: 0 .6vh 2vh rgba(0,0,0,.14); }
+  .atas .jn { font-family: 'Baloo 2'; font-weight: 800; font-size: 3.4vh; display: flex; align-items: center; gap: .6vw; }
+  .atas .jn small { font-family: 'Fredoka'; font-size: 1.6vh; opacity: .85; font-weight: 600; letter-spacing: .2vh; }
+  .atas .no { margin-left: 1vw; background: rgba(255,255,255,.16); border-radius: 99px; padding: .6vh 1.2vw; font-weight: 700; font-size: 2.1vh; }
+  .atas .jenis { background: var(--emas); color: #3b2600; border-radius: 99px; padding: .6vh 1.2vw; font-weight: 800; font-size: 2.1vh; }
+  .atas .alat { margin-left: auto; display: flex; gap: .4vw; }
+  .atas button { font: inherit; font-weight: 700; font-size: 1.8vh; color: #fff; background: rgba(255,255,255,.14); border: 0; border-radius: 1.2vh; padding: .8vh .9vw; cursor: pointer; }
+  .atas button.off { opacity: .45; }
+  html.embed .atas .keluar { display: none; }
+
+  /* ===== tajuk ===== */
+  .skrin { position: fixed; inset: 8vh 0 0 0; display: flex; align-items: center; justify-content: center; }
+  #sTajuk { flex-direction: column; text-align: center; }
+  .kelalang { font-size: 18vh; line-height: 1; position: relative; animation: lompat 1.6s ease-in-out infinite; filter: drop-shadow(0 2vh 2vh rgba(15,118,110,.3)); }
+  @keyframes lompat { 0%, 100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-2.4vh) rotate(6deg); } }
+  .gelembung { position: absolute; border-radius: 50%; background: rgba(20,184,166,.35); animation: naik 2.4s ease-in infinite; }
+  @keyframes naik { from { transform: translateY(0) scale(.6); opacity: .9; } to { transform: translateY(-22vh) scale(1.3); opacity: 0; } }
+  .tajukBesar { font-family: 'Baloo 2'; font-weight: 800; font-size: 13vh; line-height: .9; margin: 1vh 0 0; background: linear-gradient(180deg, #0f766e, #0b4f4a); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 .5vh 0 #fff); animation: masuk .8s cubic-bezier(.2,1.4,.4,1) both; }
+  .tajukBesar span { color: var(--merah); -webkit-text-fill-color: var(--merah); }
+  .subT { font-size: 3.2vh; font-weight: 600; color: var(--kelabu); margin: 1.6vh 0 4vh; animation: masuk .8s .2s both; }
+  .subT b { color: var(--teal); }
+  @keyframes masuk { from { transform: scale(.4); opacity: 0; } to { transform: none; opacity: 1; } }
+  .butangBesar { font-family: 'Baloo 2'; font-weight: 800; font-size: 5vh; color: #fff; background: linear-gradient(135deg, var(--merah), #c2185b); border: .6vh solid #fff; border-radius: 99px; padding: 1.8vh 5vw; cursor: pointer; box-shadow: 0 1.2vh 0 #8f1239, var(--bayang); animation: denyut 1.4s ease-in-out infinite, masuk .8s .35s both; }
+  .butangBesar.hijau { background: linear-gradient(135deg, #22c55e, #15803d); box-shadow: 0 1.2vh 0 #14532d, var(--bayang); }
+  .butangBesar.hover { transform: scale(1.08); }
+  @keyframes denyut { 0%, 100% { scale: 1; } 50% { scale: 1.05; } }
+  .nota { margin-top: 3vh; color: var(--kelabu); font-size: 2.2vh; }
+
+  /* ===== pengenalan ===== */
+  #sIntro .kadI { background: #fff; border-radius: 4vh; padding: 5vh 6vw; text-align: center; box-shadow: var(--bayang); animation: masuk .5s cubic-bezier(.2,1.4,.4,1) both; min-width: 50vw; }
+  #sIntro .ik { font-size: 22vh; line-height: 1; }
+  #sIntro .tx { font-family: 'Baloo 2'; font-weight: 800; font-size: 7vh; margin-top: 1vh; }
+  #sIntro .titik { display: flex; gap: 1vw; justify-content: center; margin-top: 2vh; }
+  #sIntro .titik i { width: 2vh; height: 2vh; border-radius: 50%; background: #cfeee6; } #sIntro .titik i.on { background: var(--teal); }
+
+  /* ===== permainan ===== */
+  #sMain { display: block; }
+  .preskripsi { position: absolute; left: 50%; top: 2vh; transform: translateX(-50%); display: flex; align-items: center; gap: 1.6vw; background: #fff; border-radius: 3vh; padding: 1.4vh 2vw 1.4vh 1.4vh; box-shadow: var(--bayang); border: .4vh solid #fff; max-width: 70vw; }
+  .preskripsi .rx { font-family: 'Baloo 2'; font-weight: 800; font-size: 6vh; color: var(--merah); line-height: 1; }
+  .preskripsi .gb { width: 14vh; height: 14vh; border-radius: 2vh; background: var(--mint); display: grid; place-items: center; overflow: hidden; font-size: 9vh; flex: none; }
+  .preskripsi .gb img { width: 100%; height: 100%; object-fit: cover; }
+  .preskripsi .lbl { font-size: 2vh; font-weight: 700; color: var(--kelabu); letter-spacing: .2vh; }
+  .preskripsi .mk { font-family: 'Baloo 2'; font-weight: 800; font-size: 4vh; line-height: 1.1; }
+  /* mesin */
+  .mesin { position: absolute; left: 50%; top: 23vh; transform: translateX(-50%); width: 76vw; height: 36vh; display: flex; align-items: center; justify-content: center; gap: 2vw; }
+  .slot { position: relative; width: 22vw; height: 26vh; border-radius: 3vh; border: .6vh dashed #7cc9bb; background: rgba(255,255,255,.65); display: grid; place-items: center; transition: background .2s, border-color .2s, transform .2s; }
+  .slot .no { position: absolute; top: -2.2vh; left: 50%; transform: translateX(-50%); background: var(--teal); color: #fff; font-family: 'Baloo 2'; font-weight: 800; font-size: 2.6vh; width: 4.4vh; height: 4.4vh; border-radius: 50%; display: grid; place-items: center; box-shadow: 0 .4vh 1vh rgba(0,0,0,.15); }
+  .slot .corong { font-size: 5vh; opacity: .35; }
+  .slot.sedia { background: #fff8d6; border-color: var(--emas); transform: scale(1.04); }
+  .op { font-family: 'Baloo 2'; font-weight: 800; font-size: 9vh; color: var(--teal2); }
+  .hasil { position: relative; width: 24vw; height: 28vh; display: grid; place-items: center; }
+  .kapsulKosong { width: 18vw; height: 11vh; border-radius: 99px; background: linear-gradient(90deg, #ffd1d6 50%, #fff 50%); border: .5vh solid #f3a3ac; opacity: .55; display: grid; place-items: center; font-size: 4vh; color: var(--merah); font-weight: 800; }
+  .mesin.proses .kapsulKosong { animation: gegar .15s linear infinite; opacity: 1; }
+  @keyframes gegar { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(-4px, 2px); } 75% { transform: translate(4px, -2px); } }
+  .mesin.tidak .slot { border-color: var(--merah); background: #ffe8ea; animation: gegar .12s linear 5; }
+  .kapsulJadi { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1vh; animation: keluar .7s cubic-bezier(.2,1.6,.4,1) both; }
+  @keyframes keluar { from { transform: scale(.2) rotate(-30deg); opacity: 0; } to { transform: none; opacity: 1; } }
+  .kapsulJadi .gb { width: 16vh; height: 16vh; border-radius: 2.4vh; overflow: hidden; background: #fff; border: .6vh solid var(--emas); display: grid; place-items: center; font-size: 10vh; box-shadow: var(--bayang); }
+  .kapsulJadi .gb img { width: 100%; height: 100%; object-fit: cover; }
+  .kapsulJadi .km { font-family: 'Baloo 2'; font-weight: 800; font-size: 5.2vh; color: #fff; background: linear-gradient(90deg, var(--merah) 50%, var(--teal) 50%); border-radius: 99px; padding: .4vh 2.4vw; box-shadow: var(--bayang); white-space: nowrap; }
+  /* kepingan */
+  .rumah { position: absolute; left: 50%; bottom: 4vh; transform: translateX(-50%); width: 92vw; height: 24vh; display: flex; justify-content: center; gap: 2vw; }
+  .rumah .tempat { width: 20vw; height: 22vh; border-radius: 3vh; background: rgba(255,255,255,.35); border: .3vh dashed rgba(15,118,110,.25); }
+  .keping { position: fixed; z-index: 5; width: 20vw; height: 22vh; border-radius: 3vh; background: #fff; box-shadow: var(--bayang); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .6vh; border: .55vh solid #fff;
+    transition: left .45s cubic-bezier(.3,1.3,.5,1), top .45s cubic-bezier(.3,1.3,.5,1), transform .2s, box-shadow .2s; cursor: grab; }
+  .keping .tx { font-family: 'Baloo 2'; font-weight: 800; font-size: 6.6vh; line-height: 1; color: var(--dakwat); }
+  .keping .gb { width: 15vh; height: 15vh; border-radius: 2vh; overflow: hidden; display: grid; place-items: center; font-size: 10vh; background: var(--mint); }
+  .keping .gb img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+  .keping.gambar .lb { font-weight: 700; font-size: 2.2vh; color: var(--kelabu); opacity: 0; transition: opacity .3s; }
+  .keping.dlmSlot.gambar .lb { opacity: 1; }
+  .keping.seret { transition: transform .15s, box-shadow .15s; transform: scale(1.1) rotate(-3deg); box-shadow: 0 3vh 5vh rgba(19,51,76,.3); z-index: 8; cursor: grabbing; }
+  .keping.dekat { border-color: var(--emas); }
+  .keping.dlmSlot { border-color: var(--teal2); }
+  .mesin.betul .slot, .keping.betul { border-color: var(--hijau); }
+  /* kilat keputusan */
+  .kilat { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; pointer-events: none; }
+  .kilat div { font-family: 'Baloo 2'; font-weight: 800; font-size: 16vh; padding: 0 4vw; border-radius: 4vh; animation: kilatM 1.3s ease both; text-shadow: 0 .6vh 0 rgba(0,0,0,.12); }
+  .kilat.betul div { color: #fff; background: var(--hijau); box-shadow: 0 0 0 1vh #fff, var(--bayang); }
+  .kilat.tidak div { color: #fff; background: var(--merah); box-shadow: 0 0 0 1vh #fff, var(--bayang); font-size: 12vh; }
+  @keyframes kilatM { 0% { transform: scale(.3); opacity: 0; } 18% { transform: scale(1.12); opacity: 1; } 30% { transform: scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: scale(.9); } }
+  .seterus { position: absolute; right: 3vw; top: 3vh; }
+  .seterus .butangBesar { font-size: 3.6vh; padding: 1.4vh 3vw; animation: masuk .5s both, denyut 1.4s ease-in-out infinite; }
+
+  /* ===== tamat ===== */
+  #sTamat { flex-direction: column; text-align: center; gap: 2vh; }
+  #sTamat h1 { margin: 0; font-family: 'Baloo 2'; font-weight: 800; font-size: 8vh; color: var(--teal); animation: masuk .7s cubic-bezier(.2,1.4,.4,1) both; }
+  .senaraiUbat { display: flex; gap: 1.4vw; flex-wrap: wrap; justify-content: center; max-width: 92vw; }
+  .ubatK { background: #fff; border-radius: 2.4vh; padding: 1.4vh 1.2vw; box-shadow: var(--bayang); display: flex; flex-direction: column; align-items: center; gap: .8vh; animation: masuk .6s cubic-bezier(.2,1.4,.4,1) both; }
+  .ubatK .gb { width: 14vh; height: 14vh; border-radius: 2vh; overflow: hidden; background: var(--mint); display: grid; place-items: center; font-size: 8vh; }
+  .ubatK .gb img { width: 100%; height: 100%; object-fit: cover; }
+  .ubatK b { font-family: 'Baloo 2'; font-weight: 800; font-size: 3.2vh; }
+  .barisB { display: flex; gap: 2vw; justify-content: center; }
+
+  /* kursor tangan & kamera */
+  #handCur { position: fixed; left: 0; top: 0; width: 11vh; height: 11vh; margin: -5.5vh 0 0 -5.5vh; border-radius: 50%; z-index: 50; pointer-events: none; display: none; align-items: center; justify-content: center; font-size: 5vh;
+    background: rgba(255,255,255,.45); border: .7vh solid var(--teal); box-shadow: 0 0 0 .35vh #fff, 0 0 3vh rgba(15,118,110,.6); }
+  #handCur.on { display: flex; }
+  #handCur.down { background: rgba(246,184,26,.6); border-color: #d97706; transform: scale(.85); }
+  #kam { position: fixed; left: 1.4vw; bottom: 2vh; width: 15vw; z-index: 12; border-radius: 1.6vh; border: .45vh solid #fff; box-shadow: var(--bayang); transform: scaleX(-1); display: none; }
+  #kam.on { display: block; }
+  #kamTx { position: fixed; left: 1.4vw; bottom: calc(2vh + 15vw * .75 + .6vh); z-index: 12; background: rgba(19,51,76,.85); color: #fff; font-weight: 700; font-size: 1.7vh; border-radius: 99px; padding: .4vh 1vw; display: none; }
+  #kamTx.on { display: block; }
+  #toast { position: fixed; left: 50%; top: 10vh; transform: translate(-50%, -30vh); z-index: 60; background: var(--dakwat); color: #fff; font-weight: 700; font-size: 2.2vh; padding: 1vh 2vw; border-radius: 99px; transition: transform .3s; text-align: center; max-width: 90vw; }
+  #toast.on { transform: translate(-50%, 0); }
+  #konfeti { position: fixed; inset: 0; z-index: 30; pointer-events: none; }
+
+  /* ===== tetapan guru ===== */
+  #tetapan { position: fixed; inset: 0; z-index: 70; background: rgba(8,20,34,.6); display: grid; place-items: center; padding: 3vh 2vw; }
+  #tetapan .kotak { width: min(1200px, 96vw); max-height: 92vh; overflow: auto; background: #fff; border-radius: 22px; padding: 22px; font-size: 15px; }
+  #tetapan h2 { margin: 0 0 4px; font-family: 'Baloo 2'; font-weight: 800; font-size: 26px; }
+  #tetapan .sub { color: var(--kelabu); margin: 0 0 14px; }
+  .sRow { border: 2px solid #e2efeb; border-radius: 16px; padding: 12px; margin-bottom: 10px; display: grid; grid-template-columns: 34px 130px repeat(4, 1fr); gap: 8px; align-items: center; }
+  .sRow b { font-family: 'Baloo 2'; font-size: 22px; color: var(--teal); }
+  .sRow input, .sRow select { width: 100%; font: inherit; padding: 8px; border: 2px solid #d6e9e4; border-radius: 10px; }
+  .sRow .maksud { grid-column: 2 / -1; }
+  .sRow .gbr { grid-column: 2 / -1; display: flex; gap: 8px; flex-wrap: wrap; }
+  .gs { width: 84px; text-align: center; font-size: 12px; color: var(--kelabu); cursor: pointer; }
+  .gs .k { width: 84px; height: 84px; border-radius: 12px; border: 2px dashed #b9dcd3; display: grid; place-items: center; overflow: hidden; font-size: 28px; background: #f5fbf9; position: relative; }
+  .gs .k img { width: 100%; height: 100%; object-fit: cover; }
+  .gs .k.guru { border-style: solid; border-color: var(--emas); }
+  .gs .x { position: absolute; right: 2px; top: 2px; background: var(--merah); color: #fff; border-radius: 50%; width: 20px; height: 20px; font-size: 13px; line-height: 20px; }
+  .tBtn { display: flex; gap: 10px; justify-content: flex-end; margin-top: 12px; }
+  .tBtn button { font: inherit; font-weight: 700; padding: 10px 18px; border-radius: 12px; border: 2px solid #d6e9e4; background: #fff; cursor: pointer; }
+  .tBtn .utama { background: var(--teal); border-color: var(--teal); color: #fff; }
+  .ralat { color: var(--merah); font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="rak kiri" aria-hidden="true"><span>🧪</span><span>💊</span><span>⚗️</span></div>
+<div class="rak kanan" aria-hidden="true"><span>🩺</span><span>🧴</span><span>💉</span></div>
+
+<div class="atas">
+  <div class="jn">🧪 Makmal Ubat Ajaib <small>KLINIK DR. IZUDDIN · KATA MAJMUK</small></div>
+  <span class="no" id="noTx" hidden></span>
+  <span class="jenis" id="jenisTx" hidden></span>
+  <div class="alat">
+    <button id="btnTangan" title="Kawalan tangan">✋ Tangan</button>
+    <button id="btnBunyi" title="Bunyi">🔊</button>
+    <button id="btnMuzik" title="Muzik">🎵</button>
+    <button id="btnTetap" title="Tetapan soalan & gambar">⚙️</button>
+    <button id="btnFs" title="Skrin penuh">⛶</button>
+    <a class="keluar" href="/kata-majmuk.html" data-km-balik="✕" style="color:#fff;text-decoration:none;align-self:center;font-weight:700;font-size:2vh;padding:0 .6vw">✕</a>
+  </div>
+</div>
+
+<section class="skrin" id="sTajuk">
+  <div class="kelalang">⚗️<i class="gelembung" style="width:3vh;height:3vh;left:40%;top:10%"></i><i class="gelembung" style="width:2vh;height:2vh;left:58%;top:20%;animation-delay:.8s"></i><i class="gelembung" style="width:2.6vh;height:2.6vh;left:48%;top:5%;animation-delay:1.6s"></i></div>
+  <h1 class="tajukBesar">MAKMAL <span>UBAT</span> AJAIB</h1>
+  <p class="subT">Cantum <b>perkataan</b> dan <b>gambar</b> menjadi <b>KATA MAJMUK</b> untuk ubat pesakit!</p>
+  <button class="butangBesar" id="btnMula">▶ MULA</button>
+  <div class="nota">✊ Genggam di atas butang untuk mula · atau klik</div>
+</section>
+
+<section class="skrin" id="sIntro" hidden><div class="kadI" id="kadI"></div></section>
+
+<section class="skrin" id="sMain" hidden>
+  <div class="preskripsi" id="pres"></div>
+  <div class="mesin" id="mesin">
+    <div class="slot" id="slot0"><span class="no">1</span><span class="corong">⬇️</span></div>
+    <div class="op">+</div>
+    <div class="slot" id="slot1"><span class="no">2</span><span class="corong">⬇️</span></div>
+    <div class="op">=</div>
+    <div class="hasil" id="hasil"><div class="kapsulKosong">?</div></div>
+  </div>
+  <div class="rumah" id="rumah"><div class="tempat"></div><div class="tempat"></div><div class="tempat"></div><div class="tempat"></div></div>
+  <div class="seterus" id="seterus" hidden><button class="butangBesar hijau" id="btnSeterus">Seterusnya ▶</button></div>
+</section>
+
+<section class="skrin" id="sTamat" hidden>
+  <h1>🎉 Semua ubat siap!</h1>
+  <div class="senaraiUbat" id="senaraiUbat"></div>
+  <div class="barisB"><button class="butangBesar hijau" id="btnUlang">🔁 Main semula</button><button class="butangBesar" id="btnTajuk" style="animation:none">🏠 Tajuk</button></div>
+</section>
+
+<div class="kilat" id="kilat" hidden><div id="kilatTx"></div></div>
+<div id="kepingan"></div>
+<video id="kam" playsinline muted></video><span id="kamTx">✋ Tunjuk tapak tangan</span>
+<div id="handCur">✋</div>
+<canvas id="konfeti"></canvas>
+<div id="toast"></div>
+
+<section id="tetapan" hidden>
+  <div class="kotak">
+    <h2>⚙️ Tetapan Makmal Ubat Ajaib</h2>
+    <p class="sub">5 soalan: pilih jenis (cantum perkataan / cantum gambar), isi perkataan 1 + perkataan 2, dan 2 pengganggu. Klik kotak gambar untuk muat naik gambar sendiri (gambar asal Ilmuverse digunakan jika kosong).</p>
+    <div id="sBaris"></div>
+    <div class="ralat" id="tRalat"></div>
+    <div class="tBtn"><button id="tAsal">↺ Soalan asal</button><button id="tTutup">Tutup</button><button class="utama" id="tSimpan">💾 Simpan</button></div>
+  </div>
+  <input type="file" id="tFail" accept="image/*" hidden>
+</section>
+
+<script src="/bobo-kit.js"></script>
+<script>
+(() => {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const EMBED = new URLSearchParams(location.search).get('embed') === '1';
+if (EMBED) document.documentElement.classList.add('embed');
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const tunggu = (ms) => new Promise((r) => setTimeout(r, ms));
+const acak = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+function toast(t, ms = 2600) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), ms); }
+const LS = 'ilmuverseMakmal.v1';
+let pilihan = { bunyi: true, muzik: true, tangan: true };
+try { pilihan = Object.assign(pilihan, JSON.parse(localStorage.getItem(LS) || '{}')); } catch (e) {}
+const simpanPilihan = () => { try { localStorage.setItem(LS, JSON.stringify(pilihan)); } catch (e) {} };
+
+// ---------- bunyi & suara (Bahasa Melayu Malaysia) ----------
+const KS = window.KMSuara;
+KS.amaran = (m) => toast('⚠️ ' + m, 7000);
+function nada(f, mula, tempoh, jenis = 'sine', vol = .14, f2) {
+  const a = KS.audio(); if (!a || !pilihan.bunyi) return;
+  const t = a.currentTime + mula, o = a.createOscillator(), g = a.createGain();
+  o.type = jenis; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + tempoh);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .012); g.gain.exponentialRampToValueAtTime(0.0001, t + tempoh);
+  o.connect(g).connect(KS.keluaran()); o.start(t); o.stop(t + tempoh + .05);
+}
+const SFX = {
+  ambil() { nada(660, 0, .1, 'triangle', .1, 880); },
+  lepas() { nada(520, 0, .12, 'sine', .1, 330); },
+  masuk() { nada(880, 0, .08, 'triangle', .12); nada(1320, .07, .1, 'triangle', .1); },
+  proses() { for (let i = 0; i < 8; i++) nada(300 + i * 60, i * .08, .07, 'square', .04); },
+  betul() { [523, 659, 784, 1047].forEach((f, i) => nada(f, i * .09, .32, 'triangle', .16)); },
+  tidak() { nada(330, 0, .22, 'sawtooth', .07, 220); nada(260, .22, .3, 'sawtooth', .06, 160); },
+  mula() { [392, 523, 659, 784, 1047].forEach((f, i) => nada(f, i * .07, .25, 'square', .07)); },
+  menang() { [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => nada(f, i * .12, .3, 'triangle', .18)); },
+};
+function cakap(t) { KS.diam(); return KS.cakap(t); }
+let dibuka = false;
+function bukaBunyi() { if (dibuka) return; dibuka = true; KS.audio(); KS.muzik(pilihan.muzik); }
+addEventListener('pointerdown', bukaBunyi);
+function kemasButang() { $('btnBunyi').classList.toggle('off', !pilihan.bunyi); $('btnMuzik').classList.toggle('off', !pilihan.muzik); $('btnTangan').classList.toggle('off', !pilihan.tangan); }
+$('btnBunyi').onclick = () => { pilihan.bunyi = !pilihan.bunyi; simpanPilihan(); kemasButang(); };
+$('btnMuzik').onclick = () => { pilihan.muzik = !pilihan.muzik; simpanPilihan(); kemasButang(); KS.muzik(pilihan.muzik); };
+$('btnFs').onclick = () => { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen().catch(() => {}); };
+kemasButang();
+
+// ---------- soalan ----------
+let SOALAN = null;
+async function muatSoalan() {
+  try { const r = await fetch('/api/makmal/set', { cache: 'no-store' }); if (r.status === 401) { location.href = '/km-masuk?next=' + encodeURIComponent(location.pathname + location.search); return; } const j = await r.json(); if (j.ok) SOALAN = j.soalan; } catch (e) {}
+}
+const gb = (u, alt) => u ? `<img src="${u}" alt="${esc(alt)}">` : '💊';
+
+// ---------- skrin ----------
+let skrin = 'tajuk';
+function tunjuk(id) { skrin = id; ['sTajuk', 'sIntro', 'sMain', 'sTamat'].forEach((s) => { $(s).hidden = s !== 's' + id[0].toUpperCase() + id.slice(1); }); if (id !== 'main') { $('kepingan').innerHTML = ''; keping = []; } $('noTx').hidden = $('jenisTx').hidden = id !== 'main'; }
+
+// ---------- aliran ----------
+let idx = 0, siap = [], introT = [];
+async function mula() {
+  bukaBunyi(); SFX.mula();
+  if (!SOALAN) await muatSoalan();
+  if (!SOALAN) return toast('Soalan tidak dapat dimuat. Semak sambungan internet.');
+  introT.forEach(clearTimeout); introT = [];
+  tunjuk('intro');
+  const L = [['✋', 'Gerakkan tapak tangan'], ['✊', 'Genggam kepingan'], ['🖐️', 'Lepaskan di mesin ubat']];
+  cakap('Gerak, genggam, lepaskan di mesin ubat!');
+  L.forEach(([ik, tx], i) => introT.push(setTimeout(() => {
+    $('kadI').style.animation = 'none'; void $('kadI').offsetWidth; $('kadI').style.animation = '';
+    $('kadI').innerHTML = `<div class="ik">${ik}</div><div class="tx">${tx}</div><div class="titik">${L.map((_, j) => `<i class="${j <= i ? 'on' : ''}"></i>`).join('')}</div>`; nada(700 + i * 120, 0, .12, 'triangle', .1);
+  }, i * 1100)));
+  introT.push(setTimeout(() => { idx = 0; siap = []; mainSoalan(); }, L.length * 1100 + 200));
+}
+function langkauIntro() { if (skrin !== 'intro') return; introT.forEach(clearTimeout); introT = []; idx = 0; siap = []; mainSoalan(); }
+
+let keping = [], slotIsi = [null, null], q = null, terkunci = false, seterusT = null;
+function mainSoalan() {
+  clearTimeout(seterusT);
+  q = SOALAN[idx]; tunjuk('main'); terkunci = false; slotIsi = [null, null];
+  $('noTx').textContent = `Soalan ${idx + 1} / ${SOALAN.length}`;
+  const gambar = q.jenis === 'gambar';
+  $('jenisTx').textContent = gambar ? '🖼️ Cantum GAMBAR' : '🔤 Cantum PERKATAAN';
+  $('pres').innerHTML = gambar
+    ? `<span class="rx">℞</span><div><div class="lbl">PRESKRIPSI DOKTOR · cari ubat ini</div><div class="mk">${esc(q.maksud || 'Bina kata majmuk')}</div></div>`
+    : `<span class="rx">℞</span><div class="gb">${gb(q.u.km, q.km)}</div><div><div class="lbl">PRESKRIPSI DOKTOR</div><div class="mk">${esc(q.maksud || 'Bina kata majmuk')}</div></div>`;
+  $('hasil').innerHTML = '<div class="kapsulKosong">?</div>';
+  $('mesin').className = 'mesin'; $('seterus').hidden = true;
+  ['slot0', 'slot1'].forEach((s) => $(s).classList.remove('sedia'));
+  // 4 kepingan: 2 betul + 2 pengganggu
+  const data = acak([{ k: q.k1, u: q.u.k1 }, { k: q.k2, u: q.u.k2 }, { k: q.p1, u: q.u.p1 }, { k: q.p2, u: q.u.p2 }]);
+  $('kepingan').innerHTML = '';
+  keping = data.map((d, i) => {
+    const el = document.createElement('div'); el.className = 'keping' + (gambar ? ' gambar' : '');
+    el.innerHTML = gambar ? `<div class="gb">${gb(d.u, d.k)}</div><div class="lb">${esc(d.k)}</div>` : `<div class="tx">${esc(d.k)}</div>`;
+    $('kepingan').appendChild(el);
+    return { el, k: d.k, rumah: i, slot: -1 };
+  });
+  requestAnimationFrame(() => { keping.forEach((p) => letakRumah(p, true)); });
+  cakap(gambar ? `Soalan ${idx + 1}. Cantum gambar. ${q.maksud || ''}` : `Soalan ${idx + 1}. Cantum perkataan. ${q.maksud || ''}`);
+}
+function rectOf(el) { return el.getBoundingClientRect(); }
+function letakDi(p, r, segera) {
+  const w = p.el.offsetWidth, h = p.el.offsetHeight;
+  if (segera) p.el.style.transition = 'none';
+  p.el.style.left = (r.left + r.width / 2 - w / 2) + 'px'; p.el.style.top = (r.top + r.height / 2 - h / 2) + 'px';
+  if (segera) { void p.el.offsetWidth; p.el.style.transition = ''; }
+}
+function letakRumah(p, segera) { p.slot = -1; p.el.classList.remove('dlmSlot', 'betul'); letakDi(p, rectOf($('rumah').children[p.rumah]), segera); }
+addEventListener('resize', () => { keping.forEach((p) => letakDi(p, p.slot >= 0 ? rectOf($('slot' + p.slot)) : rectOf($('rumah').children[p.rumah]), true)); });
+
+// ---------- seret (tangan / tetikus / sentuh) ----------
+let seret = null;
+function kepingDi(x, y) { for (let i = keping.length - 1; i >= 0; i--) { const r = rectOf(keping[i].el); if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return keping[i]; } return null; }
+function slotDekat(x, y) { let best = -1, bd = 1e9; [0, 1].forEach((s) => { const r = rectOf($('slot' + s)), cx = r.left + r.width / 2, cy = r.top + r.height / 2, d = Math.hypot(x - cx, y - cy); if (d < Math.max(r.width, r.height) * .75 && d < bd) { bd = d; best = s; } }); return best; }
+function ambil(x, y) {
+  if (skrin !== 'main' || terkunci || seret) return false;
+  const p = kepingDi(x, y); if (!p) return false;
+  if (p.slot >= 0) { slotIsi[p.slot] = null; p.slot = -1; p.el.classList.remove('dlmSlot'); }
+  const r = rectOf(p.el); seret = { p, dx: x - (r.left + r.width / 2), dy: y - (r.top + r.height / 2) };
+  p.el.classList.add('seret'); SFX.ambil(); return true;
+}
+function gerakSeret(x, y) {
+  if (!seret) return; const p = seret.p, w = p.el.offsetWidth, h = p.el.offsetHeight;
+  p.el.style.transition = 'transform .15s, box-shadow .15s';
+  p.el.style.left = (x - seret.dx - w / 2) + 'px'; p.el.style.top = (y - seret.dy - h / 2) + 'px';
+  const s = slotDekat(x - seret.dx, y - seret.dy);
+  [0, 1].forEach((i) => $('slot' + i).classList.toggle('sedia', i === s));
+  p.el.classList.toggle('dekat', s >= 0);
+}
+function lepas(x, y) {
+  if (!seret) return; const p = seret.p, s = slotDekat(x - seret.dx, y - seret.dy); seret = null;
+  p.el.classList.remove('seret', 'dekat'); p.el.style.transition = '';
+  [0, 1].forEach((i) => $('slot' + i).classList.remove('sedia'));
+  if (s < 0) { letakRumah(p); SFX.lepas(); return; }
+  if (slotIsi[s] && slotIsi[s] !== p) letakRumah(slotIsi[s]); // tukar: kepingan lama kembali
+  slotIsi[s] = p; p.slot = s; p.el.classList.add('dlmSlot'); letakDi(p, rectOf($('slot' + s))); SFX.masuk();
+  if (slotIsi[0] && slotIsi[1]) semak();
+}
+async function semak() {
+  terkunci = true; $('mesin').classList.add('proses'); SFX.proses();
+  await tunggu(900);
+  $('mesin').classList.remove('proses');
+  const betul = slotIsi[0].k === q.k1 && slotIsi[1].k === q.k2;
+  if (betul) {
+    $('mesin').classList.add('betul'); slotIsi.forEach((p) => p.el.classList.add('betul'));
+    kilat('betul', 'BETUL!'); SFX.betul(); konfeti(90);
+    $('hasil').innerHTML = `<div class="kapsulJadi"><div class="gb">${gb(q.u.km, q.km)}</div><div class="km">${esc(q.km)}</div></div>`;
+    siap[idx] = true;
+    cakap(`Betul! ${q.k1} tambah ${q.k2}, jadi ${q.km}.`);
+    await tunggu(1200);
+    $('seterus').hidden = false; $('btnSeterus').textContent = idx >= SOALAN.length - 1 ? '🏁 Selesai ▶' : 'Seterusnya ▶';
+    seterusT = setTimeout(seterusnya, 6000); // terus jika tiada siapa tekan
+  } else {
+    $('mesin').classList.add('tidak'); kilat('tidak', 'TIDAK TEPAT'); SFX.tidak();
+    cakap('Tidak tepat. Cuba lagi!');
+    await tunggu(1300);
+    $('mesin').classList.remove('tidak');
+    slotIsi.forEach((p) => p && letakRumah(p)); slotIsi = [null, null]; terkunci = false;
+  }
+}
+function seterusnya() {
+  clearTimeout(seterusT);
+  if (skrin !== 'main') return;
+  if (idx < SOALAN.length - 1) { idx++; mainSoalan(); } else tamat();
+}
+function tamat() {
+  tunjuk('tamat'); SFX.menang(); konfeti(200);
+  $('senaraiUbat').innerHTML = SOALAN.map((x, i) => `<div class="ubatK" style="animation-delay:${i * .12}s"><div class="gb">${gb(x.u.km, x.km)}</div><b>${esc(x.km)}</b></div>`).join('');
+  cakap('Tahniah! Semua ubat kata majmuk sudah siap. ' + SOALAN.map((x) => x.km).join(', ') + '.');
+}
+function kilat(jenis, teks) { const k = $('kilat'); k.className = 'kilat ' + jenis; $('kilatTx').textContent = teks; k.hidden = false; const d = k.firstElementChild; d.style.animation = 'none'; void d.offsetWidth; d.style.animation = ''; clearTimeout(kilat.t); kilat.t = setTimeout(() => { k.hidden = true; }, 1300); }
+function konfeti(n) {
+  const c = $('konfeti'), x = c.getContext('2d'); c.width = innerWidth; c.height = innerHeight;
+  const W = ['#e8434f', '#14b8a6', '#f6b81a', '#8b5cf6', '#22c55e', '#48a8ff'];
+  const P = Array.from({ length: n }, () => ({ x: Math.random() * c.width, y: -20 - Math.random() * c.height * .5, vx: (Math.random() - .5) * 3, vy: 2 + Math.random() * 4, r: Math.random() * 6, vr: (Math.random() - .5) * .25, w: 10 + Math.random() * 12, c: W[Math.floor(Math.random() * 6)] }));
+  const m = performance.now();
+  (function f(t) { x.clearRect(0, 0, c.width, c.height); P.forEach((p) => { p.x += p.vx; p.y += p.vy; p.vy += .05; p.r += p.vr; x.save(); x.translate(p.x, p.y); x.rotate(p.r); x.fillStyle = p.c; x.fillRect(-p.w / 2, -p.w / 4, p.w, p.w / 2); x.restore(); });
+    if (t - m < 3500) requestAnimationFrame(f); else x.clearRect(0, 0, c.width, c.height); })(m);
+}
+
+// ---------- butang ----------
+$('btnMula').onclick = mula;
+$('btnSeterus').onclick = seterusnya;
+$('btnUlang').onclick = () => { idx = 0; siap = []; mainSoalan(); };
+$('btnTajuk').onclick = () => { KS.diam(); tunjuk('tajuk'); };
+$('kadI').onclick = langkauIntro;
+
+// tetikus / sentuh
+let tekanTetikus = false;
+addEventListener('pointerdown', (e) => { if (e.target.closest('button, a, #tetapan')) return; tekanTetikus = true; if (skrin === 'intro') return langkauIntro(); ambil(e.clientX, e.clientY); });
+addEventListener('pointermove', (e) => { if (tekanTetikus && seret) gerakSeret(e.clientX, e.clientY); });
+addEventListener('pointerup', (e) => { if (tekanTetikus) { tekanTetikus = false; if (seret && !(K && cur && cur.pressed)) lepas(e.clientX, e.clientY); } });
+
+// ---------- kawalan tangan (MediaPipe melalui bobo-kit.js) ----------
+const K = window.BoboKit || null;
+const cur = K ? K.makeCursor() : null;
+let mulaTangan = false, hov = null;
+async function hidupTangan() {
+  if (!K || mulaTangan || K.hands.ready || !pilihan.tangan) return;
+  mulaTangan = true; toast('📷 Membuka kamera… benarkan akses kamera.', 3500);
+  const ok = await K.startHands($('kam'), 1, () => ({ W: innerWidth, H: innerHeight }));
+  mulaTangan = false;
+  if (!ok) { toast('Kamera tidak dapat dibuka. Main guna tetikus / sentuh.', 4500); return; }
+  $('kam').classList.add('on'); $('kamTx').classList.add('on');
+}
+$('btnTangan').onclick = () => { pilihan.tangan = !pilihan.tangan; simpanPilihan(); kemasButang(); if (pilihan.tangan) hidupTangan(); else { if (cur) cur.active = false; if (seret) lepas(-9999, -9999); } };
+let akhir = performance.now();
+(function gelung(t) {
+  const dt = Math.min(.05, (t - akhir) / 1000); akhir = t;
+  if (pilihan.tangan && cur && K && K.hands.ready) {
+    const h = K.hands.list[0]; if (h && h.t !== cur.seen) K.feedHand(cur, h);
+    K.updateCursor(cur, dt, true);
+    if (!cur.active) { if (seret && !tekanTetikus) lepas(-9999, -9999); }
+    else {
+      if (seret) gerakSeret(cur.x, cur.y);
+      if (cur.justDown) {
+        bukaBunyi();
+        const el = document.elementFromPoint(cur.x, cur.y), btn = el && el.closest('button');
+        if (btn && !btn.closest('.atas') && $('tetapan').hidden) btn.click();
+        else if (skrin === 'intro') langkauIntro();
+        else ambil(cur.x, cur.y);
+      }
+      if (cur.justUp && seret) lepas(cur.x, cur.y);
+    }
+    const hc = $('handCur'), on = cur.active;
+    hc.classList.toggle('on', on);
+    if (on) { hc.style.left = cur.x + 'px'; hc.style.top = cur.y + 'px'; hc.textContent = cur.down ? '✊' : '✋'; hc.classList.toggle('down', !!cur.down); }
+    $('kamTx').textContent = !on ? '✋ Tunjuk tapak tangan' : cur.down ? '✊ Genggam' : '✋ Terbuka';
+    const tEl = on ? document.elementFromPoint(cur.x, cur.y) : null, b = tEl && tEl.closest('.butangBesar');
+    if (b !== hov) { if (hov) hov.classList.remove('hover'); if (b) b.classList.add('hover'); hov = b; }
+  } else $('handCur').classList.remove('on');
+  requestAnimationFrame(gelung);
+})(akhir);
+
+// ---------- perintah dari telefon (Klinik satu QR) ----------
+window.__perintah = (a) => {
+  if (a === 'mula') { if (skrin === 'tajuk') mula(); else if (skrin === 'intro') langkauIntro(); else if (skrin === 'tamat') { idx = 0; siap = []; mainSoalan(); } }
+  else if (a === 'langkau') { if (skrin === 'main') { if (idx < SOALAN.length - 1) { idx++; mainSoalan(); } else tamat(); } else if (skrin === 'intro') langkauIntro(); }
+  else if (a === 'ulang') { if (!SOALAN) return mula(); idx = 0; siap = []; mainSoalan(); }
+  else if (a === 'tajuk') { KS.diam(); tunjuk('tajuk'); }
+};
+window.__embed = { tunjuk(on) { try { if (on) { bukaBunyi(); KS.muzik(pilihan.muzik); hidupTangan(); } else { KS.muzik(false); KS.diam(); } } catch (e) {} } };
+
+// =============================================================
+// TETAPAN GURU: 5 soalan + gambar sendiri
+// =============================================================
+const SLOT = [['k1', 'Perkataan 1'], ['k2', 'Perkataan 2'], ['km', 'Kata majmuk'], ['p1', 'Pengganggu 1'], ['p2', 'Pengganggu 2']];
+function lukisTetapan() {
+  $('sBaris').innerHTML = SOALAN.map((x, i) => `<div class="sRow" data-i="${i}"><b>${i + 1}</b>
+    <select data-f="jenis"><option value="perkataan" ${x.jenis !== 'gambar' ? 'selected' : ''}>🔤 Perkataan</option><option value="gambar" ${x.jenis === 'gambar' ? 'selected' : ''}>🖼️ Gambar</option></select>
+    <input data-f="k1" value="${esc(x.k1)}" placeholder="perkataan 1"><input data-f="k2" value="${esc(x.k2)}" placeholder="perkataan 2">
+    <input data-f="p1" value="${esc(x.p1)}" placeholder="pengganggu 1"><input data-f="p2" value="${esc(x.p2)}" placeholder="pengganggu 2">
+    <input class="maksud" data-f="maksud" value="${esc(x.maksud || '')}" placeholder="maksud / petunjuk (dibaca oleh suara)">
+    <div class="gbr">${SLOT.map(([sl, lb]) => `<div class="gs" data-k="${i}-${sl}"><div class="k ${x.gv && x.gv[sl] ? 'guru' : ''}">${x.u[sl] ? `<img src="${x.u[sl]}" alt="">` : '➕'}${x.gv && x.gv[sl] ? '<span class="x" data-x="1">×</span>' : ''}</div>${lb}</div>`).join('')}</div></div>`).join('');
+}
+function bacaTetapan() { return [...document.querySelectorAll('.sRow')].map((r) => { const o = {}; r.querySelectorAll('[data-f]').forEach((el) => { o[el.dataset.f] = el.value; }); o.km = `${o.k1} ${o.k2}`.trim(); return o; }); }
+$('btnTetap').onclick = async () => { if (!SOALAN) await muatSoalan(); if (!SOALAN) return; $('tRalat').textContent = ''; lukisTetapan(); $('tetapan').hidden = false; };
+$('tTutup').onclick = () => { $('tetapan').hidden = true; };
+async function api(url, opt) { const r = await fetch(url, opt); const j = await r.json().catch(() => ({})); if (!r.ok || !j.ok) throw new Error(j.mesej || 'Ralat ' + r.status); SOALAN = j.soalan; return j; }
+$('tSimpan').onclick = async () => { try { await api('/api/makmal/set', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ soalan: bacaTetapan() }) }); toast('✅ Soalan disimpan'); $('tetapan').hidden = true; if (skrin === 'main') mainSoalan(); } catch (e) { $('tRalat').textContent = e.message; } };
+$('tAsal').onclick = async () => { if (!confirm('Kembali ke 5 soalan asal dan buang gambar guru?')) return; try { await api('/api/makmal/set/asal', { method: 'POST' }); lukisTetapan(); toast('Soalan asal dipulihkan'); } catch (e) { $('tRalat').textContent = e.message; } };
+let kSasaran = null;
+$('sBaris').onclick = async (e) => {
+  const g = e.target.closest('.gs'); if (!g) return;
+  if (e.target.dataset.x) { try { await api('/api/makmal/gambar/' + g.dataset.k, { method: 'DELETE' }); lukisTetapan(); } catch (er) { $('tRalat').textContent = er.message; } return; }
+  kSasaran = g.dataset.k; $('tFail').value = ''; $('tFail').click();
+};
+$('tFail').onchange = async () => {
+  const f = $('tFail').files && $('tFail').files[0]; if (!f || !kSasaran) return;
+  try {
+    const draf = bacaTetapan(); // simpan teks dahulu supaya tidak hilang
+    let src; try { src = await createImageBitmap(f, { imageOrientation: 'from-image' }); } catch (er) { src = await createImageBitmap(f); }
+    const S = 360, c = document.createElement('canvas'); c.width = S; c.height = S; const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, S, S);
+    const k = Math.max(S / src.width, S / src.height); x.drawImage(src, (S - src.width * k) / 2, (S - src.height * k) / 2, src.width * k, src.height * k);
+    const blob = await new Promise((ok) => c.toBlob(ok, 'image/jpeg', .86));
+    await api('/api/makmal/gambar/' + kSasaran, { method: 'POST', headers: { 'Content-Type': 'image/jpeg' }, body: blob });
+    SOALAN.forEach((s, i) => { if (draf[i]) Object.assign(s, { jenis: draf[i].jenis, k1: draf[i].k1, k2: draf[i].k2, p1: draf[i].p1, p2: draf[i].p2, maksud: draf[i].maksud }); });
+    lukisTetapan(); toast('✅ Gambar dimuat naik');
+  } catch (er) { $('tRalat').textContent = er.message; }
+};
+
+muatSoalan(); tunjuk('tajuk');
+if (pilihan.tangan && !EMBED) hidupTangan();
+window.__makmal = { get skrin() { return skrin; }, get idx() { return idx; }, mula, ambil, gerakSeret, lepas, get keping() { return keping; }, get q() { return q; } };
+})();
+</script>
+<script src="/km-hub.js"></script>
+</body>
+</html>
