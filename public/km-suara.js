@@ -74,7 +74,7 @@
     return new Promise((ok) => {
       if (tok !== tokenCakap) return ok('batal');
       const u = new SpeechSynthesisUtterance(sebutan(teks));
-      u.voice = K.suara; u.lang = K.suara.lang; u.rate = opt.rate || 1.08; u.pitch = opt.pitch || 1.05; u.volume = 1;
+      u.voice = K.suara; u.lang = K.suara.lang; u.rate = opt.rate || 1; u.pitch = opt.pitch || 1.03; u.volume = 1; // kelajuan standard (tidak laju, tidak perlahan)
       let siap = false, mula = false;
       const tamat = (hasil) => { if (siap) return; siap = true; if (mula) bcakap = Math.max(0, bcakap - 1); duck(); ok(hasil); };
       u.onstart = () => { mula = true; bcakap++; duck(); };
@@ -150,4 +150,22 @@
     duck();
   };
   window.KMSuara = K;
+
+  // ---------------- KESTABILAN ----------------
+  // 1) Ping ringan setiap 4 minit supaya pelayan Render tidak "tidur" semasa kelas
+  //    (bila tidur, bilik & gambar dalam memori hilang).
+  if (!window.__kmHidup) {
+    window.__kmHidup = setInterval(() => { fetch('/api/hidup', { cache: 'no-store' }).catch(() => {}); }, 4 * 60 * 1000);
+  }
+  // 2) Gambar kata majmuk / gambar kumpulan yang gagal dimuat (rangkaian lambat)
+  //    dicuba semula secara automatik sehingga 4 kali.
+  document.addEventListener('error', (e) => {
+    const im = e.target;
+    if (!im || im.tagName !== 'IMG' || !im.src || im.src.startsWith('blob:')) return;
+    if (!/\/img\/km\/|\/api\/(kapsul|sijil|kelas)\//.test(im.src)) return;
+    const n = +(im.dataset.cubaGambar || 0); if (n >= 4) return;
+    im.dataset.cubaGambar = n + 1;
+    const asal = im.src.replace(/([?&])cuba=\d+&?/, '$1').replace(/[?&]$/, '');
+    setTimeout(() => { im.src = asal + (asal.includes('?') ? '&' : '?') + 'cuba=' + (n + 1); }, 800 * (n + 1));
+  }, true);
 })();

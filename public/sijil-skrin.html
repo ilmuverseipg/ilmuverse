@@ -212,6 +212,7 @@
 <script>window.BOBO_BGM_KEY = 'km_bgm';</script>
 <script src="/bobo-bgm.js"></script>
 <script src="/km-suara.js"></script>
+<script src="/km-kumpulan.js"></script>
 </head>
 <body>
 <header>
@@ -412,7 +413,7 @@ async function muatSet() {
   try { const r = await fetch('/api/sijil/set', { cache: 'no-store' }); if (r.status === 401) { toast('Sila log masuk semula di PC ini', 5000); return; } const j = await r.json(); if (j.ok) setSemua = j.set; } catch (e) {}
 }
 const bah = (n, i) => (setSemua && setSemua[n - 1] && setSemua[n - 1].bahagian[i]) || null;
-const namaSet = (n) => (setSemua && setSemua[n - 1] && setSemua[n - 1].nama) || 'Set ' + n;
+const namaSet = (n) => (window.KMKumpulan ? KMKumpulan.nama(n - 1) : '') || (setSemua && setSemua[n - 1] && setSemua[n - 1].nama) || 'Set ' + n;
 function susunKad(kadTeks, ayat) {
   const kad = String(kadTeks || '').split('/').map((s) => s.trim()).filter(Boolean);
   const a = String(ayat || '').trim().replace(/\s+/g, ' ');
@@ -446,9 +447,11 @@ async function muatFoto(v, cubaan = 0) {
     const im = new Image(); im.src = url; await im.decode();
     if (S && S.foto && S.foto.v !== v) { URL.revokeObjectURL(url); return; }
     buangFoto(); foto = { v, url, w: im.naturalWidth, h: im.naturalHeight }; pasangFoto();
-  } catch (e) { if (cubaan < 4) setTimeout(() => muatFoto(v, cubaan + 1), 700 * (cubaan + 1)); }
+  } catch (e) { if (cubaan < 12) setTimeout(() => muatFoto(v, cubaan + 1), Math.min(4000, 700 * (cubaan + 1))); }
   finally { if (sedang === v) sedang = 0; }
 }
+// Pengawas: jika gambar sijil belum sampai, cuba lagi.
+setInterval(() => { if (S && S.foto && S.foto.v && (!foto || foto.v < S.foto.v)) muatFoto(S.foto.v); }, 2500);
 function pasangFoto() {
   if (!foto) return;
   $('sBingkai').innerHTML = `<img src="${foto.url}" alt="Sijil murid"><div class="laser"></div>`;

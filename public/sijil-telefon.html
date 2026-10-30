@@ -172,6 +172,7 @@
 <input type="file" id="fGaleri" accept="image/*">
 <div id="toast"></div>
 
+<script src="/km-kumpulan.js"></script>
 <script>
 if (new URLSearchParams(location.search).get('embed') === '1') document.documentElement.classList.add('embed');
 (() => {
@@ -192,7 +193,7 @@ function buangGambar() { if (thumb) URL.revokeObjectURL(thumb); thumb = null; na
 async function muatSet() {
   try { const r = await fetch('/api/sijil/set', { cache: 'no-store' }); if (r.status === 401) return keLogMasuk(); const j = await r.json(); if (j.ok) setSemua = j.set; } catch (e) {}
 }
-const namaSet = (n) => (setSemua && setSemua[n - 1] && setSemua[n - 1].nama) || 'Set ' + n;
+const namaSet = (n) => (window.KMKumpulan ? KMKumpulan.nama(n - 1) : '') || (setSemua && setSemua[n - 1] && setSemua[n - 1].nama) || 'Set ' + n;
 const bah = (n, i) => (setSemua && setSemua[n - 1] && setSemua[n - 1].bahagian[i]) || { km: '—', ayat: '' };
 function keLogMasuk() { toast('Sesi tamat. Membuka semula…', 3000); setTimeout(() => location.href = '/km-masuk?next=' + encodeURIComponent(location.pathname + location.search), 1400); }
 

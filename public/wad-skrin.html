@@ -9,6 +9,7 @@
 <script>window.BOBO_BGM_KEY = 'km_bgm';</script>
 <script src="/bobo-bgm.js"></script>
 <script src="/km-suara.js"></script>
+<script src="/km-kumpulan.js"></script>
 <style>
   /* mod embed (Klinik satu QR): tiada QR / kod baru / nota bunyi - telefon sudah bersambung melalui klinik */
   html.embed #qr, html.embed #url, html.embed #btnQr, html.embed #btnBaru, html.embed #bunyiNota, html.embed .kodBaris { display: none !important; }
@@ -330,7 +331,7 @@ async function lukisKod() {
 // =============================================================
 let SET = null;
 async function muatSet() { try { const r = await fetch('/api/wad/set', { cache: 'no-store' }); if (r.status === 401) return toast('Sila log masuk semula di PC ini', 5000); const j = await r.json(); if (j.ok) SET = j.set; } catch (e) {} }
-const namaK = (g) => (SET && SET.kumpulan[g]) || 'Kumpulan ' + (g + 1);
+const namaK = (g) => (window.KMKumpulan ? KMKumpulan.nama(g) : '') || (SET && SET.kumpulan[g]) || 'Kumpulan ' + (g + 1);
 const soalan = (i) => (SET && SET.soalan[i]) || { maksud: '', k1: '', k2: '', km: '' };
 
 // =============================================================
@@ -611,6 +612,8 @@ async function jagaSkrin() { try { if ('wakeLock' in navigator && document.visib
 document.addEventListener('visibilitychange', jagaSkrin); jagaSkrin();
 
 lapis('lQR'); lukisKod(); status(); muatSet().then(render); sambung();
+let namaWadLama = '';
+if (window.KMKumpulan) KMKumpulan.onChange((K) => { const n = [0, 1, 2, 3, 4, 5].map(K.nama).join('|'); if (n === namaWadLama) return; namaWadLama = n; if (S) render(); });
 window.__wad = { get S() { return S; }, get lapis() { return lapisKini; }, get kod() { return sesi.kod; }, get sihat() { return sihat.slice(); } };
 })();
 </script>

@@ -23,6 +23,8 @@ const WebSocket = require('ws');
 const { isKMAuthed: isAuthed } = require('../middleware/siteAuth'); // kata laluan ATAU avatar Klinik Kata Majmuk
 const { urlGambar } = require('./kmGambar');
 const { WadSet } = require('../models/WadSet');
+const kelas = require('./kelasKM');   // mata kumpulan (papan mata)
+const klinik = require('./klinikKM'); // papan mata di skrin Klinik (satu QR)
 
 const BIL_K = 6;
 const MAX_BILIK = 40;
@@ -134,10 +136,17 @@ function mesej(ws, d) {
     }
     case 'seterusnya':
       if (b.fasa !== 'dedah' || (b.langkah !== 'rawat' && b.langkah !== 'auditSiap')) return;
-      if (b.idx < b.bilSoalan - 1) { b.idx++; b.langkah = 'soalan'; } else b.fasa = 'tamat';
+      if (b.idx < b.bilSoalan - 1) { b.idx++; b.langkah = 'soalan'; }
+      else {
+        b.fasa = 'tamat';
+        // mata: jawapan betul + bintang Lencana Jujur
+        const m = new Array(BIL_K).fill(0).map((_, g) => b.betul.reduce((a, row) => a + (row && row[g] ? 1 : 0), 0) + (b.bintang[g] || 0));
+        kelas.rekod('suntik', 'Semak & Suntik', m);
+        klinik.papan(k.kod, { label: 'Semak & Suntik', ik: '💉', tambah: m, nota: 'Jawapan betul + ⭐ Lencana Jujur', tunda: 8000 });
+      }
       siar(b); break;
     case 'ulang':
-      kosong(b); siar(b); break;
+      kosong(b); kelas.buang('suntik'); siar(b); break;
   }
 }
 

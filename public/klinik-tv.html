@@ -56,6 +56,26 @@
   #mula button { font-family: 'Baloo 2'; font-weight: 800; font-size: 4.4vh; color: #fff; background: linear-gradient(135deg, var(--teal2), var(--teal)); border: .5vh solid #fff; border-radius: 99px; padding: 2.2vh 4vw; cursor: pointer; box-shadow: 0 2vh 6vh rgba(0,0,0,.35); animation: denyut 1.6s ease-in-out infinite; }
   #mula p { color: #fff; text-align: center; font-size: 2.2vh; margin: 2vh 0 0; font-weight: 600; }
   @keyframes denyut { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+  /* ===== papan mata selepas aktiviti ===== */
+  #lPapan { position: fixed; inset: 0; z-index: 55; display: grid; place-items: center; padding: 3vh 3vw; background: rgba(3,12,22,.78); backdrop-filter: blur(5px); }
+  .pkad { width: min(1300px, 94vw); background: linear-gradient(180deg, #0e2a42, #071a2b); color: #f4f8ff; border: .4vh solid #ffd23f; border-radius: 3.2vh; padding: 3vh 2.6vw; box-shadow: 0 0 7vh rgba(255,210,63,.35); animation: masukP .55s cubic-bezier(.2,1.3,.4,1) both; }
+  @keyframes masukP { from { transform: scale(.85) translateY(4vh); opacity: 0; } to { transform: none; opacity: 1; } }
+  .pkad h2 { margin: 0; font-family: 'Baloo 2'; font-weight: 800; font-size: 5.2vh; text-align: center; }
+  .pkad .terbaik { text-align: center; font-family: 'Baloo 2'; font-weight: 800; font-size: 3.4vh; color: #ffd23f; margin: .6vh 0 2vh; }
+  .pkad .nota { text-align: center; color: #9fb4cc; font-size: 1.9vh; margin-top: -1.4vh; margin-bottom: 1.6vh; }
+  .pbaris { display: grid; grid-template-columns: 5vh 7vh 1fr auto auto; align-items: center; gap: 1.2vw; padding: .9vh 1.2vw; border-radius: 1.8vh; background: rgba(255,255,255,.05); margin-bottom: .9vh; border: 2px solid transparent; }
+  .pbaris.fokus { border-color: #1de9b6; background: rgba(29,233,182,.12); }
+  .pbaris .rk { font-family: 'Baloo 2'; font-weight: 800; font-size: 3.4vh; text-align: center; }
+  .pbaris .av { width: 6.4vh; height: 6.4vh; border-radius: 50%; overflow: hidden; display: grid; place-items: center; font-family: 'Baloo 2'; font-weight: 800; font-size: 3.2vh; color: #fff; background: var(--w); border: .35vh solid rgba(255,255,255,.8); }
+  .pbaris .av img { width: 100%; height: 100%; object-fit: cover; }
+  .pbaris .nm { font-family: 'Baloo 2'; font-weight: 800; font-size: 3.4vh; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pbaris .tb { font-family: 'Baloo 2'; font-weight: 800; font-size: 3vh; color: #1de9b6; min-width: 8vh; text-align: right; }
+  .pbaris .mt { font-family: 'Baloo 2'; font-weight: 800; font-size: 4vh; color: #ffd23f; min-width: 12vh; text-align: right; }
+  .pbaris .mt small { font-size: 1.7vh; color: #9fb4cc; margin-left: .3vw; }
+  .pbtn { display: flex; justify-content: center; gap: 1.2vw; margin-top: 2vh; }
+  .pbtn button { font-family: 'Baloo 2'; font-weight: 800; font-size: 3vh; border: 0; border-radius: 99px; padding: 1.4vh 3vw; cursor: pointer; }
+  .pbtn .lagi { background: #1de9b6; color: #04121a; } .pbtn .lagi:disabled { opacity: .5; cursor: default; }
+  .pbtn .menu { background: rgba(255,255,255,.12); color: #fff; }
   #toast { position: fixed; left: 50%; top: 2vh; transform: translate(-50%, -160%); z-index: 70; background: #13334c; color: #fff; font-weight: 700; font-size: 2.2vh; padding: 1vh 2vw; border-radius: 99px; transition: transform .3s; }
   #toast.on { transform: translate(-50%, 0); }
 </style>
@@ -86,7 +106,10 @@
   <button id="btnFs" title="Skrin penuh">⛶</button>
 </div>
 <div id="mula"><div><button id="btnMula">▶ MULA KELAS</button><p>Klik sekali untuk hidupkan bunyi, suara &amp; muzik</p></div></div>
+<section id="lPapan" hidden><div class="pkad" id="pkad"></div></section>
 <div id="toast"></div>
+<script src="/km-suara.js"></script>
+<script src="/km-kumpulan.js"></script>
 
 <script>
 (() => {
@@ -111,6 +134,7 @@ const LANGKAH = [
   { id: 'tulang', ik: '🦴', w: '#14a394', lbl: 'LANGKAH 2', nama: 'Sambung Tulang', ds: 'Kuiz AR kawalan tangan di depan kamera.', url: () => '/sambung-tulang.html', malas: true },
   { id: 'suntik', ik: '💉', w: '#2f80ed', lbl: 'LANGKAH 2', nama: 'Semak & Suntik', ds: 'Kunci jawapan, dedah, Kad Jujur, rawat & audit.', url: () => `/wad-skrin.html?${q()}` },
   { id: 'sijil', ik: '📜', w: '#16a34a', lbl: 'LANGKAH 3', nama: 'Semak & Cop Sijil', ds: 'Susun ayat dan cop DIDAFTARKAN.', url: () => `/sijil-skrin.html?${q()}` },
+  { id: 'mata', ik: '🏆', w: '#d4a106', lbl: 'PAPAN MATA', nama: 'Papan Mata Kumpulan', ds: 'Mata 6 kumpulan & pemenang (3 terbaik).', url: () => '/papan-mata.html?embed=1' },
 ];
 const FR = {};
 function binaFrame(L) {
@@ -156,7 +180,7 @@ function paparkan(id) {
 function pilih(id) { if (!hantar({ jenis: 'pilih', aktif: id })) paparkan(id); }
 
 $('btnMula').onclick = () => {
-  dibuka = true; $('mula').hidden = true;
+  dibuka = true; $('mula').hidden = true; try { window.KMSuara && KMSuara.audio(); } catch (e) {}
   // Satu klik di sini membuka bunyi untuk semua sistem (iframe asal yang sama).
   Object.keys(FR).forEach((k) => tunjukFrame(k, k === aktif));
 };
@@ -180,10 +204,18 @@ function sambung() {
   ws.onopen = () => { wsOk = true; tunda = 800; kemasSambung(); clearInterval(pingT); pingT = setInterval(() => hantar({ jenis: 'ping' }), 20000); };
   ws.onmessage = (ev) => {
     let d; try { d = JSON.parse(ev.data); } catch (e) { return; }
+    if (d.kini) beza = d.kini - Date.now();
     if (d.jenis === 'keadaan') {
       const naik = (d.telefon || 0) > bilTel; bilTel = d.telefon || 0; kemasSambung();
       if (naik) toast('📱 Telefon guru bersambung');
       if (d.aktif !== aktif) paparkan(d.aktif);
+      urusPapan(d.papan);
+    } else if (d.jenis === 'kelas') {
+      muatKelasSemua();
+    } else if (d.jenis === 'podium') {
+      paparkan('mata');
+      const cuba = (n) => { const w = FR.mata && FR.mata.contentWindow; if (w && w.__papan) w.__papan.podium(); else if (n < 30) setTimeout(() => cuba(n + 1), 200); };
+      cuba(0);
     }
   };
   ws.onclose = (ev) => {
@@ -194,6 +226,43 @@ function sambung() {
   ws.onerror = () => {};
 }
 function ulang() { setTimeout(sambung, tunda); tunda = Math.min(tunda * 1.7, 8000); }
+
+// ---------- PAPAN MATA selepas setiap aktiviti ----------
+let beza = 0, papanKini = null, papanT = null, kiraT = null;
+const kini = () => Date.now() + beza;
+const escH = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function muatKelasSemua() {
+  if (window.KMKumpulan) KMKumpulan.muat();
+  Object.keys(FR).forEach((k) => { try { const w = FR[k].contentWindow; w && w.KMKumpulan && w.KMKumpulan.muat(); } catch (e) {} });
+}
+function urusPapan(p) {
+  const id = p ? p.id : null;
+  if (id === (papanKini && papanKini.id)) return;
+  clearTimeout(papanT); clearInterval(kiraT); papanKini = p;
+  if (!p) { $('lPapan').hidden = true; return; }
+  // tunggu animasi tamat sistem itu dahulu, kemudian papar
+  papanT = setTimeout(async () => { await (window.KMKumpulan ? KMKumpulan.muat() : null); if (papanKini && papanKini.id === id) tunjukPapan(p); }, Math.max(0, p.mulaPada - kini()));
+}
+function tunjukPapan(p) {
+  const KK = window.KMKumpulan, j = (KK && KK.jumlah) || [0, 0, 0, 0, 0, 0];
+  const nama = (g) => (KK ? KK.nama(g) : 'Kumpulan ' + (g + 1));
+  const urut = [0, 1, 2, 3, 4, 5].sort((a, b) => j[b] - j[a] || a - b);
+  const maksT = Math.max(...p.tambah), terbaik = maksT > 0 ? p.tambah.map((t, g) => ({ t, g })).filter((x) => x.t === maksT).map((x) => nama(x.g)) : [];
+  const WARNA = KK ? KK.WARNA : ['#ff5a6a', '#48a8ff', '#3ddc84', '#ffd23f', '#b38cff', '#ff9a3d'];
+  let pangkat = 0, akhirM = null;
+  $('pkad').innerHTML = `<h2>${escH(p.ik)} Keputusan · ${escH(p.label)}</h2>
+    <div class="terbaik">${terbaik.length ? `🏅 Terbaik: ${terbaik.map(escH).join(', ')} (+${maksT} mata)` : 'Papan mata terkini'}</div>
+    ${p.nota ? `<div class="nota">${escH(p.nota)}</div>` : ''}
+    ${urut.map((g, i) => { if (j[g] !== akhirM) { pangkat = i + 1; akhirM = j[g]; } const u = KK && KK.gambar(g);
+      return `<div class="pbaris ${p.tambah[g] > 0 ? 'fokus' : ''}" style="--w:${WARNA[g]}"><span class="rk">${pangkat <= 3 && j[g] > 0 ? ['🥇', '🥈', '🥉'][pangkat - 1] : pangkat}</span><span class="av">${u ? `<img src="${u}" alt="">` : escH((nama(g).trim()[0] || '?').toUpperCase())}</span><span class="nm">${escH(nama(g))}</span><span class="tb">${p.tambah[g] ? (p.tambah[g] > 0 ? '+' : '') + p.tambah[g] : ''}</span><span class="mt">${j[g]}<small>mata</small></span></div>`; }).join('')}
+    <div class="pbtn"><button class="lagi" id="pLagi" disabled>Seterusnya ▶ (5)</button><button class="menu" id="pMenu">🏠 Menu</button></div>`;
+  $('lPapan').hidden = false;
+  let n = 5;
+  kiraT = setInterval(() => { n--; const b = $('pLagi'); if (!b) return clearInterval(kiraT); if (n <= 0) { clearInterval(kiraT); b.disabled = false; b.textContent = 'Seterusnya ▶'; } else b.textContent = `Seterusnya ▶ (${n})`; }, 1000);
+  $('pLagi').onclick = () => hantar({ jenis: 'tutupPapan' });
+  $('pMenu').onclick = () => hantar({ jenis: 'tutupPapan', menu: true });
+  if (dibuka && window.KMSuara) { KMSuara.diam(); KMSuara.cakap(terbaik.length ? `Syabas, ${terbaik.join(' dan ')}! Tambah ${maksT} mata.` : 'Papan mata terkini.'); }
+}
 
 lukisKod(); kemasSambung(); paparkan('utama'); sambung();
 window.__klinik = { get aktif() { return aktif; }, get sesi() { return sesi; }, FR };

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Papan Mata Kumpulan — Klinik Kata Majmuk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Fredoka:wght@500;600;700&display=swap">
+<style>
+  :root { --latar: #071a2b; --panel: #0e2a42; --garis: rgba(140,200,255,.16); --putih: #f4f8ff; --kabur: #9fb4cc; --emas: #ffd23f; --perak: #d7e1ea; --gangsa: #e09a5c; --teal: #1de9b6; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; height: 100%; overflow: hidden; font-family: 'Fredoka', system-ui, sans-serif; color: var(--putih);
+    background: radial-gradient(ellipse at 50% -20%, #12456b 0%, #0a2238 45%, #050f1a 100%); }
+  .app { position: fixed; inset: 0; display: grid; grid-template-columns: 1fr 30vw; grid-template-rows: auto 1fr; gap: 2vh 2vw; padding: 3vh 3vw; }
+  header { grid-column: 1 / -1; display: flex; align-items: center; gap: 1.4vw; }
+  .trofi { font-size: 7vh; filter: drop-shadow(0 0 2vh rgba(255,210,63,.6)); animation: goyang 3s ease-in-out infinite; }
+  @keyframes goyang { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+  header h1 { margin: 0; font-family: 'Baloo 2'; font-weight: 800; font-size: 6vh; line-height: 1; }
+  header small { display: block; color: var(--kabur); font-size: 2vh; letter-spacing: .3vh; font-weight: 600; }
+  .alat { margin-left: auto; display: flex; gap: .6vw; }
+  .btn { font: inherit; font-weight: 700; font-size: 2vh; color: var(--putih); background: rgba(255,255,255,.08); border: 2px solid var(--garis); border-radius: 1.4vh; padding: 1vh 1.2vw; cursor: pointer; }
+  .btn:hover { background: rgba(255,255,255,.16); }
+  .btn.emas { background: var(--emas); color: #1b1300; border-color: var(--emas); }
+  body.embed .alat { display: none; }
+
+  /* ===== senarai mata ===== */
+  .papan { position: relative; min-height: 0; }
+  .baris { position: absolute; left: 0; right: 0; height: calc((100% - 5 * 1.4vh) / 6); display: grid; grid-template-columns: 7vh 9vh 1fr auto; align-items: center; gap: 1.2vw;
+    padding: 0 1.6vw 0 1vw; border-radius: 2.2vh; background: var(--panel); border: 3px solid var(--garis); transition: top .8s cubic-bezier(.3,1.3,.5,1), border-color .3s, box-shadow .3s; overflow: hidden; }
+  .baris .bg { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, color-mix(in srgb, var(--w) 40%, transparent), color-mix(in srgb, var(--w) 8%, transparent)); transition: width 1s cubic-bezier(.3,1,.5,1); z-index: 0; }
+  .baris > *:not(.bg) { position: relative; z-index: 1; }
+  .baris .rk { width: 6vh; height: 6vh; border-radius: 50%; display: grid; place-items: center; font-family: 'Baloo 2'; font-weight: 800; font-size: 3.4vh; background: rgba(255,255,255,.1); }
+  .baris.r1 { border-color: var(--emas); box-shadow: 0 0 3vh rgba(255,210,63,.35); } .baris.r1 .rk { background: var(--emas); color: #1b1300; }
+  .baris.r2 .rk { background: var(--perak); color: #1b2530; } .baris.r3 .rk { background: var(--gangsa); color: #2a1500; }
+  .av { width: 8vh; height: 8vh; border-radius: 50%; overflow: hidden; display: grid; place-items: center; font-family: 'Baloo 2'; font-weight: 800; font-size: 4vh; color: #fff; background: var(--w); border: .4vh solid rgba(255,255,255,.8); }
+  .av img { width: 100%; height: 100%; object-fit: cover; }
+  .baris .nm { font-family: 'Baloo 2'; font-weight: 800; font-size: 4.4vh; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .baris .mt { font-family: 'Baloo 2'; font-weight: 800; font-size: 6vh; line-height: 1; color: var(--emas); text-align: right; min-width: 10vh; }
+  .baris .mt small { font-size: 2vh; color: var(--kabur); margin-left: .4vw; }
+  .tambah { position: absolute; right: 13vh; top: 50%; transform: translateY(-50%); font-family: 'Baloo 2'; font-weight: 800; font-size: 3.4vh; color: var(--teal); animation: naik 2.6s ease-out forwards; z-index: 2; }
+  @keyframes naik { 0% { opacity: 0; transform: translateY(0) scale(.6); } 15% { opacity: 1; transform: translateY(-60%) scale(1.15); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(-140%) scale(1); } }
+
+  /* ===== sisi: rekod ===== */
+  aside { min-height: 0; display: flex; flex-direction: column; gap: 1.4vh; }
+  .kad { background: var(--panel); border: 2px solid var(--garis); border-radius: 2.2vh; padding: 2vh 1.4vw; }
+  .kad h3 { margin: 0 0 1.2vh; font-family: 'Baloo 2'; font-weight: 800; font-size: 3vh; }
+  .rek { display: flex; flex-direction: column; gap: .9vh; overflow: hidden; }
+  .rk1 { font-size: 1.9vh; color: var(--kabur); display: flex; justify-content: space-between; gap: .6vw; }
+  .rk1 b { color: var(--putih); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rk1 span { white-space: nowrap; }
+  .nota { color: var(--kabur); font-size: 1.8vh; line-height: 1.4; }
+
+  /* ===== podium ===== */
+  #podium { position: fixed; inset: 0; z-index: 30; display: grid; grid-template-rows: auto 1fr; padding: 4vh 4vw 0; background: radial-gradient(ellipse at 50% 30%, #1a3f63, #050f1a 75%); }
+  #podium h2 { margin: 0; text-align: center; font-family: 'Baloo 2'; font-weight: 800; font-size: 7vh; color: var(--emas); text-shadow: 0 0 3vh rgba(255,210,63,.5); }
+  .tiang { display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: end; gap: 2vw; padding: 0 4vw; }
+  .tp { display: flex; flex-direction: column; align-items: center; opacity: 0; transform: translateY(6vh); transition: opacity .6s, transform .8s cubic-bezier(.2,1.4,.4,1); }
+  .tp.on { opacity: 1; transform: none; }
+  .tp .av { width: 16vh; height: 16vh; font-size: 8vh; border-width: .8vh; }
+  .tp .nm { font-family: 'Baloo 2'; font-weight: 800; font-size: 4.6vh; margin-top: 1.4vh; text-align: center; line-height: 1.05; }
+  .tp .mt { font-family: 'Baloo 2'; font-weight: 800; font-size: 3.6vh; color: var(--emas); }
+  .tp .blok { width: 100%; margin-top: 1.6vh; border-radius: 2vh 2vh 0 0; display: grid; place-items: start center; padding-top: 2vh; font-family: 'Baloo 2'; font-weight: 800; font-size: 12vh; color: rgba(0,0,0,.35); }
+  .tp.p1 .blok { height: 38vh; background: linear-gradient(180deg, #ffe680, #e0b100); }
+  .tp.p2 .blok { height: 27vh; background: linear-gradient(180deg, #f2f6fa, #aab8c6); }
+  .tp.p3 .blok { height: 19vh; background: linear-gradient(180deg, #f3c194, #c47a3a); }
+  .tp .pingat { font-size: 6vh; margin-bottom: .6vh; }
+  #podium .tutup { position: absolute; right: 2vw; top: 2vh; }
+  #konfeti { position: fixed; inset: 0; z-index: 40; pointer-events: none; }
+  #nota { position: fixed; left: 50%; bottom: 3vh; transform: translateX(-50%); z-index: 50; font: inherit; font-weight: 700; font-size: 2.2vh; color: #1b1300; background: var(--emas); border: none; border-radius: 99px; padding: 1vh 2vw; cursor: pointer; }
+  body.embed #nota { display: none; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <span class="trofi" aria-hidden="true">🏆</span>
+    <div><small>KLINIK DR. IZUDDIN · KATA MAJMUK</small><h1>Papan Mata Kumpulan</h1></div>
+    <div class="alat">
+      <a class="btn" href="/kumpulan-telefon.html">✏️ Nama, gambar &amp; mata</a>
+      <button class="btn emas" id="btnPodium">🏆 Tunjuk Pemenang</button>
+      <button class="btn" id="btnFs">⛶</button>
+    </div>
+  </header>
+  <div class="papan" id="papan"></div>
+  <aside>
+    <div class="kad" style="flex:1;min-height:0;display:flex;flex-direction:column"><h3>📋 Aktiviti terkini</h3><div class="rek" id="rek"></div></div>
+    <div class="kad nota">Mata automatik: setiap jawapan BETUL, ⭐ Lencana Jujur, dan pesakit yang diselamatkan dalam Pemasa Jantung. Guru boleh tambah atau tolak mata dari telefon.</div>
+  </aside>
+</div>
+<section id="podium" hidden>
+  <h2>🎉 Pemenang Hari Ini 🎉</h2>
+  <div class="tiang" id="tiang"></div>
+  <button class="btn tutup" id="btnTutupPodium">✕ Tutup</button>
+</section>
+<canvas id="konfeti"></canvas>
+<button id="nota">▶ Klik sekali untuk hidupkan bunyi &amp; suara</button>
+
+<script src="/km-suara.js"></script>
+<script src="/km-kumpulan.js"></script>
+<script>
+(() => {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const EMBED = new URLSearchParams(location.search).get('embed') === '1';
+if (EMBED) document.body.classList.add('embed');
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const KK = window.KMKumpulan, KS = window.KMSuara;
+const WARNA = KK.WARNA;
+const tidur = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// ---------- bunyi ----------
+function nada(f, mula, tempoh, jenis = 'sine', vol = .14, f2) {
+  const a = KS.audio(); if (!a) return;
+  const t = a.currentTime + mula, o = a.createOscillator(), g = a.createGain();
+  o.type = jenis; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + tempoh);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .01); g.gain.exponentialRampToValueAtTime(0.0001, t + tempoh);
+  o.connect(g).connect(KS.keluaran()); o.start(t); o.stop(t + tempoh + .05);
+}
+const SFX = {
+  naik() { nada(660, 0, .12, 'triangle', .1); nada(990, .08, .16, 'triangle', .1); },
+  gendang() { for (let i = 0; i < 18; i++) nada(110 + (i % 2) * 8, i * .1, .09, 'triangle', .05 + i * .006); },
+  tempat(n) { const f = n === 1 ? [523, 659, 784, 1047, 1319] : n === 2 ? [523, 659, 784] : [523, 659]; f.forEach((x, i) => nada(x, i * .1, .35, 'triangle', .16)); },
+};
+function bukaBunyi() { KS.audio(); $('nota').hidden = true; removeEventListener('pointerdown', bukaBunyi); }
+addEventListener('pointerdown', bukaBunyi);
+function cakap(t) { KS.diam(); return KS.cakap(t); }
+
+// ---------- avatar ----------
+function avatar(g) {
+  const u = KK.gambar(g), n = KK.nama(g);
+  return `<div class="av" style="--w:${WARNA[g]}">${u ? `<img src="${u}" alt="">` : esc((n.trim()[0] || '?').toUpperCase())}</div>`;
+}
+
+// ---------- senarai ----------
+let lama = null; // jumlah sebelumnya (untuk animasi +mata)
+function susun() {
+  const j = KK.jumlah || [0, 0, 0, 0, 0, 0];
+  const urut = [0, 1, 2, 3, 4, 5].sort((a, b) => j[b] - j[a] || a - b);
+  return { j, urut };
+}
+function lukis() {
+  const { j, urut } = susun(), maks = Math.max(1, ...j.map((x) => Math.abs(x)));
+  const el = $('papan');
+  if (el.children.length !== 6) el.innerHTML = [0, 1, 2, 3, 4, 5].map((g) => `<div class="baris" id="b${g}" style="--w:${WARNA[g]}"><div class="bg"></div><span class="rk"></span><span class="avS"></span><span class="nm"></span><span class="mt"></span></div>`).join('');
+  // kedudukan (seri = kedudukan sama)
+  let pangkat = 0, akhirM = null;
+  urut.forEach((g, i) => {
+    if (j[g] !== akhirM) { pangkat = i + 1; akhirM = j[g]; }
+    const b = $('b' + g);
+    b.style.top = `calc(${i} * ((100% - 5 * 1.4vh) / 6 + 1.4vh))`;
+    b.className = 'baris' + (pangkat <= 3 && j[g] > 0 ? ' r' + pangkat : '');
+    b.querySelector('.rk').textContent = pangkat;
+    const av = avatar(g); if (b.querySelector('.avS').dataset.k !== av) { b.querySelector('.avS').innerHTML = av; b.querySelector('.avS').dataset.k = av; }
+    b.querySelector('.nm').textContent = KK.nama(g);
+    b.querySelector('.mt').innerHTML = `${j[g]}<small>mata</small>`;
+    b.querySelector('.bg').style.width = Math.max(2, (Math.max(0, j[g]) / maks) * 100) + '%';
+    if (lama && j[g] !== lama[g]) {
+      const d = j[g] - lama[g], t = document.createElement('span'); t.className = 'tambah'; t.textContent = (d > 0 ? '+' : '') + d;
+      b.appendChild(t); setTimeout(() => t.remove(), 2700); if (d > 0) SFX.naik();
+    }
+  });
+  lama = j.slice();
+  // rekod aktiviti
+  const r = (KK.data && KK.data.rekod) || [];
+  $('rek').innerHTML = r.length ? r.slice(0, 9).map((x) => {
+    const top = x.mata.map((m, g) => ({ m, g })).filter((y) => y.m).sort((a, b) => b.m - a.m).slice(0, 2);
+    return `<div class="rk1"><b>${esc(x.label)}</b><span>${top.map((y) => `${esc(KK.nama(y.g))} ${y.m > 0 ? '+' : ''}${y.m}`).join(' · ') || '—'}</span></div>`;
+  }).join('') : '<div class="nota">Belum ada mata. Mata masuk automatik bila aktiviti tamat.</div>';
+}
+KK.onChange(lukis);
+addEventListener('resize', lukis);
+
+// ---------- podium 3 terbaik ----------
+let podiumJalan = false;
+async function podium() {
+  if (podiumJalan) return; podiumJalan = true;
+  await KK.muat();
+  const { j, urut } = susun();
+  const tiga = urut.slice(0, 3);
+  // susunan visual: kedua | pertama | ketiga
+  const p = [{ g: tiga[1], n: 2 }, { g: tiga[0], n: 1 }, { g: tiga[2], n: 3 }];
+  const pingat = { 1: '🥇', 2: '🥈', 3: '🥉' };
+  $('tiang').innerHTML = p.map((x) => x.g == null ? '<div></div>' : `<div class="tp p${x.n}" id="tp${x.n}"><span class="pingat">${pingat[x.n]}</span>${avatar(x.g)}<div class="nm">${esc(KK.nama(x.g))}</div><div class="mt">${j[x.g]} mata</div><div class="blok">${x.n}</div></div>`).join('');
+  $('podium').hidden = false;
+  SFX.gendang(); await tidur(1900);
+  for (const n of [3, 2, 1]) {
+    const x = p.find((y) => y.n === n); if (x.g == null) continue;
+    $('tp' + n).classList.add('on'); SFX.tempat(n);
+    if (n === 1) konfeti();
+    const teks = n === 1 ? `Dan tempat pertama, ${KK.nama(x.g)}, dengan ${j[x.g]} mata! Tahniah!` : `Tempat ${n === 2 ? 'kedua' : 'ketiga'}, ${KK.nama(x.g)}, dengan ${j[x.g]} mata.`;
+    await Promise.race([cakap(teks), tidur(n === 1 ? 6000 : 4500)]);
+    await tidur(500);
+  }
+  podiumJalan = false;
+}
+function konfeti() {
+  const c = $('konfeti'), x = c.getContext('2d'); c.width = innerWidth; c.height = innerHeight;
+  const P = Array.from({ length: 200 }, () => ({ x: Math.random() * c.width, y: -20 - Math.random() * c.height * .6, vx: (Math.random() - .5) * 3, vy: 2 + Math.random() * 4, r: Math.random() * 6, vr: (Math.random() - .5) * .25, w: 10 + Math.random() * 12, c: WARNA[Math.floor(Math.random() * 6)] }));
+  const mula = performance.now();
+  (function f(t) { x.clearRect(0, 0, c.width, c.height); P.forEach((p) => { p.x += p.vx; p.y += p.vy; p.vy += .04; p.r += p.vr; x.save(); x.translate(p.x, p.y); x.rotate(p.r); x.fillStyle = p.c; x.fillRect(-p.w / 2, -p.w / 4, p.w, p.w / 2); x.restore(); });
+    if (t - mula < 7000) requestAnimationFrame(f); else x.clearRect(0, 0, c.width, c.height); })(mula);
+}
+function tutupPodium() { $('podium').hidden = true; KS.diam(); }
+$('btnPodium').onclick = () => { bukaBunyi(); podium(); };
+$('btnTutupPodium').onclick = tutupPodium;
+$('btnFs').onclick = () => { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen().catch(() => {}); };
+
+// cangkuk untuk skrin Klinik (satu QR)
+window.__embed = { tunjuk(on) { try { if (on) { bukaBunyi(); KK.muat(); } else { KS.diam(); } } catch (e) {} } };
+window.__papan = { podium, tutup: tutupPodium, muat: () => KK.muat() };
+})();
+</script>
+<script src="/km-hub.js"></script>
+</body>
+</html>

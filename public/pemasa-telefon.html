@@ -78,6 +78,7 @@
 <main id="utama"></main>
 <div class="kaki" id="kaki" hidden><div class="dalam" id="kakiDalam"></div></div>
 <div id="toast"></div>
+<script src="/km-kumpulan.js"></script>
 <script>
 (() => {
 'use strict';
@@ -91,7 +92,7 @@ const fmt = (ms) => { const s = Math.max(0, Math.ceil(ms / 1000)); return String
 const WARNA = ['#ff5a6a', '#48a8ff', '#3ddc84', '#ffd23f', '#b38cff', '#ff9a3d'];
 const PRESET = [30, 60, 120, 180, 300, 600];
 let NAMA = ['Kumpulan 1', 'Kumpulan 2', 'Kumpulan 3', 'Kumpulan 4', 'Kumpulan 5', 'Kumpulan 6'];
-fetch('/api/wad/set', { cache: 'no-store' }).then((r) => r.ok ? r.json() : null).then((j) => { if (j && j.ok && j.set && j.set.kumpulan) { NAMA = j.set.kumpulan.slice(0, 6); paparLama = ''; render(); } }).catch(() => {});
+if (window.KMKumpulan) KMKumpulan.onChange((K) => { const baru = [0, 1, 2, 3, 4, 5].map(K.nama); if (baru.join('|') === NAMA.join('|')) return; NAMA = baru; if (!(S && S.fasa === 'sedia' && document.activeElement && document.activeElement.id === 'inTugas')) { paparLama = ''; render(); } });
 
 let kod = (Q.get('bilik') || '').replace(/\D/g, '').slice(0, 6);
 let S = null, beza = 0, wsOk = false, bilPaparan = 0, paparLama = '', tempohDraf = null, tugasDraf = null;
@@ -174,7 +175,7 @@ function lukisJalan() {
   $('btnHenti').onclick = () => { if (confirm('Hentikan pemasa dan kembali ke tetapan?')) hantar({ jenis: 'semula' }); };
 }
 function lukisTamat() {
-  const sejak = kini() - S.tamatSejak, sedia = sejak >= 4000;
+  const sejak = kini() - S.tamatSejak, sedia = sejak >= 3000;
   const kunci = `tamat|${S.pusingan}|${sedia}`;
   if (kunci === paparLama) return;
   const ok = [], rip = [];

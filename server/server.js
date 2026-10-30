@@ -33,6 +33,8 @@ const wadKM = require('../routes/wadKecemasan');
 const jantungKM = require('../routes/pemasaJantung');
 // [KLINIK KATA MAJMUK] satu QR: TV memuatkan semua langkah, telefon tukar langkah
 const klinikKM = require('../routes/klinikKM');
+// [KELAS KATA MAJMUK] nama 6 kumpulan, gambar & papan mata (dikongsi semua sistem)
+const kelasKM = require('../routes/kelasKM');
 
 const app = express();
 const server = http.createServer(app);
@@ -66,6 +68,7 @@ skrinJawapan.pasang(app);
 kapsulKM.pasang(app);
 sijilKM.pasang(app);
 wadKM.pasang(app);
+kelasKM.pasang(app);
 // [STORAN] Peratus penggunaan MongoDB & RAM Render (bar atas guru.html)
 require('../routes/storan')(app);
 

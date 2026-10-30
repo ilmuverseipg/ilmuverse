@@ -21,6 +21,9 @@ const express = require('express');
 const WebSocket = require('ws');
 const { urlGambar } = require('./kmGambar');
 const { ramPenuh } = require('./storan');
+const kelas = require('./kelasKM');   // mata kumpulan (papan mata)
+const klinik = require('./klinikKM'); // papan mata di skrin Klinik (satu QR)
+const rekodSijil = (b, n) => { const m = new Array(6).fill(0); m[n - 1] = (b.selesai[n] || []).reduce((a, r) => a + (r.betul || 0), 0); kelas.rekod(`sijil:${n}`, 'Semak & Cop Sijil', m); };
 const { isKMAuthed: isAuthed } = require('../middleware/siteAuth'); // kata laluan ATAU avatar Klinik Kata Majmuk
 const { SijilSet } = require('../models/SijilSet');
 
@@ -200,12 +203,16 @@ function mesej(ws, d) {
         const rek = { betul: b.keputusan.filter(Boolean).length, murid: b.murid, t: Date.now() };
         (b.selesai[b.kumpulan] = b.selesai[b.kumpulan] || []).push(rek);
         if (b.selesai[b.kumpulan].length > 30) b.selesai[b.kumpulan].shift();
+        rekodSijil(b, b.kumpulan);
+        const t = new Array(6).fill(0); t[b.kumpulan - 1] = rek.betul;
+        klinik.papan(k.kod, { label: 'Semak & Cop Sijil', ik: '📜', tambah: t, nota: rek.murid ? 'Sijil ' + rek.murid : '', tunda: 4500 });
       }
       siar(b); break;
     case 'sebelum':
       if (b.fasa === 'dedah' && b.idx > 0) { b.idx--; siar(b); }
       else if (b.fasa === 'tamat') {
         const s = b.selesai[b.kumpulan]; if (s && s.length) s.pop();
+        rekodSijil(b, b.kumpulan);
         b.fasa = 'dedah'; b.idx = 3; siar(b);
       }
       break;
@@ -216,7 +223,7 @@ function mesej(ws, d) {
     case 'kembali':
       padamFoto(b); b.fasa = 'pilih'; b.kumpulan = 0; b.murid = ''; b.keputusan = null; b.idx = 0; siar(b); break;
     case 'resetMarkah':
-      b.selesai = {}; siar(b); break;
+      b.selesai = {}; kelas.buang('sijil:'); siar(b); break;
     case 'pandangan': {
       if (!b.foto || Number(d.v) !== b.foto.v) return;
       const x0 = num(d.x0, 0, 1), y0 = num(d.y0, 0, 1), x1 = num(d.x1, 0, 1), y1 = num(d.y1, 0, 1);

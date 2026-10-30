@@ -20,6 +20,8 @@ const express = require('express');
 const WebSocket = require('ws');
 const { urlGambar } = require('./kmGambar');
 const { ramPenuh, mongoPenuh } = require('./storan');
+const kelas = require('./kelasKM');   // mata kumpulan (papan mata)
+const klinik = require('./klinikKM'); // papan mata di skrin Klinik (satu QR)
 const { isKMAuthed: isAuthed } = require('../middleware/siteAuth'); // kata laluan ATAU avatar Klinik Kata Majmuk
 const { isDemo } = require('./kapsulDemo'); // pautan demo peribadi (routes/kapsulDemo.js)
 const { KapsulSet, KapsulGambar } = require('../models/KapsulSet');
@@ -147,7 +149,12 @@ function mesej(ws, d) {
     case 'seterusnya':
       if (b.fasa !== 'dedah') return;
       if (b.idx < 3) b.idx++;
-      else { b.fasa = 'tamat'; b.selesai[b.kumpulan] = { betul: b.keputusan.filter(Boolean).length, jumlah: 4, t: Date.now() }; }
+      else {
+        b.fasa = 'tamat'; b.selesai[b.kumpulan] = { betul: b.keputusan.filter(Boolean).length, jumlah: 4, t: Date.now() };
+        const m = new Array(6).fill(0); m[b.kumpulan - 1] = b.selesai[b.kumpulan].betul;
+        kelas.rekod(`kapsul:${b.kumpulan}`, 'Semak Pantas Kapsul', m); // semakan semula menggantikan, tidak berganda
+        klinik.papan(k.kod, { label: 'Semak Pantas Kapsul', ik: '💊', tambah: m, tunda: 4500 });
+      }
       siar(b); break;
     case 'sebelum':
       if (b.fasa === 'dedah' && b.idx > 0) { b.idx--; siar(b); }
@@ -158,7 +165,7 @@ function mesej(ws, d) {
     case 'ambilSemula': // kembali ke peringkat ambil gambar untuk kumpulan yang sama
       if (!b.kumpulan) return; b.fasa = 'ambil'; b.keputusan = null; b.idx = 0; siar(b); break;
     case 'resetMarkah':
-      b.selesai = {}; siar(b); break;
+      b.selesai = {}; kelas.buang('kapsul:'); siar(b); break;
   }
 }
 

@@ -243,6 +243,7 @@
 <script>window.BOBO_BGM_KEY = 'km_bgm';</script>
 <script src="/bobo-bgm.js"></script>
 <script src="/km-suara.js"></script>
+<script src="/km-kumpulan.js"></script>
 </head>
 <body>
 <svg id="ecg" viewBox="0 0 1600 120" preserveAspectRatio="none" aria-hidden="true"><path d="M0 70 H240 l20 -10 l20 10 H360 l14 -60 l18 100 l14 -40 H520 l18 -12 l18 12 H800 l20 -10 l20 10 H920 l14 -60 l18 100 l14 -40 H1080 l18 -12 l18 12 H1360 l20 -10 l20 10 H1600"/></svg>
@@ -435,9 +436,11 @@ async function muatFoto(i, v, cubaan = 0) {
     if (S && S.foto[i] !== v) { URL.revokeObjectURL(url); return; }
     if (foto[i]) URL.revokeObjectURL(foto[i].url);
     foto[i] = { v, url }; pasangFoto(i);
-  } catch (e) { if (cubaan < 4) setTimeout(() => muatFoto(i, v, cubaan + 1), 700 * (cubaan + 1)); }
+  } catch (e) { if (cubaan < 12) setTimeout(() => muatFoto(i, v, cubaan + 1), Math.min(4000, 700 * (cubaan + 1))); }
   finally { delete sedangMuat[k]; }
 }
+// Pengawas: jika gambar masih belum sampai (rangkaian lambat / pelayan sibuk), cuba lagi.
+setInterval(() => { if (S && (S.fasa === 'imbas' || S.fasa === 'dedah' || S.fasa === 'tamat') && S.foto) S.foto.forEach((v, i) => { if (v && (!foto[i] || foto[i].v < v)) muatFoto(i, v); }); }, 2500);
 function pasangFoto(i) {
   const el = document.querySelector(`#gridF .kf[data-i="${i}"] .bingkai`);
   if (el && foto[i]) el.innerHTML = `<img src="${foto[i].url}" alt="Kapsul ${i + 1}">`;
@@ -462,7 +465,7 @@ function status() {
   $('stDot').className = 'dot ' + c; $('stTx').textContent = t;
 }
 const kapsulHtml = (i) => `<span style="background:${WARNA[i]}">${i + 1}</span><span>Kapsul</span>`;
-const namaKump = (n) => (setSemua && setSemua[n - 1] && setSemua[n - 1].nama) || ('Kumpulan ' + n);
+const namaKump = (n) => (window.KMKumpulan ? KMKumpulan.nama(n - 1) : '') || (setSemua && setSemua[n - 1] && setSemua[n - 1].nama) || ('Kumpulan ' + n);
 
 function render() {
   if (!S) return;
@@ -559,7 +562,7 @@ function tamat() {
   const d = S, b = (d.keputusan || []).filter(Boolean).length;
   $('tKump').textContent = `${namaKump(d.kumpulan)} · ${b}/4 jawapan betul`;
   $('tSkor').innerHTML = (d.keputusan || [false, false, false, false]).map((x, i) => `<span class="kapsul"><span style="background:${WARNA[i]}">${i + 1}</span><span style="color:${x ? 'var(--hijau)' : 'var(--merah)'}">${x ? '✓' : '✗'}</span></span>`).join('');
-  SFX.tamat(); cakap(`Terima kasih, Kumpulan ${d.kumpulan}!`); konfeti();
+  SFX.tamat(); cakap(`Terima kasih, ${namaKump(d.kumpulan)}!`); konfeti();
 }
 
 // konfeti ringkas (kapsul kecil)

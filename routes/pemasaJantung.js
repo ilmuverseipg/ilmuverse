@@ -19,6 +19,8 @@
 const crypto = require('crypto');
 const WebSocket = require('ws');
 const { isKMAuthed } = require('../middleware/siteAuth');
+const kelas = require('./kelasKM');   // mata kumpulan (papan mata)
+const klinik = require('./klinikKM'); // papan mata di skrin Klinik (satu QR)
 
 const BIL_K = 6;
 const MAX_BILIK = 40;
@@ -62,6 +64,12 @@ function tamatkan(b, semua) {
   clearTimeout(b.pemasa); b.pemasa = null;
   b.fasa = 'tamat'; b.tamatSejak = Date.now(); b.semuaSelamat = !!semua; b.baki = 0;
   siar(b);
+  // mata: pesakit selamat = 1, kumpulan PERTAMA siap = +1 bonus
+  const m = b.selamat.map((x) => (x != null ? 1 : 0));
+  let pertama = -1; b.selamat.forEach((x, g) => { if (x != null && (pertama < 0 || x < b.selamat[pertama])) pertama = g; });
+  if (pertama >= 0) m[pertama] += 1;
+  kelas.rekod(`jantung:${b.kod || ''}:${b.tamatSejak}`, 'Pemasa Jantung', m);
+  klinik.papan(b.kod, { label: 'Pemasa Jantung', ik: '💓', tambah: m, nota: 'Selamat = 1 mata · pertama siap +1', tunda: 9000 });
 }
 function jadual(b) {
   clearTimeout(b.pemasa); b.pemasa = null;
@@ -87,6 +95,7 @@ function sambung(ws, req) {
     if (kunci.length < 16 || kunci.length > 64) return tutup(4000, 'kunci tidak sah');
     if (b && !safeEqual(b.kunci, kunci)) { if (b.paparan.size) return tutup(4001, 'kod sedang digunakan'); clearTimeout(b.pemasa); b = bilikBaru(kunci); bilik.set(kod, b); }
     if (!b) { if (bilik.size >= MAX_BILIK) return tutup(4002, 'terlalu banyak bilik'); b = bilikBaru(kunci); bilik.set(kod, b); }
+    b.kod = kod;
   } else {
     if (!isKMAuthed(req)) return tutup(4003, 'perlu log masuk');
     if (!b || !b.paparan.size) return tutup(4004, 'skrin tidak dijumpai');
@@ -140,7 +149,7 @@ function mesej(ws, d) {
       siar(b); break;
     }
     case 'semula': // kembali ke tetapan (kekalkan tugasan & masa)
-      if (b.fasa === 'tamat' && now - b.tamatSejak < 3500) return; // tunggu animasi tamat
+      if (b.fasa === 'tamat' && now - b.tamatSejak < 2800) return; // tunggu bunyi flatline 3 saat
       kosong(b); siar(b); break;
   }
 }

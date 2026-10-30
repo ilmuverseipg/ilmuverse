@@ -70,6 +70,7 @@
 <main id="utama"></main>
 <div class="kaki" id="kaki" hidden><div class="dalam" id="kakiDalam"></div></div>
 <div id="toast"></div>
+<script src="/km-kumpulan.js"></script>
 <script>
 if (new URLSearchParams(location.search).get('embed') === '1') document.documentElement.classList.add('embed');
 (() => {
@@ -83,7 +84,7 @@ let kod = (new URLSearchParams(location.search).get('bilik') || '').replace(/\D/
 let S = null, SET = null, wsOk = false, bilPaparan = 0, paparLama = '', tanda = new Array(6).fill(false), idxTanda = -1;
 
 async function muatSet() { try { const r = await fetch('/api/wad/set', { cache: 'no-store' }); if (r.status === 401) return keLogMasuk(); const j = await r.json(); if (j.ok) SET = j.set; } catch (e) {} }
-const namaK = (g) => (SET && SET.kumpulan[g]) || 'Kumpulan ' + (g + 1);
+const namaK = (g) => (window.KMKumpulan ? KMKumpulan.nama(g) : '') || (SET && SET.kumpulan[g]) || 'Kumpulan ' + (g + 1);
 const soalan = (i) => (SET && SET.soalan[i]) || { maksud: '…', km: '…' };
 function keLogMasuk() { toast('Sesi tamat. Membuka semula…', 3000); setTimeout(() => location.href = '/km-masuk?next=' + encodeURIComponent(location.pathname + location.search), 1400); }
 function statusUI(tx, c) { $('statTx').textContent = tx; $('dot').className = 'dot ' + c; }

@@ -11,17 +11,18 @@
 const crypto = require('crypto');
 const WebSocket = require('ws');
 const { isKMAuthed } = require('../middleware/siteAuth');
+const kelas = require('./kelasKM');
 
 const MAX_BILIK = 40;
 const IDLE_MS = 30 * 60 * 1000;
-const LANGKAH = ['utama', 'jantung', 'kapsul', 'tulang', 'suntik', 'sijil'];
+const LANGKAH = ['utama', 'jantung', 'kapsul', 'tulang', 'suntik', 'sijil', 'mata'];
 
 const bilik = new Map();
 const kodSah = (k) => /^\d{4,6}$/.test(String(k || ''));
 const safeEqual = (a, b) => { const x = Buffer.from(String(a || '')), y = Buffer.from(String(b || '')); return x.length === y.length && crypto.timingSafeEqual(x, y); };
 function hantar(set, obj) { const m = JSON.stringify(obj); set.forEach((w) => { if (w.readyState === WebSocket.OPEN) { try { w.send(m); } catch (e) {} } }); }
-const bilikBaru = (kunci) => ({ kunci, paparan: new Set(), telefon: new Set(), aktif: 'utama', versi: 0, sunyiSejak: Date.now() });
-const keadaan = (b) => ({ jenis: 'keadaan', aktif: b.aktif, versi: b.versi, paparan: b.paparan.size, telefon: b.telefon.size });
+const bilikBaru = (kunci) => ({ kunci, paparan: new Set(), telefon: new Set(), aktif: 'utama', papan: null, versi: 0, sunyiSejak: Date.now() });
+const keadaan = (b) => ({ jenis: 'keadaan', kini: Date.now(), aktif: b.aktif, papan: b.papan, versi: b.versi, paparan: b.paparan.size, telefon: b.telefon.size });
 function siar(b) { b.versi++; const k = keadaan(b); hantar(b.paparan, k); hantar(b.telefon, k); }
 
 setInterval(() => {
@@ -55,8 +56,25 @@ function mesej(ws, d) {
   const k = ws._klinik; if (!k || !d || typeof d !== 'object') return;
   const b = bilik.get(k.kod); if (!b) return;
   if (d.jenis === 'ping') { try { ws.send('{"jenis":"pong"}'); } catch (e) {} return; }
-  if (d.jenis === 'pilih' && LANGKAH.includes(d.aktif)) { b.aktif = d.aktif; siar(b); }
+  if (d.jenis === 'pilih' && LANGKAH.includes(d.aktif)) { b.aktif = d.aktif; b.papan = null; siar(b); }
+  else if (d.jenis === 'tutupPapan') { b.papan = null; if (d.menu) b.aktif = 'utama'; siar(b); }
+  else if (d.jenis === 'podium') { b.aktif = 'mata'; b.papan = null; siar(b); hantar(b.paparan, { jenis: 'podium', t: Date.now() }); }
 }
+
+// ------------------------------------------------------------
+// PAPAN MATA selepas setiap aktiviti
+// Dipanggil oleh sistem (Kapsul / Sijil / Suntik / Pemasa) yang berkongsi
+// kod bilik dengan Klinik. TV papar papan mata selepas 'tunda' ms; butang
+// Seterusnya aktif selepas 5 saat.
+// ------------------------------------------------------------
+function papan(kod, info) {
+  const b = bilik.get(String(kod)); if (!b || !info) return;
+  const tambah = new Array(6).fill(0).map((_, g) => Math.round(Number(info.tambah && info.tambah[g]) || 0));
+  b.papan = { id: Date.now(), label: String(info.label || '').slice(0, 60), ik: String(info.ik || '🏆').slice(0, 4), tambah, nota: String(info.nota || '').slice(0, 120), mulaPada: Date.now() + Math.max(0, Math.min(15000, info.tunda || 0)) };
+  siar(b);
+}
+// Bila nama / mata kumpulan berubah, beritahu semua skrin Klinik supaya muat semula.
+kelas.dengar((v) => { for (const b of bilik.values()) { hantar(b.paparan, { jenis: 'kelas', versi: v }); hantar(b.telefon, { jenis: 'kelas', versi: v }); } });
 
 function putus(ws) {
   const k = ws._klinik; if (!k) return;
@@ -66,4 +84,4 @@ function putus(ws) {
   siar(b);
 }
 
-module.exports = { sambung, mesej, putus };
+module.exports = { sambung, mesej, putus, papan };

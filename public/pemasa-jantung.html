@@ -209,6 +209,7 @@
 <div id="toast"></div>
 
 <script src="/km-suara.js"></script>
+<script src="/km-kumpulan.js"></script>
 <script>
 (() => {
 'use strict';
@@ -264,7 +265,7 @@ const SFX = {
   batal() { nada(500, 0, .15, 'sine', .08, 300); },
   menang() { [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => nada(f, i * .12, .3, 'triangle', .18)); },
   // FLATLINE: bunyi panjang SEKALI sahaja
-  flatline() { nada(1000, 0, 2.6, 'sine', .2); desir(.45, .45, 4000); nada(90, 0, .5, 'sawtooth', .12, 40); },
+  flatline() { nada(1000, 0, 3, 'sine', .2); desir(.45, .45, 4000); nada(90, 0, .5, 'sawtooth', .12, 40); }, // 3 saat
 };
 function cakap(t) { if (!pilihan.suara) return; KS.diam(); KS.cakap(t); }
 function bukaBunyi() { KS.audio(); $('bunyiNota').hidden = true; removeEventListener('pointerdown', bukaBunyi); removeEventListener('keydown', bukaBunyi); }
@@ -277,7 +278,10 @@ kemasButang();
 
 // ---------- nama kumpulan (ikut Semak & Suntik jika ada) ----------
 let NAMA = ['Kumpulan 1', 'Kumpulan 2', 'Kumpulan 3', 'Kumpulan 4', 'Kumpulan 5', 'Kumpulan 6'];
-fetch('/api/wad/set', { cache: 'no-store' }).then((r) => r.ok ? r.json() : null).then((j) => { if (j && j.ok && j.set && j.set.kumpulan) { NAMA = j.set.kumpulan.slice(0, 6); binaWad(); render(true); } }).catch(() => {});
+if (window.KMKumpulan) KMKumpulan.onChange((K) => {
+  const baru = [0, 1, 2, 3, 4, 5].map(K.nama); if (baru.join('|') === NAMA.join('|')) return; // hanya bila NAMA berubah
+  NAMA = baru; MON.forEach((m) => { const nm = m.el.querySelector('.nm'); if (nm) nm.innerHTML = nm.querySelector('small').outerHTML + esc(NAMA[MON.indexOf(m)]); });
+});
 
 // ---------- QR ----------
 const telUrl = () => `${location.origin}/km-masuk?next=${encodeURIComponent('/pemasa-telefon.html?bilik=' + sesi.kod)}`;
@@ -462,12 +466,12 @@ function urusTamat() {
       if (baru) { SFX.menang(); konfeti(); cakap('Syabas! Semua pesakit selamat!'); }
     } else {
       $('banner').className = 'tamatBanner'; $('bannerTx').textContent = 'MASA TAMAT!';
-      if (baru) { SFX.flatline(); $('kilat').hidden = false; setTimeout(() => { $('kilat').hidden = true; }, 3600); }
+      if (baru) { SFX.flatline(); $('kilat').hidden = false; setTimeout(() => { $('kilat').hidden = true; }, 3000); }
     }
     $('banner').hidden = !baru;
   }
-  // selepas 4 saat: keputusan + butang mula semula
-  if (sejak >= 4000 && hasilKunci !== kunci) {
+  // bunyi flatline 3 saat DAHULU, kemudian keputusan + butang mula semula
+  if (sejak >= 3000 && hasilKunci !== kunci) {
     hasilKunci = kunci; $('banner').hidden = true;
     const ok = [], rip = [];
     S.selamat.forEach((v, g) => (v != null ? ok : rip).push({ g, v }));
