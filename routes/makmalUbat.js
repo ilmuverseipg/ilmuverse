@@ -1,5 +1,5 @@
 // ============================================================
-// MAKMAL RACIK UBAT (Langkah 2 Aktiviti 1) - permainan genggam tangan
+// FARMASI GENGGAM KATA MAJMUK (Langkah 2 Aktiviti 1) - permainan genggam tangan
 // ------------------------------------------------------------
 // public/makmal-ubat.html : TV (MediaPipe tangan / tetikus / sentuh)
 // 4 soalan: 2 seret PERKATAAN berdasarkan gambar + 2 seret GAMBAR berdasarkan perkataan.

@@ -58,7 +58,7 @@ function mesej(ws, d) {
   if (d.jenis === 'ping') { try { ws.send('{"jenis":"pong"}'); } catch (e) {} return; }
   if (d.jenis === 'pilih' && LANGKAH.includes(d.aktif)) { b.aktif = d.aktif; b.papan = null; siar(b); }
   else if (d.jenis === 'tutupPapan') { b.papan = null; if (d.menu) b.aktif = 'utama'; siar(b); }
-  else if (d.jenis === 'perintah' && typeof d.sasaran === 'string' && typeof d.arahan === 'string') { // butang telefon -> sistem di TV (cth. Makmal Racik Ubat)
+  else if (d.jenis === 'perintah' && typeof d.sasaran === 'string' && typeof d.arahan === 'string') { // butang telefon -> sistem di TV (cth. Farmasi Genggam Kata Majmuk)
     hantar(b.paparan, { jenis: 'perintah', sasaran: d.sasaran.slice(0, 20), arahan: d.arahan.slice(0, 20) });
   }
   else if (d.jenis === 'podium') { b.aktif = 'mata'; b.papan = null; siar(b); hantar(b.paparan, { jenis: 'podium', t: Date.now() }); }
