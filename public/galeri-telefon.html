@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#0b1a2b">
-<title>Semak Sendiri · Galeri Bukti — Telefon Guru</title>
+<title>Semakan Kedua · Galeri Bukti — Telefon Guru</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@700;800&display=swap">
 <style>
@@ -43,6 +43,10 @@
   .isyB { display: grid; grid-template-columns: repeat(var(--n, 5), 1fr); gap: 4px; padding: 7px; }
   .isyB button { border: 2px solid var(--garis); background: var(--malam); color: #fff; border-radius: 9px; padding: 6px 0; font-family: 'Baloo 2'; font-weight: 800; font-size: 17px; }
   .isyB button.on { background: var(--emas); color: var(--malam); border-color: var(--emas); }
+  .tandaB { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 7px; }
+  .tandaB button { border: 2px solid var(--garis); background: var(--malam); color: #fff; border-radius: 10px; padding: 8px 2px; font-family: 'Baloo 2'; font-weight: 800; font-size: 13.5px; line-height: 1.1; }
+  .tandaB .ya.on { background: var(--hijau); border-color: var(--hijau); }
+  .tandaB .tak.on { background: var(--merah); border-color: var(--merah); }
   .gk .cop { font-size: 12px; font-weight: 700; text-align: center; padding: 0 6px 7px; }
   .gk .cop.jujur { color: #86efac; } .gk .cop.tidak { color: #fca5a5; }
   .kaki { position: fixed; left: 0; right: 0; bottom: 0; z-index: 4; padding: 12px 16px calc(14px + var(--bawah)); background: linear-gradient(180deg, rgba(11,26,43,0), var(--malam) 26%); }
@@ -74,7 +78,7 @@
 <body>
 <header>
   <span class="ikon">📸</span>
-  <div><b>Semak Sendiri · Galeri Bukti</b><small><span class="dot wait" id="dot"></span><span id="statTx">Menyambung…</span></small></div>
+  <div><b>Semakan Kedua · Galeri Bukti</b><small><span class="dot wait" id="dot"></span><span id="statTx">Menyambung…</span></small></div>
 </header>
 <main id="utama"></main>
 <div class="kaki" id="kaki" hidden><div class="dalam" id="kakiDalam"></div></div>
@@ -126,83 +130,78 @@ function render() {
   if (!kod) return lukisKod();
   if (!S) return papar('tunggu', '<div class="kad kadKod"><h2>Menyambung…</h2><p class="sub">Pastikan skrin TV Galeri Bukti sudah dibuka.</p></div>');
   S.foto.forEach((v, g) => { if (v) muatThumb(g, v); else if (thumb[g]) { URL.revokeObjectURL(thumb[g].url); thumb[g] = null; } });
-  if (S.fasa === 'jawab') return lukisJawab();
-  if (S.fasa === 'dedah') return lukisDedah();
   if (S.fasa === 'tamat') return lukisTamat();
   if (S.fokus >= 0) return lukisFokus();
-  return lukisGaleri();
+  if (S.fasa === 'gambar') return lukisGambar();
+  if (S.langkah === 'semak') return lukisSemak();
+  return lukisLangkah();
 }
 function lukisKod() {
   papar('kod', `<div class="kad kadKod"><h2>Masukkan kod bilik</h2><p class="sub">Kod 4 digit tertera pada skrin TV.</p><input id="inKod" inputmode="numeric" maxlength="6" placeholder="0000"><button class="btnUtama" id="btnKod">Sambung</button></div>`);
   $('btnKod').onclick = () => { const v = $('inKod').value.replace(/\D/g, ''); if (v.length < 4) return toast('Kod 4 digit'); kod = v; sambung(); render(); };
 }
-function lukisJawab() {
-  const n = (SET && SET.soalan.length) || 4;
-  papar('jawab', `<h2>📝 Kumpulan sedang menjawab</h2><p class="sub">Semua kumpulan siapkan lembaran Suntikan yang sama. Mulakan Pemasa Jantung jika perlu.</p>
-    <div class="kad">${Array.from({ length: n }, (_, i) => `<div style="padding:6px 0;border-bottom:1px solid var(--garis)"><span class="lbl">${i + 1}</span> ${esc(soalan(i).maksud)} → <b style="color:var(--ecg)">${esc(soalan(i).km)}</b></div>`).join('')}</div>
-    <p class="sub">Langkah seterusnya: TV dedah jawapan satu demi satu, kumpulan semak lembaran sendiri.</p>`,
-    `<button class="btnUtama" id="btnMula">▶ Dedah jawapan</button><button class="btnKedua" id="btnTerus">📸 Terus ke Galeri Bukti</button>`);
-  $('btnMula').onclick = () => { getar(20); hantar({ jenis: 'mula', bilSoalan: n }); };
-  $('btnTerus').onclick = () => { getar(15); hantar({ jenis: 'mula', bilSoalan: n }); setTimeout(() => hantar({ jenis: 'keGaleri' }), 150); };
-}
-function lukisDedah() {
-  const s = soalan(S.idx), akhir = S.idx >= S.bilSoalan - 1;
-  papar('dedah-' + S.idx, `<h2>Dedah jawapan</h2><p class="sub">Kumpulan tanda lembaran sendiri dengan pen merah (✓ / ✗).</p>
-    <div class="kad"><span class="lbl">MAKSUD ${S.idx + 1} / ${S.bilSoalan}</span><div class="mk">${esc(s.maksud)}</div><div class="jw">Jawapan: <b>${esc(s.km)}</b></div></div>`,
-    `<div class="dua"><button class="btnKedua" id="btnSebelum" ${S.idx ? '' : 'disabled'}>◀ Sebelum</button><button class="btnKedua" id="btnLagi" ${akhir ? 'disabled' : ''}>Seterusnya ▶</button></div>
-     <button class="btnUtama ${akhir ? 'emas' : ''}" id="btnGaleri">📸 Ke Galeri Bukti</button>`);
-  $('btnSebelum').onclick = () => hantar({ jenis: 'soalan', idx: S.idx - 1 });
-  $('btnLagi').onclick = () => { getar(10); hantar({ jenis: 'soalan', idx: S.idx + 1 }); };
-  $('btnGaleri').onclick = () => { getar(20); hantar({ jenis: 'keGaleri' }); };
-}
-function auditUntuk(g) { return S.audit.filter((a) => a.g === g && a.hasil); }
-function lukisGaleri() {
-  const N = S.bilSoalan, adaIsy = S.isytihar.some((n) => n != null);
-  const kunci = `galeri|${S.isytihar.join(',')}|${S.foto.join(',')}|${thumb.map((t) => t ? t.v : 0).join(',')}|${naik.join(',')}|${S.audit.length}|${S.pusingan}`;
-  if (kunci === paparLama) return;
-  papar(kunci, `<h2>🖼️ Galeri Bukti</h2><p class="sub">Ambil gambar lembaran setiap kumpulan dan tekan markah yang <b>diisytihar sendiri</b> oleh kumpulan itu. Tekan gambar untuk besarkan di TV.</p>
-    <div class="grid">${[0, 1, 2, 3, 4, 5].map((g) => { const t = thumb[g], a = auditUntuk(g), h = a.length ? a[a.length - 1].hasil : null;
-      return `<div class="gk" style="border-color:${S.isytihar[g] != null && S.foto[g] ? 'var(--hijau)' : 'var(--garis)'}">
-        <div class="kp"><i style="background:${WARNA[g]}"></i><span>${esc(nama(g))}</span></div>
-        <button class="th" data-th="${g}">${t ? `<img src="${t.url}" alt=""><span class="lihat">🔍 Tunjuk di TV</span>` : '📷 Ambil gambar'}${naik[g] ? '<span class="muat">Menghantar…</span>' : ''}</button>
-        <div class="isyB" style="--n:${N + 1}">${Array.from({ length: N + 1 }, (_, n) => `<button data-g="${g}" data-n="${n}" class="${S.isytihar[g] === n ? 'on' : ''}">${n}</button>`).join('')}</div>
-        ${h ? `<div class="cop ${h === 'jujur' ? 'jujur' : 'tidak'}">${h === 'jujur' ? '⭐ Jujur +2' : '⚠️ Dibatalkan'}</div>` : ''}
-        ${t ? `<button class="btnKedua" data-semula="${g}" style="border-radius:0;border-width:2px 0 0;padding:8px;font-size:13px">📷 Ambil semula</button>` : ''}
-      </div>`; }).join('')}</div>`,
-    `<button class="btnUtama emas" id="btnAudit" ${adaIsy ? '' : 'disabled'}>🎯 Audit Doktor Besar (rawak)</button>
-     <div class="dua"><button class="btnKedua" id="btnDedah">◀ Jawapan</button><button class="btnKedua" id="btnTamat">🏁 Tamat & kira mata</button></div>`);
-  document.querySelectorAll('.isyB button').forEach((b) => b.onclick = () => { getar(10); const g = +b.dataset.g, n = +b.dataset.n; hantar({ jenis: 'isytihar', g, n: S.isytihar[g] === n ? null : n }); });
+const thumbHtml = (g) => { const t = thumb[g]; return `<button class="th" data-th="${g}">${t ? `<img src="${t.url}" alt=""><span class="lihat">🔍 Besarkan di TV</span>` : '📷 Ambil gambar'}${naik[g] ? '<span class="muat">Menghantar…</span>' : ''}</button>`; };
+function pasangThumb() {
   document.querySelectorAll('[data-th]').forEach((b) => b.onclick = () => { const g = +b.dataset.th; if (thumb[g]) { getar(10); hantar({ jenis: 'fokus', g }); } else ambilGambar(g); });
   document.querySelectorAll('[data-semula]').forEach((b) => b.onclick = () => ambilGambar(+b.dataset.semula));
-  $('btnAudit').onclick = () => { getar([20, 30, 20]); hantar({ jenis: 'audit' }); };
-  $('btnDedah').onclick = () => hantar({ jenis: 'keDedah' });
-  $('btnTamat').onclick = () => { if (confirm('Tamatkan dan kira mata semua kumpulan?')) hantar({ jenis: 'tamat' }); };
+}
+function lukisGambar() {
+  const ada = S.foto.filter(Boolean).length, sambungSemula = S.markah && S.markah.length;
+  const kunci = `gambar|${S.foto.join(',')}|${thumb.map((t) => t ? t.v : 0).join(',')}|${naik.join(',')}|${S.pusingan}`;
+  if (kunci === paparLama) return;
+  papar(kunci, `<h2>📸 Kumpul bukti</h2><p class="sub">Ambil gambar lembaran <b>semua kumpulan</b> dahulu (${ada}/6). Gambar terus muncul di TV.</p>
+    <div class="grid">${[0, 1, 2, 3, 4, 5].map((g) => `<div class="gk" style="border-color:${S.foto[g] ? 'var(--hijau)' : 'var(--garis)'}"><div class="kp"><i style="background:${WARNA[g]}"></i><span>${esc(nama(g))}</span></div>${thumbHtml(g)}
+      ${thumb[g] ? `<button class="btnKedua" data-semula="${g}" style="border-radius:0;border-width:2px 0 0;padding:8px;font-size:13px">📷 Ambil semula</button>` : ''}</div>`).join('')}</div>`,
+    sambungSemula ? `<button class="btnUtama" id="btnTerus">▶ Teruskan semakan</button>` : `<button class="btnUtama" id="btnMula" ${ada ? '' : 'disabled'}>▶ Mula semakan · Soalan 1</button>`);
+  pasangThumb();
+  if ($('btnMula')) $('btnMula').onclick = () => { if (ada < 6 && !confirm(`Baru ${ada}/6 gambar. Mula juga?`)) return; getar(20); hantar({ jenis: 'mula', bilSoalan: (SET && SET.soalan.length) || 4 }); };
+  if ($('btnTerus')) $('btnTerus').onclick = () => hantar({ jenis: 'teruskan' });
+}
+function lukisLangkah() {
+  const s = soalan(S.idx), jaw = S.langkah === 'jawapan';
+  papar(`langkah|${S.idx}|${S.langkah}`, `<h2>Soalan ${S.idx + 1} / ${S.bilSoalan}</h2><p class="sub">${jaw ? 'TV papar jawapan: perkataan 1 + perkataan 2 = kata majmuk.' : 'TV papar maksud kata majmuk (seperti dalam lampiran).'}</p>
+    <div class="kad"><span class="lbl">${jaw ? 'JAWAPAN' : 'MAKSUD'}</span><div class="mk">${jaw ? `${esc(s.k1)} + ${esc(s.k2)} = <span style="color:var(--ecg)">${esc(s.km)}</span>` : esc(s.maksud)}</div>${jaw ? '' : `<div class="jw">Kata majmuk: <b>${esc(s.km)}</b></div>`}</div>`,
+    `<button class="btnUtama" id="btnLagi">${jaw ? 'Seterusnya ▶ Maksud' : 'Seterusnya ▶ Semak lembaran'}</button>
+     <div class="dua"><button class="btnKedua" id="btnSebelum" ${S.idx || !jaw ? '' : 'disabled'}>◀ Sebelum</button><button class="btnKedua" id="btnGambar">📸 Gambar</button></div>`);
+  $('btnLagi').onclick = () => { getar(15); hantar({ jenis: 'seterusnya' }); };
+  $('btnSebelum').onclick = () => hantar({ jenis: 'sebelum' });
+  $('btnGambar').onclick = () => hantar({ jenis: 'keGambar' });
+}
+function lukisSemak() {
+  const s = soalan(S.idx), row = S.markah[S.idx] || [], akhir = S.idx >= S.bilSoalan - 1, siap = row.filter((x) => x != null).length;
+  const kunci = `semak|${S.idx}|${row.join(',')}|${thumb.map((t) => t ? t.v : 0).join(',')}`;
+  if (kunci === paparLama) return;
+  papar(kunci, `<div class="kad" style="padding:10px 14px"><span class="lbl">SOALAN ${S.idx + 1}</span> <b style="color:var(--ecg);font-size:19px">${esc(s.km)}</b><div class="sub" style="margin:4px 0 0">${esc(s.maksud)}</div></div>
+    <p class="sub">Tanda setiap kumpulan (${siap}/6). TV hentak cop serta-merta.</p>
+    <div class="grid">${[0, 1, 2, 3, 4, 5].map((g) => `<div class="gk" style="border-color:${row[g] === true ? 'var(--hijau)' : row[g] === false ? 'var(--merah)' : 'var(--garis)'}"><div class="kp"><i style="background:${WARNA[g]}"></i><span>${esc(nama(g))}</span></div>${thumbHtml(g)}
+      <div class="tandaB"><button class="ya ${row[g] === true ? 'on' : ''}" data-g="${g}" data-b="1">✓ BETUL</button><button class="tak ${row[g] === false ? 'on' : ''}" data-g="${g}" data-b="0">✗ TIDAK TEPAT</button></div></div>`).join('')}</div>`,
+    `<button class="btnUtama ${akhir ? 'emas' : ''}" id="btnLagi">${akhir ? '🏁 Tamat & kira mata' : `Seterusnya ▶ Soalan ${S.idx + 2}`}</button>
+     <div class="dua"><button class="btnKedua" id="btnSebelum">◀ Maksud</button><button class="btnKedua" id="btnGambar">📸 Gambar</button></div>`);
+  pasangThumb();
+  document.querySelectorAll('.tandaB button').forEach((b) => b.onclick = () => { const g = +b.dataset.g, v = b.dataset.b === '1'; getar(v ? 15 : [15, 30, 15]); hantar({ jenis: 'tanda', g, betul: row[g] === v ? null : v }); });
+  $('btnLagi').onclick = () => { if (siap < 6 && !confirm(`Baru ${siap}/6 kumpulan ditanda. Teruskan?`)) return; getar(20); hantar({ jenis: 'seterusnya' }); };
+  $('btnSebelum').onclick = () => hantar({ jenis: 'sebelum' });
+  $('btnGambar').onclick = () => hantar({ jenis: 'keGambar' });
 }
 function lukisFokus() {
-  const g = S.fokus, a = S.audit[S.audit.length - 1], audit = S.fasa === 'audit' && a && a.g === g, t = thumb[g];
-  const kunci = `fokus|${g}|${S.fasa}|${audit && a.hasil}|${t ? t.v : 0}|${S.isytihar[g]}`;
+  const g = S.fokus, t = thumb[g], semak = S.fasa === 'soalan' && S.langkah === 'semak', m = semak && S.markah[S.idx] ? S.markah[S.idx][g] : null;
+  const kunci = `fokus|${g}|${S.fasa}|${S.idx}|${m}|${t ? t.v : 0}`;
   if (kunci === paparLama) return;
-  let kakiH = '';
-  if (audit && !a.hasil) kakiH = `<p class="sub" style="margin:0;text-align:center">Semak lembaran bersama kelas. Adakah markah isytihar <b>${S.isytihar[g]}/${S.bilSoalan}</b> sama dengan tanda sebenar?</p>
-      <div class="dua"><button class="btnUtama hijau" id="btnJujur">✅ Sama · Jujur</button><button class="btnUtama merah" id="btnTidak">⚠️ Tidak sama</button></div>`;
-  else if (audit) kakiH = `<button class="btnUtama emas" id="btnAuditLagi">🎯 Audit kumpulan lain</button><div class="dua"><button class="btnKedua" id="btnBalik">↩ Galeri</button><button class="btnKedua" id="btnTamat">🏁 Tamat & kira mata</button></div>`;
-  else kakiH = `<button class="btnUtama" id="btnBalik">↩ Kembali ke Galeri</button><button class="btnKedua" id="btnSemula">📷 Ambil semula gambar</button>`;
-  papar(kunci, `<div class="fokusKp"><i style="background:${WARNA[g]}"></i><b>${esc(nama(g))}</b><span>${S.isytihar[g] == null ? '–' : S.isytihar[g]}/${S.bilSoalan}</span></div>
-    ${audit ? `<div class="kad" style="background:#3a2f0b;border-color:#8a6d16;padding:10px 12px"><b>🎯 Audit Doktor Besar</b>${a.hasil ? ` · ${a.hasil === 'jujur' ? '⭐ Jujur (+2)' : '⚠️ Markah dibatalkan'}` : ''}</div>` : ''}
-    <div class="vw" id="vw">${t ? `<img id="li" src="${t.url}" alt="Lembaran">` : '<div style="padding:20px;color:var(--kabur)">Memuat gambar…</div>'}<span class="zt" id="zt">1.0×</span><span class="bantu" id="bantu">Cubit / seret untuk zoom · TV ikut</span></div>`, kakiH);
-  if ($('btnJujur')) { $('btnJujur').onclick = () => { getar([20, 30, 20]); hantar({ jenis: 'hasilAudit', jujur: true }); }; $('btnTidak').onclick = () => { getar(40); hantar({ jenis: 'hasilAudit', jujur: false }); }; }
-  if ($('btnAuditLagi')) $('btnAuditLagi').onclick = () => { hantar({ jenis: 'keGaleri' }); setTimeout(() => hantar({ jenis: 'audit' }), 200); };
-  if ($('btnBalik')) $('btnBalik').onclick = () => hantar(S.fasa === 'audit' ? { jenis: 'keGaleri' } : { jenis: 'fokus', g: -1 });
-  if ($('btnTamat')) $('btnTamat').onclick = () => { if (confirm('Tamatkan dan kira mata semua kumpulan?')) hantar({ jenis: 'tamat' }); };
-  if ($('btnSemula')) $('btnSemula').onclick = () => ambilGambar(g);
+  papar(kunci, `<div class="fokusKp"><i style="background:${WARNA[g]}"></i><b>${esc(nama(g))}</b>${semak ? `<span>${esc(soalan(S.idx).km)}</span>` : ''}</div>
+    <div class="vw" id="vw">${t ? `<img id="li" src="${t.url}" alt="Lembaran">` : '<div style="padding:20px;color:var(--kabur)">Memuat gambar…</div>'}<span class="zt" id="zt">1.0×</span><span class="bantu" id="bantu">Cubit / seret untuk zoom · TV ikut</span></div>`,
+    (semak ? `<div class="dua"><button class="btnUtama hijau" id="fYa">✓ BETUL${m === true ? ' ✔' : ''}</button><button class="btnUtama merah" id="fTak">✗ TIDAK TEPAT${m === false ? ' ✔' : ''}</button></div>` : '')
+    + `<button class="btnKedua" id="btnBalik">↩ Kembali</button>`);
+  if ($('fYa')) { $('fYa').onclick = () => { getar(15); hantar({ jenis: 'tanda', g, betul: m === true ? null : true }); }; $('fTak').onclick = () => { getar([15, 30, 15]); hantar({ jenis: 'tanda', g, betul: m === false ? null : false }); }; }
+  $('btnBalik').onclick = () => hantar({ jenis: 'fokus', g: -1 });
   pasangZoom(g);
 }
 function lukisTamat() {
   const m = S.mata || [];
-  papar('tamat|' + S.pusingan, `<h2>🏁 Keputusan</h2><p class="sub">Mata sudah masuk Papan Mata.</p>
-    <div class="kad">${[0, 1, 2, 3, 4, 5].map((g) => ({ g, m: m[g] || 0 })).sort((a, b) => b.m - a.m).map(({ g, m: mm }) => { const a = auditUntuk(g), h = a.length ? a[a.length - 1].hasil : null;
-      return `<div class="hb"><i style="background:${WARNA[g]}"></i><span>${esc(nama(g))}</span><em>${S.isytihar[g] == null ? '–' : S.isytihar[g] + '/' + S.bilSoalan}${h ? (h === 'jujur' ? ' · ⭐' : ' · ⚠️') : ''}</em><b>+${mm}</b></div>`; }).join('')}</div>`,
-    `<button class="btnKedua" id="btnUlang">🔁 Main semula (padam gambar)</button>`);
+  papar('tamat|' + S.pusingan, `<h2>🏁 Keputusan semakan</h2><p class="sub">Mata (1 untuk setiap jawapan betul) sudah masuk Papan Mata.</p>
+    <div class="kad">${[0, 1, 2, 3, 4, 5].map((g) => ({ g, m: m[g] || 0 })).sort((a, b) => b.m - a.m).map(({ g, m: mm }) =>
+      `<div class="hb"><i style="background:${WARNA[g]}"></i><span>${esc(nama(g))}</span><em>${S.markah.map((r) => (r[g] === true ? '✅' : r[g] === false ? '❌' : '–')).join(' ')}</em><b>${mm}</b></div>`).join('')}</div>`,
+    `<button class="btnKedua" id="btnSebelum">◀ Kembali ke semakan</button><button class="btnKedua" id="btnUlang">🔁 Main semula (padam gambar)</button>`);
+  $('btnSebelum').onclick = () => hantar({ jenis: 'sebelum' });
   $('btnUlang').onclick = () => { if (confirm('Kosongkan galeri dan mula semula?')) hantar({ jenis: 'ulang' }); };
 }
 

@@ -1,5 +1,5 @@
 // ============================================================
-// SEMAK SENDIRI · GALERI BUKTI (Langkah 2 - Suntikan, tema integriti)
+// SEMAKAN KEDUA · GALERI BUKTI (Langkah 2 - Suntikan Kata Majmuk)
 // ------------------------------------------------------------
 // Halaman:
 //   public/galeri-skrin.html   (skrin TV)
@@ -7,15 +7,14 @@
 //
 // Semua kumpulan dapat lembaran yang SAMA (soalan dari Semak & Suntik).
 // Aliran:
-//   jawab  : kumpulan siapkan lembaran
-//   dedah  : TV dedah jawapan satu demi satu -> kumpulan tanda lembaran SENDIRI (pen merah)
-//   galeri : telefon ambil gambar lembaran setiap kumpulan + markah yang DIISYTIHAR.
-//            TV papar Galeri Bukti (6 lembaran sebelah-menyebelah). Guru boleh
-//            besarkan & zoom mana-mana lembaran - TV ikut.
-//   audit  : roda pilih satu kumpulan secara rawak, kelas semak bersama.
-//            Isytihar sama dengan sebenar = ⭐ Lencana Jujur (+2 mata);
-//            tidak sama = markah isytihar dibatalkan (0).
-//   tamat  : mata masuk Papan Mata.
+//   gambar : telefon ambil gambar lembaran SEMUA kumpulan dahulu (TV papar galeri)
+//   soalan : untuk setiap soalan ->
+//              jawapan  TV papar  perkataan 1 + perkataan 2 = kata majmuk
+//              maksud   TV papar maksud (seperti dalam lampiran)
+//              semak    TV papar lembaran semua kumpulan; guru tanda setiap
+//                       kumpulan di telefon -> cop HIJAU "BETUL" / cop MERAH "TIDAK TEPAT"
+//            kemudian soalan seterusnya
+//   tamat  : jumlah betul setiap kumpulan masuk Papan Mata.
 // Gambar kamera disimpan dalam MEMORI sahaja dan dipadam bila main semula / 3 jam.
 // ============================================================
 const crypto = require('crypto');
@@ -31,7 +30,6 @@ const MAX_BILIK = 40;
 const IDLE_MS = 30 * 60 * 1000;
 const FOTO_TTL_MS = 3 * 60 * 60 * 1000;
 const MAX_FOTO = 10 * 1024 * 1024;
-const BONUS_JUJUR = 2;
 const JENIS = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 const bilik = new Map();
@@ -41,16 +39,16 @@ const num = (v, a, b) => { const n = Number(v); return Number.isFinite(n) ? Math
 function hantar(set, obj) { const m = JSON.stringify(obj); set.forEach((w) => { if (w.readyState === WebSocket.OPEN) { try { w.send(m); } catch (e) {} } }); }
 
 function kosong(b) {
-  b.fasa = 'jawab'; b.idx = 0; b.bilSoalan = b.bilSoalan || 4;
-  b.isytihar = new Array(BIL_K).fill(null);
+  b.fasa = 'gambar'; b.idx = 0; b.langkah = 'jawapan'; b.bilSoalan = b.bilSoalan || 4;
+  b.markah = []; // markah[idx][g] = true | false | null
   b.foto = new Array(BIL_K).fill(null);
-  b.fokus = -1; b.pandangan = null; b.audit = []; b.mata = null; b.pusingan = (b.pusingan || 0) + 1;
+  b.fokus = -1; b.pandangan = null; b.mata = null; b.pusingan = (b.pusingan || 0) + 1;
 }
 function bilikBaru(kunci, kod) { const b = { kunci, kod, paparan: new Set(), telefon: new Set(), versi: 0, vf: 0, sunyiSejak: Date.now() }; kosong(b); return b; }
 function keadaan(b) {
   return {
-    jenis: 'keadaan', fasa: b.fasa, idx: b.idx, bilSoalan: b.bilSoalan, isytihar: b.isytihar,
-    foto: b.foto.map((f) => (f ? f.v : 0)), fokus: b.fokus, pandangan: b.pandangan, audit: b.audit, mata: b.mata, pusingan: b.pusingan,
+    jenis: 'keadaan', fasa: b.fasa, idx: b.idx, langkah: b.langkah, bilSoalan: b.bilSoalan, markah: b.markah,
+    foto: b.foto.map((f) => (f ? f.v : 0)), fokus: b.fokus, pandangan: b.pandangan, mata: b.mata, pusingan: b.pusingan,
     versi: b.versi, paparan: b.paparan.size, telefon: b.telefon.size,
   };
 }
@@ -88,13 +86,8 @@ function sambung(ws, req) {
   kemasBilangan(b);
 }
 
-function kiraMata(b) {
-  return b.isytihar.map((n, g) => {
-    const a = b.audit.filter((x) => x.g === g && x.hasil);
-    if (a.some((x) => x.hasil === 'tidak')) return 0; // isytihar tidak jujur -> dibatalkan
-    return (n || 0) + (a.some((x) => x.hasil === 'jujur') ? BONUS_JUJUR : 0);
-  });
-}
+const kiraMata = (b) => new Array(BIL_K).fill(0).map((_, g) => b.markah.reduce((a, row) => a + (row && row[g] === true ? 1 : 0), 0));
+const LANGKAH = ['jawapan', 'maksud', 'semak'];
 
 function mesej(ws, d) {
   const k = ws._galeri; if (!k || !d || typeof d !== 'object') return;
@@ -103,23 +96,41 @@ function mesej(ws, d) {
   if (k.peranan !== 'telefon') return;
   const g = parseInt(d.g, 10), gSah = g >= 0 && g < BIL_K;
   switch (d.jenis) {
-    case 'mula': // jawab -> dedah jawapan
-      if (b.fasa !== 'jawab') return;
-      b.bilSoalan = Math.round(num(d.bilSoalan, 1, 10)) || 4; b.fasa = 'dedah'; b.idx = 0; siar(b); break;
-    case 'soalan':
-      if (b.fasa !== 'dedah') return;
-      b.idx = Math.round(num(d.idx, 0, b.bilSoalan - 1)); siar(b); break;
-    case 'keGaleri':
-      if (b.fasa !== 'dedah' && b.fasa !== 'audit') return;
-      b.fasa = 'galeri'; b.fokus = -1; b.pandangan = null; siar(b); break;
-    case 'keDedah':
-      if (b.fasa !== 'galeri') return;
-      b.fasa = 'dedah'; b.fokus = -1; siar(b); break;
-    case 'isytihar': // markah yang diisytihar kumpulan sendiri
-      if ((b.fasa !== 'galeri' && b.fasa !== 'dedah') || !gSah) return;
-      b.isytihar[g] = d.n === null ? null : Math.round(num(d.n, 0, b.bilSoalan)); siar(b); break;
-    case 'fokus': // besarkan satu lembaran di TV (-1 = kembali ke galeri)
-      if (b.fasa !== 'galeri' && b.fasa !== 'audit') return;
+    case 'mula': // gambar -> soalan 1 (jawapan)
+      if (b.fasa !== 'gambar') return;
+      b.bilSoalan = Math.round(num(d.bilSoalan, 1, 10)) || 4;
+      b.markah = Array.from({ length: b.bilSoalan }, () => new Array(BIL_K).fill(null));
+      b.fasa = 'soalan'; b.idx = 0; b.langkah = 'jawapan'; b.fokus = -1; b.pandangan = null; siar(b); break;
+    case 'keGambar': // kembali ambil / ambil semula gambar
+      if (b.fasa !== 'soalan') return;
+      b.fasa = 'gambar'; b.fokus = -1; b.pandangan = null; siar(b); break;
+    case 'teruskan': // kembali ke soalan selepas ambil semula gambar
+      if (b.fasa !== 'gambar' || !b.markah.length) return;
+      b.fasa = 'soalan'; siar(b); break;
+    case 'seterusnya': { // jawapan -> maksud -> semak -> soalan berikutnya
+      if (b.fasa !== 'soalan') return;
+      const i = LANGKAH.indexOf(b.langkah);
+      b.fokus = -1; b.pandangan = null;
+      if (i < 2) b.langkah = LANGKAH[i + 1];
+      else if (b.idx < b.bilSoalan - 1) { b.idx++; b.langkah = 'jawapan'; }
+      else { b.mata = kiraMata(b); b.fasa = 'tamat';
+        kelas.rekod(`semakKedua:${b.kod}:${b.pusingan}`, 'Semakan Kedua · Galeri Bukti', b.mata);
+        klinik.papan(b.kod, { label: 'Semakan Kedua · Galeri Bukti', ik: '📸', tambah: b.mata, nota: '1 mata untuk setiap jawapan BETUL', tunda: 6000 }); }
+      siar(b); break;
+    }
+    case 'sebelum': {
+      if (b.fasa === 'tamat') { b.fasa = 'soalan'; b.langkah = 'semak'; siar(b); return; }
+      if (b.fasa !== 'soalan') return;
+      const i = LANGKAH.indexOf(b.langkah); b.fokus = -1; b.pandangan = null;
+      if (i > 0) b.langkah = LANGKAH[i - 1];
+      else if (b.idx > 0) { b.idx--; b.langkah = 'semak'; }
+      siar(b); break;
+    }
+    case 'tanda': // guru tanda satu kumpulan: true = BETUL, false = TIDAK TEPAT, null = padam
+      if (b.fasa !== 'soalan' || b.langkah !== 'semak' || !gSah || !b.markah[b.idx]) return;
+      b.markah[b.idx][g] = d.betul === true ? true : d.betul === false ? false : null; siar(b); break;
+    case 'fokus': // besarkan satu lembaran di TV (-1 = kembali)
+      if (b.fasa !== 'gambar' && !(b.fasa === 'soalan' && b.langkah === 'semak')) return;
       b.fokus = gSah ? g : -1; b.pandangan = null; siar(b); break;
     case 'pandangan': { // zoom dari telefon -> TV ikut
       if (!gSah || b.fokus !== g || !b.foto[g] || Number(d.v) !== b.foto[g].v) return;
@@ -128,28 +139,6 @@ function mesej(ws, d) {
       b.pandangan = { g, v: b.foto[g].v, x0, y0, x1, y1 };
       hantar(b.paparan, { jenis: 'pandangan', ...b.pandangan });
       break;
-    }
-    case 'audit': { // roda rawak: kumpulan yang sudah isytihar & belum diaudit diutamakan
-      if (b.fasa !== 'galeri') return;
-      const ada = b.isytihar.map((n, i) => i).filter((i) => b.isytihar[i] != null);
-      if (!ada.length) { try { ws.send(JSON.stringify({ jenis: 'ralat', mesej: 'Isytihar markah sekurang-kurangnya satu kumpulan dahulu.' })); } catch (e) {} return; }
-      const belum = ada.filter((i) => !b.audit.some((a) => a.g === i));
-      const calon = belum.length ? belum : ada;
-      const pilih = calon[crypto.randomInt(calon.length)];
-      b.audit.push({ g: pilih, hasil: null, putaran: 3 + crypto.randomInt(3), id: Date.now() });
-      b.fasa = 'audit'; b.fokus = pilih; b.pandangan = null; siar(b); break;
-    }
-    case 'hasilAudit': {
-      if (b.fasa !== 'audit') return;
-      const a = b.audit[b.audit.length - 1]; if (!a || a.hasil) return;
-      a.hasil = d.jujur === true ? 'jujur' : 'tidak'; siar(b); break;
-    }
-    case 'tamat': {
-      if (b.fasa !== 'galeri' && b.fasa !== 'audit') return;
-      b.mata = kiraMata(b); b.fasa = 'tamat'; b.fokus = -1;
-      kelas.rekod(`semakSendiri:${b.kod}:${b.pusingan}`, 'Semak Sendiri', b.mata);
-      klinik.papan(b.kod, { label: 'Semak Sendiri · Galeri Bukti', ik: '📸', tambah: b.mata, nota: `Markah isytihar + ⭐ Lencana Jujur (+${BONUS_JUJUR})`, tunda: 6000 });
-      siar(b); break;
     }
     case 'ulang':
       kosong(b); siar(b); break;
@@ -176,7 +165,6 @@ function pasang(app) {
     if (!JENIS.has(type) || !Buffer.isBuffer(req.body) || req.body.length < 100) return res.status(400).json({ ok: false, mesej: 'Fail gambar tidak sah.' });
     b.vf++;
     b.foto[g] = { buf: req.body, type, v: b.vf, t: Date.now() };
-    if (b.fasa === 'jawab' || b.fasa === 'dedah') { b.fasa = 'galeri'; b.fokus = -1; }
     siar(b);
     res.json({ ok: true, v: b.vf });
   });
