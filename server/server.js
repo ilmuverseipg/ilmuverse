@@ -35,6 +35,8 @@ const jantungKM = require('../routes/pemasaJantung');
 const klinikKM = require('../routes/klinikKM');
 // [KELAS KATA MAJMUK] nama 6 kumpulan, gambar & papan mata (dikongsi semua sistem)
 const kelasKM = require('../routes/kelasKM');
+// [SEMAK SENDIRI · GALERI BUKTI] Langkah 2 Suntikan: kumpulan semak sendiri, TV papar bukti
+const galeriKM = require('../routes/semakSendiri');
 
 const app = express();
 const server = http.createServer(app);
@@ -69,6 +71,7 @@ kapsulKM.pasang(app);
 sijilKM.pasang(app);
 wadKM.pasang(app);
 kelasKM.pasang(app);
+galeriKM.pasang(app);
 // [STORAN] Peratus penggunaan MongoDB & RAM Render (bar atas guru.html)
 require('../routes/storan')(app);
 
@@ -316,6 +319,8 @@ wss.on('connection', (ws, req) => {
     jantungKM.sambung(ws, req);
   } else if (url.startsWith('/klinik-km')) {
     klinikKM.sambung(ws, req);
+  } else if (url.startsWith('/galeri-km')) {
+    galeriKM.sambung(ws, req);
   } else if (url === '/murid') {
     clients.murid.push(ws);
     console.log('[WS] Aplikasi Murid disambung');
@@ -334,6 +339,7 @@ wss.on('connection', (ws, req) => {
     if (url.startsWith('/wad-km')) { wadKM.mesej(ws, data); return; }
     if (url.startsWith('/jantung-km')) { jantungKM.mesej(ws, data); return; }
     if (url.startsWith('/klinik-km')) { klinikKM.mesej(ws, data); return; }
+    if (url.startsWith('/galeri-km')) { galeriKM.mesej(ws, data); return; }
 
     if (url === '/esp32') {
       if (data.jenis === 'nfc_scan') await prosesNFC(data.uid);
@@ -378,6 +384,7 @@ wss.on('connection', (ws, req) => {
     else if (url.startsWith('/wad-km')) wadKM.putus(ws);
     else if (url.startsWith('/jantung-km')) jantungKM.putus(ws);
     else if (url.startsWith('/klinik-km')) klinikKM.putus(ws);
+    else if (url.startsWith('/galeri-km')) galeriKM.putus(ws);
     console.log(`[WS] Putus: ${url}`);
   });
 });

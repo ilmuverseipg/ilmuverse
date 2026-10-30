@@ -95,14 +95,15 @@ const LANGKAH = [
   { id: 'jantung', ik: '💓', pendek: 'Pemasa', nama: 'Pemasa Jantung', lbl: 'ALAT KELAS', ds: 'Set masa, GO / STOP, tekan kumpulan yang siap.', w: '#ff4d6d', url: () => `/pemasa-telefon.html?embed=1&bilik=${kod}` },
   { id: 'kapsul', ik: '💊', pendek: 'Kapsul', nama: 'Semak Pantas Kapsul', lbl: 'LANGKAH 1', ds: 'Ambil gambar kapsul, tanda BETUL / TIDAK TEPAT.', w: '#e8434f', url: () => `/kapsul-telefon.html?embed=1&bilik=${kod}` },
   { id: 'tulang', ik: '🦴', pendek: 'Tulang', nama: 'Sambung Tulang', lbl: 'LANGKAH 2', ds: 'Dimainkan di TV dengan tangan.', w: '#14a394' },
-  { id: 'suntik', ik: '💉', pendek: 'Suntik', nama: 'Semak & Suntik', lbl: 'LANGKAH 2', ds: 'Kunci, dedah, Kad Jujur, rawat & audit.', w: '#2f80ed', url: () => `/wad-telefon.html?embed=1&bilik=${kod}` },
+  { id: 'galeri', ik: '📸', pendek: 'Semak', nama: 'Semak Sendiri · Galeri Bukti', lbl: 'LANGKAH 2', ds: 'Dedah jawapan, gambar lembaran, isytihar markah, audit rawak.', w: '#0d9488', url: () => `/galeri-telefon.html?embed=1&bilik=${kod}` },
+  { id: 'suntik', nav: false, ik: '💉', pendek: 'Suntik', nama: 'Semak & Suntik', lbl: 'LANGKAH 2', ds: 'Kunci, dedah, Kad Jujur, rawat & audit.', w: '#2f80ed', url: () => `/wad-telefon.html?embed=1&bilik=${kod}` },
   { id: 'sijil', ik: '📜', pendek: 'Sijil', nama: 'Semak & Cop Sijil', lbl: 'LANGKAH 3', ds: 'Ambil gambar sijil, semak susun ayat.', w: '#16a34a', url: () => `/sijil-telefon.html?embed=1&bilik=${kod}` },
   { id: 'mata', ik: '🏆', pendek: 'Mata', nama: 'Kumpulan & Mata', lbl: 'PAPAN MATA', ds: 'Nama & gambar kumpulan, tambah/tolak mata, tunjuk pemenang.', w: '#d4a106', url: () => `/kumpulan-telefon.html?embed=1` },
 ];
 const L = (id) => LANGKAH.find((x) => x.id === id);
 
 // bar navigasi bawah (ibu jari)
-$('nav').innerHTML = LANGKAH.map((x) => `<button data-id="${x.id}" style="--w:${x.w}" aria-label="${x.nama}"><span>${x.ik}</span>${x.pendek}</button>`).join('');
+$('nav').innerHTML = LANGKAH.filter((x) => x.nav !== false).map((x) => `<button data-id="${x.id}" style="--w:${x.w}" aria-label="${x.nama}"><span>${x.ik}</span>${x.pendek}</button>`).join('');
 $('nav').onclick = (e) => { const b = e.target.closest('button'); if (b) { getar(10); pilih(b.dataset.id); } };
 
 // menu utama

@@ -63,6 +63,7 @@ const KM_PAGES = new Set([
   '/pemasa-jantung.html', '/pemasa-telefon.html', '/sambung-tulang.html',
   '/klinik-tv.html', '/klinik-telefon.html',
   '/papan-mata.html', '/kumpulan-telefon.html',
+  '/galeri-skrin.html', '/galeri-telefon.html',
 ]);
 function signKM(issued) { return crypto.createHmac('sha256', SECRET).update('km:' + issued).digest('hex'); }
 function makeKMToken() { const t = Date.now().toString(36); return t + '.' + signKM(t); }

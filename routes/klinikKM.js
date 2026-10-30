@@ -15,7 +15,7 @@ const kelas = require('./kelasKM');
 
 const MAX_BILIK = 40;
 const IDLE_MS = 30 * 60 * 1000;
-const LANGKAH = ['utama', 'jantung', 'kapsul', 'tulang', 'suntik', 'sijil', 'mata'];
+const LANGKAH = ['utama', 'jantung', 'kapsul', 'tulang', 'galeri', 'suntik', 'sijil', 'mata'];
 
 const bilik = new Map();
 const kodSah = (k) => /^\d{4,6}$/.test(String(k || ''));
