@@ -128,6 +128,7 @@
 <div id="toast"></div>
 <script src="/km-suara.js"></script>
 <script src="/km-kumpulan.js"></script>
+<script src="/km-tajuk.js"></script>
 
 <script>
 (() => {
@@ -149,9 +150,8 @@ const q = () => `embed=1&bilik=${sesi.kod}&kunci=${sesi.kunci}`;
 const LANGKAH = [
   { id: 'jantung', jen: 'SISTEM PEMASA', ik: '💓', w: '#ff4d6d', lbl: 'ALAT KELAS', nama: 'Pemasa Jantung', ds: '6 pesakit, 6 kumpulan. Tekan kumpulan yang siap.', url: () => `/pemasa-jantung.html?${q()}` },
   { id: 'kapsul', jen: 'SISTEM SEMAKAN', ik: '💊', w: '#e8434f', lbl: 'LANGKAH 1', nama: 'Semak Pantas Kapsul', ds: 'Misi Imbasan X-Ray Kata Majmuk. Gambar kapsul, TV dedah BETUL / TIDAK TEPAT.', url: () => `/kapsul-skrin.html?${q()}` },
-  { id: 'makmal', jen: 'PERMAINAN KAWALAN TANGAN', ik: '🧪', w: '#14a394', lbl: 'LANGKAH 2', nama: 'Farmasi Genggam Kata Majmuk', ds: 'Genggam & cantum perkataan / gambar jadi kata majmuk (kawalan tangan).', url: () => '/makmal-ubat.html?embed=1', malas: true },
+  { id: 'makmal', jen: 'PERMAINAN KAWALAN TANGAN', ik: '✊', w: '#14a394', lbl: 'LANGKAH 2', nama: 'Farmasi Genggam Kata Majmuk', ds: 'Genggam & cantum perkataan / gambar jadi kata majmuk (kawalan tangan).', url: () => '/makmal-ubat.html?embed=1', malas: true },
   { id: 'galeri', jen: 'SISTEM SEMAKAN', ik: '📸', w: '#0d9488', lbl: 'LANGKAH 2', nama: 'Galeri Bukti', ds: 'Gambar semua lembaran, jawapan, maksud, kemudian cop BETUL / TIDAK TEPAT.', url: () => `/galeri-skrin.html?${q()}` },
-  { id: 'suntik', jen: 'SISTEM SEMAKAN', ik: '💉', w: '#2f80ed', lbl: 'LANGKAH 2', nama: 'Semak & Suntik', ds: 'Kunci jawapan, dedah, Kad Jujur, rawat & audit.', url: () => `/wad-skrin.html?${q()}` },
   { id: 'sijil', jen: 'SISTEM SEMAKAN', ik: '📜', w: '#16a34a', lbl: 'LANGKAH 3', nama: 'Semak & Cop Sijil', ds: 'Susun ayat dan cop DIDAFTARKAN.', url: () => `/sijil-skrin.html?${q()}` },
   { id: 'mata', jen: 'SISTEM MATA', ik: '🏆', w: '#d4a106', lbl: 'PAPAN MATA', nama: 'Papan Mata Kumpulan', ds: 'Mata 6 kumpulan & pemenang (3 terbaik).', url: () => '/papan-mata.html?embed=1' },
 ];
@@ -184,15 +184,7 @@ function tunjukFrame(id, on) { const f = FR[id]; try { f && f.contentWindow && f
 // skrin tajuk 3 saat setiap kali sistem dibuka
 let tajukT = [];
 function nadaT(f, m, t, v) { try { const a = KMSuara.audio(); if (!a || !dibuka) return; const o = a.createOscillator(), g = a.createGain(), s = a.currentTime + m; o.type = 'triangle'; o.frequency.setValueAtTime(f, s); g.gain.setValueAtTime(.0001, s); g.gain.exponentialRampToValueAtTime(v, s + .02); g.gain.exponentialRampToValueAtTime(.0001, s + t); o.connect(g).connect(KMSuara.keluaran()); o.start(s); o.stop(s + t + .05); } catch (e) {} }
-function tunjukTajuk(L) {
-  const el = $('lTajuk'); tajukT.forEach(clearTimeout); tajukT = [];
-  if (!L) { el.hidden = true; return; }
-  el.style.setProperty('--wt', L.w);
-  el.innerHTML = `<div class="tk"><div class="ik">${L.ik}</div><div class="jen">${L.jen || ''}</div><div class="nm">${L.nama}</div><div class="lb">${L.lbl}</div><div class="bar"><i></i></div></div>`;
-  el.classList.remove('keluar'); el.hidden = false;
-  [523, 659, 784, 1047].forEach((f, i) => nadaT(f, i * .09, .35, .12));
-  tajukT.push(setTimeout(() => el.classList.add('keluar'), 2600), setTimeout(() => { el.hidden = true; el.classList.remove('keluar'); }, 3050));
-}
+function tunjukTajuk(L) { if (window.KMTajuk) KMTajuk.tunjuk(L); }
 function paparkan(id) {
   const lama = aktif; aktif = id;
   const L = LANGKAH.find((x) => x.id === id);
@@ -205,7 +197,7 @@ function paparkan(id) {
   if (lama !== id) { if (FR[lama]) tunjukFrame(lama, false); }
   if (lama !== id) tunjukTajuk(L);
   // sistem baharu mula bersuara selepas skrin tajuk
-  if (dibuka && FR[id]) { if (lama !== id && L) tajukT.push(setTimeout(() => { if (aktif === id) tunjukFrame(id, true); }, 3000)); else tunjukFrame(id, true); }
+  if (dibuka && FR[id]) { if (lama !== id && L) tajukT.push(setTimeout(() => { if (aktif === id) tunjukFrame(id, true); }, 2000)); else tunjukFrame(id, true); }
   // tutup kamera Sambung Tulang bila keluar
   if (lama === 'makmal' && id !== 'makmal' && FR.makmal) { FR.makmal.remove(); delete FR.makmal; } // tutup kamera
   if (L) { try { FR[id].focus(); } catch (e) {} }
