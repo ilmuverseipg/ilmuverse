@@ -66,8 +66,11 @@
   .preskripsi .rx { font-family: 'Baloo 2'; font-weight: 800; font-size: 6vh; color: var(--merah); line-height: 1; }
   .preskripsi .gb { width: 14vh; height: 14vh; border-radius: 2vh; background: var(--mint); display: grid; place-items: center; overflow: hidden; font-size: 9vh; flex: none; }
   .preskripsi .gb img { width: 100%; height: 100%; object-fit: cover; }
-  .preskripsi .lbl { font-size: 2vh; font-weight: 700; color: var(--kelabu); letter-spacing: .2vh; }
+  .preskripsi .lbl { white-space: nowrap; font-size: 2vh; font-weight: 700; color: var(--kelabu); letter-spacing: .2vh; }
   .preskripsi .mk { font-family: 'Baloo 2'; font-weight: 800; font-size: 4vh; line-height: 1.1; }
+  .preskripsi.gbBesar .gb { width: 22vh; height: 22vh; }
+  .preskripsi .mkKecil { font-size: 2.3vh; font-weight: 600; color: var(--kelabu); margin-top: .4vh; }
+  .preskripsi .kata { font-family: 'Baloo 2'; font-weight: 800; font-size: 8vh; line-height: 1; color: var(--merah); letter-spacing: .2vh; }
   /* mesin */
   .mesin { position: absolute; left: 50%; top: 23vh; transform: translateX(-50%); width: 76vw; height: 36vh; display: flex; align-items: center; justify-content: center; gap: 2vw; }
   .slot { position: relative; width: 22vw; height: 26vh; border-radius: 3vh; border: .6vh dashed #7cc9bb; background: rgba(255,255,255,.65); display: grid; place-items: center; transition: background .2s, border-color .2s, transform .2s; }
@@ -94,7 +97,7 @@
   .keping .gb { width: 15vh; height: 15vh; border-radius: 2vh; overflow: hidden; display: grid; place-items: center; font-size: 10vh; background: var(--mint); }
   .keping .gb img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
   .keping.gambar .lb { font-weight: 700; font-size: 2.2vh; color: var(--kelabu); opacity: 0; transition: opacity .3s; }
-  .keping.dlmSlot.gambar .lb { opacity: 1; }
+  .keping.betul.gambar .lb { opacity: 1; }
   .keping.seret { transition: transform .15s, box-shadow .15s; transform: scale(1.1) rotate(-3deg); box-shadow: 0 3vh 5vh rgba(19,51,76,.3); z-index: 8; cursor: grabbing; }
   .keping.dekat { border-color: var(--emas); }
   .keping.dlmSlot { border-color: var(--teal2); }
@@ -209,7 +212,7 @@
 <section id="tetapan" hidden>
   <div class="kotak">
     <h2>⚙️ Tetapan Makmal Ubat Ajaib</h2>
-    <p class="sub">5 soalan: pilih jenis (cantum perkataan / cantum gambar), isi perkataan 1 + perkataan 2, dan 2 pengganggu. Klik kotak gambar untuk muat naik gambar sendiri (gambar asal Ilmuverse digunakan jika kosong).</p>
+    <p class="sub">4 soalan: pilih jenis (🔤 seret perkataan berdasarkan gambar / 🖼️ seret gambar berdasarkan perkataan), isi perkataan 1 + perkataan 2, dan 2 pengganggu. Klik kotak gambar untuk muat naik gambar sendiri (gambar asal Ilmuverse digunakan jika kosong).</p>
     <div id="sBaris"></div>
     <div class="ralat" id="tRalat"></div>
     <div class="tBtn"><button id="tAsal">↺ Soalan asal</button><button id="tTutup">Tutup</button><button class="utama" id="tSimpan">💾 Simpan</button></div>
@@ -253,7 +256,7 @@ const SFX = {
   mula() { [392, 523, 659, 784, 1047].forEach((f, i) => nada(f, i * .07, .25, 'square', .07)); },
   menang() { [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => nada(f, i * .12, .3, 'triangle', .18)); },
 };
-function cakap(t) { KS.diam(); return KS.cakap(t); }
+// Tiada suara AI: guru baca sendiri (kesan bunyi sahaja).
 let dibuka = false;
 function bukaBunyi() { if (dibuka) return; dibuka = true; KS.audio(); KS.muzik(pilihan.muzik); }
 addEventListener('pointerdown', bukaBunyi);
@@ -283,7 +286,6 @@ async function mula() {
   introT.forEach(clearTimeout); introT = [];
   tunjuk('intro');
   const L = [['✋', 'Gerakkan tapak tangan'], ['✊', 'Genggam kepingan'], ['🖐️', 'Lepaskan di mesin ubat']];
-  cakap('Gerak, genggam, lepaskan di mesin ubat!');
   L.forEach(([ik, tx], i) => introT.push(setTimeout(() => {
     $('kadI').style.animation = 'none'; void $('kadI').offsetWidth; $('kadI').style.animation = '';
     $('kadI').innerHTML = `<div class="ik">${ik}</div><div class="tx">${tx}</div><div class="titik">${L.map((_, j) => `<i class="${j <= i ? 'on' : ''}"></i>`).join('')}</div>`; nada(700 + i * 120, 0, .12, 'triangle', .1);
@@ -298,10 +300,12 @@ function mainSoalan() {
   q = SOALAN[idx]; tunjuk('main'); terkunci = false; slotIsi = [null, null];
   $('noTx').textContent = `Soalan ${idx + 1} / ${SOALAN.length}`;
   const gambar = q.jenis === 'gambar';
-  $('jenisTx').textContent = gambar ? '🖼️ Cantum GAMBAR' : '🔤 Cantum PERKATAAN';
+  $('jenisTx').textContent = gambar ? '🖼️ Seret GAMBAR' : '🔤 Seret PERKATAAN';
+  const mk = q.maksud ? `<div class="mkKecil">${esc(q.maksud)}</div>` : '';
+  $('pres').className = 'preskripsi' + (gambar ? '' : ' gbBesar');
   $('pres').innerHTML = gambar
-    ? `<span class="rx">℞</span><div><div class="lbl">PRESKRIPSI DOKTOR · cari ubat ini</div><div class="mk">${esc(q.maksud || 'Bina kata majmuk')}</div></div>`
-    : `<span class="rx">℞</span><div class="gb">${gb(q.u.km, q.km)}</div><div><div class="lbl">PRESKRIPSI DOKTOR</div><div class="mk">${esc(q.maksud || 'Bina kata majmuk')}</div></div>`;
+    ? `<span class="rx">℞</span><div><div class="lbl">PRESKRIPSI DOKTOR · cari gambar untuk ubat ini</div><div class="kata">${esc(q.km)}</div>${mk}</div>`
+    : `<span class="rx">℞</span><div class="gb">${gb(q.u.km, q.km)}</div><div><div class="lbl">PRESKRIPSI DOKTOR · lihat gambar, cari perkataan</div><div class="mk">Apakah nama benda ini?</div>${mk}</div>`;
   $('hasil').innerHTML = '<div class="kapsulKosong">?</div>';
   $('mesin').className = 'mesin'; $('seterus').hidden = true;
   ['slot0', 'slot1'].forEach((s) => $(s).classList.remove('sedia'));
@@ -315,7 +319,6 @@ function mainSoalan() {
     return { el, k: d.k, rumah: i, slot: -1 };
   });
   requestAnimationFrame(() => { keping.forEach((p) => letakRumah(p, true)); });
-  cakap(gambar ? `Soalan ${idx + 1}. Cantum gambar. ${q.maksud || ''}` : `Soalan ${idx + 1}. Cantum perkataan. ${q.maksud || ''}`);
 }
 function rectOf(el) { return el.getBoundingClientRect(); }
 function letakDi(p, r, segera) {
@@ -365,13 +368,11 @@ async function semak() {
     kilat('betul', 'BETUL!'); SFX.betul(); konfeti(90);
     $('hasil').innerHTML = `<div class="kapsulJadi"><div class="gb">${gb(q.u.km, q.km)}</div><div class="km">${esc(q.km)}</div></div>`;
     siap[idx] = true;
-    cakap(`Betul! ${q.k1} tambah ${q.k2}, jadi ${q.km}.`);
     await tunggu(1200);
     $('seterus').hidden = false; $('btnSeterus').textContent = idx >= SOALAN.length - 1 ? '🏁 Selesai ▶' : 'Seterusnya ▶';
     seterusT = setTimeout(seterusnya, 6000); // terus jika tiada siapa tekan
   } else {
     $('mesin').classList.add('tidak'); kilat('tidak', 'TIDAK TEPAT'); SFX.tidak();
-    cakap('Tidak tepat. Cuba lagi!');
     await tunggu(1300);
     $('mesin').classList.remove('tidak');
     slotIsi.forEach((p) => p && letakRumah(p)); slotIsi = [null, null]; terkunci = false;
@@ -385,7 +386,6 @@ function seterusnya() {
 function tamat() {
   tunjuk('tamat'); SFX.menang(); konfeti(200);
   $('senaraiUbat').innerHTML = SOALAN.map((x, i) => `<div class="ubatK" style="animation-delay:${i * .12}s"><div class="gb">${gb(x.u.km, x.km)}</div><b>${esc(x.km)}</b></div>`).join('');
-  cakap('Tahniah! Semua ubat kata majmuk sudah siap. ' + SOALAN.map((x) => x.km).join(', ') + '.');
 }
 function kilat(jenis, teks) { const k = $('kilat'); k.className = 'kilat ' + jenis; $('kilatTx').textContent = teks; k.hidden = false; const d = k.firstElementChild; d.style.animation = 'none'; void d.offsetWidth; d.style.animation = ''; clearTimeout(kilat.t); kilat.t = setTimeout(() => { k.hidden = true; }, 1300); }
 function konfeti(n) {
@@ -461,7 +461,7 @@ window.__perintah = (a) => {
 window.__embed = { tunjuk(on) { try { if (on) { bukaBunyi(); KS.muzik(pilihan.muzik); hidupTangan(); } else { KS.muzik(false); KS.diam(); } } catch (e) {} } };
 
 // =============================================================
-// TETAPAN GURU: 5 soalan + gambar sendiri
+// TETAPAN GURU: 4 soalan + gambar sendiri
 // =============================================================
 const SLOT = [['k1', 'Perkataan 1'], ['k2', 'Perkataan 2'], ['km', 'Kata majmuk'], ['p1', 'Pengganggu 1'], ['p2', 'Pengganggu 2']];
 function lukisTetapan() {
@@ -469,7 +469,7 @@ function lukisTetapan() {
     <select data-f="jenis"><option value="perkataan" ${x.jenis !== 'gambar' ? 'selected' : ''}>🔤 Perkataan</option><option value="gambar" ${x.jenis === 'gambar' ? 'selected' : ''}>🖼️ Gambar</option></select>
     <input data-f="k1" value="${esc(x.k1)}" placeholder="perkataan 1"><input data-f="k2" value="${esc(x.k2)}" placeholder="perkataan 2">
     <input data-f="p1" value="${esc(x.p1)}" placeholder="pengganggu 1"><input data-f="p2" value="${esc(x.p2)}" placeholder="pengganggu 2">
-    <input class="maksud" data-f="maksud" value="${esc(x.maksud || '')}" placeholder="maksud / petunjuk (dibaca oleh suara)">
+    <input class="maksud" data-f="maksud" value="${esc(x.maksud || '')}" placeholder="maksud (dipapar kecil di bawah petunjuk)">
     <div class="gbr">${SLOT.map(([sl, lb]) => `<div class="gs" data-k="${i}-${sl}"><div class="k ${x.gv && x.gv[sl] ? 'guru' : ''}">${x.u[sl] ? `<img src="${x.u[sl]}" alt="">` : '➕'}${x.gv && x.gv[sl] ? '<span class="x" data-x="1">×</span>' : ''}</div>${lb}</div>`).join('')}</div></div>`).join('');
 }
 function bacaTetapan() { return [...document.querySelectorAll('.sRow')].map((r) => { const o = {}; r.querySelectorAll('[data-f]').forEach((el) => { o[el.dataset.f] = el.value; }); o.km = `${o.k1} ${o.k2}`.trim(); return o; }); }
@@ -477,7 +477,7 @@ $('btnTetap').onclick = async () => { if (!SOALAN) await muatSoalan(); if (!SOAL
 $('tTutup').onclick = () => { $('tetapan').hidden = true; };
 async function api(url, opt) { const r = await fetch(url, opt); const j = await r.json().catch(() => ({})); if (!r.ok || !j.ok) throw new Error(j.mesej || 'Ralat ' + r.status); SOALAN = j.soalan; return j; }
 $('tSimpan').onclick = async () => { try { await api('/api/makmal/set', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ soalan: bacaTetapan() }) }); toast('✅ Soalan disimpan'); $('tetapan').hidden = true; if (skrin === 'main') mainSoalan(); } catch (e) { $('tRalat').textContent = e.message; } };
-$('tAsal').onclick = async () => { if (!confirm('Kembali ke 5 soalan asal dan buang gambar guru?')) return; try { await api('/api/makmal/set/asal', { method: 'POST' }); lukisTetapan(); toast('Soalan asal dipulihkan'); } catch (e) { $('tRalat').textContent = e.message; } };
+$('tAsal').onclick = async () => { if (!confirm('Kembali ke 4 soalan asal dan buang gambar guru?')) return; try { await api('/api/makmal/set/asal', { method: 'POST' }); lukisTetapan(); toast('Soalan asal dipulihkan'); } catch (e) { $('tRalat').textContent = e.message; } };
 let kSasaran = null;
 $('sBaris').onclick = async (e) => {
   const g = e.target.closest('.gs'); if (!g) return;
