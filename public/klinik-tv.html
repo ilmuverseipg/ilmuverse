@@ -77,7 +77,11 @@
   .pkad .terbaik { text-align: center; font-family: 'Baloo 2'; font-weight: 800; font-size: 3.4vh; color: #ffd23f; margin: .6vh 0 2vh; }
   .pkad .nota { text-align: center; color: #9fb4cc; font-size: 1.9vh; margin-top: -1.4vh; margin-bottom: 1.6vh; }
   .pbaris { display: grid; grid-template-columns: 5vh 7vh 1fr auto auto; align-items: center; gap: 1.2vw; padding: .9vh 1.2vw; border-radius: 1.8vh; background: rgba(255,255,255,.05); margin-bottom: .9vh; border: 2px solid transparent; }
-  .pbaris.fokus { border-color: #1de9b6; background: rgba(29,233,182,.12); }
+  .pbaris.fokus { border-color: #1de9b6; background: rgba(29,233,182,.12); transition: background .3s, border-color .3s; }
+  .pbaris { position: relative; }
+  .pbaris.naik { z-index: 2; box-shadow: 0 0 3vh rgba(255,210,63,.55); }
+  .pbaris .tb.pop { animation: popT .45s cubic-bezier(.2,1.6,.4,1) both; }
+  @keyframes popT { from { transform: scale(.2) translateY(1vh); opacity: 0; } to { transform: none; opacity: 1; } }
   .pbaris .rk { font-family: 'Baloo 2'; font-weight: 800; font-size: 3.4vh; text-align: center; }
   .pbaris .av { width: 6.4vh; height: 6.4vh; border-radius: 50%; overflow: hidden; display: grid; place-items: center; font-family: 'Baloo 2'; font-weight: 800; font-size: 3.2vh; color: #fff; background: var(--w); border: .35vh solid rgba(255,255,255,.8); }
   .pbaris .av img { width: 100%; height: 100%; object-fit: cover; }
@@ -274,19 +278,50 @@ function urusPapan(p) {
   // tunggu animasi tamat sistem itu dahulu, kemudian papar
   papanT = setTimeout(async () => { await (window.KMKumpulan ? KMKumpulan.muat() : null); if (papanKini && papanKini.id === id) tunjukPapan(p); }, Math.max(0, p.mulaPada - kini()));
 }
+function bunyiTik(f, v) { try { const a = KMSuara.audio(); if (!a || !dibuka) return; const o = a.createOscillator(), g = a.createGain(), t = a.currentTime; o.type = 'triangle'; o.frequency.value = f; g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.0001, t + .09); o.connect(g).connect(KMSuara.keluaran()); o.start(t); o.stop(t + .1); } catch (e) {} }
+// Animasi ringkas (~2 saat): +mata muncul, nombor naik, kemudian kumpulan bergerak ke kedudukan baharu.
+function animasiPapan(lama, baru, tambah, susun, pangkatDari, lencana) {
+  const baris = (g) => document.querySelector(`#pSenarai .pbaris[data-g="${g}"]`);
+  setTimeout(() => {
+    [0, 1, 2, 3, 4, 5].forEach((g) => { const t = tambah[g] || 0; if (!t) return; const el = baris(g); if (!el) return;
+      el.classList.add('fokus'); const tb = el.querySelector('.tb'); tb.textContent = (t > 0 ? '+' : '') + t; tb.classList.add('pop'); });
+    const mula = performance.now(), T = 800; let akhirTik = 0;
+    (function kira(n) { const k = Math.min(1, (n - mula) / T), e = 1 - Math.pow(1 - k, 3);
+      [0, 1, 2, 3, 4, 5].forEach((g) => { if (!tambah[g]) return; const el = baris(g); if (el) el.querySelector('.mt b').textContent = Math.round(lama[g] + (baru[g] - lama[g]) * e); });
+      if (n - akhirTik > 70 && k < 1) { akhirTik = n; bunyiTik(900 + k * 500, .05); }
+      if (k < 1) requestAnimationFrame(kira); else naikTurun(); })(mula);
+  }, 350);
+  function naikTurun() {
+    const box = $('pSenarai'); if (!box) return;
+    const urut = susun(baru), pk = pangkatDari(baru, urut), awal = {};
+    [...box.children].forEach((el) => { awal[el.dataset.g] = el.getBoundingClientRect().top; });
+    urut.forEach((g) => { const el = baris(g); if (el) { box.appendChild(el); el.querySelector('.rk').textContent = lencana(pk[g], baru[g]); } });
+    let gerak = false;
+    [...box.children].forEach((el) => { const d = awal[el.dataset.g] - el.getBoundingClientRect().top; if (!d) return; gerak = true;
+      el.style.transition = 'none'; el.style.transform = `translateY(${d}px)`; if (d > 0) el.classList.add('naik');
+      requestAnimationFrame(() => requestAnimationFrame(() => { el.style.transition = 'transform .6s cubic-bezier(.2,.9,.3,1.1)'; el.style.transform = ''; })); });
+    if (gerak) bunyiTik(1320, .1);
+    setTimeout(() => [...box.children].forEach((el) => el.classList.remove('naik')), 900);
+  }
+}
 function tunjukPapan(p) {
   const KK = window.KMKumpulan, j = (KK && KK.jumlah) || [0, 0, 0, 0, 0, 0];
   const nama = (g) => (KK ? KK.nama(g) : 'Kumpulan ' + (g + 1));
-  const urut = [0, 1, 2, 3, 4, 5].sort((a, b) => j[b] - j[a] || a - b);
-  const maksT = Math.max(...p.tambah), terbaik = maksT > 0 ? p.tambah.map((t, g) => ({ t, g })).filter((x) => x.t === maksT).map((x) => nama(x.g)) : [];
+  const tambah = p.tambah || [0, 0, 0, 0, 0, 0];
+  const lama = j.map((x, g) => x - (tambah[g] || 0)); // markah sebelum aktiviti ini
+  const susun = (m) => [0, 1, 2, 3, 4, 5].sort((a, b) => m[b] - m[a] || a - b);
+  const pangkatDari = (m, urut) => { const r = []; let pk = 0, akhir = null; urut.forEach((g, i) => { if (m[g] !== akhir) { pk = i + 1; akhir = m[g]; } r[g] = pk; }); return r; };
+  const lencana = (pk, m) => (pk <= 3 && m > 0 ? ['🥇', '🥈', '🥉'][pk - 1] : pk);
+  const maksT = Math.max(...tambah), terbaik = maksT > 0 ? tambah.map((t, g) => ({ t, g })).filter((x) => x.t === maksT).map((x) => nama(x.g)) : [];
   const WARNA = KK ? KK.WARNA : ['#ff5a6a', '#48a8ff', '#3ddc84', '#ffd23f', '#b38cff', '#ff9a3d'];
-  let pangkat = 0, akhirM = null;
+  const urutLama = susun(lama), pkLama = pangkatDari(lama, urutLama);
   $('pkad').innerHTML = `<h2>${escH(p.ik)} Keputusan · ${escH(p.label)}</h2>
     <div class="terbaik">${terbaik.length ? `🏅 Terbaik: ${terbaik.map(escH).join(', ')} (+${maksT} mata)` : 'Papan mata terkini'}</div>
     ${p.nota ? `<div class="nota">${escH(p.nota)}</div>` : ''}
-    ${urut.map((g, i) => { if (j[g] !== akhirM) { pangkat = i + 1; akhirM = j[g]; } const u = KK && KK.gambar(g);
-      return `<div class="pbaris ${p.tambah[g] > 0 ? 'fokus' : ''}" style="--w:${WARNA[g]}"><span class="rk">${pangkat <= 3 && j[g] > 0 ? ['🥇', '🥈', '🥉'][pangkat - 1] : pangkat}</span><span class="av">${u ? `<img src="${u}" alt="">` : escH((nama(g).trim()[0] || '?').toUpperCase())}</span><span class="nm">${escH(nama(g))}</span><span class="tb">${p.tambah[g] ? (p.tambah[g] > 0 ? '+' : '') + p.tambah[g] : ''}</span><span class="mt">${j[g]}<small>mata</small></span></div>`; }).join('')}
+    <div id="pSenarai">${urutLama.map((g) => { const u = KK && KK.gambar(g);
+      return `<div class="pbaris" data-g="${g}" style="--w:${WARNA[g]}"><span class="rk">${lencana(pkLama[g], lama[g])}</span><span class="av">${u ? `<img src="${u}" alt="">` : escH((nama(g).trim()[0] || '?').toUpperCase())}</span><span class="nm">${escH(nama(g))}</span><span class="tb"></span><span class="mt"><b>${lama[g]}</b><small>mata</small></span></div>`; }).join('')}</div>
     <div class="pbtn"><button class="lagi" id="pLagi" disabled>Seterusnya ▶ (5)</button><button class="menu" id="pMenu">🏠 Menu</button></div>`;
+  animasiPapan(lama, j, tambah, susun, pangkatDari, lencana);
   $('lPapan').hidden = false;
   let n = 5;
   kiraT = setInterval(() => { n--; const b = $('pLagi'); if (!b) return clearInterval(kiraT); if (n <= 0) { clearInterval(kiraT); b.disabled = false; b.textContent = 'Seterusnya ▶'; } else b.textContent = `Seterusnya ▶ (${n})`; }, 1000);
@@ -296,7 +331,7 @@ function tunjukPapan(p) {
 }
 
 lukisKod(); kemasSambung(); paparkan('utama'); sambung();
-window.__klinik = { get aktif() { return aktif; }, get sesi() { return sesi; }, FR };
+window.__klinik = { get aktif() { return aktif; }, get sesi() { return sesi; }, FR, tunjukPapan };
 })();
 </script>
 </body>
