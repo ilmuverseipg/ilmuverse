@@ -137,7 +137,7 @@
 
   .meja { flex: 1; min-height: 0; position: relative; display: flex; flex-direction: column; justify-content: center; padding: 3vh calc(20vh + 3vw) 4vh 2vw; overflow: visible; }
   .meja .lbl { position: absolute; left: 1.4vw; top: 1.2vh; font-weight: 700; color: var(--kelabu); font-size: clamp(14px, 1.5vw, 22px); }
-  .barisKad { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1.6vh 1vw; position: relative; }
+  .barisKad { display: flex; flex-wrap: nowrap; justify-content: center; align-items: center; gap: 1.6vh 1vw; position: relative; } /* ayat SATU baris memanjang (saiz huruf mengecil jika ayat panjang) */
   .kad { position: relative; font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(26px, 3.2vw, 56px); line-height: 1.2; color: var(--dakwat); background: #fff; border: 3px solid var(--hijau2); border-radius: 16px; padding: .15em .55em; box-shadow: 0 6px 0 #cfe5d2, 0 10px 20px rgba(11,93,59,.12); white-space: nowrap; }
   .kad.majmuk { background: #fff8e6; border-color: var(--emas); box-shadow: 0 6px 0 #f1dca9, 0 10px 20px rgba(224,165,38,.18); }
   .kad.goyang { animation: goyang .3s ease-in-out 2; }
@@ -414,6 +414,17 @@ async function muatSet() {
 }
 const bah = (n, i) => (setSemua && setSemua[n - 1] && setSemua[n - 1].bahagian[i]) || null;
 const namaSet = (n) => (window.KMKumpulan ? KMKumpulan.nama(n - 1) : '') || (setSemua && setSemua[n - 1] && setSemua[n - 1].nama) || 'Set ' + n;
+// Pastikan semua kad muat dalam SATU baris (memanjang, tidak turun ke bawah).
+// Ruang kanan untuk cop DIDAFTARKAN tidak disentuh (padding .meja kekal).
+function muatSebaris(baris) {
+  const kad = [...baris.querySelectorAll('.kad')]; if (!kad.length) return;
+  kad.forEach((k) => { k.style.fontSize = ''; k.style.padding = ''; });
+  const ruang = baris.clientWidth, perlu = baris.scrollWidth;
+  if (perlu <= ruang) return;
+  const asal = parseFloat(getComputedStyle(kad[0]).fontSize), nisbah = (ruang / perlu) * 0.96;
+  kad.forEach((k) => { k.style.fontSize = Math.max(14, asal * nisbah) + 'px'; });
+  if (baris.scrollWidth > ruang) kad.forEach((k) => { k.style.padding = '.12em .35em'; });
+}
 function susunKad(kadTeks, ayat) {
   const kad = String(kadTeks || '').split('/').map((s) => s.trim()).filter(Boolean);
   const a = String(ayat || '').trim().replace(/\s+/g, ' ');
@@ -569,6 +580,7 @@ async function dedah() {
   const km = (b.km || '').toLowerCase();
   baris.innerHTML = sk.kad.map((t, i) => `<div class="kad${t.toLowerCase().replace(/\.$/, '') === km ? ' majmuk' : ''}" data-i="${i}" style="opacity:0">${esc(t)}</div>`).join('');
   const el = [...baris.children];
+  muatSebaris(baris);
   SFX.masuk();
   // 1) kad jatuh satu demi satu (susunan bercampur seperti pada sijil)
   el.forEach((e, i) => setTimeout(() => { if (!kini()) return; e.style.opacity = ''; e.animate([{ transform: 'translateY(-60px) rotate(-8deg)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 450, easing: 'cubic-bezier(.2,1.5,.4,1)' }); SFX.jatuh(i); }, 250 + i * 80));
