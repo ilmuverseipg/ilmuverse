@@ -165,11 +165,15 @@ function kemasStatus() {
   statusUI(`Bersambung ke skrin TV ${kod}`, 'ok');
 }
 function hantar(o) { if (ws && ws.readyState === 1) { ws.send(JSON.stringify(o)); return true; } toast('Belum bersambung. Tunggu sebentar…'); return false; }
+let skrinLama = '';
 function papar(nama, html, kakiHtml) {
-  const baru = nama !== paparLama; paparLama = nama;
+  // skrol ke atas hanya bila bertukar skrin (bukan bila tanda BETUL / TIDAK TEPAT)
+  const k = nama.split('|'), skrin = k[0] === 'soalan' ? k.slice(0, 3).join('|') : (k[0] === 'lokal' || k[0] === 'fokus') ? k.slice(0, 2).join('|') : k[0];
+  const baru = skrin !== skrinLama; skrinLama = skrin; paparLama = nama;
+  const y = scrollY;
   $('utama').innerHTML = `<div class="${baru ? 'v' : ''}">${html}</div>`;
   $('kaki').hidden = !kakiHtml; $('kakiDalam').innerHTML = kakiHtml || '';
-  if (baru) scrollTo(0, 0);
+  if (baru) scrollTo(0, 0); else scrollTo(0, y);
 }
 
 // ---------- thumbnail dari pelayan ----------
