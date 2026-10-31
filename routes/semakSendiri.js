@@ -115,7 +115,7 @@ function mesej(ws, d) {
       else if (b.idx < b.bilSoalan - 1) { b.idx++; b.langkah = 'semak'; }
       else { b.mata = kiraMata(b); b.fasa = 'tamat';
         kelas.rekod(`semakKedua:${b.kod}:${b.pusingan}`, 'Galeri Bukti', b.mata);
-        klinik.papan(b.kod, { label: 'Galeri Bukti', ik: '📸', tambah: b.mata, nota: '1 mata untuk setiap jawapan BETUL', tunda: 6000 }); }
+        klinik.papan(b.kod, { label: 'Galeri Bukti', ik: '📸', tambah: b.mata, nota: '1 mata untuk setiap jawapan BETUL', tunda: 1200 }); }
       siar(b); break;
     }
     case 'sebelum': {

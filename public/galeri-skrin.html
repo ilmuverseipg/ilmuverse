@@ -135,18 +135,19 @@
   .maksudK .txM { font-family: 'Baloo 2'; font-weight: 800; font-size: 6.4vh; line-height: 1.15; animation: pop .6s .6s both; }
   /* soalan: gambar besar + kata majmuk (murid baca sendiri) */
   #vSoalan { align-items: center; }
-  .soalanBesar { flex: 1; min-height: 0; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3vh; }
+  .soalanBesar { flex: 1; min-height: 0; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2.6vh; }
   .soalanBesar .gbS { width: min(52vh, 60vw); aspect-ratio: 1; border-radius: 5vh; overflow: hidden; background: #fff; display: grid; place-items: center; font-size: 26vh; border: 1vh solid var(--emas); box-shadow: var(--bayang); animation: pop .7s cubic-bezier(.2,1.5,.4,1) both; }
   .soalanBesar .gbS img { width: 100%; height: 100%; object-fit: contain; background: #fff; }
   .soalanBesar .kmS { font-family: 'Baloo 2'; font-weight: 800; font-size: 11vh; line-height: 1; color: #fff; background: var(--teal); border-radius: 99px; padding: .6vh 5vw 1.4vh; box-shadow: var(--bayang); animation: pop .6s .35s cubic-bezier(.2,1.5,.4,1) both; }
   .persS { display: flex; align-items: center; justify-content: center; gap: 2.2vw; }
-  .persS .tile .pic { width: 30vh; height: 30vh; background: #fff; }
+  .persS .tile .pic { width: 25vh; height: 25vh; background: #fff; }
   .persS .tile .pic img { object-fit: contain; }
-  .persS .tile .nm { font-size: 6vh; }
-  .persS .tile.km .pic { width: 44vh; height: 44vh; border-width: 1vh; }
-  .persS .tile.km .nm { font-size: 8.5vh; padding: .2vh 3vw .8vh; }
+  .persS .tile .nm { font-size: 5.2vh; }
+  .persS .tile.km .pic { width: 34vh; height: 34vh; border-width: 1vh; }
+  .persS .tile.km .nm { font-size: 7vh; padding: .2vh 3vw .8vh; }
   .persS .op { font-size: 11vh; }
-  .soalanBesar .mkS { font-weight: 700; font-size: 3.4vh; color: var(--kelabu); text-align: center; max-width: 80vw; animation: pop .5s .6s both; }
+  .soalanBesar .mkS { display: flex; align-items: center; gap: 1.6vw; max-width: 88vw; font-family: 'Baloo 2'; font-weight: 800; font-size: 5.8vh; line-height: 1.15; color: #3b2600; text-align: left; background: linear-gradient(135deg, #fff6cc, #ffe08a); border: .6vh solid var(--emas); border-radius: 3vh; padding: 1.6vh 2.6vw; box-shadow: var(--bayang); animation: pop .6s 1.2s cubic-bezier(.2,1.5,.4,1) both; }
+  .soalanBesar .mkS span { flex: none; font-size: 2.6vh; letter-spacing: .4vh; color: #fff; background: #d97706; border-radius: 99px; padding: .6vh 1.4vw; }
   /* cop semakan */
   .copS { position: absolute; left: 50%; top: 50%; z-index: 3; pointer-events: none; font-family: 'Baloo 2'; font-weight: 800; font-size: 4.6vh; letter-spacing: .3vh; padding: .6vh 1.6vw; border-radius: 1.6vh;
     border: .7vh double currentColor; background: rgba(255,255,255,.88); white-space: nowrap; transform: translate(-50%, -50%) rotate(-12deg); animation: copHentak .55s cubic-bezier(.2,1.4,.4,1) both; box-shadow: 0 0 0 .4vh rgba(255,255,255,.7); }
@@ -308,7 +309,7 @@ function render() {
       $('qNo').textContent = `Soalan ${S.idx + 1}`; $('qTitik').innerHTML = titik(S.bilSoalan, S.idx);
       $('qIsi').innerHTML = `<div class="persS"><div class="tile"><div class="pic">${pic(s.u1, s.e1)}</div><div class="nm">${esc(s.k1)}</div></div><div class="op" style="animation-delay:.35s">+</div>
         <div class="tile" style="animation-delay:.5s"><div class="pic">${pic(s.u2, s.e2)}</div><div class="nm">${esc(s.k2)}</div></div><div class="op" style="animation-delay:.85s">=</div>
-        <div class="tile km" style="animation-delay:1s"><div class="pic">${pic(s.uk, s.ek)}</div><div class="nm">${esc(s.km)}</div></div></div>${s.maksud ? `<div class="mkS">${esc(s.maksud)}</div>` : ''}`;
+        <div class="tile km" style="animation-delay:1s"><div class="pic">${pic(s.uk, s.ek)}</div><div class="nm">${esc(s.km)}</div></div></div>${s.maksud ? `<div class="mkS"><span>MAKSUD</span>${esc(s.maksud)}</div>` : ''}`;
       SFX.dedah(); }
     return;
   }

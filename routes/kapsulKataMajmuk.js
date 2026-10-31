@@ -156,7 +156,7 @@ function mesej(ws, d) {
         // papan markah hanya selepas KESEMUA 6 kumpulan selesai (tidak selepas setiap kumpulan)
         if (Object.keys(b.selesai).length >= 6) {
           const semua = new Array(6).fill(0).map((_, g) => (b.selesai[g + 1] ? b.selesai[g + 1].betul : 0));
-          klinik.papan(k.kod, { label: 'Semak Pantas Kapsul', ik: '💊', tambah: semua, nota: '1 mata untuk setiap kapsul BETUL', tunda: 4500 });
+          klinik.papan(k.kod, { label: 'Semak Pantas Kapsul', ik: '💊', tambah: semua, nota: '1 mata untuk setiap kapsul BETUL', tunda: 2200 });
         }
       }
       siar(b); break;

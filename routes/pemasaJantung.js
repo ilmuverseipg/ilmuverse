@@ -69,7 +69,7 @@ function tamatkan(b, semua) {
   let pertama = -1; b.selamat.forEach((x, g) => { if (x != null && (pertama < 0 || x < b.selamat[pertama])) pertama = g; });
   if (pertama >= 0) m[pertama] += 1;
   kelas.rekod(`jantung:${b.kod || ''}:${b.tamatSejak}`, 'Pemasa Jantung', m);
-  klinik.papan(b.kod, { label: 'Pemasa Jantung', ik: '💓', tambah: m, nota: 'Selamat = 1 mata · pertama siap +1', tunda: 9000 });
+  klinik.papan(b.kod, { label: 'Pemasa Jantung', ik: '💓', tambah: m, nota: 'Dapat 1 mata jika siap sebelum masa tamat · siap dahulu +1', tunda: semua ? 3000 : 6000 }); // flatline 3 s + tunjuk pesakit tidak selamat 3 s
 }
 function jadual(b) {
   clearTimeout(b.pemasa); b.pemasa = null;

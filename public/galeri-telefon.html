@@ -207,7 +207,15 @@ function pasangThumb() {
 }
 const kadSoalan = (s) => `<div class="kad kmKad"><div class="gbK">${s.uk ? `<img src="${s.uk}" alt="">` : esc(s.ek || '💊')}</div><div><span class="lbl">SOALAN ${S.idx + 1} / ${S.bilSoalan}</span><div class="mk" style="color:var(--ecg)">${esc(s.km)}</div><div class="sub" style="margin:0">${esc(s.maksud)}</div></div></div>`;
 const tandaHtml = (g, m) => `<div class="tandaB"><button class="ya ${m === true ? 'on' : ''}" data-g="${g}" data-b="1">✓ BETUL</button><button class="tak ${m === false ? 'on' : ''}" data-g="${g}" data-b="0">✗ TIDAK TEPAT</button></div>`;
-function pasangTanda(row) { document.querySelectorAll('.tandaB button').forEach((b) => b.onclick = () => { const g = +b.dataset.g, v = b.dataset.b === '1'; getar(v ? 15 : [15, 30, 15]); hantar({ jenis: 'tanda', g, betul: row[g] === v ? null : v }); }); }
+let turunKe = -1;
+function pasangTanda(row) { document.querySelectorAll('.tandaB button').forEach((b) => b.onclick = () => { const g = +b.dataset.g, v = b.dataset.b === '1'; getar(v ? 15 : [15, 30, 15]);
+  if (row[g] !== v && g < 5) turunKe = g + 1; // terus turun ke kumpulan seterusnya
+  hantar({ jenis: 'tanda', g, betul: row[g] === v ? null : v }); }); }
+function urusTurun() { // dipanggil selepas render: skrol lancar ke kad kumpulan seterusnya
+  if (turunKe < 0) return; const g = turunKe; turunKe = -1;
+  const kad = document.querySelectorAll('#utama .grid .gk')[g]; if (!kad) return;
+  const r = kad.getBoundingClientRect();
+  scrollTo({ top: Math.max(0, scrollY + r.top - 70), behavior: 'smooth' }); }
 function lukisGambar() {
   const ada = S.foto.filter(Boolean).length, sambungSemula = S.markah && S.markah.length;
   const kunci = `gambar|${S.foto.join(',')}|${thumb.map((t) => t ? t.v : 0).join(',')}|${naik.join(',')}|${S.pusingan}`;
@@ -236,7 +244,7 @@ function lukisSoalan() {
          <div class="dua"><button class="btnKedua" id="btnSebelum" ${S.idx ? '' : 'disabled'}>◀ Sebelum</button><button class="btnKedua" id="btnGambar">📸 Gambar</button></div>`
       : `<button class="btnUtama ${akhir ? 'emas' : ''}" id="btnLagi">${akhir ? '🏁 Tamat & kira mata' : `Seterusnya ▶ Soalan ${S.idx + 2}`}</button>
          <div class="dua"><button class="btnKedua" id="btnSebelum">◀ Kembali tanda</button><button class="btnKedua" id="btnGambar">📸 Gambar</button></div>`);
-  pasangThumb(); pasangTanda(row);
+  pasangThumb(); pasangTanda(row); requestAnimationFrame(urusTurun);
   $('btnLagi').onclick = () => { if (semak && siap < 6 && !confirm(`Baru ${siap}/6 kumpulan ditanda. Dedah juga?`)) return; getar(20); hantar({ jenis: 'seterusnya' }); };
   $('btnSebelum').onclick = () => hantar({ jenis: 'sebelum' });
   $('btnGambar').onclick = () => hantar({ jenis: 'keGambar' });

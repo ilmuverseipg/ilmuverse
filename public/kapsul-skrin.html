@@ -471,7 +471,7 @@ function render() {
   if (!S) return;
   const d = S;
   // kepala
-  $('hKump').hidden = !d.kumpulan || d.fasa === 'pilih'; $('hKump').textContent = 'Kumpulan ' + d.kumpulan;
+  $('hKump').hidden = !d.kumpulan || d.fasa === 'pilih'; $('hKump').textContent = namaKump(d.kumpulan);
   $('hTitik').hidden = !(d.fasa === 'dedah' || d.fasa === 'tamat');
   [...$('hTitik').children].forEach((el, i) => {
     const dah = d.keputusan && (d.fasa === 'tamat' || i <= d.idx);
@@ -492,13 +492,13 @@ function lukisPilih() {
   const sel = S.selesai || {};
   $('gridK').innerHTML = [1, 2, 3, 4, 5, 6].map((n) => {
     const s = sel[n];
-    return `<div class="gk ${s ? 'siap' : ''}"><div class="n">${s ? '✓' : n}</div><div><div class="t">${esc(namaKump(n))}</div><div class="s">${s ? `Selesai · ${s.betul}/${s.jumlah} betul` : 'Belum disemak'}</div></div></div>`;
+    return `<div class="gk ${s ? 'siap' : ''}"><div class="n">${s ? '✓' : esc((namaKump(n).trim()[0] || '?').toUpperCase())}</div><div><div class="t">${esc(namaKump(n))}</div><div class="s">${s ? `Selesai · ${s.betul}/${s.jumlah} betul` : 'Belum disemak'}</div></div></div>`;
   }).join('');
 }
 let slotLama = [0, 0, 0, 0];
 function lukisAmbil() {
-  $('aTajuk').textContent = 'Kumpulan ' + S.kumpulan;
-  const nm = namaKump(S.kumpulan); $('aNama').textContent = nm !== 'Kumpulan ' + S.kumpulan ? nm : '';
+  $('aTajuk').textContent = namaKump(S.kumpulan);
+  $('aNama').textContent = '';
   const ada = S.foto.filter(Boolean).length;
   $('slot4').innerHTML = S.foto.map((v, i) => `<div class="sl ${v ? 'ada' : ''}" style="--kc:${WARNA[i]}"><div class="a">${i + 1}</div><div class="b">${v ? '✓ Diterima' : 'Kapsul'}</div></div>`).join('');
   S.foto.forEach((v, i) => { if (v && v !== slotLama[i]) SFX.terima(); }); slotLama = S.foto.slice();

@@ -208,7 +208,7 @@ function mesej(ws, d) {
         const siapSemua = [1, 2, 3, 4, 5, 6].every((n) => b.selesai[n] && b.selesai[n].length);
         if (siapSemua) {
           const t = [1, 2, 3, 4, 5, 6].map((n) => b.selesai[n].reduce((x, r) => x + (r.betul || 0), 0));
-          klinik.papan(k.kod, { label: 'Semak & Cop Sijil', ik: '📜', tambah: t, nota: '1 mata untuk setiap ayat BETUL', tunda: 4500 });
+          klinik.papan(k.kod, { label: 'Semak & Cop Sijil', ik: '📜', tambah: t, nota: '1 mata untuk setiap ayat BETUL', tunda: 2200 });
         }
       }
       siar(b); break;

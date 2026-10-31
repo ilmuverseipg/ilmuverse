@@ -247,10 +247,10 @@ function lukisKod() {
 }
 function lukisPilih() {
   const sel = S.selesai || {}, tamat = S.fasa === 'tamat';
-  const banner = tamat ? `<div class="banner">🎉 <span>"TERIMA KASIH!" dipaparkan untuk Kumpulan ${S.kumpulan}.</span><button class="btnKedua" id="btnLihatSemula">↩ Kapsul 4</button></div>` : '';
+  const banner = tamat ? `<div class="banner">🎉 <span>"TERIMA KASIH!" dipaparkan untuk ${esc(namaKump(S.kumpulan))}.</span><button class="btnKedua" id="btnLihatSemula">↩ Kapsul 4</button></div>` : '';
   papar('pilih', `${banner}<h2>Pilih kumpulan</h2><p class="sub">Ketik kumpulan yang akan disemak. Gambar lama akan dipadam.</p>
     <div class="gridK">${[1, 2, 3, 4, 5, 6].map((n) => { const s = sel[n];
-      return `<button class="gk ${s ? 'siap' : ''}" data-n="${n}"><span class="n">${s ? '✓' : n}</span><span class="t">${esc(namaKump(n))}</span><span class="s">${s ? `Selesai · ${s.betul}/${s.jumlah} betul` : 'Belum disemak'}</span></button>`; }).join('')}</div>
+      return `<button class="gk ${s ? 'siap' : ''}" data-n="${n}"><span class="n">${s ? '✓' : esc((namaKump(n).trim()[0] || '?').toUpperCase())}</span><span class="t">${esc(namaKump(n))}</span><span class="s">${s ? `Selesai · ${s.betul}/${s.jumlah} betul` : 'Belum disemak'}</span></button>`; }).join('')}</div>
     <p class="nota">Gambar kamera hanya disimpan sementara dalam memori dan dipadam bila kumpulan lain dipilih.</p>`);
   document.querySelectorAll('.gk').forEach((b) => b.onclick = () => {
     const n = +b.dataset.n;
