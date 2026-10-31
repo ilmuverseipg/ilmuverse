@@ -23,7 +23,7 @@ const { isKMAuthed } = require('../middleware/siteAuth');
 const { KelasKM, KelasGambar } = require('../models/KelasKM');
 
 const BIL = 6;
-const ASAL = ['Kumpulan 1', 'Kumpulan 2', 'Kumpulan 3', 'Kumpulan 4', 'Kumpulan 5', 'Kumpulan 6'];
+const ASAL = ['GARUDA', 'GAGAK', 'ENGGANG', 'NURI', 'MERAK', 'HELANG']; // ikut Set 1..6
 const JENIS = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const MAX_GAMBAR = 1.5 * 1024 * 1024;
 const bersih = (s, n) => String(s == null ? '' : s).replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, n);
@@ -50,7 +50,7 @@ async function muat() {
     dimuat = true;
     if (d) {
       const memori = K.rekod; // rekod yang dibuat sebelum MongoDB sedia
-      K.nama = ASAL.map((n, i) => (d.nama && d.nama[i]) || n);
+      K.nama = ASAL.map((n, i) => { const x = d.nama && d.nama[i]; return x && x !== 'Kumpulan ' + (i + 1) ? x : n; }); // nama lama 'Kumpulan n' -> nama burung
       K.gv = ASAL.map((n, i) => (d.gv && d.gv[i]) || 0);
       K.rekod = (d.rekod || []).map((r) => ({ id: r.id, label: r.label, mata: (r.mata || []).slice(0, BIL).concat(new Array(BIL).fill(0)).slice(0, BIL), t: r.t || 0 }));
       memori.forEach((r) => { const i = K.rekod.findIndex((x) => x.id === r.id); if (i >= 0) K.rekod[i] = r; else K.rekod.push(r); });

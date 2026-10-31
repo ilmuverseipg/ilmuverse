@@ -10,7 +10,7 @@
 (() => {
   'use strict';
   if (window.KMKumpulan) return;
-  const ASAL = (g) => 'Kumpulan ' + (g + 1);
+  const ASAL = (g) => ['GARUDA', 'GAGAK', 'ENGGANG', 'NURI', 'MERAK', 'HELANG'][g] || 'Kumpulan ' + (g + 1);
   const K = { data: null, versi: 0, jumlah: [0, 0, 0, 0, 0, 0], WARNA: ['#ff5a6a', '#48a8ff', '#3ddc84', '#ffd23f', '#b38cff', '#ff9a3d'] };
   const pendengar = [];
   K.nama = (g) => (K.data && K.data.kumpulan && K.data.kumpulan[g] && K.data.kumpulan[g].nama) || ASAL(g);

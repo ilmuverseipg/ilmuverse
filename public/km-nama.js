@@ -22,7 +22,7 @@
 #kmnLapis h3 { margin: 0 0 2px; font-size: 22px; font-weight: 800; }
 #kmnLapis p { margin: 0 0 12px; color: #5b7184; font-size: 13.5px; line-height: 1.4; }
 #kmnLapis .kmnBaris { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
-#kmnLapis .kmnNo { flex: none; width: 98px; white-space: nowrap; border-radius: 12px; color: #fff; font-weight: 800; font-size: 13px; text-align: center; padding: 6px 4px; line-height: 1.1; }
+#kmnLapis .kmnNo { flex: none; width: 66px; white-space: nowrap; border-radius: 12px; color: #fff; font-weight: 800; font-size: 13px; text-align: center; padding: 6px 4px; line-height: 1.1; }
 #kmnLapis .kmnNo small { display: block; font-weight: 600; font-size: 11px; opacity: .92; }
 #kmnLapis input { flex: 1; min-width: 0; font: inherit; font-size: 18px; font-weight: 700; padding: 10px 12px; border: 2px solid #cfe1ea; border-radius: 12px; color: #13334c; }
 #kmnLapis input:focus { outline: none; border-color: #14a394; }
@@ -37,7 +37,7 @@
   const WARNA = () => (window.KMKumpulan && window.KMKumpulan.WARNA) || ['#ff5a6a', '#48a8ff', '#3ddc84', '#ffd23f', '#b38cff', '#ff9a3d'];
   async function namaKini() {
     try { const r = await fetch('/api/kelas', { cache: 'no-store' }); const j = await r.json(); if (j && Array.isArray(j.kumpulan)) return j.kumpulan.map((k) => k.nama); } catch (e) {}
-    return [0, 1, 2, 3, 4, 5].map((g) => (window.KMKumpulan ? window.KMKumpulan.nama(g) : 'Kumpulan ' + (g + 1)));
+    return [0, 1, 2, 3, 4, 5].map((g) => (window.KMKumpulan ? window.KMKumpulan.nama(g) : ['GARUDA', 'GAGAK', 'ENGGANG', 'NURI', 'MERAK', 'HELANG'][g]));
   }
   async function buka() {
     pasangGaya();
@@ -45,8 +45,8 @@
     const nama = await namaKini(), W = WARNA();
     const d = document.createElement('div'); d.id = 'kmnLapis';
     d.innerHTML = `<div class="kmnKad" role="dialog" aria-label="Nama kumpulan"><h3>✏️ Nama kumpulan</h3>
-      <p>Susunan ikut set: Kumpulan 1 = Set 1, Kumpulan 2 = Set 2 dan seterusnya. Nama ini digunakan oleh <b>semua sistem</b> (dan suara).</p>
-      ${[0, 1, 2, 3, 4, 5].map((g) => `<div class="kmnBaris"><span class="kmnNo" style="background:${W[g]}">Kumpulan ${g + 1}<small>Set ${g + 1}</small></span><input data-g="${g}" maxlength="30" value="${esc(nama[g] || '')}" placeholder="Kumpulan ${g + 1}"></div>`).join('')}
+      <p>Susunan ikut set: nama pertama = Set 1, nama kedua = Set 2 dan seterusnya. Nama ini digunakan oleh <b>semua sistem</b>.</p>
+      ${[0, 1, 2, 3, 4, 5].map((g) => `<div class="kmnBaris"><span class="kmnNo" style="background:${W[g]}">Set ${g + 1}</span><input data-g="${g}" maxlength="30" value="${esc(nama[g] || '')}" placeholder="Nama kumpulan"></div>`).join('')}
       <div class="kmnRalat" id="kmnRalat"></div>
       <div class="kmnTindak"><button class="kmnBatal" id="kmnBatal">Batal</button><button class="kmnSimpan" id="kmnSimpan">💾 Simpan nama</button></div></div>`;
     document.body.appendChild(d);
