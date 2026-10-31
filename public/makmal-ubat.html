@@ -127,9 +127,11 @@
     background: rgba(255,255,255,.45); border: .7vh solid var(--teal); box-shadow: 0 0 0 .35vh #fff, 0 0 3vh rgba(15,118,110,.6); }
   #handCur.on { display: flex; }
   #handCur.down { background: rgba(246,184,26,.6); border-color: #d97706; transform: scale(.85); }
-  #kam { position: fixed; left: 1.4vw; bottom: 2vh; width: 15vw; z-index: 12; border-radius: 1.6vh; border: .45vh solid #fff; box-shadow: var(--bayang); transform: scaleX(-1); display: none; }
+  /* pratonton kamera: kecil di sudut kiri atas (ganti rak), tidak menutup soalan / kepingan */
+  #kam { position: fixed; left: 1vw; top: 8.6vh; width: 12.5vw; z-index: 4; border-radius: 1.4vh; border: .4vh solid #fff; box-shadow: var(--bayang); transform: scaleX(-1); display: none; pointer-events: none; opacity: .92; }
   #kam.on { display: block; }
-  #kamTx { position: fixed; left: 1.4vw; bottom: calc(2vh + 15vw * .75 + .6vh); z-index: 12; background: rgba(19,51,76,.85); color: #fff; font-weight: 700; font-size: 1.7vh; border-radius: 99px; padding: .4vh 1vw; display: none; }
+  body:has(#kam.on) .rak.kiri { display: none; }
+  #kamTx { position: fixed; left: 1vw; top: calc(8.6vh + 12.5vw * .75 + 1vh); z-index: 4; background: rgba(19,51,76,.85); color: #fff; font-weight: 700; font-size: 1.6vh; border-radius: 99px; padding: .4vh 1vw; display: none; pointer-events: none; }
   #kamTx.on { display: block; }
   #toast { position: fixed; left: 50%; top: 10vh; transform: translate(-50%, -30vh); z-index: 60; background: var(--dakwat); color: #fff; font-weight: 700; font-size: 2.2vh; padding: 1vh 2vw; border-radius: 99px; transition: transform .3s; text-align: center; max-width: 90vw; }
   #toast.on { transform: translate(-50%, 0); }
