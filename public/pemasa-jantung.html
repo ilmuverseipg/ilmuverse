@@ -51,8 +51,8 @@
     background: linear-gradient(180deg, #0b1f29, #06121a); border: 3px solid color-mix(in srgb, var(--w) 55%, #0b1f29); box-shadow: inset 0 0 3vh rgba(0,0,0,.5); transition: transform .2s, border-color .3s, box-shadow .3s, filter .4s; }
   .mon:hover { transform: translateY(-2px); }
   .mon .kp { display: flex; align-items: center; gap: .6vw; min-width: 0; }
-  .mon .nm { flex: 1; min-width: 0; font-family: 'Baloo 2'; font-weight: 800; font-size: 2.7vh; line-height: 1.05; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .mon .nm small { display: block; font-family: 'Orbitron'; font-size: 1.3vh; letter-spacing: .2vh; color: var(--kabur); font-weight: 800; }
+  .mon .nm { flex: 1; min-width: 0; font-family: 'Baloo 2'; font-weight: 800; font-size: 4.4vh; line-height: 1.05; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mon .nm small { display: block; font-family: 'Orbitron'; font-size: 1.4vh; letter-spacing: .2vh; color: var(--kabur); font-weight: 800; }
   .mon .tit { width: 1.6vh; height: 1.6vh; border-radius: 50%; background: var(--w); box-shadow: 0 0 1vh var(--w); flex: none; }
   .mon .pill { font-family: 'Orbitron'; font-weight: 900; font-size: 1.45vh; padding: .5vh .7vw; border-radius: 99px; background: var(--sc, var(--hijau)); color: #031008; white-space: nowrap; }
   .mon canvas { width: 100%; height: 100%; min-height: 0; display: block; }
@@ -71,6 +71,9 @@
   .mon .cop span { font-family: 'Orbitron'; font-weight: 900; font-size: 4.2vh; padding: .6vh 1.4vw; border-radius: 1.4vh; border: .5vh solid; transform: rotate(-8deg); background: rgba(3,10,8,.75); animation: cop .5s cubic-bezier(.2,1.6,.4,1) both; }
   .mon .cop.ok span { color: var(--hijau); border-color: var(--hijau); }
   .mon .cop.rip span { color: var(--merah); border-color: var(--merah); }
+  .mon.mati .cop.rip span { font-size: 4.8vh; box-shadow: 0 0 4vh rgba(255,77,94,.6); animation: cop .5s cubic-bezier(.2,1.4,.4,1) both, denyutRip 1s .5s ease-in-out infinite; }
+  @keyframes denyutRip { 50% { transform: rotate(-8deg) scale(1.08); } }
+  .mon.mati { box-shadow: 0 0 0 .4vh rgba(255,77,94,.55), 0 0 5vh rgba(255,77,94,.35); }
   @keyframes cop { from { transform: rotate(-8deg) scale(2.4); opacity: 0; } to { transform: rotate(-8deg) scale(1); opacity: 1; } }
 
   /* ===== lapisan ===== */
@@ -391,7 +394,7 @@ $('kTambah').onclick = () => hantar({ jenis: 'tambah', saat: 30 });
 $('kHenti').onclick = () => { if (confirm('Hentikan pemasa dan kembali ke tetapan?')) hantar({ jenis: 'semula' }); };
 
 // ---------- render ----------
-let fasaLama = '', pusinganLama = -1, selamatLama = null, introKunci = '', tamatMain = '', hasilKunci = '', lastSec = -1, amaranT = 0, kawalT = null;
+let fasaLama = '', pusinganLama = -1, selamatLama = null, introKunci = '', tamatMain = '', hasilKunci = '', bannerKunci = '', lastSec = -1, amaranT = 0, kawalT = null;
 function lapis(id) { ['lTetap', 'lIntro', 'lHasil'].forEach((x) => { $(x).hidden = x !== id; }); }
 function render(paksa) {
   if (!S) return;
@@ -468,10 +471,12 @@ function urusTamat() {
       $('banner').className = 'tamatBanner'; $('bannerTx').textContent = 'MASA TAMAT!';
       if (baru) { SFX.flatline(); $('kilat').hidden = false; setTimeout(() => { $('kilat').hidden = true; }, 3000); }
     }
-    $('banner').hidden = !baru;
+    $('banner').hidden = !(baru && S.semuaSelamat); // MASA TAMAT hanya selepas 3 saat
   }
-  // bunyi flatline 3 saat DAHULU, kemudian keputusan + butang mula semula
-  if (sejak >= 3000 && hasilKunci !== kunci) {
+  // 0-3 s: flatline + tunjuk dengan jelas kumpulan yang MENINGGAL; 3 s: MASA TAMAT!
+  if (!S.semuaSelamat && sejak >= 3000 && sejak < 5500 && bannerKunci !== kunci) { bannerKunci = kunci; $('banner').hidden = false; }
+  const tundaHasil = S.semuaSelamat ? 3000 : 5500;
+  if (sejak >= tundaHasil && hasilKunci !== kunci) {
     hasilKunci = kunci; $('banner').hidden = true;
     const ok = [], rip = [];
     S.selamat.forEach((v, g) => (v != null ? ok : rip).push({ g, v }));
@@ -502,7 +507,7 @@ function bingkai(t) {
     const warna = S.fasa === 'tamat' ? (S.semuaSelamat ? '#39ff88' : '#ff3b5c') : L.col;
     $('hero').style.setProperty('--warna', warna);
     $('hero').classList.toggle('denyut', berjalan && lv >= 3);
-    $('status').textContent = S.fasa === 'sedia' ? 'SEDIA' : S.fasa === 'jeda' ? 'JEDA' : S.fasa === 'tamat' ? (S.semuaSelamat ? 'SEMUA SELAMAT' : 'MASA TAMAT') : L.nama;
+    $('status').textContent = S.fasa === 'sedia' ? 'SEDIA' : S.fasa === 'jeda' ? 'JEDA' : S.fasa === 'tamat' ? (S.semuaSelamat ? 'SEMUA SELAMAT' : kini() - S.tamatSejak < 3000 ? '💔 FLATLINE' : 'MASA TAMAT') : L.nama;
     $('barI').style.width = (S.jumlah > 0 ? clamp(ms / S.jumlah, 0, 1) * 100 : 0) + '%';
     const nSel = (S.selamat || []).filter((x) => x != null).length;
     $('kira').innerHTML = S.fasa === 'sedia' ? '6 pesakit menunggu' : `<b>${nSel}</b> selamat · <s>${6 - nSel}</s> ${S.fasa === 'tamat' ? 'meninggal' : 'dalam rawatan'}`;
