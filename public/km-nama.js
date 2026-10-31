@@ -37,7 +37,7 @@
   const WARNA = () => (window.KMKumpulan && window.KMKumpulan.WARNA) || ['#ff5a6a', '#48a8ff', '#3ddc84', '#ffd23f', '#b38cff', '#ff9a3d'];
   async function namaKini() {
     try { const r = await fetch('/api/kelas', { cache: 'no-store' }); const j = await r.json(); if (j && Array.isArray(j.kumpulan)) return j.kumpulan.map((k) => k.nama); } catch (e) {}
-    return [0, 1, 2, 3, 4, 5].map((g) => (window.KMKumpulan ? window.KMKumpulan.nama(g) : ['GARUDA', 'GAGAK', 'ENGGANG', 'NURI', 'MERAK', 'HELANG'][g]));
+    return [0, 1, 2, 3, 4, 5].map((g) => (window.KMKumpulan ? window.KMKumpulan.nama(g) : ['HELANG', 'MERAK', 'NURI', 'GARUDA', 'GAGAK', 'ENGGANG'][g]));
   }
   async function buka() {
     pasangGaya();
