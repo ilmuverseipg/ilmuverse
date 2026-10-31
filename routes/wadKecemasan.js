@@ -34,10 +34,10 @@ const IDLE_MS = 30 * 60 * 1000;
 const ASAL = {
   kumpulan: ['Kumpulan 1', 'Kumpulan 2', 'Kumpulan 3', 'Kumpulan 4', 'Kumpulan 5', 'Kumpulan 6'],
   soalan: [
-    { maksud: 'penutup jari yang diperbuat daripada getah', k1: 'sarung', k2: 'tangan', km: 'sarung tangan', e1: '👝', e2: '✋', ek: '🧤' },
-    { maksud: 'penutup hidung dan mulut', k1: 'topeng', k2: 'muka', km: 'topeng muka', e1: '🎭', e2: '🙂', ek: '😷' },
-    { maksud: 'ubat bagi orang yang panas badan', k1: 'ubat', k2: 'demam', km: 'ubat demam', e1: '💊', e2: '🤒', ek: '🧴' },
-    { maksud: 'tempat tidur pesakit di wad', k1: 'katil', k2: 'hospital', km: 'katil hospital', e1: '🛏️', e2: '🏥', ek: '🛌' },
+    { maksud: 'bekas untuk susu bayi', k1: 'botol', k2: 'susu', km: 'botol susu', e1: '🧴', e2: '🥛', ek: '🍼' },
+    { maksud: 'lampu kecil yang boleh dibawa', k1: 'lampu', k2: 'suluh', km: 'lampu suluh', e1: '💡', e2: '🔦', ek: '🔦' },
+    { maksud: 'bekas untuk membuang sampah', k1: 'tong', k2: 'sampah', km: 'tong sampah', e1: '🛢️', e2: '🗑️', ek: '🗑️' },
+    { maksud: 'kain sokongan untuk tangan yang cedera', k1: 'anduh', k2: 'tangan', km: 'anduh tangan', e1: '🎗️', e2: '✋', ek: '🩹' },
   ],
 };
 const dbSedia = () => WadSet.db && WadSet.db.readyState === 1;
