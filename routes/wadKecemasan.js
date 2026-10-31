@@ -21,7 +21,7 @@ const crypto = require('crypto');
 const express = require('express');
 const WebSocket = require('ws');
 const { isKMAuthed: isAuthed } = require('../middleware/siteAuth'); // kata laluan ATAU avatar Klinik Kata Majmuk
-const { urlGambar } = require('./kmGambar');
+const { urlGambar, urlGaleri } = require('./kmGambar');
 const { WadSet } = require('../models/WadSet');
 const kelas = require('./kelasKM');   // mata kumpulan (papan mata)
 const klinik = require('./klinikKM'); // papan mata di skrin Klinik (satu QR)
@@ -48,7 +48,7 @@ async function bacaSet() {
   const soalan = d && d.soalan && d.soalan.length ? d.soalan : ASAL.soalan;
   return { kumpulan, soalan: soalan.map((s) => ({ ...s })) };
 }
-const papar = (set) => ({ ...set, soalan: set.soalan.map((s) => ({ ...s, u1: urlGambar(s.k1), u2: urlGambar(s.k2), uk: urlGambar(s.km) })) });
+const papar = (set) => ({ ...set, soalan: set.soalan.map((s) => ({ ...s, u1: urlGambar(s.k1), u2: urlGambar(s.k2), uk: urlGaleri(s.km) })) });
 
 // ------------------------------------------------------------
 // BILIK (memori sahaja)

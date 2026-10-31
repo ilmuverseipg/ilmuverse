@@ -36,7 +36,7 @@
   .gk .kp { display: flex; align-items: center; gap: 6px; padding: 7px 9px; font-family: 'Baloo 2'; font-weight: 800; font-size: 16px; line-height: 1.05; }
   .gk .kp i { width: 11px; height: 11px; border-radius: 50%; flex: none; }
   .gk .kp span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .gk .th { position: relative; aspect-ratio: 3 / 4; background: #0e2236; display: grid; place-items: center; border: 0; padding: 0; color: var(--kabur); font-weight: 700; font-size: 14px; width: 100%; }
+  .gk .th { position: relative; aspect-ratio: 4 / 3; background: #0e2236; display: grid; place-items: center; border: 0; padding: 0; color: var(--kabur); font-weight: 700; font-size: 14px; width: 100%; }
   .gk .th img { width: 100%; height: 100%; object-fit: cover; }
   .gk .th .lihat { position: absolute; left: 6px; bottom: 6px; background: rgba(11,26,43,.85); color: #fff; border-radius: 99px; padding: 3px 9px; font-size: 12px; }
   .gk .th .muat { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(11,26,43,.6); color: #fff; }
@@ -71,6 +71,45 @@
   .kadKod input { width: 100%; font-family: 'Baloo 2'; font-weight: 800; font-size: 44px; letter-spacing: .3em; text-align: center; border: 3px solid var(--garis); background: var(--malam); color: #fff; border-radius: 16px; padding: 8px; margin: 12px 0; }
   .hb { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--garis); font-weight: 700; }
   .hb i { width: 12px; height: 12px; border-radius: 50%; } .hb span { flex: 1; } .hb em { font-style: normal; color: var(--kabur); font-size: 13px; } .hb b { color: var(--emas); font-family: 'Baloo 2'; font-size: 20px; min-width: 36px; text-align: right; }
+  /* kamera dalam halaman */
+  #kamera { position: fixed; inset: 0; z-index: 30; background: #000; display: flex; flex-direction: column; touch-action: none; }
+  #kamera .pentas { flex: 1; position: relative; overflow: hidden; }
+  #vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform-origin: 50% 50%; }
+  #pratonton { position: absolute; inset: 0; background: #000; display: grid; place-items: center; }
+  #pratonton img { max-width: 94%; max-height: 80%; border-radius: 10px; border: 3px solid #fff; box-shadow: 0 0 22px rgba(57,255,136,.6); }
+  .bingkai { position: absolute; pointer-events: none; border: 3px solid rgba(255,255,255,.95); border-radius: 12px; box-shadow: 0 0 0 100vmax rgba(0,0,0,.45), 0 0 16px rgba(20,163,148,.9); }
+  .bingkai i { position: absolute; background: rgba(255,255,255,.35); }
+  .bingkai i.v1, .bingkai i.v2 { top: 0; bottom: 0; width: 1px; } .bingkai i.v1 { left: 33.33%; } .bingkai i.v2 { left: 66.66%; }
+  .bingkai i.h1, .bingkai i.h2 { left: 0; right: 0; height: 1px; } .bingkai i.h1 { top: 33.33%; } .bingkai i.h2 { top: 66.66%; }
+  .bingkai b { position: absolute; width: 22px; height: 22px; border: 0 solid var(--ecg); }
+  .bingkai b.a { left: -3px; top: -3px; border-width: 5px 0 0 5px; border-radius: 12px 0 0 0; } .bingkai b.b { right: -3px; top: -3px; border-width: 5px 5px 0 0; border-radius: 0 12px 0 0; }
+  .bingkai b.c { left: -3px; bottom: -3px; border-width: 0 0 5px 5px; border-radius: 0 0 0 12px; } .bingkai b.d { right: -3px; bottom: -3px; border-width: 0 5px 5px 0; border-radius: 0 0 12px 0; }
+  .kamAtas { position: absolute; left: 0; right: 0; top: 0; padding: calc(10px + var(--atas)) 14px 10px; color: #fff; display: flex; align-items: center; gap: 8px; background: linear-gradient(180deg, rgba(0,0,0,.65), transparent); }
+  .kamAtas .kpK { display: flex; align-items: center; gap: 7px; font-family: 'Baloo 2'; font-weight: 800; font-size: 20px; text-shadow: 0 1px 4px #000; }
+  .kamAtas .kpK i { width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 0 2px #fff; }
+  .kamAtas .titikK { margin-left: auto; display: flex; gap: 5px; }
+  .kamAtas .titikK i { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,.3); } .kamAtas .titikK i.ok { background: var(--ecg); } .kamAtas .titikK i.kini { background: #fff; box-shadow: 0 0 0 3px rgba(255,255,255,.35); }
+  .kamTip { position: absolute; left: 0; right: 0; bottom: 12px; text-align: center; color: #fff; font-size: 14px; font-weight: 600; text-shadow: 0 1px 4px #000; }
+  .zoomBar { position: absolute; left: 50%; bottom: 42px; transform: translateX(-50%); display: flex; gap: 6px; background: rgba(0,0,0,.45); border-radius: 999px; padding: 4px; }
+  .zoomBar button { border: 0; border-radius: 999px; background: transparent; color: #fff; font-weight: 700; font-size: 14px; width: 44px; height: 32px; }
+  .zoomBar button.on { background: #fff; color: #000; }
+  .kamBawah { padding: 14px 18px calc(16px + var(--bawah)); display: flex; align-items: center; justify-content: space-between; gap: 10px; background: #000; min-height: 108px; }
+  .kamBawah .kecil { width: 52px; height: 52px; border-radius: 50%; border: 0; background: rgba(255,255,255,.14); color: #fff; font-size: 22px; flex: none; }
+  #btnSnap { width: 78px; height: 78px; border-radius: 50%; border: 5px solid #fff; background: var(--teal); box-shadow: 0 0 0 4px rgba(20,163,148,.45); flex: none; }
+  #btnSnap:active { transform: scale(.9); } #btnSnap:disabled { opacity: .4; }
+  .kamSemak { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; width: 100%; }
+  .kamSemak button { border: 0; border-radius: 999px; padding: 15px 8px; font-family: 'Baloo 2'; font-weight: 800; font-size: 17px; color: #fff; }
+  .kamSemak .ulangB { background: rgba(255,255,255,.16); }
+  .kamSemak .lagiB { background: var(--teal); box-shadow: 0 5px 0 #0b6b61; }
+  #kamGagal { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 30px; text-align: center; color: #fff; background: #0b1a2b; }
+  #kilat { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+  #kilat.on { animation: kilatK .4s ease-out; }
+  @keyframes kilatK { from { opacity: .85; } to { opacity: 0; } }
+  .btnBesar { width: 100%; border: 0; border-radius: 20px; padding: 18px 14px; display: flex; align-items: center; gap: 12px; text-align: left; color: #fff; background: linear-gradient(135deg, #14a394, #0b6b61); box-shadow: 0 6px 0 #084c45; margin-bottom: 14px; }
+  .btnBesar .ik { font-size: 34px; } .btnBesar b { display: block; font-family: 'Baloo 2'; font-weight: 800; font-size: 21px; line-height: 1.05; } .btnBesar small { font-size: 13.5px; opacity: .9; }
+  .kmKad { display: flex; align-items: center; gap: 12px; }
+  .kmKad .gbK { width: 64px; height: 64px; border-radius: 14px; background: #fff; display: grid; place-items: center; font-size: 36px; overflow: hidden; flex: none; }
+  .kmKad .gbK img { width: 100%; height: 100%; object-fit: contain; }
   #toast { position: fixed; left: 50%; bottom: calc(160px + var(--bawah)); transform: translate(-50%, 20px); z-index: 40; background: #fff; color: var(--malam); padding: 10px 18px; border-radius: 14px; font-weight: 700; font-size: 14.5px; opacity: 0; transition: all .3s; pointer-events: none; max-width: 90vw; text-align: center; }
   #toast.on { opacity: 1; transform: translate(-50%, 0); }
 </style>
@@ -82,6 +121,19 @@
 </header>
 <main id="utama"></main>
 <div class="kaki" id="kaki" hidden><div class="dalam" id="kakiDalam"></div></div>
+<div id="kamera" hidden>
+  <div class="pentas" id="pentas">
+    <video id="vid" playsinline muted autoplay></video>
+    <div class="bingkai" id="bingkai" aria-hidden="true"><i class="v1"></i><i class="v2"></i><i class="h1"></i><i class="h2"></i><b class="a"></b><b class="b"></b><b class="c"></b><b class="d"></b></div>
+    <div class="kamAtas"><div class="kpK" id="kamKp"></div><div class="titikK" id="kamTitik"></div></div>
+    <div class="zoomBar" id="zoomBar"><button data-z="1" class="on">1×</button><button data-z="1.5">1.5×</button><button data-z="2">2×</button></div>
+    <div class="kamTip" id="kamTip">Muatkan seluruh lembaran dalam bingkai</div>
+    <div id="pratonton" hidden><img id="pratImg" alt="Gambar diambil"></div>
+    <div id="kamGagal" hidden><div style="font-size:46px">📷</div><div id="kamGagalTx" style="font-weight:600;line-height:1.4"></div><button class="btnKedua" id="kamCuba" style="width:auto;padding:12px 22px">Cuba lagi</button></div>
+    <div id="kilat"></div>
+  </div>
+  <div class="kamBawah" id="kamBawah"></div>
+</div>
 <input type="file" id="fail" accept="image/*" capture="environment" hidden>
 <div id="toast"></div>
 <script src="/km-kumpulan.js"></script>
@@ -95,9 +147,9 @@ const getar = (ms) => { try { navigator.vibrate && navigator.vibrate(ms); } catc
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 function toast(t, ms = 2400) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), ms); }
 const KK = window.KMKumpulan, WARNA = KK.WARNA, nama = (g) => KK.nama(g);
-const MAX_SISI = 1600, KUALITI = 0.84;
+const MAX_SISI = 1800, KUALITI = 0.86, NISBAH = 1.414; // lembaran landskap (poster lengan)
 let kod = (new URLSearchParams(location.search).get('bilik') || '').replace(/\D/g, '').slice(0, 6);
-let S = null, SET = null, wsOk = false, bilPaparan = 0, paparLama = '';
+let S = null, SET = null, wsOk = false, bilPaparan = 0, paparLama = '', lokal = -1;
 const thumb = new Array(6).fill(null); // {v, url}
 const naik = new Array(6).fill(false);
 
@@ -133,58 +185,71 @@ function render() {
   if (S.fasa === 'tamat') return lukisTamat();
   if (S.fokus >= 0) return lukisFokus();
   if (S.fasa === 'gambar') return lukisGambar();
-  if (S.langkah === 'semak') return lukisSemak();
-  return lukisLangkah();
+  if (lokal >= 0 && S.langkah === 'semak') return lukisLokal();
+  lokal = -1;
+  return lukisSoalan();
 }
 function lukisKod() {
   papar('kod', `<div class="kad kadKod"><h2>Masukkan kod bilik</h2><p class="sub">Kod 4 digit tertera pada skrin TV.</p><input id="inKod" inputmode="numeric" maxlength="6" placeholder="0000"><button class="btnUtama" id="btnKod">Sambung</button></div>`);
   $('btnKod').onclick = () => { const v = $('inKod').value.replace(/\D/g, ''); if (v.length < 4) return toast('Kod 4 digit'); kod = v; sambung(); render(); };
 }
-const thumbHtml = (g) => { const t = thumb[g]; return `<button class="th" data-th="${g}">${t ? `<img src="${t.url}" alt=""><span class="lihat">🔍 Besarkan di TV</span>` : '📷 Ambil gambar'}${naik[g] ? '<span class="muat">Menghantar…</span>' : ''}</button>`; };
+const thumbHtml = (g, lbl) => { const t = thumb[g]; return `<button class="th" data-th="${g}">${t ? `<img src="${t.url}" alt=""><span class="lihat">${lbl}</span>` : '📷 Ambil gambar'}${naik[g] ? '<span class="muat">Menghantar…</span>' : ''}</button>`; };
+// tap gambar: fasa gambar / dedah -> besarkan di TV; semak -> besarkan di telefon sahaja (TV tidak tunjuk)
 function pasangThumb() {
-  document.querySelectorAll('[data-th]').forEach((b) => b.onclick = () => { const g = +b.dataset.th; if (thumb[g]) { getar(10); hantar({ jenis: 'fokus', g }); } else ambilGambar(g); });
-  document.querySelectorAll('[data-semula]').forEach((b) => b.onclick = () => ambilGambar(+b.dataset.semula));
+  document.querySelectorAll('[data-th]').forEach((b) => b.onclick = () => { const g = +b.dataset.th; if (!thumb[g]) return bukaKam(g, false); getar(10);
+    if (S.fasa === 'soalan' && S.langkah === 'semak') { lokal = g; paparLama = ''; render(); } else hantar({ jenis: 'fokus', g }); });
+  document.querySelectorAll('[data-semula]').forEach((b) => b.onclick = () => bukaKam(+b.dataset.semula, false));
 }
+const kadSoalan = (s) => `<div class="kad kmKad"><div class="gbK">${s.uk ? `<img src="${s.uk}" alt="">` : esc(s.ek || '💊')}</div><div><span class="lbl">SOALAN ${S.idx + 1} / ${S.bilSoalan}</span><div class="mk" style="color:var(--ecg)">${esc(s.km)}</div><div class="sub" style="margin:0">${esc(s.maksud)}</div></div></div>`;
+const tandaHtml = (g, m) => `<div class="tandaB"><button class="ya ${m === true ? 'on' : ''}" data-g="${g}" data-b="1">✓ BETUL</button><button class="tak ${m === false ? 'on' : ''}" data-g="${g}" data-b="0">✗ TIDAK TEPAT</button></div>`;
+function pasangTanda(row) { document.querySelectorAll('.tandaB button').forEach((b) => b.onclick = () => { const g = +b.dataset.g, v = b.dataset.b === '1'; getar(v ? 15 : [15, 30, 15]); hantar({ jenis: 'tanda', g, betul: row[g] === v ? null : v }); }); }
 function lukisGambar() {
   const ada = S.foto.filter(Boolean).length, sambungSemula = S.markah && S.markah.length;
   const kunci = `gambar|${S.foto.join(',')}|${thumb.map((t) => t ? t.v : 0).join(',')}|${naik.join(',')}|${S.pusingan}`;
   if (kunci === paparLama) return;
-  papar(kunci, `<h2>📸 Kumpul bukti</h2><p class="sub">Ambil gambar lembaran <b>semua kumpulan</b> dahulu (${ada}/6). Gambar terus muncul di TV.</p>
-    <div class="grid">${[0, 1, 2, 3, 4, 5].map((g) => `<div class="gk" style="border-color:${S.foto[g] ? 'var(--hijau)' : 'var(--garis)'}"><div class="kp"><i style="background:${WARNA[g]}"></i><span>${esc(nama(g))}</span></div>${thumbHtml(g)}
+  const mulaG = Math.max(0, S.foto.findIndex((v) => !v));
+  papar(kunci, `<h2>📸 Kumpul bukti</h2><p class="sub">Ambil gambar lembaran setiap kumpulan (${ada}/6). Gambar terus muncul di TV.</p>
+    <button class="btnBesar" id="btnSiri"><span class="ik">📷</span><span><b>${ada ? (ada < 6 ? `Sambung · ${esc(nama(mulaG))}` : 'Ambil semula dari Kumpulan 1') : 'Mula ambil gambar'}</b><small>Kumpulan 1 → 6 berturut-turut · tekan Seterusnya selepas setiap gambar</small></span></button>
+    <div class="grid">${[0, 1, 2, 3, 4, 5].map((g) => `<div class="gk" style="border-color:${S.foto[g] ? 'var(--hijau)' : 'var(--garis)'}"><div class="kp"><i style="background:${WARNA[g]}"></i><span>${esc(nama(g))}</span></div>${thumbHtml(g, '🔍 Besarkan di TV')}
       ${thumb[g] ? `<button class="btnKedua" data-semula="${g}" style="border-radius:0;border-width:2px 0 0;padding:8px;font-size:13px">📷 Ambil semula</button>` : ''}</div>`).join('')}</div>`,
-    sambungSemula ? `<button class="btnUtama" id="btnTerus">▶ Teruskan semakan</button>` : `<button class="btnUtama" id="btnMula" ${ada ? '' : 'disabled'}>▶ Mula semakan · Soalan 1</button>`);
+    sambungSemula ? `<button class="btnUtama" id="btnTerus">▶ Teruskan semakan</button>` : `<button class="btnUtama emas" id="btnMula" ${ada ? '' : 'disabled'}>🚀 DEPLOY · Mula semakan</button>`);
   pasangThumb();
+  $('btnSiri').onclick = () => bukaKam(ada >= 6 ? 0 : mulaG, true);
   if ($('btnMula')) $('btnMula').onclick = () => { if (ada < 6 && !confirm(`Baru ${ada}/6 gambar. Mula juga?`)) return; getar(20); hantar({ jenis: 'mula', bilSoalan: (SET && SET.soalan.length) || 4 }); };
   if ($('btnTerus')) $('btnTerus').onclick = () => hantar({ jenis: 'teruskan' });
 }
-function lukisLangkah() {
-  const s = soalan(S.idx), jaw = S.langkah === 'jawapan';
-  papar(`langkah|${S.idx}|${S.langkah}`, `<h2>Soalan ${S.idx + 1} / ${S.bilSoalan}</h2><p class="sub">${jaw ? 'TV papar jawapan: perkataan 1 + perkataan 2 = kata majmuk.' : 'TV papar maksud kata majmuk (seperti dalam lampiran).'}</p>
-    <div class="kad"><span class="lbl">${jaw ? 'JAWAPAN' : 'MAKSUD'}</span><div class="mk">${jaw ? `${esc(s.k1)} + ${esc(s.k2)} = <span style="color:var(--ecg)">${esc(s.km)}</span>` : esc(s.maksud)}</div>${jaw ? '' : `<div class="jw">Kata majmuk: <b>${esc(s.km)}</b></div>`}</div>`,
-    `<button class="btnUtama" id="btnLagi">${jaw ? 'Seterusnya ▶ Maksud' : 'Seterusnya ▶ Semak lembaran'}</button>
-     <div class="dua"><button class="btnKedua" id="btnSebelum" ${S.idx || !jaw ? '' : 'disabled'}>◀ Sebelum</button><button class="btnKedua" id="btnGambar">📸 Gambar</button></div>`);
-  $('btnLagi').onclick = () => { getar(15); hantar({ jenis: 'seterusnya' }); };
+function lukisSoalan() {
+  const s = soalan(S.idx), row = S.markah[S.idx] || [], semak = S.langkah === 'semak', akhir = S.idx >= S.bilSoalan - 1, siap = row.filter((x) => x != null).length;
+  const kunci = `soalan|${S.idx}|${S.langkah}|${row.join(',')}|${thumb.map((t) => t ? t.v : 0).join(',')}`;
+  if (kunci === paparLama) return;
+  papar(kunci, kadSoalan(s) + `<p class="sub">${semak
+      ? `TV sedang papar gambar <b>${esc(s.km)}</b>. Murid baca sendiri. Tanda lembaran setiap kumpulan (${siap}/6) — <b>TV belum tunjuk cop</b>.`
+      : `TV sedang dedah cop satu demi satu. Tap gambar untuk besarkan di TV. Tanda masih boleh diubah.`}</p>
+    <div class="grid">${[0, 1, 2, 3, 4, 5].map((g) => `<div class="gk" style="border-color:${row[g] === true ? 'var(--hijau)' : row[g] === false ? 'var(--merah)' : 'var(--garis)'}"><div class="kp"><i style="background:${WARNA[g]}"></i><span>${esc(nama(g))}</span></div>${thumbHtml(g, semak ? '🔍 Besarkan' : '🔍 Besarkan di TV')}${tandaHtml(g, row[g])}</div>`).join('')}</div>`,
+    semak
+      ? `<button class="btnUtama emas" id="btnLagi">Seterusnya ▶ Dedah cop di TV</button>
+         <div class="dua"><button class="btnKedua" id="btnSebelum" ${S.idx ? '' : 'disabled'}>◀ Sebelum</button><button class="btnKedua" id="btnGambar">📸 Gambar</button></div>`
+      : `<button class="btnUtama ${akhir ? 'emas' : ''}" id="btnLagi">${akhir ? '🏁 Tamat & kira mata' : `Seterusnya ▶ Soalan ${S.idx + 2}`}</button>
+         <div class="dua"><button class="btnKedua" id="btnSebelum">◀ Kembali tanda</button><button class="btnKedua" id="btnGambar">📸 Gambar</button></div>`);
+  pasangThumb(); pasangTanda(row);
+  $('btnLagi').onclick = () => { if (semak && siap < 6 && !confirm(`Baru ${siap}/6 kumpulan ditanda. Dedah juga?`)) return; getar(20); hantar({ jenis: 'seterusnya' }); };
   $('btnSebelum').onclick = () => hantar({ jenis: 'sebelum' });
   $('btnGambar').onclick = () => hantar({ jenis: 'keGambar' });
 }
-function lukisSemak() {
-  const s = soalan(S.idx), row = S.markah[S.idx] || [], akhir = S.idx >= S.bilSoalan - 1, siap = row.filter((x) => x != null).length;
-  const kunci = `semak|${S.idx}|${row.join(',')}|${thumb.map((t) => t ? t.v : 0).join(',')}`;
+function lukisLokal() { // besarkan lembaran di telefon sahaja semasa menanda
+  const g = lokal, t = thumb[g], row = S.markah[S.idx] || [], m = row[g];
+  const kunci = `lokal|${g}|${S.idx}|${m}|${t ? t.v : 0}`;
   if (kunci === paparLama) return;
-  papar(kunci, `<div class="kad" style="padding:10px 14px"><span class="lbl">SOALAN ${S.idx + 1}</span> <b style="color:var(--ecg);font-size:19px">${esc(s.km)}</b><div class="sub" style="margin:4px 0 0">${esc(s.maksud)}</div></div>
-    <p class="sub">Tanda setiap kumpulan (${siap}/6). TV hentak cop serta-merta.</p>
-    <div class="grid">${[0, 1, 2, 3, 4, 5].map((g) => `<div class="gk" style="border-color:${row[g] === true ? 'var(--hijau)' : row[g] === false ? 'var(--merah)' : 'var(--garis)'}"><div class="kp"><i style="background:${WARNA[g]}"></i><span>${esc(nama(g))}</span></div>${thumbHtml(g)}
-      <div class="tandaB"><button class="ya ${row[g] === true ? 'on' : ''}" data-g="${g}" data-b="1">✓ BETUL</button><button class="tak ${row[g] === false ? 'on' : ''}" data-g="${g}" data-b="0">✗ TIDAK TEPAT</button></div></div>`).join('')}</div>`,
-    `<button class="btnUtama ${akhir ? 'emas' : ''}" id="btnLagi">${akhir ? '🏁 Tamat & kira mata' : `Seterusnya ▶ Soalan ${S.idx + 2}`}</button>
-     <div class="dua"><button class="btnKedua" id="btnSebelum">◀ Maksud</button><button class="btnKedua" id="btnGambar">📸 Gambar</button></div>`);
-  pasangThumb();
-  document.querySelectorAll('.tandaB button').forEach((b) => b.onclick = () => { const g = +b.dataset.g, v = b.dataset.b === '1'; getar(v ? 15 : [15, 30, 15]); hantar({ jenis: 'tanda', g, betul: row[g] === v ? null : v }); });
-  $('btnLagi').onclick = () => { if (siap < 6 && !confirm(`Baru ${siap}/6 kumpulan ditanda. Teruskan?`)) return; getar(20); hantar({ jenis: 'seterusnya' }); };
-  $('btnSebelum').onclick = () => hantar({ jenis: 'sebelum' });
-  $('btnGambar').onclick = () => hantar({ jenis: 'keGambar' });
+  papar(kunci, `<div class="fokusKp"><i style="background:${WARNA[g]}"></i><b>${esc(nama(g))}</b><span>${esc(soalan(S.idx).km)}</span></div>
+    <div class="vw" id="vw">${t ? `<img id="li" src="${t.url}" alt="Lembaran">` : '<div style="padding:20px;color:var(--kabur)">Memuat gambar…</div>'}<span class="zt" id="zt">1.0×</span><span class="bantu" id="bantu">Cubit / seret untuk zoom · TV tidak tunjuk</span></div>`,
+    `<div class="dua"><button class="btnUtama hijau" id="fYa">✓ BETUL${m === true ? ' ✔' : ''}</button><button class="btnUtama merah" id="fTak">✗ TIDAK TEPAT${m === false ? ' ✔' : ''}</button></div><button class="btnKedua" id="btnBalik">↩ Kembali</button>`);
+  $('fYa').onclick = () => { getar(15); hantar({ jenis: 'tanda', g, betul: m === true ? null : true }); };
+  $('fTak').onclick = () => { getar([15, 30, 15]); hantar({ jenis: 'tanda', g, betul: m === false ? null : false }); };
+  $('btnBalik').onclick = () => { lokal = -1; paparLama = ''; render(); };
+  pasangZoom(g);
 }
 function lukisFokus() {
-  const g = S.fokus, t = thumb[g], semak = S.fasa === 'soalan' && S.langkah === 'semak', m = semak && S.markah[S.idx] ? S.markah[S.idx][g] : null;
+  const g = S.fokus, t = thumb[g], semak = S.fasa === 'soalan' && S.langkah === 'dedah', m = semak && S.markah[S.idx] ? S.markah[S.idx][g] : null;
   const kunci = `fokus|${g}|${S.fasa}|${S.idx}|${m}|${t ? t.v : 0}`;
   if (kunci === paparLama) return;
   papar(kunci, `<div class="fokusKp"><i style="background:${WARNA[g]}"></i><b>${esc(nama(g))}</b>${semak ? `<span>${esc(soalan(S.idx).km)}</span>` : ''}</div>
@@ -205,23 +270,92 @@ function lukisTamat() {
   $('btnUlang').onclick = () => { if (confirm('Kosongkan galeri dan mula semula?')) hantar({ jenis: 'ulang' }); };
 }
 
-// ---------- kamera: ambil gambar lembaran ----------
-let gAmbil = -1;
-function ambilGambar(g) { gAmbil = g; $('fail').value = ''; $('fail').click(); }
-$('fail').onchange = async () => {
-  const f = $('fail').files && $('fail').files[0], g = gAmbil; if (!f || g < 0) return;
-  naik[g] = true; paparLama = ''; render();
+// ---------- kamera dalam halaman (bingkai + grid; Kumpulan 1 -> 6) ----------
+let strim = null, bukaToken = 0, zoomK = 1, zoomHW = null, kamG = 0, kamSiri = false, blobKini = null, pratUrl = null;
+function bukaKam(g, siri) { kamG = g; kamSiri = siri; $('kamera').hidden = false; history.pushState({ kam: 1 }, ''); semulaKam(); mulaStrim(); }
+function tutupKam(dariSejarah) {
+  bukaToken++; if (strim) { strim.getTracks().forEach((t) => t.stop()); strim = null; } $('vid').srcObject = null; $('kamera').hidden = true;
+  if (pratUrl) { URL.revokeObjectURL(pratUrl); pratUrl = null; } blobKini = null;
+  if (!dariSejarah && history.state && history.state.kam) history.back();
+  paparLama = ''; render();
+}
+addEventListener('popstate', () => { if (!$('kamera').hidden) tutupKam(true); });
+function kepalaKam() {
+  $('kamKp').innerHTML = `<i style="background:${WARNA[kamG]}"></i>${esc(nama(kamG))}${kamSiri ? ` <small style="font-size:14px;opacity:.85">(${kamG + 1}/6)</small>` : ''}`;
+  $('kamTitik').innerHTML = [0, 1, 2, 3, 4, 5].map((g) => `<i class="${g === kamG ? 'kini' : (S && S.foto[g]) || naik[g] ? 'ok' : ''}"></i>`).join('');
+}
+function semulaKam() { // mod kamera hidup
+  $('pratonton').hidden = true; $('bingkai').hidden = false; $('zoomBar').hidden = false; $('kamTip').hidden = false; kepalaKam();
+  $('kamBawah').innerHTML = `<button class="kecil" id="btnTutupKam" title="Tutup">✕</button><button id="btnSnap" aria-label="Ambil gambar"></button><button class="kecil" id="btnNative" title="Aplikasi kamera telefon">📷</button>`;
+  $('btnTutupKam').onclick = () => tutupKam(); $('btnSnap').onclick = snap; $('btnNative').onclick = () => { $('fail').value = ''; $('fail').click(); };
+  requestAnimationFrame(letakBingkai);
+}
+function semakKam() { // selepas ambil: tunjuk gambar + Ambil semula / Seterusnya
+  $('pratonton').hidden = false; $('bingkai').hidden = true; $('zoomBar').hidden = true; $('kamTip').hidden = true; kepalaKam();
+  const akhir = !kamSiri || kamG >= 5;
+  $('kamBawah').innerHTML = `<div class="kamSemak"><button class="ulangB" id="btnUlangK">↺ Ambil semula</button><button class="lagiB" id="btnLagiK">${akhir ? '✓ Selesai' : `Seterusnya ▶ ${esc(nama(kamG + 1))}`}</button></div>`;
+  $('btnUlangK').onclick = () => { getar(10); semulaKam(); };
+  $('btnLagiK').onclick = () => { getar(15); if (akhir) return tutupKam(); kamG++; semulaKam(); };
+}
+function bingkai() {
+  const ce = $('pentas').getBoundingClientRect(), pad = 16;
+  let fw = ce.width - pad * 2, fh = fw / NISBAH;
+  if (fh > ce.height - 190) { fh = ce.height - 190; fw = fh * NISBAH; }
+  return { cw: ce.width, ch: ce.height, fw, fh, fx: (ce.width - fw) / 2, fy: Math.max(64, (ce.height - fh) / 2 - 10) };
+}
+function letakBingkai() { if ($('kamera').hidden) return; const b = bingkai(); Object.assign($('bingkai').style, { left: b.fx + 'px', top: b.fy + 'px', width: b.fw + 'px', height: b.fh + 'px' }); }
+addEventListener('resize', letakBingkai);
+async function mulaStrim() {
+  if (strim) return;
+  const tok = ++bukaToken; $('kamGagal').hidden = true;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return kamGagal('Pelayar ini tidak menyokong kamera dalam halaman. Guna butang 📷.');
+  try {
+    const st = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1440 } } });
+    if (tok !== bukaToken || $('kamera').hidden) { st.getTracks().forEach((t) => t.stop()); return; }
+    strim = st; const v = $('vid'); v.srcObject = st; await v.play().catch(() => {});
+    const tr = st.getVideoTracks()[0], cap = tr.getCapabilities ? tr.getCapabilities() : {};
+    zoomHW = cap.zoom && cap.zoom.max > 1 ? cap.zoom : null;
+    try { if (cap.focusMode && cap.focusMode.includes('continuous')) await tr.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }); } catch (e) {}
+    setZoomK(zoomK);
+  } catch (e) { kamGagal(e && e.name === 'NotAllowedError' ? 'Akses kamera ditolak. Benarkan kamera dalam tetapan pelayar, atau guna butang 📷.' : 'Kamera tidak dapat dibuka. Guna butang 📷 untuk aplikasi kamera telefon.'); }
+}
+function kamGagal(t) { $('kamGagal').hidden = false; $('kamGagalTx').textContent = t; }
+$('kamCuba').onclick = () => { if (strim) { strim.getTracks().forEach((t) => t.stop()); strim = null; } mulaStrim(); };
+function setZoomK(zz) {
+  zoomK = clamp(zz, 1, 3);
+  document.querySelectorAll('#zoomBar button').forEach((b) => b.classList.toggle('on', Math.abs(+b.dataset.z - zoomK) < .05));
+  if (zoomHW && strim) { const hz = clamp(zoomK, zoomHW.min || 1, zoomHW.max); strim.getVideoTracks()[0].applyConstraints({ advanced: [{ zoom: hz }] }).catch(() => {}); $('vid').style.transform = hz < zoomK ? `scale(${zoomK / hz})` : ''; }
+  else $('vid').style.transform = zoomK > 1 ? `scale(${zoomK})` : '';
+}
+document.querySelectorAll('#zoomBar button').forEach((b) => b.onclick = () => { setZoomK(+b.dataset.z); getar(8); });
+function snap() {
+  const v = $('vid'); if (!strim || !v.videoWidth) return toast('Kamera belum sedia');
+  const vw = v.videoWidth, vh = v.videoHeight, b = bingkai();
+  const sCss = (v.style.transform.match(/scale\(([\d.]+)\)/) || [0, 1])[1] * 1, k = Math.max(b.cw / vw, b.ch / vh) * sCss;
+  let sx = vw / 2 + (b.fx - b.cw / 2) / k, sy = vh / 2 + (b.fy - b.ch / 2) / k, sw = b.fw / k, sh = b.fh / k;
+  sx = Math.max(0, sx); sy = Math.max(0, sy); sw = Math.min(sw, vw - sx); sh = Math.min(sh, vh - sy);
+  const sc = Math.min(1, MAX_SISI / Math.max(sw, sh)), c = document.createElement('canvas'); c.width = Math.round(sw * sc); c.height = Math.round(sh * sc);
+  const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(v, sx, sy, sw, sh, 0, 0, c.width, c.height);
+  $('kilat').classList.remove('on'); void $('kilat').offsetWidth; $('kilat').classList.add('on'); getar(35);
+  c.toBlob((bl) => bl && siapGambar(bl), 'image/jpeg', KUALITI);
+}
+async function siapGambar(blob) { // tunjuk pratonton & hantar ke TV terus
+  const g = kamG;
+  if (pratUrl) URL.revokeObjectURL(pratUrl); pratUrl = URL.createObjectURL(blob); $('pratImg').src = pratUrl; semakKam();
+  naik[g] = true; kepalaKam(); paparLama = '';
+  try { await hantarFoto(g, blob); toast(`✅ ${nama(g)} di TV`); } catch (e) { toast('Gagal hantar: ' + (e.message || e), 4000); }
+  naik[g] = false; if (!$('kamera').hidden) kepalaKam(); paparLama = ''; if ($('kamera').hidden) render();
+}
+$('fail').onchange = async () => { // sandaran: aplikasi kamera telefon
+  const f = $('fail').files && $('fail').files[0]; if (!f) return;
   try {
     let src;
     if (window.createImageBitmap) { try { src = await createImageBitmap(f, { imageOrientation: 'from-image' }); } catch (e) { src = await createImageBitmap(f); } }
     else src = await new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = no; im.src = URL.createObjectURL(f); });
-    const s = Math.min(1, MAX_SISI / Math.max(src.width, src.height)), c = document.createElement('canvas');
-    c.width = Math.round(src.width * s); c.height = Math.round(src.height * s); c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
-    const blob = await new Promise((ok) => c.toBlob(ok, 'image/jpeg', KUALITI));
-    await hantarFoto(g, blob);
-    getar(20); toast(`✅ Gambar ${nama(g)} di TV`);
-  } catch (e) { toast('Gagal: ' + (e.message || e), 4000); }
-  naik[g] = false; paparLama = ''; render();
+    const sc = Math.min(1, MAX_SISI / Math.max(src.width, src.height)), c = document.createElement('canvas');
+    c.width = Math.round(src.width * sc); c.height = Math.round(src.height * sc); c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+    c.toBlob((bl) => bl && siapGambar(bl), 'image/jpeg', KUALITI);
+  } catch (e) { toast('Gambar tidak dapat dibaca. Cuba lagi.'); }
 };
 function hantarFoto(g, blob, cuba = 0) {
   return new Promise((ok, no) => {
@@ -274,7 +408,7 @@ function sambung() {
   ws.onopen = () => { wsOk = true; tunda = 800; kemasStatus(); clearInterval(pingT); pingT = setInterval(() => { try { ws.send('{"jenis":"ping"}'); } catch (e) {} }, 20000); };
   ws.onmessage = (ev) => {
     let d; try { d = JSON.parse(ev.data); } catch (e) { return; }
-    if (d.jenis === 'keadaan') { S = d; bilPaparan = d.paparan || 0; kemasStatus(); if (!SET) muatSet().then(render); else render(); }
+    if (d.jenis === 'keadaan') { S = d; bilPaparan = d.paparan || 0; kemasStatus(); if (!$('kamera').hidden) kepalaKam(); if (!SET) muatSet().then(render); else render(); }
     else if (d.jenis === 'bilangan') { bilPaparan = d.paparan || 0; kemasStatus(); }
     else if (d.jenis === 'ralat') toast(d.mesej, 3500);
   };

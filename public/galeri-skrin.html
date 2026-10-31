@@ -71,7 +71,7 @@
 
   /* galeri */
   #vGaleri, #vGambar, #vSemak { flex-direction: column; gap: 1.4vh; }
-  #vJawapan, #vMaksud { flex-direction: column; gap: 2vh; }
+  #vSoalan { flex-direction: column; gap: 2vh; }
   .galeriTajuk { display: flex; align-items: baseline; gap: 1.4vw; }
   .galeriTajuk h2 { margin: 0; font-family: 'Baloo 2'; font-weight: 800; font-size: 4.4vh; }
   .galeriTajuk p { margin: 0; color: var(--kelabu); font-size: 2.2vh; }
@@ -133,6 +133,13 @@
   .maksudK .kmM { display: inline-block; font-family: 'Baloo 2'; font-weight: 800; font-size: 8vh; color: #fff; background: var(--teal); border-radius: 99px; padding: .2vh 3vw; animation: pop .6s .2s both; }
   .maksudK .lblM { margin: 3vh 0 1vh; font-weight: 700; color: var(--kelabu); font-size: 2.8vh; letter-spacing: .3vh; animation: pop .5s .45s both; }
   .maksudK .txM { font-family: 'Baloo 2'; font-weight: 800; font-size: 6.4vh; line-height: 1.15; animation: pop .6s .6s both; }
+  /* soalan: gambar besar + kata majmuk (murid baca sendiri) */
+  #vSoalan { align-items: center; }
+  .soalanBesar { flex: 1; min-height: 0; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3vh; }
+  .soalanBesar .gbS { width: min(52vh, 60vw); aspect-ratio: 1; border-radius: 5vh; overflow: hidden; background: #fff; display: grid; place-items: center; font-size: 26vh; border: 1vh solid var(--emas); box-shadow: var(--bayang); animation: pop .7s cubic-bezier(.2,1.5,.4,1) both; }
+  .soalanBesar .gbS img { width: 100%; height: 100%; object-fit: contain; background: #fff; }
+  .soalanBesar .kmS { font-family: 'Baloo 2'; font-weight: 800; font-size: 11vh; line-height: 1; color: #fff; background: var(--teal); border-radius: 99px; padding: .6vh 5vw 1.4vh; box-shadow: var(--bayang); animation: pop .6s .35s cubic-bezier(.2,1.5,.4,1) both; }
+  .soalanBesar .mkS { font-weight: 700; font-size: 3.4vh; color: var(--kelabu); text-align: center; max-width: 80vw; animation: pop .5s .6s both; }
   /* cop semakan */
   .copS { position: absolute; left: 50%; top: 50%; z-index: 3; pointer-events: none; font-family: 'Baloo 2'; font-weight: 800; font-size: 4.6vh; letter-spacing: .3vh; padding: .6vh 1.6vw; border-radius: 1.6vh;
     border: .7vh double currentColor; background: rgba(255,255,255,.88); white-space: nowrap; transform: translate(-50%, -50%) rotate(-12deg); animation: copHentak .55s cubic-bezier(.2,1.4,.4,1) both; box-shadow: 0 0 0 .4vh rgba(255,255,255,.7); }
@@ -159,7 +166,7 @@
       <span class="chip"><span class="d" id="dot"></span><span id="kodTx">····</span></span>
       <button class="btn" id="btnQr" title="Kod QR telefon">📱 QR</button>
       <button class="btn" id="btnBunyi" title="Bunyi">🔊</button>
-      <button class="btn" id="btnSuara" title="Suara">🗣️</button>
+      <button class="btn" id="btnSuara" title="Suara" hidden>🗣️</button>
       <button class="btn" id="btnBaru" title="Kod bilik baharu">🔄</button>
       <button class="btn" id="btnFs" title="Skrin penuh">⛶</button>
     </div>
@@ -170,13 +177,9 @@
       <div class="grid" id="gridG"></div>
       <div class="kad" id="qrB"><div id="qr"></div><div><h2>📱 Imbas dengan telefon guru</h2><div class="kodBesar" id="kodBesar">····</div><a class="back" href="/guru.html" data-km-balik="← Klinik Kata Majmuk" style="color:var(--kelabu)">← Ilmuverse</a></div></div>
     </section>
-    <section class="v" id="vJawapan">
-      <div class="kad soalanK"><span class="no" id="jNo">Soalan 1</span><span class="mk">Jawapan</span><span class="titik" id="jTitik"></span></div>
-      <div class="kad pers" id="jPers"></div>
-    </section>
-    <section class="v" id="vMaksud">
-      <div class="kad soalanK"><span class="no" id="mNo">Soalan 1</span><span class="mk">Maksud</span><span class="titik" id="mTitik"></span></div>
-      <div class="kad maksudK" id="mIsi"></div>
+    <section class="v" id="vSoalan">
+      <div class="kad soalanK" style="width:100%"><span class="no" id="qNo">Soalan 1</span><span class="mk">Baca kata majmuk ini</span><span class="titik" id="qTitik"></span></div>
+      <div class="soalanBesar" id="qIsi"></div>
     </section>
     <section class="v" id="vSemak">
       <div class="kad soalanK kecil"><span class="no" id="sNo">Soalan 1</span><span class="mk" id="sKm"></span><span class="mks" id="sMk"></span><span class="titik" id="sTitik"></span></div>
@@ -189,7 +192,7 @@
   <div class="zum" id="zum"><img id="zImg" alt="Lembaran kumpulan"><span class="zCap" id="zCap">Zoom pada telefon guru</span></div>
   <div class="sisi" id="sisi"></div>
 </section>
-<button id="bunyiNota">▶ Klik sekali untuk hidupkan suara, bunyi &amp; muzik</button>
+<button id="bunyiNota">▶ Klik sekali untuk hidupkan bunyi</button>
 <canvas id="konfeti"></canvas>
 <div id="toast"></div>
 <script>
@@ -233,7 +236,7 @@ const SFX = {
   tidak() { nada(300, 0, .3, 'sawtooth', .07, 160); },
   tamat() { [523, 659, 784, 659, 784, 1047].forEach((f, i) => nada(f, i * .12, .38, 'triangle', .14)); },
 };
-function cakap(t) { if (!pilihan.suara) return Promise.resolve(); KS.diam(); return KS.cakap(t); }
+function cakap() { return Promise.resolve(); } // tiada suara AI: guru / murid baca sendiri
 function bukaBunyi() { KS.audio(); $('bunyiNota').hidden = true; removeEventListener('pointerdown', bukaBunyi); removeEventListener('keydown', bukaBunyi); }
 addEventListener('pointerdown', bukaBunyi); addEventListener('keydown', bukaBunyi);
 window.__embed = { tunjuk(on) { try { if (on) bukaBunyi(); else KS.diam(); } catch (e) {} } };
@@ -282,39 +285,39 @@ function buangFotoLama() { if (!S) return; S.foto.forEach((v, g) => { if (!v && 
 // ---------- paparan ----------
 let S = null, paparKini = '', kunciV = '', markahLama = null, fokusPapar = -1;
 function tunjuk(id) { if (paparKini === id) return false; paparKini = id; document.querySelectorAll('.v').forEach((v) => v.classList.toggle('on', v.id === id)); return true; }
-const LBL = { gambar: 'Kumpul bukti', jawapan: 'Jawapan', maksud: 'Maksud', semak: 'Semak lembaran', tamat: 'Keputusan' };
+const LBL = { gambar: 'Kumpul bukti', semak: 'Baca & semak', dedah: 'Keputusan cop', tamat: 'Keputusan' };
 const titik = (n, i) => Array.from({ length: n }, (_, k) => `<i class="${k <= i ? 'on' : ''}"></i>`).join('');
 function render() {
   if (!S) return;
   $('fasaChip').textContent = S.fasa === 'soalan' ? `Soalan ${S.idx + 1} · ${LBL[S.langkah]}` : LBL[S.fasa] || '';
   buangFotoLama();
   S.foto.forEach((v, g) => muatFoto(g, v));
-  if (S.fasa === 'gambar') { if (tunjuk('vGambar')) SFX.masuk(); lukisGrid('gridG', false); $('kiraG').textContent = `${S.foto.filter(Boolean).length} / 6 gambar`; $('qrB').hidden = EMBED || S.foto.some(Boolean); urusFokus(); return; }
-  if (S.fasa === 'tamat') { tutupFokus(); lukisTamat(); if (tunjuk('vTamat')) { SFX.tamat(); konfeti(); cakap('Semakan selesai. Tahniah semua doktor!'); } return; }
+  if (S.fasa === 'gambar') { hentiDedah(); if (tunjuk('vGambar')) SFX.masuk(); lukisGrid('gridG', false); $('kiraG').textContent = `${S.foto.filter(Boolean).length} / 6 gambar`; $('qrB').hidden = EMBED || S.foto.some(Boolean); urusFokus(); return; }
+  if (S.fasa === 'tamat') { tutupFokus(); hentiDedah(); lukisTamat(); if (tunjuk('vTamat')) { SFX.tamat(); konfeti(); } return; }
   const s = soalan(S.idx), k = `${S.pusingan}:${S.idx}:${S.langkah}`;
-  if (S.langkah === 'jawapan') {
-    tutupFokus(); tunjuk('vJawapan');
+  if (S.langkah === 'semak') { // gambar + kata majmuk; guru tanda di telefon (cop belum ditunjuk)
+    tutupFokus(); hentiDedah(); tunjuk('vSoalan');
     if (kunciV !== k) { kunciV = k;
-      $('jNo').textContent = `Soalan ${S.idx + 1}`; $('jTitik').innerHTML = titik(S.bilSoalan, S.idx);
-      $('jPers').innerHTML = `<div class="tile"><div class="pic">${pic(s.u1, s.e1)}</div><div class="nm">${esc(s.k1)}</div></div><div class="op" style="animation-delay:.5s">+</div>
-        <div class="tile" style="animation-delay:.8s"><div class="pic">${pic(s.u2, s.e2)}</div><div class="nm">${esc(s.k2)}</div></div><div class="op" style="animation-delay:1.3s">=</div>
-        <div class="tile km" style="animation-delay:1.6s"><div class="pic">${pic(s.uk, s.ek)}</div><div class="nm">${esc(s.km)}</div></div>`;
-      SFX.dedah(); cakap(`Soalan ${S.idx + 1}. ${s.k1} tambah ${s.k2}, jadi ${s.km}.`); }
+      $('qNo').textContent = `Soalan ${S.idx + 1}`; $('qTitik').innerHTML = titik(S.bilSoalan, S.idx);
+      $('qIsi').innerHTML = `<div class="gbS">${pic(s.uk, s.ek)}</div><div class="kmS">${esc(s.km)}</div>${s.maksud ? `<div class="mkS">${esc(s.maksud)}</div>` : ''}`;
+      SFX.dedah(); }
     return;
   }
-  if (S.langkah === 'maksud') {
-    tutupFokus(); tunjuk('vMaksud');
-    if (kunciV !== k) { kunciV = k;
-      $('mNo').textContent = `Soalan ${S.idx + 1}`; $('mTitik').innerHTML = titik(S.bilSoalan, S.idx);
-      $('mIsi').innerHTML = `<div class="gbM">${pic(s.uk, s.ek)}</div><div><span class="kmM">${esc(s.km)}</span><div class="lblM">MAKSUD</div><div class="txM">${esc(s.maksud)}</div></div>`;
-      SFX.dedah(); cakap(`${s.km}, bermaksud ${s.maksud}.`); }
-    return;
-  }
-  // semak
-  if (tunjuk('vSemak') || kunciV !== k) { kunciV = k; markahLama = null; cakap(`Mari semak jawapan soalan ${S.idx + 1}. ${s.km}.`); }
+  // dedah: cop keluar satu demi satu
+  if (tunjuk('vSemak') || kunciV !== k) { kunciV = k; mulaDedah(); }
   $('sNo').textContent = `Soalan ${S.idx + 1}`; $('sKm').textContent = s.km; $('sMk').textContent = s.maksud; $('sTitik').innerHTML = titik(S.bilSoalan, S.idx);
   lukisGrid('gridS', true);
   urusFokus();
+}
+// ---------- dedah cop satu demi satu ----------
+let dedahN = 6, dedahT = null;
+function hentiDedah() { clearInterval(dedahT); dedahT = null; dedahN = 6; }
+function mulaDedah() {
+  clearInterval(dedahT); dedahN = 0; markahLama = null;
+  dedahT = setInterval(() => {
+    dedahN++; if (S && S.fasa === 'soalan' && S.langkah === 'dedah') lukisGrid('gridS', true);
+    if (dedahN >= 6) { clearInterval(dedahT); dedahT = null; }
+  }, 900);
 }
 function lukisGrid(id, denganCop) {
   const el = $(id);
@@ -324,23 +327,24 @@ function lukisGrid(id, denganCop) {
     c.style.setProperty('--w', WARNA[g]);
     c.querySelector('b').textContent = nama(g);
     const isy = c.querySelector('.isy');
-    if (denganCop) { const m = row[g]; isy.className = 'isy' + (m == null ? ' belum' : ''); isy.textContent = m == null ? 'Belum disemak' : m ? '✓ Betul' : '✗ Tidak tepat'; }
+    if (denganCop) { const m = g < dedahN ? row[g] : undefined; isy.className = 'isy' + (m == null ? ' belum' : ''); isy.textContent = m === undefined ? '…' : m == null ? 'Belum ditanda' : m ? '✓ Betul' : '✗ Tidak tepat'; }
     else { isy.className = 'isy' + (S.foto[g] ? '' : ' belum'); isy.textContent = S.foto[g] ? '📸 Ada' : 'Belum'; }
     const fr = c.querySelector('.fr'), key = foto[g] ? 'f' + foto[g].v : 'k';
     if (fr.dataset.k !== key) { fr.dataset.k = key; const cop = fr.querySelector('.copS'); fr.innerHTML = foto[g] ? `<img src="${foto[g].url}" alt="Lembaran ${esc(nama(g))}">` : '<div class="kosong"><span>📷</span>Menunggu gambar</div>'; if (cop) fr.appendChild(cop); }
-    c.classList.toggle('betul', denganCop && row[g] === true); c.classList.toggle('tidak', denganCop && row[g] === false);
+    c.classList.toggle('betul', denganCop && g < dedahN && row[g] === true); c.classList.toggle('tidak', denganCop && g < dedahN && row[g] === false);
     // cop: hentak bila baru ditanda
-    const ada = fr.querySelector('.copS'), m = denganCop ? row[g] : null;
-    const lama = markahLama ? markahLama[g] : undefined;
+    const terdedah = denganCop && g < dedahN;
+    const ada = fr.querySelector('.copS'), m = terdedah ? row[g] : null;
+    const lama = markahLama ? markahLama[g] : null;
     if (m == null) { if (ada) ada.remove(); }
     else if (!ada || lama !== m) {
       if (ada) ada.remove();
       const cp = document.createElement('div'); cp.className = 'copS ' + (m ? 'betul' : 'tidak'); cp.textContent = m ? '✓ BETUL' : '✗ TIDAK TEPAT';
       fr.appendChild(cp);
-      if (markahLama && lama !== m) { c.classList.remove('hentak'); void c.offsetWidth; c.classList.add('hentak'); m ? SFX.jujur() : SFX.tidak(); cakap(m ? `${nama(g)}, betul!` : `${nama(g)}, tidak tepat.`); }
+      c.classList.remove('hentak'); void c.offsetWidth; c.classList.add('hentak'); m ? SFX.jujur() : SFX.tidak();
     }
+    if (denganCop) { if (!markahLama) markahLama = []; markahLama[g] = m; }
   });
-  if (denganCop) markahLama = row.slice();
 }
 // ---------- fokus + zoom ikut telefon ----------
 function urusFokus() { if (S.fokus >= 0) bukaFokus(S.fokus); else tutupFokus(); }
