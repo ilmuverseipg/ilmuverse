@@ -50,6 +50,8 @@
   #jalur .d { width: 1.1vh; height: 1.1vh; border-radius: 50%; background: #ffb020; } #jalur .d.ok { background: #4ade80; }
   #jalur button { font: inherit; color: #fff; background: rgba(255,255,255,.12); border: 0; border-radius: 99px; padding: .6vh 1vw; cursor: pointer; }
   #jalur button:hover { background: rgba(255,255,255,.24); }
+  #jalur #btnTamat { background: rgba(232,67,79,.85); }
+  .btnTamat { margin-top: 1.4vh; font: inherit; font-weight: 700; font-size: 1.9vh; color: #fff; background: #e8434f; border: 0; border-radius: 99px; padding: .9vh 1.8vw; cursor: pointer; box-shadow: 0 .5vh 0 #a82534; }
 
   /* ===== buka bunyi ===== */
   #mula { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: rgba(3,20,26,.6); backdrop-filter: blur(4px); }
@@ -70,28 +72,44 @@
   @keyframes lompatT { from { transform: translateY(0) rotate(-4deg); } to { transform: translateY(-1.6vh) rotate(4deg); } }
   @keyframes barT { from { transform: scaleX(0); } to { transform: scaleX(1); } }
   /* ===== papan mata selepas aktiviti ===== */
-  #lPapan { position: fixed; inset: 0; z-index: 55; display: grid; place-items: center; padding: 3vh 3vw; background: rgba(3,12,22,.78); backdrop-filter: blur(5px); }
-  .pkad { width: min(1300px, 94vw); background: linear-gradient(180deg, #0e2a42, #071a2b); color: #f4f8ff; border: .4vh solid #ffd23f; border-radius: 3.2vh; padding: 3vh 2.6vw; box-shadow: 0 0 7vh rgba(255,210,63,.35); animation: masukP .55s cubic-bezier(.2,1.3,.4,1) both; }
-  @keyframes masukP { from { transform: scale(.85) translateY(4vh); opacity: 0; } to { transform: none; opacity: 1; } }
-  .pkad h2 { margin: 0; font-family: 'Baloo 2'; font-weight: 800; font-size: 5.2vh; text-align: center; }
-  .pkad .terbaik { text-align: center; font-family: 'Baloo 2'; font-weight: 800; font-size: 3.4vh; color: #ffd23f; margin: .6vh 0 2vh; }
-  .pkad .nota { text-align: center; color: #9fb4cc; font-size: 1.9vh; margin-top: -1.4vh; margin-bottom: 1.6vh; }
-  .pbaris { display: grid; grid-template-columns: 5vh 7vh 1fr auto auto; align-items: center; gap: 1.2vw; padding: .9vh 1.2vw; border-radius: 1.8vh; background: rgba(255,255,255,.05); margin-bottom: .9vh; border: 2px solid transparent; }
-  .pbaris.fokus { border-color: #1de9b6; background: rgba(29,233,182,.12); transition: background .3s, border-color .3s; }
-  .pbaris { position: relative; }
-  .pbaris.naik { z-index: 2; box-shadow: 0 0 3vh rgba(255,210,63,.55); }
-  .pbaris .tb.pop { animation: popT .45s cubic-bezier(.2,1.6,.4,1) both; }
-  @keyframes popT { from { transform: scale(.2) translateY(1vh); opacity: 0; } to { transform: none; opacity: 1; } }
-  .pbaris .rk { font-family: 'Baloo 2'; font-weight: 800; font-size: 3.4vh; text-align: center; }
-  .pbaris .av { width: 6.4vh; height: 6.4vh; border-radius: 50%; overflow: hidden; display: grid; place-items: center; font-family: 'Baloo 2'; font-weight: 800; font-size: 3.2vh; color: #fff; background: var(--w); border: .35vh solid rgba(255,255,255,.8); }
-  .pbaris .av img { width: 100%; height: 100%; object-fit: cover; }
-  .pbaris .nm { font-family: 'Baloo 2'; font-weight: 800; font-size: 3.4vh; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .pbaris .tb { font-family: 'Baloo 2'; font-weight: 800; font-size: 3vh; color: #1de9b6; min-width: 8vh; text-align: right; }
-  .pbaris .mt { font-family: 'Baloo 2'; font-weight: 800; font-size: 4vh; color: #ffd23f; min-width: 12vh; text-align: right; }
-  .pbaris .mt small { font-size: 1.7vh; color: #9fb4cc; margin-left: .3vw; }
-  .pbtn { display: flex; justify-content: center; gap: 1.2vw; margin-top: 2vh; }
-  .pbtn button { font-family: 'Baloo 2'; font-weight: 800; font-size: 3vh; border: 0; border-radius: 99px; padding: 1.4vh 3vw; cursor: pointer; }
-  .pbtn .lagi { background: #1de9b6; color: #04121a; } .pbtn .lagi:disabled { opacity: .5; cursor: default; }
+  #lPapan { position: fixed; inset: 0; z-index: 55; display: grid; place-items: center; padding: 2vh 2vw; overflow: hidden; background: radial-gradient(circle at 50% 40%, #12385a 0%, #05111d 70%); }
+  #lPapan .sinar { position: absolute; inset: -40%; background: repeating-conic-gradient(from 0deg, rgba(255,210,63,.07) 0 7deg, transparent 7deg 20deg); animation: putarS 30s linear infinite; pointer-events: none; }
+  @keyframes putarS { to { transform: rotate(360deg); } }
+  #lPapan canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; }
+  .pkad { position: relative; z-index: 2; width: min(1560px, 96vw); max-height: 96vh; display: flex; flex-direction: column; background: linear-gradient(180deg, rgba(16,46,74,.96), rgba(6,22,38,.97)); color: #f4f8ff; border: .5vh solid #ffd23f; border-radius: 4vh; padding: 2.2vh 2.4vw 2vh; box-shadow: 0 0 9vh rgba(255,210,63,.35), inset 0 0 0 .3vh rgba(255,255,255,.06); animation: masukP .55s cubic-bezier(.2,1.3,.4,1) both; }
+  @keyframes masukP { from { transform: scale(.82) translateY(5vh); opacity: 0; } to { transform: none; opacity: 1; } }
+  .pKepala { display: flex; align-items: center; gap: 1.6vw; margin-bottom: 1.6vh; }
+  .pKepala .pIk { width: 9vh; height: 9vh; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff6c9, #ffd23f 60%, #d49b00); display: grid; place-items: center; font-size: 5.2vh; box-shadow: 0 0 0 .6vh rgba(255,210,63,.25), 0 1vh 3vh rgba(0,0,0,.4); flex: none; animation: lompatI 1.6s ease-in-out infinite; }
+  @keyframes lompatI { 50% { transform: translateY(-.8vh) rotate(-6deg); } }
+  .pKepala small { display: block; font-weight: 800; letter-spacing: .7vh; color: #ffd23f; font-size: 2.2vh; }
+  .pKepala h2 { margin: 0; font-family: 'Baloo 2'; font-weight: 800; font-size: 5.4vh; line-height: 1; }
+  .pKepala .terbaik { margin-left: auto; text-align: right; font-family: 'Baloo 2'; font-weight: 800; font-size: 3vh; color: #ffd23f; line-height: 1.15; }
+  .pKepala .terbaik span { display: block; font-family: inherit; font-size: 2vh; color: #9fb4cc; font-weight: 700; }
+  #pSenarai { display: flex; flex-direction: column; gap: .9vh; }
+  .pbaris { position: relative; display: grid; grid-template-columns: 6vh 7.6vh minmax(14vw, 22vw) 1fr 9vh 13vh; align-items: center; gap: 1.2vw; padding: .8vh 1.4vw; border-radius: 2.4vh; background: rgba(255,255,255,.05); border: .3vh solid rgba(255,255,255,.06); }
+  .pbaris.fokus { border-color: color-mix(in srgb, var(--w) 70%, #fff); background: linear-gradient(90deg, color-mix(in srgb, var(--w) 22%, transparent), rgba(255,255,255,.04)); transition: background .4s, border-color .4s; }
+  .pbaris.naik { z-index: 2; box-shadow: 0 0 4vh rgba(255,210,63,.6); }
+  .pbaris.juara { border-color: #ffd23f; box-shadow: 0 0 3vh rgba(255,210,63,.35); }
+  .pbaris .rk { font-family: 'Baloo 2'; font-weight: 800; font-size: 4.2vh; text-align: center; line-height: 1; }
+  .pbaris .av { position: relative; width: 7.4vh; height: 7.4vh; border-radius: 50%; display: grid; place-items: center; font-family: 'Baloo 2'; font-weight: 800; font-size: 4.2vh; color: #fff; background: var(--w); box-shadow: 0 0 0 .5vh rgba(255,255,255,.85); }
+  .pbaris .av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+  .pbaris .av .mahkota { position: absolute; top: -3.4vh; left: 50%; transform: translateX(-50%) rotate(-10deg); font-size: 4.2vh; animation: mahkotaM .6s cubic-bezier(.2,1.6,.4,1) both; }
+  @keyframes mahkotaM { from { transform: translateX(-50%) translateY(-3vh) scale(.3); opacity: 0; } }
+  .pbaris .nm { font-family: 'Baloo 2'; font-weight: 800; font-size: 4vh; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1; }
+  .pbaris .bar { position: relative; height: 3.4vh; border-radius: 99px; background: rgba(255,255,255,.08); overflow: hidden; }
+  .pbaris .bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 99px; background: linear-gradient(90deg, color-mix(in srgb, var(--w) 70%, #fff), var(--w)); box-shadow: 0 0 1.6vh color-mix(in srgb, var(--w) 70%, transparent); transition: width .9s cubic-bezier(.2,.9,.3,1); }
+  .pbaris .bar i::after { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.45) 50%, transparent 70%); background-size: 200% 100%; animation: kilauB 1.8s linear infinite; }
+  @keyframes kilauB { from { background-position: 150% 0; } to { background-position: -50% 0; } }
+  .pbaris .tb { font-family: 'Baloo 2'; font-weight: 800; font-size: 4vh; color: #04121a; background: #1de9b6; border-radius: 99px; text-align: center; padding: .2vh 0; opacity: 0; }
+  .pbaris .tb.pop { animation: popT .55s cubic-bezier(.2,1.7,.4,1) both; }
+  @keyframes popT { from { transform: scale(.2) translateY(2vh); opacity: 0; } to { transform: none; opacity: 1; } }
+  .pbaris .mt { font-family: 'Baloo 2'; font-weight: 800; font-size: 5.2vh; color: #ffd23f; text-align: right; line-height: 1; }
+  .pbaris .mt small { font-size: 2vh; color: #9fb4cc; margin-left: .4vw; }
+  .pbaris .mt.denyut { animation: denyutM .35s ease-out; }
+  @keyframes denyutM { 50% { transform: scale(1.18); color: #fff; } }
+  .pbtn { display: flex; justify-content: center; gap: 1.2vw; margin-top: 1.6vh; flex: none; }
+  .pbtn button { font-family: 'Baloo 2'; font-weight: 800; font-size: 3.2vh; border: 0; border-radius: 99px; padding: 1.4vh 3.2vw; cursor: pointer; }
+  .pbtn .lagi { background: #1de9b6; color: #04121a; box-shadow: 0 .6vh 0 #0e9c7a; } .pbtn .lagi:disabled { opacity: .5; cursor: default; }
   .pbtn .menu { background: rgba(255,255,255,.12); color: #fff; }
   #toast { position: fixed; left: 50%; top: 2vh; transform: translate(-50%, -160%); z-index: 70; background: #13334c; color: #fff; font-weight: 700; font-size: 2.2vh; padding: 1vh 2vw; border-radius: 99px; transition: transform .3s; }
   #toast.on { transform: translate(-50%, 0); }
@@ -110,6 +128,7 @@
       <p>Buka kamera telefon guru dan imbas kod ini.</p>
       <div id="qr"></div>
       <div class="kod" id="kodBesar">····</div>
+      <div style="display:flex;gap:.8vw;justify-content:center;flex-wrap:wrap"><button class="btnTamat" id="btnNamaK" style="background:#ffd23f;color:#102030;box-shadow:0 .5vh 0 #b8901a">✏️ Nama kumpulan</button><button class="btnTamat" id="btnTamat2" title="Putuskan semua telefon dan jana kod baharu">⏻ Tamatkan sesi</button></div>
       <div class="sambungOk" id="sambungOk"><i></i><span id="sambungTx">Menunggu telefon guru…</span></div>
     </div>
   </div>
@@ -120,15 +139,17 @@
 <div id="jalur" hidden>
   <span class="d" id="dot"></span><span id="jalurTx"></span>
   <button id="btnMenu" title="Menu utama">🏠 Menu</button>
+  <button id="btnTamat" title="Tamatkan sesi: putuskan semua telefon">⏻ Tamat</button>
   <button id="btnFs" title="Skrin penuh">⛶</button>
 </div>
 <div id="mula"><div><button id="btnMula">▶ MULA KELAS</button><p>Klik sekali untuk hidupkan bunyi, suara &amp; muzik</p></div></div>
 <section id="lTajuk" hidden></section>
-<section id="lPapan" hidden><div class="pkad" id="pkad"></div></section>
+<section id="lPapan" hidden><div class="sinar"></div><div class="pkad" id="pkad"></div><canvas id="pKonfeti"></canvas></section>
 <div id="toast"></div>
 <script src="/km-suara.js"></script>
 <script src="/km-kumpulan.js"></script>
 <script src="/km-tajuk.js"></script>
+<script src="/km-nama.js"></script>
 
 <script>
 (() => {
@@ -210,6 +231,11 @@ $('btnMula').onclick = () => {
   Object.keys(FR).forEach((k) => tunjukFrame(k, k === aktif));
 };
 $('btnMenu').onclick = () => pilih('utama');
+// Tamatkan sesi: semua telefon diputuskan, TV jana kod & QR baharu
+function sesiBaru() { sesi = { kod: kodBaru(), kunci: rnd(16) }; simpan(); location.reload(); }
+function tamatkan() { if (!confirm('Tamatkan sesi ini? Semua telefon akan diputuskan dan kod QR baharu dijana.')) return; if (!hantar({ jenis: 'tamatkan' })) return sesiBaru(); setTimeout(sesiBaru, 1500); }
+$('btnTamat').onclick = tamatkan; $('btnTamat2').onclick = tamatkan;
+$('btnNamaK').onclick = () => window.KMNama && KMNama.buka();
 $('btnFs').onclick = () => { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen().catch(() => {}); };
 let idleT = null;
 const bangun = () => { document.body.classList.remove('idle'); clearTimeout(idleT); idleT = setTimeout(() => document.body.classList.add('idle'), 3500); };
@@ -235,6 +261,8 @@ function sambung() {
       if (naik) toast('📱 Telefon guru bersambung');
       if (d.aktif !== aktif) paparkan(d.aktif);
       urusPapan(d.papan);
+    } else if (d.jenis === 'ditamatkan') {
+      sesiBaru();
     } else if (d.jenis === 'kelas') {
       muatKelasSemua();
     } else if (d.jenis === 'perintah') {
@@ -271,18 +299,19 @@ function urusPapan(p) {
   papanT = setTimeout(async () => { await (window.KMKumpulan ? KMKumpulan.muat() : null); if (papanKini && papanKini.id === id) tunjukPapan(p); }, Math.max(0, p.mulaPada - kini()));
 }
 function bunyiTik(f, v) { try { const a = KMSuara.audio(); if (!a || !dibuka) return; const o = a.createOscillator(), g = a.createGain(), t = a.currentTime; o.type = 'triangle'; o.frequency.value = f; g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.0001, t + .09); o.connect(g).connect(KMSuara.keluaran()); o.start(t); o.stop(t + .1); } catch (e) {} }
-// Animasi ringkas (~2 saat): +mata muncul, nombor naik, kemudian kumpulan bergerak ke kedudukan baharu.
-function animasiPapan(lama, baru, tambah, susun, pangkatDari, lencana) {
+// Animasi (~2.5 saat): +mata muncul, nombor & bar naik, kumpulan bergerak ke kedudukan baharu, mahkota & konfeti.
+function animasiPapan(lama, baru, tambah, susun, pangkatDari, lencana, maks) {
   const baris = (g) => document.querySelector(`#pSenarai .pbaris[data-g="${g}"]`);
   setTimeout(() => {
-    [0, 1, 2, 3, 4, 5].forEach((g) => { const t = tambah[g] || 0; if (!t) return; const el = baris(g); if (!el) return;
-      el.classList.add('fokus'); const tb = el.querySelector('.tb'); tb.textContent = (t > 0 ? '+' : '') + t; tb.classList.add('pop'); });
-    const mula = performance.now(), T = 800; let akhirTik = 0;
+    [0, 1, 2, 3, 4, 5].forEach((g, i) => { const t = tambah[g] || 0; const el = baris(g); if (!el) return;
+      el.querySelector('.bar i').style.width = (maks ? baru[g] / maks * 100 : 0) + '%';
+      if (!t) return; el.classList.add('fokus'); const tb = el.querySelector('.tb'); tb.textContent = (t > 0 ? '+' : '') + t; tb.style.animationDelay = (i * .06) + 's'; tb.classList.add('pop'); });
+    const mula = performance.now(), T = 900; let akhirTik = 0;
     (function kira(n) { const k = Math.min(1, (n - mula) / T), e = 1 - Math.pow(1 - k, 3);
       [0, 1, 2, 3, 4, 5].forEach((g) => { if (!tambah[g]) return; const el = baris(g); if (el) el.querySelector('.mt b').textContent = Math.round(lama[g] + (baru[g] - lama[g]) * e); });
       if (n - akhirTik > 70 && k < 1) { akhirTik = n; bunyiTik(900 + k * 500, .05); }
-      if (k < 1) requestAnimationFrame(kira); else naikTurun(); })(mula);
-  }, 350);
+      if (k < 1) requestAnimationFrame(kira); else { [0, 1, 2, 3, 4, 5].forEach((g) => { if (tambah[g]) { const m = baris(g).querySelector('.mt'); m.classList.remove('denyut'); void m.offsetWidth; m.classList.add('denyut'); } }); naikTurun(); } })(mula);
+  }, 450);
   function naikTurun() {
     const box = $('pSenarai'); if (!box) return;
     const urut = susun(baru), pk = pangkatDari(baru, urut), awal = {};
@@ -291,10 +320,23 @@ function animasiPapan(lama, baru, tambah, susun, pangkatDari, lencana) {
     let gerak = false;
     [...box.children].forEach((el) => { const d = awal[el.dataset.g] - el.getBoundingClientRect().top; if (!d) return; gerak = true;
       el.style.transition = 'none'; el.style.transform = `translateY(${d}px)`; if (d > 0) el.classList.add('naik');
-      requestAnimationFrame(() => requestAnimationFrame(() => { el.style.transition = 'transform .6s cubic-bezier(.2,.9,.3,1.1)'; el.style.transform = ''; })); });
+      requestAnimationFrame(() => requestAnimationFrame(() => { el.style.transition = 'transform .7s cubic-bezier(.2,.9,.3,1.1)'; el.style.transform = ''; })); });
     if (gerak) bunyiTik(1320, .1);
-    setTimeout(() => [...box.children].forEach((el) => el.classList.remove('naik')), 900);
+    setTimeout(() => {
+      [...box.children].forEach((el) => el.classList.remove('naik'));
+      // mahkota untuk kumpulan pertama
+      const g1 = urut[0], el1 = baris(g1); if (el1 && baru[g1] > 0) { el1.classList.add('juara'); el1.querySelector('.av').insertAdjacentHTML('beforeend', '<span class="mahkota">👑</span>'); }
+      if (Math.max(...tambah) > 0) { konfetiPapan(); [784, 988, 1175, 1568].forEach((f, i) => setTimeout(() => bunyiTik(f, .08), i * 90)); }
+    }, gerak ? 800 : 150);
   }
+}
+function konfetiPapan() {
+  const c = $('pKonfeti'); if (!c) return; const x = c.getContext('2d'); c.width = innerWidth; c.height = innerHeight;
+  const W = ['#ffd23f', '#1de9b6', '#ff5a6a', '#48a8ff', '#b38cff', '#3ddc84'];
+  const P = Array.from({ length: 140 }, () => ({ x: c.width / 2 + (Math.random() - .5) * 200, y: c.height * .35, vx: (Math.random() - .5) * 18, vy: -6 - Math.random() * 12, r: Math.random() * 6, vr: (Math.random() - .5) * .3, w: 8 + Math.random() * 12, c: W[Math.floor(Math.random() * W.length)] }));
+  const m0 = performance.now();
+  (function f(t) { x.clearRect(0, 0, c.width, c.height); P.forEach((p) => { p.x += p.vx; p.y += p.vy; p.vy += .35; p.vx *= .99; p.r += p.vr; x.save(); x.translate(p.x, p.y); x.rotate(p.r); x.fillStyle = p.c; x.fillRect(-p.w / 2, -p.w / 4, p.w, p.w / 2); x.restore(); });
+    if (t - m0 < 2600 && !$('lPapan').hidden) requestAnimationFrame(f); else x.clearRect(0, 0, c.width, c.height); })(m0);
 }
 function tunjukPapan(p) {
   const KK = window.KMKumpulan, j = (KK && KK.jumlah) || [0, 0, 0, 0, 0, 0];
@@ -306,15 +348,15 @@ function tunjukPapan(p) {
   const lencana = (pk, m) => (pk <= 3 && m > 0 ? ['🥇', '🥈', '🥉'][pk - 1] : pk);
   const maksT = Math.max(...tambah), terbaik = maksT > 0 ? tambah.map((t, g) => ({ t, g })).filter((x) => x.t === maksT).map((x) => nama(x.g)) : [];
   const WARNA = KK ? KK.WARNA : ['#ff5a6a', '#48a8ff', '#3ddc84', '#ffd23f', '#b38cff', '#ff9a3d'];
+  const maks = Math.max(1, ...j, ...lama);
   const urutLama = susun(lama), pkLama = pangkatDari(lama, urutLama);
-  $('pkad').innerHTML = `<h2>${escH(p.ik)} Keputusan · ${escH(p.label)}</h2>
-    <div class="terbaik">${terbaik.length ? `🏅 Terbaik: ${terbaik.map(escH).join(', ')} (+${maksT} mata)` : 'Papan mata terkini'}</div>
-    ${p.nota ? `<div class="nota">${escH(p.nota)}</div>` : ''}
+  $('pkad').innerHTML = `<div class="pKepala"><div class="pIk">${escH(p.ik)}</div><div><small>KEPUTUSAN AKTIVITI</small><h2>${escH(p.label)}</h2></div>
+      <div class="terbaik">${terbaik.length ? `🏅 Terbaik: ${terbaik.map(escH).join(', ')}<span>+${maksT} mata${p.nota ? ' · ' + escH(p.nota) : ''}</span>` : `Markah terkini${p.nota ? `<span>${escH(p.nota)}</span>` : ''}`}</div></div>
     <div id="pSenarai">${urutLama.map((g) => { const u = KK && KK.gambar(g);
-      return `<div class="pbaris" data-g="${g}" style="--w:${WARNA[g]}"><span class="rk">${lencana(pkLama[g], lama[g])}</span><span class="av">${u ? `<img src="${u}" alt="">` : escH((nama(g).trim()[0] || '?').toUpperCase())}</span><span class="nm">${escH(nama(g))}</span><span class="tb"></span><span class="mt"><b>${lama[g]}</b><small>mata</small></span></div>`; }).join('')}</div>
+      return `<div class="pbaris" data-g="${g}" style="--w:${WARNA[g]}"><span class="rk">${lencana(pkLama[g], lama[g])}</span><span class="av">${u ? `<img src="${u}" alt="">` : escH((nama(g).trim()[0] || '?').toUpperCase())}</span><span class="nm">${escH(nama(g))}</span><span class="bar"><i style="width:${lama[g] / maks * 100}%"></i></span><span class="tb"></span><span class="mt"><b>${lama[g]}</b><small>mata</small></span></div>`; }).join('')}</div>
     <div class="pbtn"><button class="lagi" id="pLagi" disabled>Seterusnya ▶ (5)</button><button class="menu" id="pMenu">🏠 Menu</button></div>`;
-  animasiPapan(lama, j, tambah, susun, pangkatDari, lencana);
   $('lPapan').hidden = false;
+  animasiPapan(lama, j, tambah, susun, pangkatDari, lencana, maks);
   let n = 5;
   kiraT = setInterval(() => { n--; const b = $('pLagi'); if (!b) return clearInterval(kiraT); if (n <= 0) { clearInterval(kiraT); b.disabled = false; b.textContent = 'Seterusnya ▶'; } else b.textContent = `Seterusnya ▶ (${n})`; }, 1000);
   $('pLagi').onclick = () => hantar({ jenis: 'tutupPapan' });

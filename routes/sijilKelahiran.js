@@ -204,8 +204,12 @@ function mesej(ws, d) {
         (b.selesai[b.kumpulan] = b.selesai[b.kumpulan] || []).push(rek);
         if (b.selesai[b.kumpulan].length > 30) b.selesai[b.kumpulan].shift();
         rekodSijil(b, b.kumpulan);
-        const t = new Array(6).fill(0); t[b.kumpulan - 1] = rek.betul;
-        klinik.papan(k.kod, { label: 'Semak & Cop Sijil', ik: '📜', tambah: t, nota: rek.murid ? 'Sijil ' + rek.murid : '', tunda: 4500 });
+        // papan markah hanya selepas KESEMUA 6 kumpulan selesai (tidak selepas setiap kumpulan)
+        const siapSemua = [1, 2, 3, 4, 5, 6].every((n) => b.selesai[n] && b.selesai[n].length);
+        if (siapSemua) {
+          const t = [1, 2, 3, 4, 5, 6].map((n) => b.selesai[n].reduce((x, r) => x + (r.betul || 0), 0));
+          klinik.papan(k.kod, { label: 'Semak & Cop Sijil', ik: '📜', tambah: t, nota: '1 mata untuk setiap ayat BETUL', tunda: 4500 });
+        }
       }
       siar(b); break;
     case 'sebelum':

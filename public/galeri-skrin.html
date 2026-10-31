@@ -139,6 +139,13 @@
   .soalanBesar .gbS { width: min(52vh, 60vw); aspect-ratio: 1; border-radius: 5vh; overflow: hidden; background: #fff; display: grid; place-items: center; font-size: 26vh; border: 1vh solid var(--emas); box-shadow: var(--bayang); animation: pop .7s cubic-bezier(.2,1.5,.4,1) both; }
   .soalanBesar .gbS img { width: 100%; height: 100%; object-fit: contain; background: #fff; }
   .soalanBesar .kmS { font-family: 'Baloo 2'; font-weight: 800; font-size: 11vh; line-height: 1; color: #fff; background: var(--teal); border-radius: 99px; padding: .6vh 5vw 1.4vh; box-shadow: var(--bayang); animation: pop .6s .35s cubic-bezier(.2,1.5,.4,1) both; }
+  .persS { display: flex; align-items: center; justify-content: center; gap: 2.2vw; }
+  .persS .tile .pic { width: 30vh; height: 30vh; background: #fff; }
+  .persS .tile .pic img { object-fit: contain; }
+  .persS .tile .nm { font-size: 6vh; }
+  .persS .tile.km .pic { width: 44vh; height: 44vh; border-width: 1vh; }
+  .persS .tile.km .nm { font-size: 8.5vh; padding: .2vh 3vw .8vh; }
+  .persS .op { font-size: 11vh; }
   .soalanBesar .mkS { font-weight: 700; font-size: 3.4vh; color: var(--kelabu); text-align: center; max-width: 80vw; animation: pop .5s .6s both; }
   /* cop semakan */
   .copS { position: absolute; left: 50%; top: 50%; z-index: 3; pointer-events: none; font-family: 'Baloo 2'; font-weight: 800; font-size: 4.6vh; letter-spacing: .3vh; padding: .6vh 1.6vw; border-radius: 1.6vh;
@@ -299,7 +306,9 @@ function render() {
     tutupFokus(); hentiDedah(); tunjuk('vSoalan');
     if (kunciV !== k) { kunciV = k;
       $('qNo').textContent = `Soalan ${S.idx + 1}`; $('qTitik').innerHTML = titik(S.bilSoalan, S.idx);
-      $('qIsi').innerHTML = `<div class="gbS">${pic(s.uk, s.ek)}</div><div class="kmS">${esc(s.km)}</div>${s.maksud ? `<div class="mkS">${esc(s.maksud)}</div>` : ''}`;
+      $('qIsi').innerHTML = `<div class="persS"><div class="tile"><div class="pic">${pic(s.u1, s.e1)}</div><div class="nm">${esc(s.k1)}</div></div><div class="op" style="animation-delay:.35s">+</div>
+        <div class="tile" style="animation-delay:.5s"><div class="pic">${pic(s.u2, s.e2)}</div><div class="nm">${esc(s.k2)}</div></div><div class="op" style="animation-delay:.85s">=</div>
+        <div class="tile km" style="animation-delay:1s"><div class="pic">${pic(s.uk, s.ek)}</div><div class="nm">${esc(s.km)}</div></div></div>${s.maksud ? `<div class="mkS">${esc(s.maksud)}</div>` : ''}`;
       SFX.dedah(); }
     return;
   }

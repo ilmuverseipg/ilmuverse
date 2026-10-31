@@ -67,12 +67,16 @@
   .kodK input { width: 100%; font-family: 'Baloo 2'; font-weight: 800; font-size: 44px; letter-spacing: .3em; text-align: center; border: 3px solid var(--garis); background: var(--malam); color: #fff; border-radius: 16px; padding: 8px; margin: 12px 0; }
   .btnUtama:disabled { opacity: .5; }
   .btnUtama { width: 100%; border: 0; border-radius: 999px; padding: 16px; font-family: 'Baloo 2'; font-weight: 800; font-size: 20px; color: #fff; background: var(--hijau); box-shadow: 0 6px 0 #15803d; }
+  .btnTamatT { margin-left: auto; flex: none; border: 0; border-radius: 999px; background: #e8434f; color: #fff; font: inherit; font-weight: 700; font-size: 13px; padding: 7px 12px; }
+  #tamatL { position: fixed; inset: 0; z-index: 90; background: #0b1a2b; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 30px; text-align: center; }
+  #tamatL h2 { margin: 0; font-size: 26px; } #tamatL p { margin: 0; color: #9fb4cc; line-height: 1.45; }
 </style>
 </head>
 <body>
 <header>
   <div class="salib" aria-hidden="true"><i></i></div>
   <div class="t"><b id="tajuk">Klinik Kata Majmuk</b><small><span class="dot wait" id="dot"></span><span id="statTx">Menyambung…</span></small></div>
+  <button class="btnTamatT" id="btnTamatT" title="Tamatkan sesi">⏻ Tamat</button>
 </header>
 <div class="isi" id="isi">
   <div class="panel on" id="pMenu"></div>
@@ -82,6 +86,7 @@
 <nav id="nav"></nav>
 <div id="toast"></div>
 <script src="/km-kumpulan.js"></script>
+<script src="/km-nama.js" data-auto="header"></script>
 <script>
 (() => {
 'use strict';
@@ -167,12 +172,21 @@ function sambung() {
   ws.onclose = (ev) => {
     wsOk = false; clearInterval(pingT); kemasStatus();
     if (ev.code === 4003) { location.href = '/km-masuk?next=' + encodeURIComponent(location.pathname + location.search); return; }
+    if (ev.code === 4005) return sesiTamat();
     if (ev.code === 4004) { bilTV = 0; statusUI(`Skrin TV ${kod} tiada. Buka Klinik di PC.`, 'bad'); tunda = 3000; }
     ulang();
   };
   ws.onerror = () => {};
 }
-function ulang() { setTimeout(sambung, tunda); tunda = Math.min(tunda * 1.6, 6000); }
+function sesiTamat() { // sesi ditamatkan (dari PC atau telefon ini)
+  tamat = true; try { ws && ws.close(); } catch (e) {} document.querySelectorAll('iframe').forEach((f) => f.remove());
+  const d = document.createElement('div'); d.id = 'tamatL';
+  d.innerHTML = '<div style="font-size:52px">⏻</div><h2>Sesi ditamatkan</h2><p>Semua sambungan telah diputuskan.<br>Imbas kod QR baharu pada skrin TV untuk sambung semula.</p><button class="btnUtama" id="btnKodBaru" style="max-width:320px">🔢 Masukkan kod baharu</button>';
+  document.body.appendChild(d); $('btnKodBaru').onclick = () => { location.href = location.pathname; };
+}
+let tamat = false;
+$('btnTamatT').onclick = () => { if (!confirm('Tamatkan sesi? Skrin TV akan jana kod baharu dan semua telefon diputuskan.')) return; if (!hantar({ jenis: 'tamatkan' })) return sesiTamat(); setTimeout(() => { if (!tamat) sesiTamat(); }, 1500); };
+function ulang() { if (tamat) return; setTimeout(sambung, tunda); tunda = Math.min(tunda * 1.6, 6000); }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && kod && (!ws || ws.readyState > 1)) { tunda = 200; sambung(); } });
 
 // ---------- PAPAN MATA selepas aktiviti (Seterusnya selepas 5 saat) ----------

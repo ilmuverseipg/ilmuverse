@@ -61,6 +61,10 @@ function mesej(ws, d) {
   else if (d.jenis === 'perintah' && typeof d.sasaran === 'string' && typeof d.arahan === 'string') { // butang telefon -> sistem di TV (cth. Farmasi Genggam Kata Majmuk)
     hantar(b.paparan, { jenis: 'perintah', sasaran: d.sasaran.slice(0, 20), arahan: d.arahan.slice(0, 20) });
   }
+  else if (d.jenis === 'tamatkan') { // butang Tamatkan sesi (PC atau telefon): putuskan semua telefon, TV jana kod baharu
+    hantar(b.paparan, { jenis: 'ditamatkan' });
+    b.telefon.forEach((w) => { try { w.close(4005, 'sesi ditamatkan'); } catch (e) {} });
+  }
   else if (d.jenis === 'podium') { b.aktif = 'mata'; b.papan = null; siar(b); hantar(b.paparan, { jenis: 'podium', t: Date.now() }); }
 }
 

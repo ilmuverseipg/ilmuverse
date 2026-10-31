@@ -153,7 +153,11 @@ function mesej(ws, d) {
         b.fasa = 'tamat'; b.selesai[b.kumpulan] = { betul: b.keputusan.filter(Boolean).length, jumlah: 4, t: Date.now() };
         const m = new Array(6).fill(0); m[b.kumpulan - 1] = b.selesai[b.kumpulan].betul;
         kelas.rekod(`kapsul:${b.kumpulan}`, 'Semak Pantas Kapsul', m); // semakan semula menggantikan, tidak berganda
-        klinik.papan(k.kod, { label: 'Semak Pantas Kapsul', ik: '💊', tambah: m, tunda: 4500 });
+        // papan markah hanya selepas KESEMUA 6 kumpulan selesai (tidak selepas setiap kumpulan)
+        if (Object.keys(b.selesai).length >= 6) {
+          const semua = new Array(6).fill(0).map((_, g) => (b.selesai[g + 1] ? b.selesai[g + 1].betul : 0));
+          klinik.papan(k.kod, { label: 'Semak Pantas Kapsul', ik: '💊', tambah: semua, nota: '1 mata untuk setiap kapsul BETUL', tunda: 4500 });
+        }
       }
       siar(b); break;
     case 'sebelum':

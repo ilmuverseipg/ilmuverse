@@ -48,7 +48,7 @@ async function bacaSet() {
   const soalan = d && d.soalan && d.soalan.length ? d.soalan : ASAL.soalan;
   return { kumpulan, soalan: soalan.map((s) => ({ ...s })) };
 }
-const papar = (set) => ({ ...set, soalan: set.soalan.map((s) => ({ ...s, u1: urlGambar(s.k1), u2: urlGambar(s.k2), uk: urlGaleri(s.km) })) });
+const papar = (set) => ({ ...set, soalan: set.soalan.map((s) => ({ ...s, u1: urlGaleri(s.k1), u2: urlGaleri(s.k2), uk: urlGaleri(s.km) })) });
 
 // ------------------------------------------------------------
 // BILIK (memori sahaja)
