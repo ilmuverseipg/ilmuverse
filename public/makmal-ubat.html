@@ -97,8 +97,8 @@
   .keping .tx { font-family: 'Baloo 2'; font-weight: 800; font-size: 6.6vh; line-height: 1; color: var(--dakwat); }
   .keping .gb { width: 15vh; height: 15vh; border-radius: 2vh; overflow: hidden; display: grid; place-items: center; font-size: 10vh; background: var(--mint); }
   .keping .gb img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-  .keping.gambar .lb { font-weight: 700; font-size: 2.2vh; color: var(--kelabu); opacity: 0; transition: opacity .3s; }
-  .keping.betul.gambar .lb { opacity: 1; }
+  .keping.gambar .lb { font-family: 'Baloo 2'; font-weight: 800; font-size: 3.6vh; line-height: 1; color: var(--dakwat); }
+  .keping .gb img { object-fit: contain; background: #fff; }
   .keping.seret { transition: transform .15s, box-shadow .15s; transform: scale(1.1) rotate(-3deg); box-shadow: 0 3vh 5vh rgba(19,51,76,.3); z-index: 8; cursor: grabbing; }
   .keping.dekat { border-color: var(--emas); }
   .keping.dlmSlot { border-color: var(--teal2); }
@@ -300,13 +300,11 @@ function mainSoalan() {
   clearTimeout(seterusT);
   q = SOALAN[idx]; tunjuk('main'); terkunci = false; slotIsi = [null, null];
   $('noTx').textContent = `Soalan ${idx + 1} / ${SOALAN.length}`;
-  const gambar = q.jenis === 'gambar';
-  $('jenisTx').textContent = gambar ? '🖼️ Seret GAMBAR' : '🔤 Seret PERKATAAN';
+  const gambar = true; // Tahap 1: semua soalan bergambar + perkataan
+  $('jenisTx').textContent = '🖼️ Cari 2 gambar';
   const mk = q.maksud ? `<div class="mkKecil">${esc(q.maksud)}</div>` : '';
-  $('pres').className = 'preskripsi' + (gambar ? '' : ' gbBesar');
-  $('pres').innerHTML = gambar
-    ? `<span class="rx">℞</span><div><div class="lbl">PRESKRIPSI DOKTOR · cari gambar untuk ubat ini</div><div class="kata">${esc(q.km)}</div>${mk}</div>`
-    : `<span class="rx">℞</span><div class="gb">${gb(q.u.km, q.km)}</div><div><div class="lbl">PRESKRIPSI DOKTOR · lihat gambar, cari perkataan</div><div class="mk">Apakah nama benda ini?</div>${mk}</div>`;
+  $('pres').className = 'preskripsi gbBesar';
+  $('pres').innerHTML = `<span class="rx">℞</span><div class="gb">${gb(q.u.km, q.km)}</div><div><div class="lbl">PRESKRIPSI DOKTOR · cari 2 gambar yang membentuk</div><div class="kata">${esc(q.km)}</div>${mk}</div>`;
   $('hasil').innerHTML = '<div class="kapsulKosong">?</div>';
   $('mesin').className = 'mesin'; $('seterus').hidden = true;
   ['slot0', 'slot1'].forEach((s) => $(s).classList.remove('sedia'));

@@ -28,8 +28,8 @@ const MakmalGambar = mongoose.models.MakmalGambar || mongoose.model('MakmalGamba
 
 const BIL = 4;
 const ASAL = [
-  { jenis: 'perkataan', k1: 'mesin', k2: 'timbang', km: 'mesin timbang', p1: 'kipas', p2: 'ubat', maksud: 'alat untuk mengukur berat badan' },
-  { jenis: 'perkataan', k1: 'ubat', k2: 'batuk', km: 'ubat batuk', p1: 'demam', p2: 'botol', maksud: 'ubat untuk merawat batuk' },
+  { jenis: 'gambar', k1: 'kerusi', k2: 'roda', km: 'kerusi roda', p1: 'meja', p2: 'lampu', maksud: 'kerusi beroda untuk pesakit yang tidak dapat berjalan' },
+  { jenis: 'gambar', k1: 'ubat', k2: 'batuk', km: 'ubat batuk', p1: 'demam', p2: 'botol', maksud: 'ubat untuk merawat batuk' },
   { jenis: 'gambar', k1: 'sabun', k2: 'tangan', km: 'sabun tangan', p1: 'tisu', p2: 'mandi', maksud: 'sabun untuk mencuci tangan' },
   { jenis: 'gambar', k1: 'air', k2: 'mata', km: 'air mata', p1: 'susu', p2: 'gigi', maksud: 'air yang keluar dari mata' },
 ];
@@ -44,7 +44,9 @@ const gambar = new Map();
 async function bacaSet() {
   let d = null;
   if (dbSedia()) { try { d = await MakmalSet.findOne({ kunci: 'utama' }).lean(); } catch (e) {} }
-  const s = (d && d.soalan && d.soalan.length === BIL) ? d.soalan : (memori || ASAL);
+  let s = (d && d.soalan && d.soalan.length === BIL) ? d.soalan : (memori || ASAL);
+  // set lama: soalan 1 'mesin timbang' -> 'kerusi roda' (Tahap 1)
+  s = s.map((x, i) => (i === 0 && x.km === 'mesin timbang' && !(x.gv && Object.keys(x.gv).length) ? { ...ASAL[0] } : x));
   return s.map((x) => ({ ...x, gv: x.gv || {} }));
 }
 function papar(soalan) {
