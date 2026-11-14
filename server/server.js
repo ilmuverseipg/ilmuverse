@@ -58,6 +58,10 @@ require('../routes/mahkamahMasa')(app);
 // /kapsul-demo/<token> (TV) & /kapsul-demo/<token>/telefon, TANPA kata
 // laluan. Ubah jawapan tetap dikunci. Lihat routes/kapsulDemo.js.
 require('../routes/kapsulDemo').pasang(app);
+// [TEMPAHAN DRIVER] Pre-book 2 driver (perempuan/lelaki) + 2 bot Telegram.
+// Halaman awam /tempah, /tempah/perempuan, /tempah/lelaki - TANPA kata
+// laluan (untuk pelanggan). Lihat routes/prebook/index.js.
+require('../routes/prebook').pasang(app);
 // [PINTU KATA LALUAN] Mesti SEBELUM static() supaya halaman .html dikunci.
 // API & WebSocket tidak dikunci - lihat middleware/siteAuth.js.
 require('../middleware/siteAuth')(app);

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tempahan Driver</title>
+  <link rel="stylesheet" href="/tempah/aset/style.css" />
+</head>
+<body>
+  <header class="kepala">
+    <div class="lencana" id="lencana">…</div>
+    <h1 id="namaDriver">Memuatkan…</h1>
+    <p class="kecil">Tempah awal sekurang-kurangnya <b id="awalJam">3</b> jam sebelum perjalanan</p>
+    <nav class="tab">
+      <button class="aktif" data-tab="tempah">🚗 Tempah</button>
+      <button data-tab="semak">🔎 Semak Tempahan</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ================= TAB TEMPAH ================= -->
+    <section id="tab-tempah">
+      <div class="kad" id="langkah1">
+        <h2><span class="no">1</span> Pilih tarikh</h2>
+        <div class="tarikh-senarai" id="senaraiTarikh"></div>
+      </div>
+
+      <div class="kad tersembunyi" id="langkah2">
+        <h2><span class="no">2</span> Pilih masa <small id="tarikhDipilih"></small></h2>
+        <div class="slot-grid" id="senaraiSlot"></div>
+        <p class="petunjuk"><span class="titik ada"></span>Kosong <span class="titik penuh"></span>Sudah ditempah</p>
+      </div>
+
+      <form class="kad tersembunyi" id="langkah3" autocomplete="on" novalidate>
+        <h2><span class="no">3</span> Butiran perjalanan</h2>
+        <div class="ringkas" id="ringkasPilihan"></div>
+
+        <label>Nama penuh
+          <input name="nama" required maxlength="60" autocomplete="name" />
+        </label>
+        <label>No. telefon (WhatsApp)
+          <input name="telefon" required inputmode="tel" placeholder="0123456789" autocomplete="tel" />
+        </label>
+        <label>📍 Lokasi ambil
+          <input name="ambil" required maxlength="200" placeholder="Contoh: Pintu utama IPG / Blok C" />
+        </label>
+        <label>🏁 Destinasi
+          <input name="destinasi" required maxlength="200" placeholder="Contoh: Stesen bas Amanjaya" />
+        </label>
+
+        <div class="dua">
+          <label>Bilangan penumpang
+            <select name="penumpang">
+              <option>1</option><option>2</option><option>3</option><option>4</option>
+            </select>
+          </label>
+          <label>Jenis perjalanan
+            <select name="jenis" id="jenis">
+              <option value="sehala">Sehala</option>
+              <option value="pergi-balik">Pergi-balik</option>
+            </select>
+          </label>
+        </div>
+        <label class="tersembunyi" id="kotakBalik">Masa balik (anggaran)
+          <input name="masaBalik" maxlength="40" placeholder="Contoh: 5:00 PM" />
+        </label>
+        <label>Catatan (pilihan)
+          <textarea name="catatan" maxlength="300" rows="2" placeholder="Contoh: bawa 2 beg besar"></textarea>
+        </label>
+
+        <input name="laman" class="perangkap" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+        <label class="akuan">
+          <input type="checkbox" name="akuan" />
+          <span>Saya mengesahkan semua penumpang adalah <b id="akuanJantina">…</b></span>
+        </label>
+
+        <p class="ralat" id="ralatBorang"></p>
+        <button type="submit" class="utama" id="btnHantar">Hantar Tempahan</button>
+      </form>
+
+      <div class="kad tersembunyi berjaya" id="berjaya">
+        <div class="ikon-besar">✅</div>
+        <h2>Tempahan dihantar!</h2>
+        <p>Kod tempahan anda:</p>
+        <div class="kod" id="kodBerjaya">—</div>
+        <p id="infoBerjaya"></p>
+        <p class="kecil">Status: <b>⏳ Menunggu pengesahan driver</b>. Simpan kod ini untuk semak status atau batal.</p>
+        <a class="utama wa tersembunyi" id="btnWA" target="_blank" rel="noopener">💬 WhatsApp Driver</a>
+        <button class="kedua" id="btnSemakKod">🔎 Semak status</button>
+        <button class="kedua" id="btnBaru">➕ Buat tempahan lain</button>
+      </div>
+    </section>
+
+    <!-- ================= TAB SEMAK ================= -->
+    <section id="tab-semak" class="tersembunyi">
+      <form class="kad" id="borangSemak">
+        <h2>Semak status tempahan</h2>
+        <label>Kod tempahan
+          <input name="kod" required placeholder="Contoh: PAB12C" style="text-transform:uppercase" />
+        </label>
+        <button class="utama" type="submit">Semak</button>
+        <p class="ralat" id="ralatSemak"></p>
+      </form>
+
+      <div class="kad tersembunyi" id="hasilSemak"></div>
+    </section>
+  </main>
+
+  <footer>Sistem Tempahan Awal • Dikuasakan oleh bot Telegram</footer>
+  <script src="/tempah/aset/app.js"></script>
+</body>
+</html>
