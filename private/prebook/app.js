@@ -14,6 +14,33 @@ async function api(url, opt) {
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 // ---------- Mula ----------
+// 0123456789 -> 012-345 6789 | 01123456789 -> 011-2345 6789
+const formatTel = (t) => (t.length === 11 ? `${t.slice(0, 3)}-${t.slice(3, 7)} ${t.slice(7)}` : `${t.slice(0, 3)}-${t.slice(3, 6)} ${t.slice(6)}`);
+
+function paparKadDriver() {
+  let ada = false;
+  if (info.gambar) {
+    $('gambarKereta').src = info.gambar;
+    $('gambarKereta').classList.remove('tersembunyi');
+    ada = true;
+  }
+  const kereta = [info.kereta, info.warna].filter(Boolean).join(' • ');
+  if (kereta || info.plat) {
+    $('infoKereta').innerHTML = `🚘 <b>${esc(kereta || 'Kereta')}</b>${info.plat ? ` <span class="plat">${esc(info.plat)}</span>` : ''}`;
+    $('infoKereta').classList.remove('tersembunyi');
+    ada = true;
+  }
+  if (info.telefon) {
+    $('telBesar').textContent = formatTel(info.telefon);
+    $('telBesar').href = `tel:${info.telefon}`;
+    $('btnTel').href = `tel:${info.telefon}`;
+    $('btnWaAtas').href = `https://wa.me/${info.wa}?text=${encodeURIComponent(`Assalamualaikum ${info.nama}, saya ingin bertanya tentang tempahan.`)}`;
+    $('blokTelefon').classList.remove('tersembunyi');
+    ada = true;
+  }
+  $('kadDriver').classList.toggle('tersembunyi', !ada);
+}
+
 async function mula() {
   document.body.dataset.tema = DRIVER;
   try {
@@ -27,7 +54,13 @@ async function mula() {
   $('lencana').textContent = (DRIVER === 'perempuan' ? '👩 ' : '👨 ') + info.label;
   $('awalJam').textContent = info.tempahAwalJam;
   $('akuanJantina').textContent = info.penumpang;
-  muatTarikh();
+  paparKadDriver();
+  if (!info.aktif) {
+    $('notisTutup').classList.remove('tersembunyi');
+    $('langkah1').classList.add('tersembunyi');
+  } else {
+    muatTarikh();
+  }
 
   const kod = new URLSearchParams(location.search).get('kod');
   if (kod) { tukarTab('semak'); semak(kod); }

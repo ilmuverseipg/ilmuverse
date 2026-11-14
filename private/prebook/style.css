@@ -208,3 +208,47 @@ footer { text-align: center; color: var(--kelabu); font-size: 0.8rem; padding: 2
 
 .kepala .kecil { color: #fff; }
 .berjaya h2 { justify-content: center; }
+
+/* Kad driver (gambar kereta + telefon besar) */
+.kad-driver { padding: 0; overflow: hidden; }
+.gambar-kereta { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: var(--lembut); }
+.info-kereta { padding: 14px 18px 0; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.plat { background: #111; color: #fff; font-family: ui-monospace, monospace; font-weight: 700; letter-spacing: 2px; padding: 3px 10px; border-radius: 6px; font-size: 0.95rem; }
+#blokTelefon { padding: 14px 18px 18px; }
+.telefon-besar { display: block; text-align: center; font-size: 2.1rem; font-weight: 800; letter-spacing: 1px; color: var(--utama-gelap); text-decoration: none; margin: 2px 0 10px; }
+.dua-butang { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.dua-butang .utama { margin-top: 0; }
+.notis { background: #fff4e5; border: 1.5px solid #ffb74d; color: #7a4a00; }
+
+/* Panel driver */
+.suis { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.suis input { display: none; }
+.suis .trek { width: 58px; height: 32px; border-radius: 99px; background: #ccc; position: relative; transition: 0.2s; flex: 0 0 auto; cursor: pointer; }
+.suis .trek::after { content: ''; position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%; background: #fff; transition: 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+.suis input:checked + .trek { background: var(--hijau); }
+.suis input:checked + .trek::after { left: 29px; }
+.status-buka { font-weight: 800; font-size: 1.1rem; }
+.hari-baris { border-bottom: 1px solid var(--garis); padding: 10px 0; }
+.hari-baris:last-child { border-bottom: 0; }
+.hari-kepala { display: flex; justify-content: space-between; align-items: center; font-weight: 700; }
+.sesi { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+.sesi input { margin: 0; padding: 8px; }
+.btn-kecil { border: 1.5px solid var(--garis); background: #fff; border-radius: 8px; padding: 6px 10px; font: inherit; font-size: 0.85rem; cursor: pointer; color: var(--teks); }
+.btn-kecil.utama-k { background: var(--utama); color: #fff; border-color: var(--utama); }
+.btn-kecil.bahaya-k { color: var(--merah); border-color: #f3b4b4; }
+.cip { display: inline-flex; align-items: center; gap: 6px; background: var(--lembut); border-radius: 99px; padding: 6px 6px 6px 12px; margin: 4px 4px 0 0; font-size: 0.9rem; }
+.cip button { border: 0; background: #fff; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; }
+.tempahan-kad { border: 1.5px solid var(--garis); border-radius: 12px; padding: 12px; margin-bottom: 10px; }
+.tempahan-kad .atas { display: flex; justify-content: space-between; gap: 8px; font-weight: 700; }
+.tempahan-kad .bawah { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin-top: 10px; }
+.tempahan-kad .bawah a, .tempahan-kad .bawah button { text-align: center; text-decoration: none; padding: 10px 6px; border-radius: 10px; font: inherit; font-weight: 700; font-size: 0.9rem; border: 0; cursor: pointer; }
+.b-sah { background: var(--hijau); color: #fff; }
+.b-tolak { background: #fdecea; color: var(--merah); }
+.b-wa { background: #25d366; color: #fff; }
+.b-tel { background: var(--lembut); color: var(--utama-gelap); }
+.lencana-status { font-size: 0.8rem; font-weight: 700; padding: 3px 8px; border-radius: 99px; background: var(--lembut); white-space: nowrap; }
+.kumpulan-tarikh { font-weight: 800; color: var(--utama-gelap); margin: 14px 0 8px; }
+.pratonton-gambar { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 12px; background: var(--lembut); display: grid; place-items: center; color: var(--kelabu); margin-bottom: 8px; }
+.toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: #222; color: #fff; padding: 10px 16px; border-radius: 10px; font-size: 0.9rem; z-index: 99; opacity: 0; transition: .25s; pointer-events: none; max-width: 90%; }
+.toast.papar { opacity: 1; }
+.tab button { white-space: nowrap; padding: 12px 6px; }

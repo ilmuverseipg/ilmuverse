@@ -5,6 +5,8 @@
 //   /tempah            -> pilih driver
 //   /tempah/perempuan  -> driver perempuan  -> Bot Telegram 1
 //   /tempah/lelaki     -> driver lelaki     -> Bot Telegram 2
+// Halaman driver:
+//   /tempah/panel      -> Panel Driver (masuk guna pautan rahsia dari bot: /panel)
 //
 // Fail HTML disimpan dalam private/prebook/ (bukan public/), dan modul ini
 // didaftarkan SEBELUM pintu kata laluan. Pemegang pautan ini tidak boleh
@@ -13,6 +15,7 @@
 // Env var di Render:
 //   PREBOOK_P_TOKEN, PREBOOK_P_NAMA, PREBOOK_P_WA   (driver perempuan)
 //   PREBOOK_L_TOKEN, PREBOOK_L_NAMA, PREBOOK_L_WA   (driver lelaki)
+// NAMA/WA dalam env hanya nilai asal - driver boleh ubah sendiri di Panel.
 // Chat ID driver didaftarkan automatik bila driver tekan /start pada bot.
 // ============================================================
 const express = require('express');
@@ -32,26 +35,32 @@ const C = {
   BATAL_MIN_JAM: num(process.env.PREBOOK_BATAL_MIN_JAM, 2),
   INGATAN_MINIT: num(process.env.PREBOOK_INGATAN_MINIT, 60),
 };
+const BASE_URL = (process.env.PREBOOK_URL || process.env.RENDER_EXTERNAL_URL || '').replace(/\/$/, '');
+const URL_AWAM = (process.env.PREBOOK_URL || 'https://ilmuverse.my').replace(/\/$/, '');
+
+const normalTelefon = (s) => String(s || '').replace(/[\s-]/g, '').replace(/^\+?60/, '0');
+const sahTelefon = (s) => /^01\d{8,9}$/.test(s);
+const keWa = (tel) => (tel ? '6' + tel : '');
 
 const DRIVERS = {
   perempuan: {
     id: 'perempuan',
-    nama: process.env.PREBOOK_P_NAMA || 'Driver Perempuan',
+    namaAsal: process.env.PREBOOK_P_NAMA || 'Driver Perempuan',
     label: 'Khas Penumpang Perempuan',
     penumpang: 'perempuan',
     token: process.env.PREBOOK_P_TOKEN || '',
     chatEnv: process.env.PREBOOK_P_CHAT_ID || '',
-    wa: (process.env.PREBOOK_P_WA || '').replace(/\D/g, ''),
+    telAsal: normalTelefon((process.env.PREBOOK_P_WA || '').replace(/\D/g, '')),
     prefix: 'P',
   },
   lelaki: {
     id: 'lelaki',
-    nama: process.env.PREBOOK_L_NAMA || 'Driver Lelaki',
+    namaAsal: process.env.PREBOOK_L_NAMA || 'Driver Lelaki',
     label: 'Khas Penumpang Lelaki',
     penumpang: 'lelaki',
     token: process.env.PREBOOK_L_TOKEN || '',
     chatEnv: process.env.PREBOOK_L_CHAT_ID || '',
-    wa: (process.env.PREBOOK_L_WA || '').replace(/\D/g, ''),
+    telAsal: normalTelefon((process.env.PREBOOK_L_WA || '').replace(/\D/g, '')),
     prefix: 'L',
   },
 };
@@ -76,10 +85,17 @@ const STATUS = {
   batal_driver: '🚫 Dibatalkan oleh driver',
   batal_auto: '⌛ Batal automatik (tiada jawapan)',
 };
+const PERALIHAN = {
+  sah: ['menunggu', 'disahkan', 'Tempahan disahkan ✅'],
+  tolak: ['menunggu', 'ditolak', 'Tempahan ditolak'],
+  siap: ['disahkan', 'selesai', 'Perjalanan selesai 🏁'],
+  batal: ['disahkan', 'batal_driver', 'Tempahan dibatalkan'],
+};
 
 // ---------------- Simpanan (memori + MongoDB) ----------------
 const S = { tempahan: [], tetapan: {} };
 let sedia = null;
+const kunciBaru = () => crypto.randomBytes(16).toString('hex');
 
 function muat() {
   sedia = (async () => {
@@ -87,9 +103,19 @@ function muat() {
     S.tempahan = await Tempahan.find({ tarikh: { $gte: dariTarikh } }).lean();
     for (const id of Object.keys(DRIVERS)) {
       let t = await Tetapan.findOne({ driver: id }).lean();
-      if (!t) t = (await Tetapan.create({ driver: id, jadual: JADUAL_ASAL, tutup: [] })).toObject();
-      if (!t.jadual || !Object.keys(t.jadual).length) t.jadual = JSON.parse(JSON.stringify(JADUAL_ASAL));
-      S.tetapan[id] = { jadual: t.jadual, tutup: t.tutup || [], chatId: t.chatId || '' };
+      if (!t) t = (await Tetapan.create({ driver: id, jadual: JADUAL_ASAL, tutup: [], panelKey: kunciBaru() })).toObject();
+      const tt = {
+        jadual: t.jadual && Object.keys(t.jadual).length ? t.jadual : JSON.parse(JSON.stringify(JADUAL_ASAL)),
+        tutup: t.tutup || [],
+        chatId: t.chatId || '',
+        aktif: t.aktif !== false,
+        panelKey: t.panelKey || kunciBaru(),
+        profil: { nama: '', telefon: '', kereta: '', warna: '', plat: '', ...(t.profil || {}) },
+        gambar: { data: '', jenis: '', versi: 0, ...(t.gambar || {}) },
+      };
+      S.tetapan[id] = tt;
+      if (!t.panelKey) await simpanTetapan(id);
+      if (BASE_URL) console.log(`[PREBOOK ${id}] Panel Driver: ${URL_AWAM}/tempah/panel#k=${tt.panelKey}`);
     }
     console.log(`[PREBOOK] Dimuatkan ${S.tempahan.length} tempahan`);
   })().catch((e) => {
@@ -110,18 +136,34 @@ function simpanT(t) {
     console.error('[PREBOOK] simpan tempahan:', e.message)
   );
 }
-function simpanTetapan(id) {
+function simpanTetapan(id, denganGambar = false) {
   const t = S.tetapan[id];
-  return Tetapan.updateOne({ driver: id }, { $set: { jadual: t.jadual, tutup: t.tutup, chatId: t.chatId } }, { upsert: true }).catch((e) =>
-    console.error('[PREBOOK] simpan tetapan:', e.message)
-  );
+  const set = { jadual: t.jadual, tutup: t.tutup, chatId: t.chatId, aktif: t.aktif, panelKey: t.panelKey, profil: t.profil };
+  if (denganGambar) set.gambar = t.gambar;
+  return Tetapan.updateOne({ driver: id }, { $set: set }, { upsert: true }).catch((e) => console.error('[PREBOOK] simpan tetapan:', e.message));
 }
 const chatId = (id) => DRIVERS[id].chatEnv || S.tetapan[id]?.chatId || '';
+
+function profil(id) {
+  const d = DRIVERS[id];
+  const p = S.tetapan[id]?.profil || {};
+  const g = S.tetapan[id]?.gambar || {};
+  const telefon = p.telefon || d.telAsal || '';
+  return {
+    nama: p.nama || d.namaAsal,
+    telefon,
+    wa: keWa(telefon),
+    kereta: p.kereta || '',
+    warna: p.warna || '',
+    plat: p.plat || '',
+    gambar: g.data ? `/api/prebook/gambar/${id}?v=${g.versi}` : '',
+  };
+}
 
 // ---------------- Slot ----------------
 function senaraiSlot(id, tarikh) {
   const tt = S.tetapan[id];
-  if (tt.tutup.includes(tarikh)) return { tutup: true, slot: [] };
+  if (!tt.aktif || tt.tutup.includes(tarikh)) return { tutup: true, slot: [] };
   const julat = tt.jadual[M.namaHari(tarikh)] || [];
   const minEpoch = Date.now() + C.TEMPAH_AWAL_JAM * 3600e3;
   const diambil = new Set(
@@ -156,12 +198,29 @@ function slotMasihAda(id, tarikh, masa) {
   return !!(s && s.ada);
 }
 
+function sahkanJadual(jadual) {
+  const out = {};
+  for (const h of M.HARI) {
+    const senarai = Array.isArray(jadual?.[h]) ? jadual[h] : [];
+    const julat = [];
+    for (const j of senarai) {
+      const mula = String(j?.mula || ''), tamat = String(j?.tamat || '');
+      if (!M.sahMasa(mula) || !M.sahMasa(tamat) || M.keMinit(tamat) <= M.keMinit(mula)) throw new Error(`Masa tidak sah pada hari ${h}`);
+      julat.push({ mula, tamat });
+    }
+    julat.sort((a, b) => a.mula.localeCompare(b.mula));
+    for (let i = 1; i < julat.length; i++)
+      if (M.keMinit(julat[i].mula) < M.keMinit(julat[i - 1].tamat)) throw new Error(`Sesi bertindih pada hari ${h}`);
+    out[h] = julat;
+  }
+  return out;
+}
+
 // ---------------- Telegram ----------------
 const tg = {};
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 function teksTempahan(t) {
-  const wa = t.telefon.replace(/^0/, '60');
   return [
     `<b>🚗 TEMPAHAN ${esc(t.kod)}</b>`,
     `Status: <b>${STATUS[t.status] || t.status}</b>`,
@@ -169,7 +228,7 @@ function teksTempahan(t) {
     `📅 ${M.paparTarikh(t.tarikh)}`,
     `🕐 ${M.paparMasa(t.masa)}`,
     `👤 ${esc(t.nama)} (${t.penumpang} orang)`,
-    `📞 <a href="https://wa.me/${wa}">${esc(t.telefon)}</a> (tekan untuk WhatsApp)`,
+    `📞 <a href="https://wa.me/${keWa(t.telefon)}">${esc(t.telefon)}</a> (tekan untuk WhatsApp)`,
     `📍 Ambil: ${esc(t.ambil)}`,
     `🏁 Ke: ${esc(t.destinasi)}`,
     `🔁 ${t.jenis === 'pergi-balik' ? 'Pergi-balik' + (t.masaBalik ? ` (balik: ${esc(t.masaBalik)})` : '') : 'Sehala'}`,
@@ -219,6 +278,16 @@ async function hantarTempahanBaru(t) {
   }
 }
 
+// Tukar status tempahan (dikongsi oleh bot Telegram dan Panel Driver)
+function ubahStatus(t, aksi) {
+  const p = PERALIHAN[aksi];
+  if (!p || t.status !== p[0]) return { ok: false, mesej: `Status sekarang: ${STATUS[t.status]}` };
+  t.status = p[1];
+  t.dikemaskini = Date.now();
+  simpanT(t);
+  return { ok: true, mesej: p[2] };
+}
+
 function ringkasan(senarai, tajuk) {
   if (!senarai.length) return `<b>${tajuk}</b>\nTiada tempahan.`;
   return (
@@ -238,10 +307,18 @@ function teksJadual(id) {
     return `${h.charAt(0).toUpperCase() + h.slice(1)}: ${x.length ? x.map((y) => `${y.mula}-${y.tamat}`).join(', ') : 'TUTUP'}`;
   });
   const tutup = S.tetapan[id].tutup.filter((t) => t >= M.hariIni()).sort();
-  return '<b>📆 JADUAL MINGGUAN</b>\n' + baris.join('\n') + '\n\n<b>🚫 Tarikh ditutup:</b>\n' + (tutup.length ? tutup.map((t) => '• ' + M.paparTarikh(t)).join('\n') : 'Tiada');
+  return (
+    (S.tetapan[id].aktif ? '' : '⛔ <b>TEMPAHAN SEDANG DITUTUP</b> (tekan /on untuk buka)\n\n') +
+    '<b>📆 JADUAL MINGGUAN</b>\n' + baris.join('\n') +
+    '\n\n<b>🚫 Tarikh ditutup:</b>\n' + (tutup.length ? tutup.map((t) => '• ' + M.paparTarikh(t)).join('\n') : 'Tiada')
+  );
 }
 
+const pautanPanel = (id) => `${URL_AWAM}/tempah/panel#k=${S.tetapan[id].panelKey}`;
+
 const BANTUAN = `<b>📋 SENARAI ARAHAN</b>
+
+🖥 /panel - buka <b>Panel Driver</b> (urus semua dari web: jadual, tempahan, kereta, gambar)
 
 <b>Tempahan</b>
 /hariini - tempahan hari ini
@@ -249,13 +326,15 @@ const BANTUAN = `<b>📋 SENARAI ARAHAN</b>
 /senarai - semua tempahan akan datang
 /cari KOD - lihat satu tempahan
 
+<b>Buka / tutup</b>
+/on - buka tempahan
+/off - tutup semua tempahan (sementara)
+/tutup 2026-11-20 - tutup satu hari
+/buka 2026-11-20 - buka semula hari itu
+
 <b>Jadual</b>
 /jadual - lihat jadual mingguan
 /slot 2026-11-20 - slot kosong tarikh itu
-/tutup 2026-11-20 - tutup satu hari (cuti/kelas)
-/buka 2026-11-20 - buka semula hari itu
-
-<b>Ubah jadual mingguan</b>
 /setjadual isnin 17:00-22:00
 /setjadual sabtu 08:00-12:00 14:00-22:00
 /setjadual rabu tutup`;
@@ -273,21 +352,9 @@ async function urusUpdate(id, u) {
     const [aksi, kod] = String(q.data || '').split(':');
     const t = S.tempahan.find((x) => x.driver === id && x.kod === kod);
     if (!t) return jawab('Tempahan tidak dijumpai');
-    const p = {
-      sah: ['menunggu', 'disahkan', 'Tempahan disahkan ✅'],
-      tolak: ['menunggu', 'ditolak', 'Tempahan ditolak'],
-      siap: ['disahkan', 'selesai', 'Perjalanan selesai 🏁'],
-      batal: ['disahkan', 'batal_driver', 'Tempahan dibatalkan'],
-    }[aksi];
     t.tgMsgId = q.message.message_id;
-    if (!p || t.status !== p[0]) {
-      await jawab(`Status sekarang: ${STATUS[t.status]}`);
-      return kemaskiniMesej(t);
-    }
-    t.status = p[1];
-    t.dikemaskini = Date.now();
-    simpanT(t);
-    await jawab(p[2]);
+    const r = ubahStatus(t, aksi);
+    await jawab(r.mesej);
     return kemaskiniMesej(t);
   }
 
@@ -303,7 +370,10 @@ async function urusUpdate(id, u) {
     if (cmd === '/start' || cmd === '/daftar') {
       S.tetapan[id].chatId = String(msg.chat.id);
       await simpanTetapan(id);
-      return balas(`✅ Anda kini didaftarkan sebagai <b>${esc(d.nama)}</b> (${esc(d.label)}).\nSemua tempahan akan dihantar ke sini.\n\n` + BANTUAN);
+      return balas(
+        `✅ Anda kini didaftarkan sebagai driver <b>${esc(d.label)}</b>.\nSemua tempahan akan dihantar ke sini.\n\n` +
+          `🖥 Panel Driver anda (simpan, jangan kongsi):\n${pautanPanel(id)}\n\n` + BANTUAN
+      );
     }
     return tg[id].call('sendMessage', { chat_id: msg.chat.id, text: 'Tekan /start untuk daftar sebagai driver.' }).catch(() => {});
   }
@@ -318,7 +388,24 @@ async function urusUpdate(id, u) {
     case '/start':
     case '/bantuan':
     case '/help':
-      return balas(`Assalamualaikum ${esc(d.nama)} 👋\nBot tempahan <b>${esc(d.label)}</b> aktif.\n\n` + BANTUAN);
+      return balas(`Assalamualaikum ${esc(profil(id).nama)} 👋\nBot tempahan <b>${esc(d.label)}</b> aktif.\n\n` + BANTUAN);
+    case '/panel':
+      return balas(
+        `🖥 <b>Panel Driver</b>\n${pautanPanel(id)}\n\nSimpan pautan ini dan jangan kongsi. Jika tersebar, tekan /panelbaru untuk tukar pautan.`,
+        { reply_markup: { inline_keyboard: [[{ text: '🖥 Buka Panel Driver', url: pautanPanel(id) }]] } }
+      );
+    case '/panelbaru':
+      S.tetapan[id].panelKey = kunciBaru();
+      await simpanTetapan(id);
+      return balas(`🔑 Pautan panel ditukar. Pautan lama tidak boleh digunakan lagi.\n\n${pautanPanel(id)}`);
+    case '/on':
+      S.tetapan[id].aktif = true;
+      await simpanTetapan(id);
+      return balas('🟢 Tempahan <b>DIBUKA</b>. Pelanggan boleh tempah mengikut jadual.');
+    case '/off':
+      S.tetapan[id].aktif = false;
+      await simpanTetapan(id);
+      return balas('⛔ Tempahan <b>DITUTUP</b>. Pelanggan tidak boleh tempah sehingga anda tekan /on.\nTempahan sedia ada tidak terjejas.');
     case '/hariini':
       return balas(ringkasan(milik().filter((t) => t.tarikh === hariIni && [...AKTIF, 'selesai'].includes(t.status)), '📅 TEMPAHAN HARI INI'));
     case '/esok': {
@@ -371,18 +458,12 @@ async function urusUpdate(id, u) {
       if (!M.HARI.includes(hari) || !julatTeks.length)
         return balas('Format:\n/setjadual isnin 17:00-22:00\n/setjadual sabtu 08:00-12:00 14:00-22:00\n/setjadual rabu tutup');
       const jadual = { ...S.tetapan[id].jadual };
-      if (julatTeks[0] === 'tutup') jadual[hari] = [];
-      else {
-        const julat = [];
-        for (const b of julatTeks) {
-          const [mula, tamat] = b.split('-');
-          if (!M.sahMasa(mula || '') || !M.sahMasa(tamat || '') || M.keMinit(tamat) <= M.keMinit(mula))
-            return balas(`Masa tidak sah: ${esc(b)}\nContoh betul: 17:00-22:00`);
-          julat.push({ mula, tamat });
-        }
-        jadual[hari] = julat.sort((a, b) => a.mula.localeCompare(b.mula));
+      jadual[hari] = julatTeks[0] === 'tutup' ? [] : julatTeks.map((b) => ({ mula: b.split('-')[0], tamat: b.split('-')[1] }));
+      try {
+        S.tetapan[id].jadual = sahkanJadual(jadual);
+      } catch (e) {
+        return balas(`${esc(e.message)}\nContoh betul: /setjadual isnin 17:00-22:00`);
       }
-      S.tetapan[id].jadual = jadual;
       await simpanTetapan(id);
       return balas('✅ Jadual dikemas kini.\n\n' + teksJadual(id));
     }
@@ -392,7 +473,6 @@ async function urusUpdate(id, u) {
 }
 
 function mulaBot(app) {
-  const baseUrl = (process.env.PREBOOK_URL || process.env.RENDER_EXTERNAL_URL || '').replace(/\/$/, '');
   for (const [id, d] of Object.entries(DRIVERS)) {
     if (!d.token) {
       console.log(`[PREBOOK ${id}] Tiada token bot (PREBOOK_${d.prefix}_TOKEN) - notifikasi Telegram dimatikan.`);
@@ -401,7 +481,6 @@ function mulaBot(app) {
     tg[id] = klien(d.token);
     const onUpdate = (u) => urusUpdate(id, u);
 
-    // Laluan webhook (sentiasa didaftarkan; hanya digunakan bila ada URL awam)
     app.post(`/api/prebook/tg/${id}`, (req, res) => {
       if (req.get('X-Telegram-Bot-Api-Secret-Token') !== tg[id].rahsia) return res.sendStatus(403);
       res.sendStatus(200);
@@ -411,27 +490,24 @@ function mulaBot(app) {
     tg[id]
       .call('setMyCommands', {
         commands: [
+          { command: 'panel', description: 'Buka Panel Driver (web)' },
           { command: 'hariini', description: 'Tempahan hari ini' },
           { command: 'esok', description: 'Tempahan esok' },
           { command: 'senarai', description: 'Semua tempahan akan datang' },
+          { command: 'on', description: 'Buka tempahan' },
+          { command: 'off', description: 'Tutup semua tempahan (sementara)' },
           { command: 'jadual', description: 'Lihat jadual mingguan' },
-          { command: 'slot', description: 'Slot kosong (cth: /slot 2026-11-20)' },
           { command: 'tutup', description: 'Tutup tarikh (cth: /tutup 2026-11-20)' },
           { command: 'buka', description: 'Buka semula tarikh' },
-          { command: 'setjadual', description: 'Ubah jadual (cth: /setjadual isnin 17:00-22:00)' },
           { command: 'bantuan', description: 'Senarai arahan' },
         ],
       })
       .catch(() => {});
 
-    if (baseUrl) {
+    if (BASE_URL) {
       tg[id]
-        .call('setWebhook', {
-          url: `${baseUrl}/api/prebook/tg/${id}`,
-          secret_token: tg[id].rahsia,
-          allowed_updates: ['message', 'callback_query'],
-        })
-        .then(() => console.log(`[PREBOOK ${id}] Webhook aktif: ${baseUrl}/api/prebook/tg/${id}`))
+        .call('setWebhook', { url: `${BASE_URL}/api/prebook/tg/${id}`, secret_token: tg[id].rahsia, allowed_updates: ['message', 'callback_query'] })
+        .then(() => console.log(`[PREBOOK ${id}] Webhook aktif: ${BASE_URL}/api/prebook/tg/${id}`))
         .catch((e) => console.error(`[PREBOOK ${id}] setWebhook gagal:`, e.message));
     } else {
       mulaPolling(tg[id], onUpdate, id);
@@ -476,19 +552,18 @@ function janaKod(prefix) {
   while (S.tempahan.some((t) => t.kod === kod));
   return kod;
 }
-const normalTelefon = (s) => String(s || '').replace(/[\s-]/g, '').replace(/^\+?60/, '0');
-const sahTelefon = (s) => /^01\d{8,9}$/.test(s);
 const teks = (v, max) => String(v ?? '').trim().slice(0, max);
 
 const kiraanIP = new Map();
-function hadIP(ip) {
+function hadIP(ip, had = 5) {
   const now = Date.now();
   const l = (kiraanIP.get(ip) || []).filter((t) => now - t < 3600e3);
-  if (l.length >= 5) return false;
+  if (l.length >= had) return false;
   l.push(now);
   kiraanIP.set(ip, l);
   return true;
 }
+const ipDari = (req) => req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip;
 
 function ringkasAwam(t) {
   return {
@@ -513,10 +588,13 @@ function pasang(app) {
   r.get('/tempah', halaman('index.html'));
   r.get('/tempah/perempuan', halaman('tempah.html'));
   r.get('/tempah/lelaki', halaman('tempah.html'));
-  r.get('/tempah/aset/style.css', (req, res) => res.sendFile(path.join(DIR, 'style.css')));
-  r.get('/tempah/aset/app.js', (req, res) => res.sendFile(path.join(DIR, 'app.js')));
+  r.get('/tempah/panel', halaman('panel.html'));
+  for (const f of ['style.css', 'app.js', 'panel.js'])
+    r.get(`/tempah/aset/${f}`, (req, res) => {
+      res.set('Cache-Control', 'no-cache');
+      res.sendFile(path.join(DIR, f));
+    });
 
-  // Pastikan data dimuatkan sebelum API digunakan
   r.use('/api/prebook', async (req, res, next) => {
     try {
       await pastiSedia();
@@ -532,10 +610,21 @@ function pasang(app) {
     return d;
   };
 
+  // ===== API AWAM (pelanggan) =====
   r.get('/api/prebook/driver/:driver', (req, res) => {
     const d = driverDari(req, res);
     if (!d) return;
-    res.json({ id: d.id, nama: d.nama, label: d.label, penumpang: d.penumpang, wa: d.wa, tempahAwalJam: C.TEMPAH_AWAL_JAM, batalMinJam: C.BATAL_MIN_JAM });
+    res.json({
+      id: d.id, label: d.label, penumpang: d.penumpang, aktif: S.tetapan[d.id].aktif,
+      ...profil(d.id), tempahAwalJam: C.TEMPAH_AWAL_JAM, batalMinJam: C.BATAL_MIN_JAM,
+    });
+  });
+
+  r.get('/api/prebook/gambar/:driver', (req, res) => {
+    const g = S.tetapan[req.params.driver]?.gambar;
+    if (!g?.data) return res.sendStatus(404);
+    res.set({ 'Content-Type': g.jenis || 'image/jpeg', 'Cache-Control': 'public, max-age=604800' });
+    res.send(Buffer.from(g.data, 'base64'));
   });
 
   r.get('/api/prebook/tarikh/:driver', (req, res) => {
@@ -556,7 +645,8 @@ function pasang(app) {
     if (!d) return;
     const b = req.body || {};
     if (b.laman) return res.json({ ok: true, kod: 'X' }); // perangkap bot spam
-    if (!hadIP(req.headers['x-forwarded-for']?.split(',')[0] || req.ip)) return res.status(429).json({ ralat: 'Terlalu banyak tempahan. Cuba lagi sebentar.' });
+    if (!S.tetapan[d.id].aktif) return res.status(409).json({ ralat: 'Maaf, driver tidak menerima tempahan buat masa ini.' });
+    if (!hadIP(ipDari(req))) return res.status(429).json({ ralat: 'Terlalu banyak tempahan. Cuba lagi sebentar.' });
 
     const t = {
       nama: teks(b.nama, 60),
@@ -610,6 +700,111 @@ function pasang(app) {
     hantar(t.driver, `🚫 <b>${t.kod}</b> dibatalkan oleh pelanggan (${esc(t.nama)}).\nSlot ${M.paparTarikh(t.tarikh)} ${M.paparMasa(t.masa)} kini kosong semula.`);
     res.json({ ok: true, ...ringkasAwam(t) });
   });
+
+  // ===== API PANEL DRIVER (perlu kunci dari pautan bot) =====
+  const P = express.Router();
+  P.use((req, res, next) => {
+    const kunci = String(req.get('X-Panel-Key') || '');
+    const id = kunci.length >= 32 && Object.keys(DRIVERS).find((x) => S.tetapan[x]?.panelKey === kunci);
+    if (!id) {
+      if (!hadIP('panel:' + ipDari(req), 30)) return res.status(429).json({ ralat: 'Terlalu banyak cubaan.' });
+      return res.status(401).json({ ralat: 'Pautan panel tidak sah. Tekan /panel dalam bot Telegram untuk dapatkan pautan baharu.' });
+    }
+    req.driverId = id;
+    next();
+  });
+
+  const infoPanel = (id) => {
+    const tt = S.tetapan[id];
+    return {
+      id, label: DRIVERS[id].label, aktif: tt.aktif, ...profil(id),
+      jadual: tt.jadual, tutup: tt.tutup.filter((t) => t >= M.hariIni()).sort(),
+      botAktif: !!tg[id], botDaftar: !!chatId(id), pautanAwam: `${URL_AWAM}/tempah/${id}`,
+      slotMinit: C.SLOT_MINIT, hariIni: M.hariIni(),
+    };
+  };
+  const tempahanPanel = (t) => ({
+    kod: t.kod, status: t.status, statusPapar: STATUS[t.status], tarikh: t.tarikh, masa: t.masa,
+    paparTarikh: M.paparTarikh(t.tarikh), paparMasa: M.paparMasa(t.masa),
+    nama: t.nama, telefon: t.telefon, wa: keWa(t.telefon), penumpang: t.penumpang,
+    ambil: t.ambil, destinasi: t.destinasi, jenis: t.jenis, masaBalik: t.masaBalik, catatan: t.catatan,
+  });
+
+  P.get('/info', (req, res) => res.json(infoPanel(req.driverId)));
+
+  P.get('/tempahan', (req, res) => {
+    const h = M.hariIni();
+    const lepas = req.query.skop === 'lepas';
+    const senarai = S.tempahan
+      .filter((t) => t.driver === req.driverId && (lepas ? t.tarikh < h || !AKTIF.includes(t.status) : t.tarikh >= h && AKTIF.includes(t.status)))
+      .sort((a, b) => (a.tarikh + a.masa).localeCompare(b.tarikh + b.masa) * (lepas ? -1 : 1))
+      .slice(0, 100)
+      .map(tempahanPanel);
+    res.json(senarai);
+  });
+
+  P.post('/tempahan/:kod', async (req, res) => {
+    const t = S.tempahan.find((x) => x.driver === req.driverId && x.kod === req.params.kod);
+    if (!t) return res.status(404).json({ ralat: 'Tempahan tidak dijumpai' });
+    const r2 = ubahStatus(t, String(req.body?.aksi || ''));
+    if (!r2.ok) return res.status(409).json({ ralat: r2.mesej });
+    kemaskiniMesej(t);
+    res.json({ ok: true, mesej: r2.mesej, tempahan: tempahanPanel(t) });
+  });
+
+  P.post('/aktif', async (req, res) => {
+    S.tetapan[req.driverId].aktif = req.body?.aktif === true;
+    await simpanTetapan(req.driverId);
+    res.json(infoPanel(req.driverId));
+  });
+
+  P.post('/jadual', async (req, res) => {
+    try {
+      S.tetapan[req.driverId].jadual = sahkanJadual(req.body?.jadual);
+    } catch (e) {
+      return res.status(400).json({ ralat: e.message });
+    }
+    await simpanTetapan(req.driverId);
+    res.json(infoPanel(req.driverId));
+  });
+
+  P.post('/tutup', async (req, res) => {
+    const tarikh = String(req.body?.tarikh || '');
+    if (!M.sahTarikh(tarikh)) return res.status(400).json({ ralat: 'Tarikh tidak sah' });
+    const tt = S.tetapan[req.driverId];
+    if (req.body?.tutup === false) tt.tutup = tt.tutup.filter((t) => t !== tarikh);
+    else if (!tt.tutup.includes(tarikh)) tt.tutup.push(tarikh);
+    await simpanTetapan(req.driverId);
+    const terlibat = S.tempahan.filter((t) => t.driver === req.driverId && t.tarikh === tarikh && AKTIF.includes(t.status)).length;
+    res.json({ ...infoPanel(req.driverId), amaran: req.body?.tutup !== false && terlibat ? `Ada ${terlibat} tempahan aktif pada tarikh ini. Sila hubungi pelanggan.` : '' });
+  });
+
+  P.post('/profil', async (req, res) => {
+    const b = req.body || {};
+    const telefon = normalTelefon(b.telefon);
+    if (telefon && !sahTelefon(telefon)) return res.status(400).json({ ralat: 'No. telefon tidak sah (contoh: 0123456789)' });
+    S.tetapan[req.driverId].profil = {
+      nama: teks(b.nama, 40), telefon, kereta: teks(b.kereta, 40), warna: teks(b.warna, 30), plat: teks(b.plat, 15).toUpperCase(),
+    };
+    await simpanTetapan(req.driverId);
+    res.json(infoPanel(req.driverId));
+  });
+
+  P.post('/gambar', async (req, res) => {
+    const tt = S.tetapan[req.driverId];
+    if (req.body?.padam) {
+      tt.gambar = { data: '', jenis: '', versi: Date.now() };
+    } else {
+      const m = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(String(req.body?.data || ''));
+      if (!m) return res.status(400).json({ ralat: 'Format gambar tidak sah (JPG/PNG/WEBP sahaja)' });
+      if (m[2].length > 1.4e6) return res.status(400).json({ ralat: 'Gambar terlalu besar (maksimum ~1MB)' });
+      tt.gambar = { data: m[2], jenis: m[1], versi: Date.now() };
+    }
+    await simpanTetapan(req.driverId, true);
+    res.json(infoPanel(req.driverId));
+  });
+
+  r.use('/api/prebook/panel', P);
 
   app.use(r);
   mulaBot(app);

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Panel Driver</title>
+  <link rel="stylesheet" href="/tempah/aset/style.css" />
+</head>
+<body>
+  <header class="kepala">
+    <div class="lencana" id="lencana">🖥 Panel Driver</div>
+    <h1 id="namaDriver">Memuatkan…</h1>
+    <p class="kecil" id="subTajuk">Urus tempahan, jadual dan kereta anda</p>
+    <nav class="tab tersembunyi" id="tabNav">
+      <button class="aktif" data-tab="tempahan">📋 Tempahan</button>
+      <button data-tab="jadual">📆 Jadual</button>
+      <button data-tab="profil">🚘 Profil</button>
+    </nav>
+  </header>
+
+  <main>
+    <div class="kad tersembunyi" id="tiadaAkses">
+      <h2>🔒 Perlu pautan panel</h2>
+      <p>Buka bot Telegram anda dan tekan <b>/panel</b>. Bot akan beri pautan khas untuk masuk ke panel ini.</p>
+      <p class="ralat" id="ralatAkses"></p>
+    </div>
+
+    <div id="kandungan" class="tersembunyi">
+      <!-- Suis buka/tutup -->
+      <div class="kad">
+        <label class="suis" style="margin:0">
+          <span>
+            <span class="status-buka" id="labelAktif">—</span><br />
+            <span class="kecil" id="subAktif"></span>
+          </span>
+          <input type="checkbox" id="suisAktif" />
+          <span class="trek"></span>
+        </label>
+        <div class="dua-butang" style="margin-top:12px">
+          <a class="btn-kecil" id="lihatHalaman" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">👁 Lihat halaman pelanggan</a>
+          <button class="btn-kecil" id="salinPautan">🔗 Salin pautan tempahan</button>
+        </div>
+      </div>
+
+      <!-- ===== TAB TEMPAHAN ===== -->
+      <section id="tab-tempahan">
+        <div class="kad">
+          <div class="dua-butang" style="margin-bottom:6px">
+            <button class="btn-kecil utama-k" data-skop="akan">Akan datang</button>
+            <button class="btn-kecil" data-skop="lepas">Sejarah</button>
+          </div>
+          <div id="senaraiTempahan"></div>
+        </div>
+      </section>
+
+      <!-- ===== TAB JADUAL ===== -->
+      <section id="tab-jadual" class="tersembunyi">
+        <div class="kad">
+          <h2>📆 Waktu free setiap minggu</h2>
+          <p class="kecil" style="margin-top:-6px">Pelanggan hanya boleh tempah dalam waktu ini. Slot dibahagi setiap <b id="slotMinit">60</b> minit.</p>
+          <div id="editorJadual"></div>
+          <p class="ralat" id="ralatJadual"></p>
+          <button class="utama" id="simpanJadual">💾 Simpan jadual</button>
+        </div>
+
+        <div class="kad">
+          <h2>🚫 Tutup tarikh tertentu</h2>
+          <p class="kecil" style="margin-top:-6px">Untuk hari kelas, cuti atau balik kampung.</p>
+          <div class="sesi">
+            <input type="date" id="tarikhTutup" />
+            <button class="btn-kecil utama-k" id="btnTutup">Tutup</button>
+          </div>
+          <div id="senaraiTutup" style="margin-top:10px"></div>
+        </div>
+      </section>
+
+      <!-- ===== TAB PROFIL ===== -->
+      <section id="tab-profil" class="tersembunyi">
+        <div class="kad">
+          <h2>📷 Gambar kereta</h2>
+          <img id="pratontonGambar" class="pratonton-gambar tersembunyi" alt="Gambar kereta" />
+          <div id="tiadaGambar" class="pratonton-gambar">Belum ada gambar</div>
+          <input type="file" id="failGambar" accept="image/*" class="tersembunyi" />
+          <div class="dua-butang">
+            <button class="btn-kecil utama-k" id="btnPilihGambar">📷 Tukar gambar</button>
+            <button class="btn-kecil bahaya-k" id="btnPadamGambar">🗑 Buang gambar</button>
+          </div>
+        </div>
+
+        <form class="kad" id="borangProfil">
+          <h2>🚘 Maklumat driver &amp; kereta</h2>
+          <label>Nama paparan
+            <input name="nama" maxlength="40" placeholder="Contoh: Kak Aina" />
+          </label>
+          <label>No. telefon / WhatsApp
+            <input name="telefon" inputmode="tel" placeholder="0123456789" />
+            <span class="kecil">Dipaparkan besar pada halaman pelanggan bersama butang WhatsApp.</span>
+          </label>
+          <label>Jenis kereta
+            <input name="kereta" maxlength="40" placeholder="Contoh: Perodua Myvi" />
+          </label>
+          <div class="dua">
+            <label>Warna
+              <input name="warna" maxlength="30" placeholder="Contoh: Putih" />
+            </label>
+            <label>No. plat
+              <input name="plat" maxlength="15" placeholder="Contoh: AKB 1234" style="text-transform:uppercase" />
+            </label>
+          </div>
+          <p class="ralat" id="ralatProfil"></p>
+          <button class="utama" type="submit">💾 Simpan profil</button>
+        </form>
+
+        <div class="kad kecil" id="infoBot"></div>
+      </section>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="/tempah/aset/panel.js"></script>
+</body>
+</html>
