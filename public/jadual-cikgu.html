@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#4f8ef7">
+<title>Jadual Cikgu · Ilmuverse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   ILMUVERSE · JADUAL CIKGU (PROTOTAIP v0.1)
+   Peringatan kelas, relief & cuti. Data disimpan dalam pelayar
+   (localStorage) sahaja - belum ada pelayan / bot Telegram.
+   ============================================================ */
+:root{
+  --bg:#f0f4ff;--panel:#fff;--panel2:#f5f7ff;
+  --accent:#4f8ef7;--accent2:#7c3aed;--pink:#ec4899;--gold:#f59e0b;
+  --green:#10b981;--red:#ef4444;--teal:#06b6d4;
+  --text:#1e2d5a;--text2:#6b7db3;--border:rgba(79,142,247,.18);
+  --shadow:0 4px 24px rgba(79,142,247,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;font-family:'Exo 2',sans-serif;color:var(--text);
+  background:linear-gradient(135deg,#dde8ff 0%,#ede0ff 30%,#fce4f4 55%,#d4f0ff 78%,#dcffe8 100%) fixed}
+button,input,select{font:inherit;color:inherit}
+.wrap{max-width:560px;margin:0 auto;padding:16px 14px 110px}
+
+/* Kepala */
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.logo{font-family:Orbitron;font-weight:900;font-size:12px;letter-spacing:2px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+h1{font-family:Orbitron;font-size:20px;font-weight:900;margin-top:2px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:6px 10px;border-radius:99px;
+  background:var(--panel);border:1px solid var(--border);box-shadow:var(--shadow);cursor:pointer;white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--red)}
+.dot.on{background:var(--green);box-shadow:0 0 8px var(--green)}
+
+/* Kad */
+.card{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px}
+.card h2{font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);margin-bottom:10px}
+.muted{color:var(--text2);font-size:13px}
+.tarikh{font-size:14px;color:var(--text2);margin-bottom:12px;font-weight:600}
+
+/* Kelas seterusnya */
+.next{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none}
+.next h2{color:rgba(255,255,255,.8)}
+.next .subj{font-size:22px;font-weight:700;line-height:1.2}
+.next .meta{opacity:.9;margin-top:4px;font-size:14px}
+.next .kira{margin-top:12px;font-family:Orbitron;font-size:15px;background:rgba(255,255,255,.18);
+  display:inline-block;padding:6px 12px;border-radius:12px}
+.cuti{background:linear-gradient(135deg,#fde68a,#fbcfe8);border:none}
+
+/* Senarai kelas */
+.item{display:flex;gap:12px;align-items:center;padding:12px 0;border-top:1px dashed var(--border)}
+.item:first-of-type{border-top:none}
+.masa{min-width:70px;font-family:Orbitron;font-size:12px;font-weight:700;color:var(--accent);line-height:1.5}
+.isi{flex:1;min-width:0}
+.isi b{display:block;font-size:15px}
+.isi span{font-size:13px;color:var(--text2)}
+.tag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:99px;white-space:nowrap}
+.t-siap{background:#e5e7eb;color:#6b7280}
+.t-kini{background:#d1fae5;color:#047857}
+.t-akan{background:#dbeafe;color:#1d4ed8}
+.t-relief{background:#fce7f3;color:#be185d;margin-left:4px}
+.item.siap{opacity:.55}
+.kosong{text-align:center;padding:18px 0;color:var(--text2);font-size:14px}
+
+/* Butang & borang */
+.btn{border:none;border-radius:12px;padding:11px 14px;font-weight:700;cursor:pointer;
+  background:var(--accent);color:#fff;box-shadow:0 4px 14px rgba(79,142,247,.3)}
+.btn.alt{background:var(--panel2);color:var(--accent);box-shadow:none;border:1px solid var(--border)}
+.btn.merah{background:var(--red);box-shadow:none}
+.btn.hijau{background:var(--green);box-shadow:none}
+.btn.blok{width:100%}
+.btn.kecil{padding:7px 11px;font-size:13px;border-radius:10px}
+.baris{display:flex;gap:8px;flex-wrap:wrap}
+.baris>*{flex:1}
+label{display:block;font-size:12px;font-weight:700;color:var(--text2);margin:10px 0 4px}
+input,select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:var(--panel2);outline:none}
+input:focus,select:focus{border-color:var(--accent)}
+.suis{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0}
+.suis input{width:auto;transform:scale(1.4)}
+
+/* Pilih hari */
+.hari{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:6px}
+.hari button{flex:0 0 auto;border:1px solid var(--border);background:var(--panel2);border-radius:99px;padding:7px 13px;font-weight:700;font-size:13px;cursor:pointer}
+.hari button.aktif{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* Navigasi bawah */
+nav{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);
+  border-top:1px solid var(--border);display:flex;justify-content:center;padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+nav .in{display:flex;width:100%;max-width:560px}
+nav button{flex:1;border:none;background:none;padding:6px 2px;font-size:11px;font-weight:700;color:var(--text2);cursor:pointer;position:relative}
+nav button i{display:block;font-style:normal;font-size:21px;margin-bottom:2px}
+nav button.aktif{color:var(--accent)}
+.lencana{position:absolute;top:2px;right:calc(50% - 22px);background:var(--pink);color:#fff;font-size:10px;border-radius:99px;padding:1px 6px}
+
+/* Noti dalam app */
+#noti{position:fixed;top:10px;left:50%;transform:translate(-50%,-160%);width:min(94vw,520px);z-index:50;
+  background:rgba(30,45,90,.96);color:#fff;border-radius:18px;padding:14px 16px;box-shadow:0 10px 40px rgba(0,0,0,.3);
+  transition:transform .35s cubic-bezier(.2,.9,.3,1.2);cursor:pointer}
+#noti.tunjuk{transform:translate(-50%,0)}
+#noti small{opacity:.7;font-size:11px;letter-spacing:1px}
+#noti b{display:block;margin:3px 0 2px;font-size:15px}
+#noti p{font-size:13px;opacity:.92;white-space:pre-line}
+
+/* Pratonton Telegram */
+.tg{background:#e7f1fb;border-radius:14px;padding:12px}
+.tg .bub{background:#fff;border-radius:12px 12px 12px 4px;padding:10px 12px;font-size:14px;white-space:pre-line;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.tg .nama{font-size:12px;font-weight:700;color:#2b8ad6;margin-bottom:4px}
+
+/* Modal */
+.latar{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:flex-end;justify-content:center;z-index:40}
+.latar.buka{display:flex}
+.modal{background:var(--panel);width:100%;max-width:560px;border-radius:22px 22px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:92vh;overflow:auto}
+.modal h3{font-size:17px;margin-bottom:4px}
+.sec{display:none}.sec.aktif{display:block}
+.nota{font-size:12px;color:var(--text2);background:var(--panel2);border-radius:12px;padding:10px 12px;line-height:1.5}
+</style>
+</head>
+<body>
+<div id="noti" onclick="tutupNoti()"><small>🔔 JADUAL CIKGU · sekarang</small><b id="nTajuk"></b><p id="nIsi"></p></div>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="logo">✦ ILMUVERSE</div>
+      <h1>Jadual Cikgu</h1>
+    </div>
+    <div class="chip" id="chipNoti" onclick="mintaIzin()"><span class="dot" id="dotNoti"></span><span id="lblNoti">Noti tutup</span></div>
+  </header>
+
+  <!-- ================= HARI INI ================= -->
+  <section class="sec aktif" id="s-hari">
+    <div class="tarikh" id="tarikhHariIni"></div>
+    <div id="kadNext"></div>
+    <div class="card">
+      <h2>Kelas hari ini</h2>
+      <div id="senaraiHariIni"></div>
+    </div>
+    <div class="card">
+      <h2>Cuba sistem noti</h2>
+      <p class="muted" style="margin-bottom:10px">Buat satu kelas contoh supaya noti automatik keluar dalam masa lebih kurang 1 minit. Biarkan halaman ini terbuka.</p>
+      <div class="baris">
+        <button class="btn" onclick="demoNoti()">⚡ Noti automatik (1 minit)</button>
+        <button class="btn alt" onclick="ujiNoti()">🔔 Uji sekarang</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= JADUAL ================= -->
+  <section class="sec" id="s-jadual">
+    <div class="card">
+      <h2>Jadual mingguan</h2>
+      <div class="hari" id="pilihHari"></div>
+      <div id="senaraiJadual"></div>
+      <button class="btn blok" style="margin-top:12px" onclick="bukaSlot()">＋ Tambah kelas</button>
+    </div>
+  </section>
+
+  <!-- ================= RELIEF ================= -->
+  <section class="sec" id="s-relief">
+    <div class="card">
+      <h2>Kelas relief saya</h2>
+      <div id="senaraiRelief"></div>
+    </div>
+    <div class="card">
+      <h2>Panel penyelaras (demo)</h2>
+      <p class="nota" style="margin-bottom:6px">Dalam versi sebenar bahagian ini dibuka oleh penyelaras relief sahaja. Untuk demo awak boleh hantar relief kepada diri sendiri dan lihat noti yang diterima.</p>
+      <label>Tarikh</label><input type="date" id="rTarikh">
+      <div class="baris">
+        <div><label>Mula</label><input type="time" id="rMula" value="10:00"></div>
+        <div><label>Tamat</label><input type="time" id="rTamat" value="10:30"></div>
+      </div>
+      <div class="baris">
+        <div><label>Kelas</label><input id="rKelas" value="5 Al Khawarizmi"></div>
+        <div><label>Subjek</label><input id="rSubjek" value="Matematik"></div>
+      </div>
+      <label>Lokasi / nota</label><input id="rLokasi" value="Bilik darjah 5 Al Khawarizmi">
+      <button class="btn blok" style="margin-top:12px" onclick="hantarRelief()">📨 Hantar relief</button>
+    </div>
+  </section>
+
+  <!-- ================= TETAPAN ================= -->
+  <section class="sec" id="s-tetapan">
+    <div class="card">
+      <h2>Profil &amp; noti</h2>
+      <label>Nama paparan</label><input id="tNama" onchange="simpanTetapan()">
+      <label>Noti sebelum kelas</label>
+      <select id="tMinit" onchange="simpanTetapan()">
+        <option value="5">5 minit</option><option value="10">10 minit</option><option value="15">15 minit</option>
+      </select>
+      <label>Ringkasan jadual pagi</label><input type="time" id="tPagi" onchange="simpanTetapan()">
+      <label>Kalendar sekolah</label>
+      <select id="tKumpulan" onchange="simpanTetapan()">
+        <option value="A">Kumpulan A (Ahad – Khamis)</option>
+        <option value="B">Kumpulan B (Isnin – Jumaat)</option>
+      </select>
+      <div class="suis"><div><b style="font-size:14px">Senyap sementara</b><div class="muted">Contoh semasa cuti atau berkursus</div></div><input type="checkbox" id="tSenyap" onchange="simpanTetapan()"></div>
+      <button class="btn alt blok" onclick="mintaIzin()">🔔 Benarkan noti telefon</button>
+    </div>
+
+    <div class="card">
+      <h2>Tarikh cuti</h2>
+      <p class="muted" style="margin-bottom:6px">Tiada noti dihantar pada tarikh ini. Masukkan mengikut takwim sekolah awak.</p>
+      <div id="senaraiCuti"></div>
+      <label>Nama cuti</label><input id="cNama" placeholder="Contoh: Cuti Akhir Tahun">
+      <div class="baris">
+        <div><label>Dari</label><input type="date" id="cMula"></div>
+        <div><label>Hingga</label><input type="date" id="cTamat"></div>
+      </div>
+      <button class="btn blok" style="margin-top:12px" onclick="tambahCuti()">＋ Tambah cuti</button>
+    </div>
+
+    <div class="card">
+      <h2>Pratonton bot Telegram (fasa seterusnya)</h2>
+      <div class="tg"><div class="bub"><div class="nama">Ilmuverse Jadual Bot</div><span id="tgPrev"></span></div></div>
+    </div>
+
+    <div class="card">
+      <h2>Data</h2>
+      <p class="muted" style="margin-bottom:10px">Prototaip ini menyimpan data dalam pelayar telefon sahaja.</p>
+      <button class="btn merah blok" onclick="setSemula()">↺ Set semula ke data contoh</button>
+    </div>
+  </section>
+</div>
+
+<nav><div class="in">
+  <button class="aktif" data-s="hari" onclick="tukar('hari',this)"><i>🏠</i>Hari Ini</button>
+  <button data-s="jadual" onclick="tukar('jadual',this)"><i>📅</i>Jadual</button>
+  <button data-s="relief" onclick="tukar('relief',this)"><i>🔁</i>Relief<span class="lencana" id="lencanaRelief" hidden></span></button>
+  <button data-s="tetapan" onclick="tukar('tetapan',this)"><i>⚙️</i>Tetapan</button>
+</div></nav>
+
+<!-- Modal tambah/ubah kelas -->
+<div class="latar" id="latarSlot" onclick="if(event.target===this)tutupSlot()">
+  <div class="modal">
+    <h3 id="mTajuk">Tambah kelas</h3>
+    <label>Hari</label><select id="mHari"></select>
+    <div class="baris">
+      <div><label>Mula</label><input type="time" id="mMula" value="07:30"></div>
+      <div><label>Tamat</label><input type="time" id="mTamat" value="08:30"></div>
+    </div>
+    <div class="baris">
+      <div><label>Kelas</label><input id="mKelas" placeholder="2 Al Farabi"></div>
+      <div><label>Subjek</label><input id="mSubjek" placeholder="Bahasa Melayu"></div>
+    </div>
+    <label>Lokasi</label><input id="mLokasi" placeholder="Bilik darjah / makmal">
+    <div class="baris" style="margin-top:16px">
+      <button class="btn merah" id="mPadam" onclick="padamSlot()">Padam</button>
+      <button class="btn alt" onclick="tutupSlot()">Batal</button>
+      <button class="btn" onclick="simpanSlot()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const HARI = ['Ahad','Isnin','Selasa','Rabu','Khamis','Jumaat','Sabtu'];
+const BULAN = ['Januari','Februari','Mac','April','Mei','Jun','Julai','Ogos','September','Oktober','November','Disember'];
+const KUNCI = 'ilmuverse_jadual_cikgu_v1';
+const uid = () => Math.random().toString(36).slice(2, 9);
+
+function dataContoh() {
+  const s = (hari, mula, tamat, subjek, kelas, lokasi) => ({ id: uid(), hari, mula, tamat, subjek, kelas, lokasi });
+  return {
+    nama: 'Cikgu Izuddin', minit: 10, pagi: '06:30', kumpulan: 'B', senyap: false,
+    slot: [
+      s(1, '07:30', '08:30', 'Bahasa Melayu', '2 Al Farabi', 'Bilik darjah 2 Al Farabi'),
+      s(1, '10:00', '11:00', 'Sejarah', '4 Al Biruni', 'Bilik darjah 4 Al Biruni'),
+      s(2, '08:00', '09:00', 'Bahasa Melayu', '2 Al Farabi', 'Bilik darjah 2 Al Farabi'),
+      s(2, '11:30', '12:30', 'Pendidikan Islam', '3 Ibnu Sina', 'Surau sekolah'),
+      s(3, '07:30', '08:30', 'Bahasa Melayu', '2 Al Farabi', 'Bilik darjah 2 Al Farabi'),
+      s(3, '14:30', '16:00', 'Kelab ICT', 'Kokurikulum', 'Makmal Komputer'),
+      s(4, '09:00', '10:00', 'Sejarah', '4 Al Biruni', 'Bilik darjah 4 Al Biruni'),
+      s(4, '10:30', '11:30', 'Bahasa Melayu', '2 Al Farabi', 'Pusat Sumber'),
+      s(5, '07:30', '08:30', 'Bahasa Melayu', '2 Al Farabi', 'Bilik darjah 2 Al Farabi'),
+      s(5, '09:30', '10:30', 'Pendidikan Islam', '3 Ibnu Sina', 'Surau sekolah'),
+    ],
+    cuti: [], relief: [], dihantar: {}
+  };
+}
+
+let S;
+function muat() {
+  try { S = JSON.parse(localStorage.getItem(KUNCI)); } catch (e) { S = null; }
+  if (!S || !Array.isArray(S.slot)) S = dataContoh();
+}
+function simpan() { try { localStorage.setItem(KUNCI, JSON.stringify(S)); } catch (e) {} }
+
+// ============================================================
+// MASA
+// ============================================================
+const pad = n => String(n).padStart(2, '0');
+const tarikhStr = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const keMinit = hm => { const [h, m] = hm.split(':').map(Number); return h * 60 + m; };
+const minitKini = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes() + d.getSeconds() / 60; };
+const dariMinit = x => `${pad(Math.floor(x / 60) % 24)}:${pad(Math.floor(x % 60))}`;
+function fmt(hm) {
+  let [h, m] = hm.split(':').map(Number);
+  const ak = h < 12 ? 'pg' : 'ptg';
+  if (h > 12) h -= 12; if (h === 0) h = 12;
+  return `${h}:${pad(m)} ${ak}`;
+}
+const hariSekolah = d => S.kumpulan === 'A' ? d <= 4 : (d >= 1 && d <= 5);
+const cariCuti = ts => S.cuti.find(c => ts >= c.mula && ts <= (c.tamat || c.mula));
+
+function kelasPadaTarikh(dt) {
+  const ts = tarikhStr(dt);
+  const biasa = (!cariCuti(ts) && hariSekolah(dt.getDay()))
+    ? S.slot.filter(x => x.hari === dt.getDay()).map(x => ({ ...x, jenis: 'biasa' }))
+    : [];
+  const relief = S.relief.filter(r => r.tarikh === ts && r.status === 'terima').map(r => ({ ...r, jenis: 'relief' }));
+  return [...biasa, ...relief].sort((a, b) => keMinit(a.mula) - keMinit(b.mula));
+}
+
+// ============================================================
+// PAPARAN
+// ============================================================
+function tukar(s, el) {
+  document.querySelectorAll('.sec').forEach(x => x.classList.toggle('aktif', x.id === 's-' + s));
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('aktif', b.dataset.s === s));
+  window.scrollTo(0, 0);
+  lukis();
+}
+
+function lukis() { lukisHariIni(); lukisJadual(); lukisRelief(); lukisTetapan(); lukisStatusNoti(); }
+
+function lukisHariIni() {
+  const d = new Date(), ts = tarikhStr(d), kini = minitKini();
+  document.getElementById('tarikhHariIni').textContent =
+    `Salam ${S.nama.split(' ').slice(0, 2).join(' ')} · ${HARI[d.getDay()]}, ${d.getDate()} ${BULAN[d.getMonth()]} ${d.getFullYear()}`;
+
+  const senarai = kelasPadaTarikh(d);
+  const cuti = cariCuti(ts);
+  const kad = document.getElementById('kadNext');
+
+  if (cuti) {
+    kad.innerHTML = `<div class="card cuti"><h2>Hari ini cuti</h2><div style="font-size:20px;font-weight:700">🏖️ ${esc(cuti.nama)}</div><div class="muted" style="margin-top:4px">Noti kelas biasa tidak dihantar hari ini.</div></div>`;
+  } else {
+    const semasa = senarai.find(k => kini >= keMinit(k.mula) && kini < keMinit(k.tamat));
+    const seterus = senarai.find(k => keMinit(k.mula) > kini);
+    const k = semasa || seterus;
+    if (k) {
+      let teks;
+      if (semasa) teks = `Sedang berlangsung · tamat ${fmt(k.tamat)}`;
+      else {
+        const baki = Math.ceil(keMinit(k.mula) - kini);
+        teks = baki >= 60 ? `Mula dalam ${Math.floor(baki / 60)} jam ${baki % 60} minit` : `Mula dalam ${baki} minit`;
+      }
+      kad.innerHTML = `<div class="card next"><h2>${semasa ? 'Kelas sekarang' : 'Kelas seterusnya'}</h2>
+        <div class="subj">${esc(k.subjek)}</div>
+        <div class="meta">${esc(k.kelas)} · ${fmt(k.mula)} – ${fmt(k.tamat)}</div>
+        <div class="meta">📍 ${esc(k.lokasi || '-')}</div>
+        <div class="kira">⏱ ${teks}</div></div>`;
+    } else {
+      kad.innerHTML = `<div class="card next"><h2>Kelas seterusnya</h2><div class="subj">Tiada kelas lagi hari ini 🎉</div><div class="meta">Rehat dan sediakan RPH esok.</div></div>`;
+    }
+  }
+
+  const el = document.getElementById('senaraiHariIni');
+  if (!senarai.length) { el.innerHTML = `<div class="kosong">${cuti ? 'Cuti' : hariSekolah(d.getDay()) ? 'Tiada kelas dijadualkan.' : 'Hujung minggu. Tiada kelas.'}</div>`; return; }
+  el.innerHTML = senarai.map(k => {
+    const m = keMinit(k.mula), t = keMinit(k.tamat);
+    const st = kini >= t ? ['siap', 't-siap', 'Selesai'] : kini >= m ? ['', 't-kini', 'Sekarang'] : ['', 't-akan', 'Akan datang'];
+    return `<div class="item ${st[0]}"><div class="masa">${fmt(k.mula)}<br>${fmt(k.tamat)}</div>
+      <div class="isi"><b>${esc(k.subjek)}</b><span>${esc(k.kelas)} · ${esc(k.lokasi || '-')}</span></div>
+      <div><span class="tag ${st[1]}">${st[2]}</span>${k.jenis === 'relief' ? `<span class="tag t-relief">${k.subjek === 'Kelas Demo' ? 'Demo' : 'Relief'}</span>` : ''}</div></div>`;
+  }).join('');
+}
+
+let hariDipilih = null;
+function lukisJadual() {
+  const hariAda = [0, 1, 2, 3, 4, 5, 6].filter(hariSekolah);
+  if (hariDipilih === null || !hariAda.includes(hariDipilih)) {
+    const h = new Date().getDay(); hariDipilih = hariAda.includes(h) ? h : hariAda[0];
+  }
+  document.getElementById('pilihHari').innerHTML = hariAda.map(h =>
+    `<button class="${h === hariDipilih ? 'aktif' : ''}" onclick="hariDipilih=${h};lukisJadual()">${HARI[h]}</button>`).join('');
+  const s = S.slot.filter(x => x.hari === hariDipilih).sort((a, b) => keMinit(a.mula) - keMinit(b.mula));
+  document.getElementById('senaraiJadual').innerHTML = s.length ? s.map(k =>
+    `<div class="item" style="cursor:pointer" onclick="bukaSlot('${k.id}')"><div class="masa">${fmt(k.mula)}<br>${fmt(k.tamat)}</div>
+     <div class="isi"><b>${esc(k.subjek)}</b><span>${esc(k.kelas)} · ${esc(k.lokasi || '-')}</span></div><div class="muted">✏️</div></div>`).join('')
+    : `<div class="kosong">Tiada kelas pada hari ${HARI[hariDipilih]}.</div>`;
+}
+
+function lukisRelief() {
+  const el = document.getElementById('senaraiRelief');
+  const baru = S.relief.filter(r => r.status === 'baru').length;
+  const lc = document.getElementById('lencanaRelief');
+  lc.hidden = !baru; lc.textContent = baru;
+  if (!S.relief.length) { el.innerHTML = '<div class="kosong">Tiada kelas relief buat masa ini.</div>'; return; }
+  const susun = [...S.relief].sort((a, b) => (a.tarikh + a.mula).localeCompare(b.tarikh + b.mula));
+  el.innerHTML = susun.map(r => {
+    const d = new Date(r.tarikh + 'T00:00');
+    const status = r.status === 'baru'
+      ? `<div class="baris" style="margin-top:8px"><button class="btn hijau kecil" onclick="jawabRelief('${r.id}','terima')">✓ Terima</button><button class="btn alt kecil" onclick="jawabRelief('${r.id}','tolak')">✕ Tolak</button></div>`
+      : `<span class="tag ${r.status === 'terima' ? 't-kini' : 't-siap'}">${r.status === 'terima' ? 'Diterima' : 'Ditolak'}</span>`;
+    return `<div class="item"><div class="masa">${d.getDate()}/${d.getMonth() + 1}<br>${fmt(r.mula)}</div>
+      <div class="isi"><b>${esc(r.subjek)} · ${esc(r.kelas)}</b><span>${HARI[d.getDay()]} · ${fmt(r.mula)} – ${fmt(r.tamat)} · ${esc(r.lokasi || '-')}</span>${r.status === 'baru' ? status : ''}</div>
+      ${r.status !== 'baru' ? status : ''}</div>`;
+  }).join('');
+}
+
+function lukisTetapan() {
+  tNama.value = S.nama; tMinit.value = S.minit; tPagi.value = S.pagi; tKumpulan.value = S.kumpulan; tSenyap.checked = S.senyap;
+  document.getElementById('senaraiCuti').innerHTML = S.cuti.length ? S.cuti.map(c =>
+    `<div class="item"><div class="isi"><b>${esc(c.nama)}</b><span>${c.mula}${c.tamat && c.tamat !== c.mula ? ' hingga ' + c.tamat : ''}</span></div>
+     <button class="btn alt kecil" onclick="padamCuti('${c.id}')">Padam</button></div>`).join('')
+    : '<div class="kosong">Belum ada tarikh cuti.</div>';
+  const k = kelasPadaTarikh(new Date())[0] || S.slot[0];
+  document.getElementById('tgPrev').textContent = k
+    ? `🔔 Kelas dalam ${S.minit} minit\n📚 ${k.subjek} · ${k.kelas}\n🕗 ${fmt(k.mula)} – ${fmt(k.tamat)}\n📍 ${k.lokasi || '-'}`
+    : '🔔 Kelas dalam 10 minit';
+}
+
+function lukisStatusNoti() {
+  const izin = ('Notification' in window) && Notification.permission === 'granted';
+  document.getElementById('dotNoti').classList.toggle('on', izin && !S.senyap);
+  document.getElementById('lblNoti').textContent = S.senyap ? 'Senyap' : izin ? 'Noti aktif' : 'Noti tutup';
+}
+
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+// ============================================================
+// TINDAKAN
+// ============================================================
+let slotEdit = null;
+function bukaSlot(id) {
+  const hariAda = [0, 1, 2, 3, 4, 5, 6].filter(hariSekolah);
+  mHari.innerHTML = hariAda.map(h => `<option value="${h}">${HARI[h]}</option>`).join('');
+  const k = id ? S.slot.find(x => x.id === id) : null;
+  slotEdit = k ? k.id : null;
+  mTajuk.textContent = k ? 'Ubah kelas' : 'Tambah kelas';
+  mPadam.style.display = k ? '' : 'none';
+  mHari.value = k ? k.hari : hariDipilih;
+  mMula.value = k ? k.mula : '07:30'; mTamat.value = k ? k.tamat : '08:30';
+  mKelas.value = k ? k.kelas : ''; mSubjek.value = k ? k.subjek : ''; mLokasi.value = k ? k.lokasi : '';
+  latarSlot.classList.add('buka');
+}
+function tutupSlot() { latarSlot.classList.remove('buka'); }
+function simpanSlot() {
+  if (!mSubjek.value.trim() || !mKelas.value.trim()) return alertKecil('Isi kelas dan subjek dahulu.');
+  if (keMinit(mTamat.value) <= keMinit(mMula.value)) return alertKecil('Waktu tamat mesti selepas waktu mula.');
+  const data = { hari: +mHari.value, mula: mMula.value, tamat: mTamat.value, kelas: mKelas.value.trim(), subjek: mSubjek.value.trim(), lokasi: mLokasi.value.trim() };
+  if (slotEdit) Object.assign(S.slot.find(x => x.id === slotEdit), data);
+  else S.slot.push({ id: uid(), ...data });
+  hariDipilih = data.hari; simpan(); tutupSlot(); lukis();
+}
+function padamSlot() { S.slot = S.slot.filter(x => x.id !== slotEdit); simpan(); tutupSlot(); lukis(); }
+
+function hantarRelief() {
+  if (!rTarikh.value) return alertKecil('Pilih tarikh relief.');
+  const r = { id: uid(), tarikh: rTarikh.value, mula: rMula.value, tamat: rTamat.value, kelas: rKelas.value.trim(), subjek: rSubjek.value.trim(), lokasi: rLokasi.value.trim(), status: 'baru' };
+  S.relief.push(r); simpan(); lukis();
+  const d = new Date(r.tarikh + 'T00:00');
+  hantarNoti('Kelas relief baharu', `${r.subjek} · ${r.kelas}\n${HARI[d.getDay()]} ${d.getDate()}/${d.getMonth() + 1} · ${fmt(r.mula)} – ${fmt(r.tamat)}\nBuka tab Relief untuk terima.`, 'relief-' + r.id, true);
+}
+function jawabRelief(id, st) { S.relief.find(r => r.id === id).status = st; simpan(); lukis(); }
+
+function tambahCuti() {
+  if (!cNama.value.trim() || !cMula.value) return alertKecil('Isi nama dan tarikh cuti.');
+  S.cuti.push({ id: uid(), nama: cNama.value.trim(), mula: cMula.value, tamat: cTamat.value || cMula.value });
+  cNama.value = cMula.value = cTamat.value = ''; simpan(); lukis();
+}
+function padamCuti(id) { S.cuti = S.cuti.filter(c => c.id !== id); simpan(); lukis(); }
+
+function simpanTetapan() {
+  S.nama = tNama.value.trim() || 'Cikgu'; S.minit = +tMinit.value; S.pagi = tPagi.value || '06:30';
+  S.kumpulan = tKumpulan.value; S.senyap = tSenyap.checked; simpan(); lukis();
+}
+function setSemula() {
+  if (!confirm('Padam semua data dan guna semula data contoh?')) return;
+  S = dataContoh(); simpan(); lukis(); tukar('hari');
+}
+
+function demoNoti() {
+  const mula = Math.floor(minitKini()) + S.minit + 1;
+  const r = { id: uid(), tarikh: tarikhStr(new Date()), mula: dariMinit(mula), tamat: dariMinit(mula + 30), kelas: '2 Al Farabi', subjek: 'Kelas Demo', lokasi: 'Bilik darjah 2 Al Farabi', status: 'terima' };
+  S.relief.push(r); simpan(); lukis();
+  alertKecil(`Kelas demo dibuat pada ${fmt(r.mula)}. Noti akan keluar ${S.minit} minit sebelum itu (dalam ±1 minit).`);
+}
+function ujiNoti() {
+  const k = kelasPadaTarikh(new Date())[0] || S.slot[0];
+  hantarNoti(`Kelas dalam ${S.minit} minit`, k ? `${k.subjek} · ${k.kelas}\n${fmt(k.mula)} – ${fmt(k.tamat)} · 📍 ${k.lokasi || '-'}` : 'Ini noti ujian.', 'uji', true);
+}
+
+// ============================================================
+// NOTI
+// ============================================================
+let swReg = null;
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/jadual-sw.js').then(r => swReg = r).catch(() => {});
+}
+async function mintaIzin() {
+  if (!('Notification' in window)) return alertKecil('Pelayar ini tidak menyokong noti. Cuba Chrome di Android. Di iPhone tambah halaman ini ke Home Screen dahulu.');
+  const p = await Notification.requestPermission();
+  lukisStatusNoti();
+  if (p === 'granted') hantarNoti('Noti diaktifkan ✅', 'Awak akan menerima peringatan sebelum setiap kelas.', 'izin', true);
+  else alertKecil('Noti telefon belum dibenarkan. Noti dalam halaman tetap dipaparkan.');
+}
+
+let tNoti;
+function paparDalamApp(tajuk, isi) {
+  nTajuk.textContent = tajuk; nIsi.textContent = isi;
+  noti.classList.add('tunjuk'); clearTimeout(tNoti); tNoti = setTimeout(tutupNoti, 7000);
+}
+function tutupNoti() { noti.classList.remove('tunjuk'); }
+function alertKecil(t) { paparDalamApp('Makluman', t); }
+
+function bunyi() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [880, 1175].forEach((f, i) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.frequency.value = f; o.connect(g); g.connect(ctx.destination);
+      const t = ctx.currentTime + i * 0.18;
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.25, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+      o.start(t); o.stop(t + 0.18);
+    });
+  } catch (e) {}
+}
+
+function hantarNoti(tajuk, isi, tag, paksa) {
+  if (S.senyap && !paksa) return;
+  paparDalamApp(tajuk, isi); bunyi();
+  try { navigator.vibrate && navigator.vibrate([200, 100, 200]); } catch (e) {}
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const opt = { body: isi, tag, renotify: true, vibrate: [200, 100, 200] };
+  if (swReg) swReg.showNotification(tajuk, opt).catch(() => {});
+  else { try { new Notification(tajuk, opt); } catch (e) {} }
+}
+
+// Semak setiap 15 saat: noti sebelum kelas & ringkasan pagi.
+function semak() {
+  const d = new Date(), ts = tarikhStr(d), kini = minitKini();
+  for (const k of Object.keys(S.dihantar)) if (!k.startsWith(ts)) delete S.dihantar[k];
+  let ubah = false;
+
+  const senarai = kelasPadaTarikh(d);
+  for (const k of senarai) {
+    const m = keMinit(k.mula), kunci = `${ts}|${k.id}`;
+    if (kini >= m - S.minit && kini < m && !S.dihantar[kunci]) {
+      S.dihantar[kunci] = 1; ubah = true;
+      const baki = Math.max(1, Math.round(m - kini));
+      hantarNoti(`${k.jenis === 'relief' && k.subjek !== 'Kelas Demo' ? 'Relief' : 'Kelas'} dalam ${baki} minit`,
+        `${k.subjek} · ${k.kelas}\n${fmt(k.mula)} – ${fmt(k.tamat)} · 📍 ${k.lokasi || '-'}`, 'kelas-' + k.id);
+    }
+  }
+  const p = keMinit(S.pagi), kunciPagi = `${ts}|pagi`;
+  if (kini >= p && kini < p + 60 && !S.dihantar[kunciPagi]) {
+    S.dihantar[kunciPagi] = 1; ubah = true;
+    if (senarai.length) hantarNoti(`Jadual hari ini · ${senarai.length} kelas`,
+      senarai.map(k => `${fmt(k.mula)}  ${k.subjek} (${k.kelas})`).join('\n'), 'pagi');
+  }
+  if (ubah) simpan();
+  lukisHariIni();
+}
+
+// ============================================================
+muat();
+rTarikh.value = tarikhStr(new Date());
+lukis();
+semak();
+setInterval(semak, 15000);
+</script>
+</body>
+</html>
